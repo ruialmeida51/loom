@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import platform.UIKit.UIApplication
+import platform.UIKit.registerForRemoteNotifications
 import platform.UserNotifications.*
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
