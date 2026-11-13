@@ -1,0 +1,3 @@
+-- Baseline marker for an already-applied migration from the retired Loom prototype.
+-- Its unused schema is replaced by retire_unused_prototype and household_foundation.
+-- No prototype objects are needed when provisioning a fresh database.

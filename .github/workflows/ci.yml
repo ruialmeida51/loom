@@ -1,0 +1,48 @@
+name: Loom CI
+on: [push, pull_request, workflow_dispatch]
+concurrency:
+  group: loom-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  android-and-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '23'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :shared:core:jvmTest :shared:features:expenses:jvmTest :shared:features:insights:jvmTest :shared:features:reminders:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
+      - run: python3 tools/test_database.py
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.6
+      - run: deno task check && deno task test
+        working-directory: supabase/functions
+      - uses: actions/upload-artifact@v4
+        with:
+          name: loom-debug
+          path: androidApp/build/outputs/apk/debug/*.apk
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loom-validation
+          path: |
+            shared/**/build/reports/tests/
+            build/screenshots/
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '23'
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :shared:entrypoint:compileKotlinIosSimulatorArm64
+      - run: xcodebuild -project iosApp/iosApp.xcodeproj -scheme Loom -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO build

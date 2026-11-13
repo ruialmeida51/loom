@@ -1,0 +1,1 @@
+-- Production data is created through authenticated household flows. Demo data lives in the app.

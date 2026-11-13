@@ -1,0 +1,3 @@
+# Copy to loom.properties (gitignored), or provide these as environment variables.
+SUPABASE_URL=https://eeyfhmlyopuobtgdfbql.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_replace_with_your_project_key
