@@ -13,6 +13,4 @@ interface AuthenticationDataSource {
     suspend fun register(email: String, password: String): AppResult<Unit>
 
     suspend fun signOut(): AppResult<Unit>
-
-    fun startDemo()
 }

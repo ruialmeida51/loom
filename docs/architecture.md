@@ -31,11 +31,11 @@ Sharing a model does not change which domain owns it. A feature imports another 
 | `authentication/data/local` | Secure authentication session serialization over core's native storage |
 | `settings/data` | Local preferences, notification permission/token adapters, and push-device registration |
 | `insights/data/export` | Native monthly-statement CSV sharing |
-| `household/data/demo` | Sample household fixtures |
+| `entrypoint/app/demo/data` | Preview-only household fixtures and implementations of feature domain ports |
 | `entrypoint/navigation/push` | App-specific push destinations and pending navigation |
 | `core` | Generic results, clock/ID utilities, Supabase transport, native storage, Compose components, theme rendering, flow helpers, and navigation machinery |
 
-For example, expenses depends on household for its context and currency policy; insights depends on expenses for money and ledger models. Authentication coordinates device registration through settings' `PushDeviceDataSource` domain port. The composition root supplies the sample authentication session using household demo data. Core has no dependency on any feature and provides no aliases for feature models.
+For example, expenses depends on household for its context and currency policy; insights depends on expenses for money and ledger models. Authentication coordinates device registration through settings' `PushDeviceDataSource` domain port. `LoomDemoApp` is a dedicated preview entry point with its own graph. Production authentication, models, screens, and Common DataSources contain no demo mode or fixtures. Core has no dependency on any feature and provides no aliases for feature models.
 
 ## State and navigation
 
@@ -61,3 +61,11 @@ Every exposed app table uses RLS. Access is checked against current household me
 Sessions use Android Keystore encryption and iOS Keychain. The desktop preview keeps its session in memory. No server key, signing key, Firebase configuration, or APNs private key belongs in source control.
 
 The private worker tables deny client access. The worker secret is generated into Supabase Vault; only its hash is stored for verification. Push work uses leases, retries, event IDs, current membership checks, and token cleanup. RSS network requests allow only configured trusted publishers, revalidate every redirect, bound response sizes, and reject DTD/entity declarations.
+
+## Demo, resources, and build references
+
+`LoomApp` composes production sources. The desktop preview and UI tests explicitly use `LoomDemoApp` under `entrypoint/app/demo`; feature screens are shared through the same ViewModel contracts and use cases. Demo sources implement domain ports inside the preview package. No demo flag is stored in authentication or household domain models.
+
+Features own their string/plural catalogs and presentation message mappings. Domain failures use stable codes; resource resolution stays in presentation. App routes and generic components own their respective catalogs. Build dependencies use Gradle-generated references such as `projects.shared.features.household`, with `TYPESAFE_PROJECT_ACCESSORS` enabled.
+
+Run `python3 tools/audit_project.py` to check package paths, feature dependencies, domain imports, demo isolation, UI resource use, and named project references.

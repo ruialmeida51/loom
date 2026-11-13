@@ -12,10 +12,15 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
+import com.eyther.lumbridge.features.expenses.presentation.localization.expenseCategoryLabel
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.domain.model.MonthlyStatementDomain
+import com.eyther.lumbridge.features.insights.generated.resources.*
+import com.eyther.lumbridge.features.insights.presentation.localization.localizedMessage
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsScreenViewModelContract
 import kotlinx.coroutines.flow.*
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun InsightsScreen(
@@ -28,7 +33,7 @@ fun InsightsScreen(
         month = state.month,
         statement = state.statement,
         busy = state.busy,
-        message = state.message,
+        message = localizedMessage(state.message),
         error = state.error,
         context = context,
         onExport = onExport,
@@ -53,6 +58,12 @@ private fun InnerInsightsScreen(
     onDismiss: () -> Unit,
     onSave: () -> Unit,
 ) {
+    val summaryHeader =
+        stringResource(Res.string.message_month_currency_household_total_minor_units_you_paid_minor)
+    val expenseHeader =
+        stringResource(
+            Res.string.message_date_description_category_amount_minor_units_your_share_minor,
+        )
     LazyColumn(
         Modifier.fillMaxSize().padding(horizontal = 24.dp),
         contentPadding = PaddingValues(vertical = 20.dp),
@@ -60,9 +71,9 @@ private fun InnerInsightsScreen(
     ) {
         item {
             PageHeading(
-                "THE BIGGER PICTURE",
-                "A little perspective.",
-                "See where it went, and where things stand.",
+                stringResource(Res.string.ui_the_bigger_picture),
+                stringResource(Res.string.ui_a_little_perspective),
+                stringResource(Res.string.ui_see_where_it_went_and_where_things_stand),
             )
         }
         item {
@@ -71,12 +82,14 @@ private fun InnerInsightsScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                OutlinedButton(onClick = onPrevious) { Text("Previous") }
+                OutlinedButton(onClick = onPrevious) {
+                    Text(stringResource(Res.string.ui_previous))
+                }
                 Text(month, style = MaterialTheme.typography.titleMedium)
-                OutlinedButton(onClick = onNext) { Text("Next") }
+                OutlinedButton(onClick = onNext) { Text(stringResource(Res.string.ui_next)) }
             }
         }
-        item { ErrorNotice(error, onDismiss) }
+        item { ErrorNotice(localizedMessage(error), onDismiss) }
         message?.let { message ->
             item { Text(message, color = MaterialTheme.colorScheme.secondary) }
         }
@@ -84,7 +97,7 @@ private fun InnerInsightsScreen(
             item {
                 LoomCard {
                     Text(
-                        "HOUSEHOLD SPENDING",
+                        stringResource(Res.string.ui_household_spending),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.secondary,
                     )
@@ -93,33 +106,55 @@ private fun InnerInsightsScreen(
                         style = MaterialTheme.typography.displaySmall,
                     )
                     Text(
-                        "${statement.expenses.size} shared expenses this month",
+                        pluralStringResource(
+                            Res.plurals.monthly_expense_count,
+                            statement.expenses.size,
+                            statement.expenses.size,
+                        ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
             item {
                 LoomCard {
-                    SectionTitle("Your month")
-                    StatementRow("You paid", statement.paidMinor, context.currency)
-                    StatementRow("Your share", statement.shareMinor, context.currency)
+                    SectionTitle(stringResource(Res.string.ui_your_month))
+                    StatementRow(
+                        stringResource(Res.string.ui_you_paid),
+                        statement.paidMinor,
+                        context.currency,
+                    )
+                    StatementRow(
+                        stringResource(Res.string.ui_your_share),
+                        statement.shareMinor,
+                        context.currency,
+                    )
                     HorizontalDivider()
-                    StatementRow("Opening balance", statement.openingBalanceMinor, context.currency)
-                    StatementRow("Closing balance", statement.closingBalanceMinor, context.currency)
+                    StatementRow(
+                        stringResource(Res.string.ui_opening_balance),
+                        statement.openingBalanceMinor,
+                        context.currency,
+                    )
+                    StatementRow(
+                        stringResource(Res.string.ui_closing_balance),
+                        statement.closingBalanceMinor,
+                        context.currency,
+                    )
                     Text(
-                        "A positive balance means you’re owed money. Repayments affect balances, not spending.",
+                        stringResource(
+                            Res.string.ui_a_positive_balance_means_you_re_owed_money_repayments,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
-            item { SectionTitle("Where it went") }
+            item { SectionTitle(stringResource(Res.string.ui_where_it_went)) }
             statement.categories.entries
                 .sortedByDescending { it.value }
                 .forEach { (category, amount) ->
                     item {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            StatementRow(category, amount, context.currency)
+                            StatementRow(expenseCategoryLabel(category), amount, context.currency)
                             Box(
                                 Modifier.fillMaxWidth()
                                     .height(7.dp)
@@ -145,11 +180,16 @@ private fun InnerInsightsScreen(
                 }
             item {
                 LoomButton(
-                    "Export statement as CSV",
+                    stringResource(Res.string.ui_export_statement_as_csv),
                     {
                         onExport(
                             "loom-${month}.csv",
-                            statement.csv(context.currency, context.userId),
+                            statement.csv(
+                                context.currency,
+                                context.userId,
+                                summaryHeader,
+                                expenseHeader,
+                            ),
                         )
                     },
                     Modifier.fillMaxWidth(),
@@ -161,7 +201,10 @@ private fun InnerInsightsScreen(
                     enabled = !busy,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(if (busy) "Saving…" else "Save statement snapshot")
+                    Text(
+                        if (busy) stringResource(Res.string.ui_saving)
+                        else stringResource(Res.string.ui_save_statement_snapshot),
+                    )
                 }
             }
         }

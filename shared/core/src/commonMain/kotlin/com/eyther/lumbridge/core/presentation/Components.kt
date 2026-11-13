@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 enum class Glyph {
     HOME,
@@ -35,9 +37,23 @@ fun LoomIcon(
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.onSurface,
 ) {
+    val iconLabel =
+        stringResource(
+            when (glyph) {
+                Glyph.HOME -> Res.string.icon_home
+                Glyph.FEED -> Res.string.icon_feed
+                Glyph.SHOPPING -> Res.string.icon_shopping
+                Glyph.MONEY -> Res.string.icon_money
+                Glyph.BELL -> Res.string.icon_bell
+                Glyph.SETTINGS -> Res.string.icon_settings
+                Glyph.PLUS -> Res.string.icon_add
+                Glyph.ARROW -> Res.string.icon_next
+                Glyph.CHECK -> Res.string.icon_done
+            },
+        )
     Canvas(
         modifier.size(23.dp).semantics {
-            contentDescription = glyph.name.lowercase().replaceFirstChar { it.uppercase() }
+            contentDescription = iconLabel
         },
     ) {
         val s = size.width / 24f
@@ -229,7 +245,7 @@ fun ErrorNotice(message: String?, onDismiss: () -> Unit) {
                     color = MaterialTheme.colorScheme.onErrorContainer,
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                TextButton(onClick = onDismiss) { Text("Dismiss") }
+                TextButton(onClick = onDismiss) { Text(stringResource(Res.string.ui_dismiss)) }
             }
         }
 }

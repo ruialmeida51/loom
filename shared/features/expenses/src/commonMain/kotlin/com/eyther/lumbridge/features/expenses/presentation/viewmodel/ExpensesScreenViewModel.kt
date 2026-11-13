@@ -31,6 +31,7 @@ class ExpensesScreenViewModel(
     private data class InnerInputState(
         val title: String = "",
         val amount: String = "",
+        val occurredOn: String = "",
         val paidBy: String = "",
         val category: String = "Groceries",
         val selected: Set<String> = emptySet(),
@@ -45,7 +46,13 @@ class ExpensesScreenViewModel(
     private var expenseId = newId()
     private var settlementId = newId()
     private val inputState =
-        MutableStateFlow(InnerInputState(paidBy = context.userId, from = context.userId))
+        MutableStateFlow(
+            InnerInputState(
+                paidBy = context.userId,
+                from = context.userId,
+                occurredOn = todayIso(context.timeZone),
+            ),
+        )
 
     private val mutableState =
         MutableStateFlow(ExpensesState(paidBy = context.userId, from = context.userId)).observeWith(
@@ -55,6 +62,7 @@ class ExpensesScreenViewModel(
                 copy(
                     title = it.title,
                     amount = it.amount,
+                    occurredOn = it.occurredOn,
                     paidBy = it.paidBy,
                     category = it.category,
                     selected = it.selected,
@@ -111,6 +119,10 @@ class ExpensesScreenViewModel(
         inputState.update { it.copy(title = value) }
     }
 
+    override fun occurredOn(value: String) {
+        inputState.update { it.copy(occurredOn = value) }
+    }
+
     override fun amount(value: String) {
         inputState.update { it.copy(amount = value) }
     }
@@ -147,6 +159,7 @@ class ExpensesScreenViewModel(
             inputState.value =
                 InnerInputState(
                     paidBy = context.userId,
+                    occurredOn = todayIso(context.timeZone),
                     from = context.userId,
                     selected = mutableState.value.members.map { it.id }.toSet(),
                     to =
@@ -222,7 +235,7 @@ class ExpensesScreenViewModel(
                     amount,
                     input.paidBy,
                     input.category,
-                    todayIso(context.timeZone),
+                    input.occurredOn,
                     shares,
                     input.recurring,
                 )

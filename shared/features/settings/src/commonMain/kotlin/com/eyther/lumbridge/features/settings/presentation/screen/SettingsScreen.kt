@@ -13,8 +13,12 @@ import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.settings.domain.model.SettingsDomain
+import com.eyther.lumbridge.features.settings.generated.resources.*
+import com.eyther.lumbridge.features.settings.presentation.localization.localizedMessage
+import com.eyther.lumbridge.features.settings.presentation.localization.localizedToken
 import com.eyther.lumbridge.features.settings.presentation.viewmodel.contracts.SettingsScreenViewModelContract
 import kotlinx.coroutines.flow.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SettingsScreen(
@@ -60,13 +64,21 @@ private fun InnerSettingsScreen(
         contentPadding = PaddingValues(vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
-        item { PageHeading("JUST THE WAY YOU LIKE IT", "Your little corner.") }
-        item { ErrorNotice(error, onDismiss) }
+        item {
+            PageHeading(
+                stringResource(Res.string.ui_just_the_way_you_like_it),
+                stringResource(Res.string.ui_your_little_corner),
+            )
+        }
+        item { ErrorNotice(localizedMessage(error), onDismiss) }
         item {
             LoomCard {
-                Text("Appearance", style = MaterialTheme.typography.titleLarge)
                 Text(
-                    "A little light, a little dark, or follow your device.",
+                    stringResource(Res.string.ui_appearance),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                Text(
+                    stringResource(Res.string.ui_a_little_light_a_little_dark_or_follow_your),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -74,7 +86,7 @@ private fun InnerSettingsScreen(
                         FilterChip(
                             preferences.theme == theme,
                             { onTheme(theme) },
-                            label = { Text(theme.lowercase().replaceFirstChar { it.uppercase() }) },
+                            label = { Text(localizedToken(theme)) },
                         )
                     }
                 }
@@ -84,9 +96,12 @@ private fun InnerSettingsScreen(
             LoomCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("Gentle nudges", style = MaterialTheme.typography.titleLarge)
                         Text(
-                            "Reminders and shared expenses",
+                            stringResource(Res.string.ui_gentle_nudges),
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                        Text(
+                            stringResource(Res.string.ui_reminders_and_shared_expenses),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -99,7 +114,11 @@ private fun InnerSettingsScreen(
             LoomCard {
                 Text(context.name, style = MaterialTheme.typography.headlineMedium)
                 Text(
-                    "${context.currency} · ${context.timeZone}",
+                    stringResource(
+                        Res.string.ui_household_details,
+                        context.currency,
+                        context.timeZone,
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -107,40 +126,39 @@ private fun InnerSettingsScreen(
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(member.name)
                         Text(
-                            member.role,
+                            localizedToken(member.role),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
                 if (members.any { it.id == context.userId && it.role == "owner" })
-                    LoomButton("Invite someone home", onInvite, loading = busy)
+                    LoomButton(
+                        stringResource(Res.string.ui_invite_someone_home),
+                        onInvite,
+                        loading = busy,
+                    )
                 invitation?.let { token ->
                     Text(
-                        "One-time invitation · expires in 48 hours",
+                        stringResource(Res.string.ui_one_time_invitation_expires_in_48_hours),
                         style = MaterialTheme.typography.labelSmall,
                     )
                     SelectionContainer { Text(token, style = MaterialTheme.typography.bodySmall) }
                 }
-                TextButton(onClick = onSwitchHousehold) { Text("Switch household") }
+                TextButton(onClick = onSwitchHousehold) {
+                    Text(stringResource(Res.string.ui_switch_household))
+                }
             }
         }
-        if (context.demo)
-            item {
-                Text(
-                    "You’re exploring a sample household. Changes last for this session.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
+
         item {
             OutlinedButton(onClick = onSignOut, modifier = Modifier.fillMaxWidth()) {
-                Text(if (context.demo) "Leave the sample household" else "Sign out")
+                Text(stringResource(Res.string.ui_sign_out))
             }
         }
         item {
             Text(
-                "Loom · 0.1.0\nLife, woven together.",
+                stringResource(Res.string.ui_loom_0_1_0_nlife_woven_together),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

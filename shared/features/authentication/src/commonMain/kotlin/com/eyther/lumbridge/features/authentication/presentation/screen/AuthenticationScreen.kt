@@ -10,8 +10,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
+import com.eyther.lumbridge.features.authentication.generated.resources.*
+import com.eyther.lumbridge.features.authentication.presentation.localization.localizedMessage
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.AuthenticationScreenViewModelContract
 import kotlinx.coroutines.flow.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun AuthenticationScreen(vm: AuthenticationScreenViewModelContract) {
@@ -21,13 +24,12 @@ fun AuthenticationScreen(vm: AuthenticationScreenViewModelContract) {
         password = state.password,
         registering = state.registering,
         busy = state.busy,
-        message = state.message,
+        message = localizedMessage(state.message),
         error = state.error,
         onEmail = vm::email,
         onPassword = vm::password,
         onToggleRegister = vm::toggleRegister,
         onSubmit = vm::submit,
-        onDemo = vm::demo,
         onDismiss = vm::dismiss,
     )
 }
@@ -44,7 +46,6 @@ private fun InnerAuthenticationScreen(
     onPassword: (String) -> Unit,
     onToggleRegister: () -> Unit,
     onSubmit: () -> Unit,
-    onDemo: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     Column(
@@ -55,47 +56,45 @@ private fun InnerAuthenticationScreen(
     ) {
         Spacer(Modifier.height(32.dp))
         PageHeading(
-            "WELCOME TO LOOM",
-            "Life, woven together.",
-            "A calmer home for the things you share.",
+            stringResource(Res.string.ui_welcome_to_loom),
+            stringResource(Res.string.ui_life_woven_together),
+            stringResource(Res.string.ui_a_calmer_home_for_the_things_you_share),
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            if (registering) "Make yourself at home" else "Welcome home",
+            if (registering) stringResource(Res.string.ui_make_yourself_at_home)
+            else stringResource(Res.string.ui_welcome_home),
             style = MaterialTheme.typography.headlineMedium,
         )
-        ErrorNotice(error, onDismiss)
+        ErrorNotice(localizedMessage(error), onDismiss)
         message?.let { Text(it, color = MaterialTheme.colorScheme.secondary) }
         OutlinedTextField(
             email,
             onEmail,
-            label = { Text("Email") },
+            label = { Text(stringResource(Res.string.ui_email)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
             password,
             onPassword,
-            label = { Text("Password") },
+            label = { Text(stringResource(Res.string.ui_password)) },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
         )
         LoomButton(
-            if (registering) "Create account" else "Sign in",
+            if (registering) stringResource(Res.string.ui_create_account)
+            else stringResource(Res.string.ui_sign_in),
             onSubmit,
             Modifier.fillMaxWidth(),
             loading = busy,
         )
         TextButton(onClick = onToggleRegister) {
             Text(
-                if (registering) "Already have an account? Sign in"
-                else "New here? Create an account",
+                if (registering) stringResource(Res.string.ui_already_have_an_account_sign_in)
+                else stringResource(Res.string.ui_new_here_create_an_account),
             )
-        }
-        HorizontalDivider()
-        OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth().height(50.dp)) {
-            Text("Explore a sample household")
         }
     }
 }

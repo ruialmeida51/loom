@@ -25,7 +25,7 @@ actual object PushPlatform {
                         }
                 }
             require(granted) {
-                "Allow notifications in your phone’s settings to receive reminders."
+                "settings.message_allow_notifications_in_your_phone_s_settings_to_receive"
             }
             dispatch_async(dispatch_get_main_queue()) {
                 UIApplication.sharedApplication.registerForRemoteNotifications()

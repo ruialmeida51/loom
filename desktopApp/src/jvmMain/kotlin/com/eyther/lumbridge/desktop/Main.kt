@@ -4,7 +4,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import com.eyther.lumbridge.app.LoomApp
+import com.eyther.lumbridge.app.demo.LoomDemoApp
 
 fun main() = application {
     Window(
@@ -12,6 +12,6 @@ fun main() = application {
         title = "Loom",
         state = rememberWindowState(width = 440.dp, height = 920.dp),
     ) {
-        LoomApp()
+        LoomDemoApp()
     }
 }

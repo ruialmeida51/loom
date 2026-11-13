@@ -20,8 +20,8 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":shared:core"))
-            implementation(project(":shared:features:settings"))
+            api(projects.shared.core)
+            implementation(projects.shared.features.settings)
             api(libs.compose.runtime)
             api(libs.compose.foundation)
             api(libs.compose.ui)
@@ -41,4 +41,8 @@ kotlin {
             implementation(libs.coroutines.test)
         }
     }
+}
+
+compose.resources {
+    packageOfResClass = "com.eyther.lumbridge.features.authentication.generated.resources"
 }

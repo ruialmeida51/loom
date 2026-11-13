@@ -24,7 +24,7 @@ class GetHomeOverviewUseCase(
             expenses,
             settlements ->
             HomeOverviewDomain(
-                shopping.filterNot { it.checked },
+                shopping.activeItems.filterNot { it.checked },
                 reminders.filterNot { it.completed }.sortedBy { it.dueAt },
                 HouseholdLedgerDomain.balances(expenses, settlements)[context.userId] ?: 0,
                 expenses

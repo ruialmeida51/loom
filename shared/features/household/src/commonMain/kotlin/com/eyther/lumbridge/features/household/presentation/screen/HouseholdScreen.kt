@@ -11,8 +11,12 @@ import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.household.domain.model.HouseholdCurrencyDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
+import com.eyther.lumbridge.features.household.generated.resources.*
+import com.eyther.lumbridge.features.household.presentation.components.HouseholdBadge
+import com.eyther.lumbridge.features.household.presentation.localization.localizedMessage
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
 import kotlinx.coroutines.flow.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun HouseholdScreen(
@@ -63,27 +67,36 @@ private fun InnerHouseholdScreen(
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         PageHeading(
-            "YOUR PEOPLE",
-            "Make yourself at home.",
-            "Choose a household, create a new one, or join your people.",
+            stringResource(Res.string.ui_your_people),
+            stringResource(Res.string.ui_make_yourself_at_home),
+            stringResource(Res.string.ui_choose_a_household_create_a_new_one_or_join),
         )
-        ErrorNotice(error, onDismiss)
+        ErrorNotice(localizedMessage(error), onDismiss)
         items.forEach { household ->
             LoomCard {
-                Text(household.name, style = MaterialTheme.typography.titleLarge)
-                LoomButton("Open household", { onSelect(household) })
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    HouseholdBadge(household.id, household.name)
+                    Text(household.name, style = MaterialTheme.typography.titleLarge)
+                }
+                LoomButton(stringResource(Res.string.ui_open_household), { onSelect(household) })
             }
         }
         LoomCard {
-            Text("Start a household", style = MaterialTheme.typography.titleLarge)
+            Text(
+                stringResource(Res.string.ui_start_a_household),
+                style = MaterialTheme.typography.titleLarge,
+            )
             OutlinedTextField(
                 name,
                 onName,
-                label = { Text("Household name") },
+                label = { Text(stringResource(Res.string.ui_household_name)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Text("Household currency", style = MaterialTheme.typography.labelLarge)
+            Text(
+                stringResource(Res.string.ui_household_currency),
+                style = MaterialTheme.typography.labelLarge,
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 HouseholdCurrencyDomain.supportedCodes.forEach { currency ->
                     FilterChip(
@@ -93,19 +106,24 @@ private fun InnerHouseholdScreen(
                     )
                 }
             }
-            LoomButton("Create household", onCreate, loading = busy)
+            LoomButton(stringResource(Res.string.ui_create_household), onCreate, loading = busy)
         }
         LoomCard {
-            Text("Have an invitation?", style = MaterialTheme.typography.titleLarge)
+            Text(
+                stringResource(Res.string.ui_have_an_invitation),
+                style = MaterialTheme.typography.titleLarge,
+            )
             OutlinedTextField(
                 token,
                 onToken,
-                label = { Text("Invitation code") },
+                label = { Text(stringResource(Res.string.ui_invitation_code)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
-            OutlinedButton(onClick = onJoin, enabled = !busy) { Text("Join household") }
+            OutlinedButton(onClick = onJoin, enabled = !busy) {
+                Text(stringResource(Res.string.ui_join_household))
+            }
         }
-        TextButton(onClick = onSignOut) { Text("Sign out") }
+        TextButton(onClick = onSignOut) { Text(stringResource(Res.string.ui_sign_out)) }
     }
 }

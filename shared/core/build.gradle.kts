@@ -113,3 +113,5 @@ val generateLoomConfig =
 kotlin.sourceSets.commonMain { kotlin.srcDir(generatedConfig) }
 
 tasks.matching { it.name.startsWith("compile") }.configureEach { dependsOn(generateLoomConfig) }
+
+compose.resources { packageOfResClass = "com.eyther.lumbridge.core.generated.resources" }

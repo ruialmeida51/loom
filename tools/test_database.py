@@ -22,7 +22,7 @@ def sql(value: str) -> None:
 try:
     subprocess.run(["docker", "run", "-d", "--name", container, "-e", "POSTGRES_PASSWORD=loom-test-only", IMAGE], check=True, capture_output=True)
     for attempt in range(60):
-        if subprocess.run(["docker", "exec", container, "pg_isready", "-U", "postgres"], capture_output=True).returncode == 0:
+        if subprocess.run(["docker", "exec", container, "pg_isready", "-h", "127.0.0.1", "-U", "postgres"], capture_output=True).returncode == 0:
             break
         time.sleep(0.5)
     else:
@@ -41,7 +41,8 @@ try:
     migrations = sorted((ROOT / "supabase/migrations").glob("*.sql"))
     for migration in migrations:
         sql(migration.read_text())
-    sql((ROOT / "supabase/tests/household_security.sql").read_text())
+    for test in sorted((ROOT / "supabase/tests").glob("*.sql")):
+        sql(test.read_text())
     print(f"PostgreSQL: {len(migrations)} migrations applied; household, ledger, recurrence, statement, and access tests passed.")
 finally:
     subprocess.run(["docker", "rm", "-f", container], capture_output=True)

@@ -5,7 +5,8 @@ import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSour
 
 class SetThemeUseCase(private val source: SettingsDataSource) {
     suspend operator fun invoke(value: String): AppResult<Unit> {
-        if (value !in listOf("SYSTEM", "LIGHT", "DARK")) return AppResult.Failure("Choose a theme.")
+        if (value !in listOf("SYSTEM", "LIGHT", "DARK"))
+            return AppResult.Failure("settings.message_choose_a_theme")
         return source.theme(value)
     }
 }

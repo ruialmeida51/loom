@@ -35,8 +35,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
     implementation("com.google.firebase:firebase-messaging")
     implementation("androidx.core:core-ktx:1.19.1")
-    implementation(project(":shared:entrypoint"))
-    implementation(project(":shared:core"))
-    implementation(project(":shared:features:settings"))
+    implementation(projects.shared.entrypoint)
+    implementation(projects.shared.core)
+    implementation(projects.shared.features.settings)
     implementation(libs.activity.compose)
 }

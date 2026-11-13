@@ -7,7 +7,7 @@ import com.eyther.lumbridge.core.data.PlatformStorage
 import java.io.File
 
 actual object PlatformExport {
-    actual fun shareCsv(filename: String, content: String) {
+    actual fun shareCsv(filename: String, content: String, title: String) {
         val context = PlatformStorage.applicationContext
         val directory = File(context.cacheDir, "statements").apply { mkdirs() }
         val file =
@@ -19,12 +19,11 @@ actual object PlatformExport {
             Intent(Intent.ACTION_SEND).apply {
                 type = "text/csv"
                 putExtra(Intent.EXTRA_STREAM, uri)
-                clipData = ClipData.newRawUri("Monthly statement", uri)
+                clipData = ClipData.newRawUri(title, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
         context.startActivity(
-            Intent.createChooser(intent, "Share your statement")
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            Intent.createChooser(intent, title).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
         )
     }
 }

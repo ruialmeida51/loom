@@ -14,13 +14,8 @@ import kotlinx.coroutines.flow.*
 class CommonAuthenticationDataSource(
     private val access: SupabaseAccess,
     private val pushDevices: PushDeviceDataSource,
-    private val demoSession: AuthSessionDomain,
 ) : AuthenticationDataSource {
-    private var demo = !access.configured
-    private val mutableSession =
-        MutableStateFlow<AuthSessionDomain?>(
-            if (demo) demoSession else null,
-        )
+    private val mutableSession = MutableStateFlow<AuthSessionDomain?>(null)
     override val session = mutableSession.asStateFlow()
     override val configured
         get() = access.configured
@@ -31,24 +26,21 @@ class CommonAuthenticationDataSource(
         access.client?.let { client ->
             scope.launch {
                 client.auth.sessionStatus.collect { status ->
-                    if (!demo)
-                        mutableSession.value =
-                            when (status) {
-                                is SessionStatus.Authenticated ->
-                                    status.session.user?.let {
-                                        AuthSessionDomain(it.id, it.email.orEmpty(), false)
-                                    }
-                                else -> null
-                            }
-                    if (status is SessionStatus.Authenticated && !demo)
-                        pushDevices.syncRegistration()
+                    mutableSession.value =
+                        when (status) {
+                            is SessionStatus.Authenticated ->
+                                status.session.user?.let {
+                                    AuthSessionDomain(it.id, it.email.orEmpty())
+                                }
+                            else -> null
+                        }
+                    if (status is SessionStatus.Authenticated) pushDevices.syncRegistration()
                 }
             }
         }
     }
 
     override suspend fun signIn(email: String, password: String) = safeApiCall {
-        demo = false
         access.requireClient().auth.signInWith(Email) {
             this.email = email
             this.password = password
@@ -56,7 +48,6 @@ class CommonAuthenticationDataSource(
     }
 
     override suspend fun register(email: String, password: String) = safeApiCall {
-        demo = false
         access.requireClient().auth.signUpWith(Email) {
             this.email = email
             this.password = password
@@ -65,20 +56,12 @@ class CommonAuthenticationDataSource(
     }
 
     override suspend fun signOut() = safeApiCall {
-        if (!demo) {
-            try {
-                pushDevices.unregisterCurrentDevice()
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {}
-            access.requireClient().auth.signOut()
-        }
-        demo = false
+        try {
+            pushDevices.unregisterCurrentDevice()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {}
+        access.requireClient().auth.signOut()
         mutableSession.value = null
-    }
-
-    override fun startDemo() {
-        demo = true
-        mutableSession.value = demoSession
     }
 }

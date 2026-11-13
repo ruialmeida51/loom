@@ -14,9 +14,13 @@ import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.home.domain.model.HomeOverviewDomain
+import com.eyther.lumbridge.features.home.generated.resources.*
+import com.eyther.lumbridge.features.home.presentation.localization.localizedMessage
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import kotlinx.coroutines.flow.*
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun HomeScreen(
@@ -58,26 +62,13 @@ private fun InnerHomeScreen(
     ) {
         item {
             PageHeading(
-                "A LITTLE MORE TOGETHER",
-                "Home, in harmony.",
-                "Less to keep in your head. More space for your people.",
+                stringResource(Res.string.ui_a_little_more_together),
+                stringResource(Res.string.ui_home_in_harmony),
+                stringResource(Res.string.ui_less_to_keep_in_your_head_more_space_for),
             )
         }
-        if (context.demo)
-            item {
-                Surface(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = RoundedCornerShape(12.dp),
-                ) {
-                    Text(
-                        "SAMPLE HOUSEHOLD · Explore freely",
-                        Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    )
-                }
-            }
-        item { ErrorNotice(error, onDismiss) }
+
+        item { ErrorNotice(localizedMessage(error), onDismiss) }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Surface(
@@ -94,12 +85,16 @@ private fun InnerHomeScreen(
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                         Text(
-                            "${overview?.shopping?.size?:0} items",
+                            pluralStringResource(
+                                Res.plurals.shopping_item_count,
+                                overview?.shopping?.size ?: 0,
+                                overview?.shopping?.size ?: 0,
+                            ),
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                         Text(
-                            "On the shopping list",
+                            stringResource(Res.string.ui_on_the_shopping_list),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
@@ -123,7 +118,8 @@ private fun InnerHomeScreen(
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                         )
                         Text(
-                            if (balance >= 0) "You’re owed" else "You owe",
+                            if (balance >= 0) stringResource(Res.string.ui_you_re_owed)
+                            else stringResource(Res.string.ui_you_owe),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                         )
@@ -131,9 +127,20 @@ private fun InnerHomeScreen(
                 }
             }
         }
-        item { SectionTitle("A gentle reminder", "See all", onReminders) }
+        item {
+            SectionTitle(
+                stringResource(Res.string.ui_a_gentle_reminder),
+                stringResource(Res.string.ui_see_all),
+                onReminders,
+            )
+        }
         if (overview?.reminders?.isEmpty() == true)
-            item { EmptyNotice("A clear calendar.", "Enjoy a little breathing room.") }
+            item {
+                EmptyNotice(
+                    stringResource(Res.string.ui_a_clear_calendar),
+                    stringResource(Res.string.ui_enjoy_a_little_breathing_room),
+                )
+            }
         overview?.reminders?.take(2)?.forEach { reminder ->
             item {
                 LoomCard {
@@ -162,7 +169,13 @@ private fun InnerHomeScreen(
                 }
             }
         }
-        item { SectionTitle("Pick up a few things", "Open list", onShopping) }
+        item {
+            SectionTitle(
+                stringResource(Res.string.ui_pick_up_a_few_things),
+                stringResource(Res.string.ui_open_list),
+                onShopping,
+            )
+        }
         item {
             LoomCard {
                 overview?.shopping?.take(3)?.forEachIndexed { index, item ->
@@ -189,13 +202,16 @@ private fun InnerHomeScreen(
         }
         item {
             LoomCard {
-                Text("A moment for yourself", style = MaterialTheme.typography.headlineMedium)
                 Text(
-                    "Fresh reads from the places you love. Put the kettle on.",
+                    stringResource(Res.string.ui_a_moment_for_yourself),
+                    style = MaterialTheme.typography.headlineMedium,
+                )
+                Text(
+                    stringResource(Res.string.ui_fresh_reads_from_the_places_you_love_put_the),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 TextButton(onClick = onFeed) {
-                    Text("Visit the reading corner")
+                    Text(stringResource(Res.string.ui_visit_the_reading_corner))
                     Spacer(Modifier.width(8.dp))
                     LoomIcon(Glyph.ARROW, tint = MaterialTheme.colorScheme.primary)
                 }
@@ -203,7 +219,7 @@ private fun InnerHomeScreen(
         }
         item {
             Text(
-                "Woven together, one little thing at a time.",
+                stringResource(Res.string.ui_woven_together_one_little_thing_at_a_time),
                 Modifier.fillMaxWidth().padding(vertical = 10.dp),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

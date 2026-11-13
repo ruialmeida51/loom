@@ -20,15 +20,15 @@ class RecordSettlementUseCase(
             settlement.amountMinor in 1..MoneyDomain.MAX_MINOR_UNITS &&
                 settlement.from != settlement.to,
         ) {
-            "Choose two different people and a positive amount."
+            "expenses.message_choose_two_different_people_and_a_positive_amount"
         }
         require(context.userId == settlement.from || context.userId == settlement.to) {
-            "You can record repayments you send or receive."
+            "expenses.message_you_can_record_repayments_you_send_or_receive"
         }
         LocalDate.parse(settlement.occurredOn)
         val memberIds = members(context.id).getOrThrow().map { it.id }
         require(settlement.from in memberIds && settlement.to in memberIds) {
-            "Choose current household members."
+            "expenses.message_choose_current_household_members"
         }
         source.settle(settlement).getOrThrow()
     }

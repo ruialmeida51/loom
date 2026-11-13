@@ -30,7 +30,7 @@ object HouseholdLedgerDomain {
 
     fun suggestions(balances: Map<String, Long>): List<SuggestedSettlementDomain> {
         require(balances.values.sum() == 0L) {
-            "Balances must reconcile before suggesting repayments."
+            "expenses.message_balances_must_reconcile_before_suggesting_repayments"
         }
         val ordered = balances.entries.sortedBy { it.key }
         val debtors = ordered.filter { it.value < 0 }

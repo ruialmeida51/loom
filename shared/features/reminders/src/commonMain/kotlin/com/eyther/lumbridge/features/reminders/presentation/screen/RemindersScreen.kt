@@ -11,8 +11,12 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
+import com.eyther.lumbridge.features.reminders.generated.resources.*
+import com.eyther.lumbridge.features.reminders.presentation.localization.localizedMessage
+import com.eyther.lumbridge.features.reminders.presentation.localization.localizedToken
 import com.eyther.lumbridge.features.reminders.presentation.viewmodel.contracts.RemindersScreenViewModelContract
 import kotlinx.coroutines.flow.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun RemindersScreen(vm: RemindersScreenViewModelContract, timeZone: String) {
@@ -67,18 +71,24 @@ private fun InnerRemindersScreen(
     ) {
         item {
             PageHeading(
-                "A GENTLE NUDGE",
-                "Room in your head.",
-                "The little things, remembered together.",
+                stringResource(Res.string.ui_a_gentle_nudge),
+                stringResource(Res.string.ui_room_in_your_head),
+                stringResource(Res.string.ui_the_little_things_remembered_together),
             )
         }
-        item { ErrorNotice(error, onDismiss) }
-        item { LoomButton("Add a reminder", { onShowAdd(true) }, Modifier.fillMaxWidth()) }
+        item { ErrorNotice(localizedMessage(error), onDismiss) }
+        item {
+            LoomButton(
+                stringResource(Res.string.ui_add_a_reminder),
+                { onShowAdd(true) },
+                Modifier.fillMaxWidth(),
+            )
+        }
         if (items.isEmpty())
             item {
                 EmptyNotice(
-                    "Nothing on your mind.",
-                    "Add a reminder and let Loom keep track of it.",
+                    stringResource(Res.string.ui_nothing_on_your_mind),
+                    stringResource(Res.string.ui_add_a_reminder_and_let_loom_keep_track_of),
                 )
             }
         items(
@@ -97,13 +107,19 @@ private fun InnerRemindersScreen(
                         )
                         if (reminder.recurrence != "none")
                             Text(
-                                "Repeats ${reminder.recurrence}",
+                                stringResource(
+                                    Res.string.ui_repeats_1_s,
+                                    localizedToken(reminder.recurrence),
+                                ),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.secondary,
                             )
                     }
                     TextButton(onClick = { onRemove(reminder.id) }) {
-                        Text("Remove", style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            stringResource(Res.string.ui_remove),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
                     }
                 }
             }
@@ -112,28 +128,31 @@ private fun InnerRemindersScreen(
     if (showAdd)
         AlertDialog(
             onDismissRequest = { if (!busy) onShowAdd(false) },
-            title = { Text("A little reminder") },
+            title = { Text(stringResource(Res.string.ui_a_little_reminder)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
                         title,
                         onTitle,
-                        label = { Text("What needs doing?") },
+                        label = { Text(stringResource(Res.string.ui_what_needs_doing)) },
                         singleLine = true,
                     )
                     OutlinedTextField(
                         date,
                         onDate,
-                        label = { Text("Date · YYYY-MM-DD") },
+                        label = { Text(stringResource(Res.string.ui_date_yyyy_mm_dd)) },
                         singleLine = true,
                     )
                     OutlinedTextField(
                         time,
                         onTime,
-                        label = { Text("Time · HH:mm") },
+                        label = { Text(stringResource(Res.string.ui_time_hh_mm)) },
                         singleLine = true,
                     )
-                    Text("Times are in $timeZone", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        stringResource(Res.string.ui_times_are_in_1_s, timeZone),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                         listOf("none", "daily", "weekly").forEach { repeat ->
                             FilterChip(
@@ -141,19 +160,22 @@ private fun InnerRemindersScreen(
                                 { onRecurrence(repeat) },
                                 label = {
                                     Text(
-                                        if (repeat == "none") "Once"
-                                        else repeat.replaceFirstChar { it.uppercase() },
+                                        localizedToken(repeat),
                                     )
                                 },
                             )
                         }
                     }
-                    ErrorNotice(error, onDismiss)
+                    ErrorNotice(localizedMessage(error), onDismiss)
                 }
             },
-            confirmButton = { LoomButton("Save reminder", onAdd, loading = busy) },
+            confirmButton = {
+                LoomButton(stringResource(Res.string.ui_save_reminder), onAdd, loading = busy)
+            },
             dismissButton = {
-                TextButton(onClick = { onShowAdd(false) }, enabled = !busy) { Text("Cancel") }
+                TextButton(onClick = { onShowAdd(false) }, enabled = !busy) {
+                    Text(stringResource(Res.string.ui_cancel))
+                }
             },
         )
 }

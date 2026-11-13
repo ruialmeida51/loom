@@ -18,14 +18,16 @@ class AddReminderUseCase(
         recurrence: String,
     ): AppResult<ReminderDomain> {
         if (title.trim().length !in 1..160)
-            return AppResult.Failure("Give your reminder a title, up to 160 characters.")
+            return AppResult.Failure(
+                "reminders.message_give_your_reminder_a_title_up_to_160_characters",
+            )
         if (recurrence !in listOf("none", "daily", "weekly"))
-            return AppResult.Failure("Choose a repeat option.")
+            return AppResult.Failure("reminders.message_choose_a_repeat_option")
         val instant =
             try {
                 LocalDateTime.parse("${date}T${time}:00").toInstant(TimeZone.of(context.timeZone))
             } catch (_: IllegalArgumentException) {
-                return AppResult.Failure("Use a date like 2026-11-13 and a time like 18:30.")
+                return AppResult.Failure("reminders.message_use_a_date_like_2026_11_13_and_a")
             }
         val reminder = ReminderDomain(newId(), title.trim(), instant.toString(), recurrence, false)
         return when (val result = source.add(reminder)) {

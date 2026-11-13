@@ -15,7 +15,7 @@ actual object PushPlatform {
     actual suspend fun requestToken(): Pair<String, String> =
         withContext(Dispatchers.Main.immediate) {
             require(FirebaseApp.getApps(PlatformStorage.applicationContext).isNotEmpty()) {
-                "Notifications aren’t available in this build yet."
+                "settings.message_notifications_aren_t_available_in_this_build_yet"
             }
             val granted = suspendCancellableCoroutine { continuation ->
                 val requester = permissionRequester
@@ -23,7 +23,7 @@ actual object PushPlatform {
                 else requester { if (continuation.isActive) continuation.resume(it) }
             }
             require(granted) {
-                "Allow notifications in your phone’s settings to receive reminders."
+                "settings.message_allow_notifications_in_your_phone_s_settings_to_receive"
             }
             val token =
                 suspendCancellableCoroutine<String> { continuation ->
@@ -34,7 +34,7 @@ actual object PushPlatform {
                                 continuation.resumeWithException(
                                     task.exception
                                         ?: IllegalStateException(
-                                            "Couldn’t register notifications. Please try again.",
+                                            "settings.message_couldn_t_register_notifications_please_try_again",
                                         ),
                                 )
                         }

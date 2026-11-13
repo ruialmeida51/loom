@@ -1,15 +1,15 @@
 package com.eyther.lumbridge.features.shopping.domain.datasource
 
 import com.eyther.lumbridge.core.domain.AppResult
-import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
+import com.eyther.lumbridge.features.shopping.domain.model.*
 import kotlinx.coroutines.flow.Flow
 
 interface ShoppingDataSource {
-    fun observe(): Flow<List<ShoppingItemDomain>>
+    fun observe(): Flow<ShoppingSnapshotDomain>
 
-    suspend fun add(item: ShoppingItemDomain): AppResult<Unit>
+    suspend fun add(items: List<ShoppingItemDomain>): AppResult<List<ShoppingItemDomain>>
 
-    suspend fun toggle(id: String, checked: Boolean): AppResult<Unit>
+    suspend fun save(item: ShoppingItemDomain): AppResult<ShoppingItemDomain>
 
-    suspend fun remove(id: String): AppResult<Unit>
+    suspend fun saveList(list: ShoppingListDomain): AppResult<ShoppingListDomain>
 }

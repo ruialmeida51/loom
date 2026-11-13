@@ -13,7 +13,7 @@ class LoomApplication : Application() {
             .createNotificationChannel(
                 NotificationChannel(
                     "loom_household",
-                    "Your household",
+                    getString(R.string.household_notification_channel),
                     NotificationManager.IMPORTANCE_DEFAULT,
                 ),
             )

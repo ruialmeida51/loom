@@ -8,7 +8,7 @@ kotlin {
     jvm()
     sourceSets {
         jvmMain.dependencies {
-            implementation(project(":shared:entrypoint"))
+            implementation(projects.shared.entrypoint)
             implementation(compose.desktop.currentOs)
         }
     }

@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: python3 tools/audit_project.py
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -20,7 +21,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - run: sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :shared:features:expenses:jvmTest :shared:features:insights:jvmTest :shared:features:reminders:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
+      - run: ./gradlew :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest :shared:features:insights:jvmTest :shared:features:reminders:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
       - run: python3 tools/test_database.py
       - uses: denoland/setup-deno@v2
         with:

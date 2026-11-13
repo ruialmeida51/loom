@@ -31,7 +31,6 @@ class CommonSettingsDataSource(
     }
 
     override suspend fun notifications(enabled: Boolean) = safeApiCall {
-        require(!context.demo) { "Notifications are available in your own household." }
         val key = "device-${context.userId}"
         val deviceId = PlatformStorage.get(key) ?: newId().also { PlatformStorage.put(key, it) }
         if (enabled) {

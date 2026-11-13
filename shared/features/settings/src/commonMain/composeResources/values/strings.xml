@@ -1,0 +1,24 @@
+<resources>
+  <string name="message_choose_a_theme">Choose a theme.</string>
+  <string name="ui_just_the_way_you_like_it">JUST THE WAY YOU LIKE IT</string>
+  <string name="ui_your_little_corner">Your little corner.</string>
+  <string name="ui_appearance">Appearance</string>
+  <string name="ui_a_little_light_a_little_dark_or_follow_your">A little light, a little dark, or follow your device.</string>
+  <string name="ui_gentle_nudges">Gentle nudges</string>
+  <string name="ui_reminders_and_shared_expenses">Reminders and shared expenses</string>
+  <string name="ui_invite_someone_home">Invite someone home</string>
+  <string name="ui_one_time_invitation_expires_in_48_hours">One-time invitation · expires in 48 hours</string>
+  <string name="ui_switch_household">Switch household</string>
+  <string name="ui_sign_out">Sign out</string>
+  <string name="ui_loom_0_1_0_nlife_woven_together">Loom · 0.1.0\nLife, woven together.</string>
+  <string name="message_push_notifications_are_available_in_the_android_and_ios">Push notifications are available in the Android and iOS apps.</string>
+  <string name="message_notifications_aren_t_available_in_this_build_yet">Notifications aren’t available in this build yet.</string>
+  <string name="message_allow_notifications_in_your_phone_s_settings_to_receive">Allow notifications in your phone’s settings to receive reminders.</string>
+  <string name="message_couldn_t_register_notifications_please_try_again">Couldn’t register notifications. Please try again.</string>
+  <string name="token_system">System</string>
+  <string name="token_light">Light</string>
+  <string name="token_dark">Dark</string>
+  <string name="token_owner">Owner</string>
+  <string name="token_member">Member</string>
+  <string name="ui_household_details">%1$s · %2$s</string>
+</resources>

@@ -16,7 +16,7 @@ suspend fun <T> safeCall(action: suspend () -> T): AppResult<T> =
     } catch (error: Exception) {
         AppResult.Failure(
             error.message?.substringBefore("\n")?.take(220)
-                ?: "Something went wrong. Please try again.",
+                ?: "core.message_something_went_wrong_please_try_again",
         )
     }
 

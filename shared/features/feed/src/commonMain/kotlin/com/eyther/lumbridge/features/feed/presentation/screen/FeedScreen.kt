@@ -11,8 +11,11 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
+import com.eyther.lumbridge.features.feed.generated.resources.*
+import com.eyther.lumbridge.features.feed.presentation.localization.localizedMessage
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
 import kotlinx.coroutines.flow.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun FeedScreen(vm: FeedScreenViewModelContract, onOpen: (String) -> Unit) {
@@ -57,12 +60,12 @@ private fun InnerFeedScreen(
     ) {
         item {
             PageHeading(
-                "A MOMENT FOR YOU",
-                "The reading corner",
-                "Your favourite corners of the internet, in one quiet place.",
+                stringResource(Res.string.ui_a_moment_for_you),
+                stringResource(Res.string.ui_the_reading_corner),
+                stringResource(Res.string.ui_your_favourite_corners_of_the_internet_in_one_quiet),
             )
         }
-        item { ErrorNotice(error, onDismiss) }
+        item { ErrorNotice(localizedMessage(error), onDismiss) }
         item {
             Row(
                 Modifier.fillMaxWidth(),
@@ -72,17 +75,19 @@ private fun InnerFeedScreen(
                 FilterChip(
                     unreadOnly,
                     { onUnreadOnly(!unreadOnly) },
-                    label = { Text("Unread only") },
+                    label = { Text(stringResource(Res.string.ui_unread_only)) },
                 )
-                TextButton(onClick = { onShowFollow(true) }) { Text("+ Follow a feed") }
+                TextButton(onClick = { onShowFollow(true) }) {
+                    Text(stringResource(Res.string.ui_follow_a_feed))
+                }
             }
         }
         val articles = items.filter { !unreadOnly || !it.read }
         if (articles.isEmpty())
             item {
                 EmptyNotice(
-                    "A fresh page.",
-                    "Follow an RSS or Atom feed to bring your favourite stories here.",
+                    stringResource(Res.string.ui_a_fresh_page),
+                    stringResource(Res.string.ui_follow_an_rss_or_atom_feed_to_bring_your),
                 )
             }
         items(articles, key = { it.id }) { article ->
@@ -104,7 +109,10 @@ private fun InnerFeedScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     TextButton(onClick = { onMarkRead(article, !article.read) }) {
-                        Text(if (article.read) "Mark unread" else "Mark as read")
+                        Text(
+                            if (article.read) stringResource(Res.string.ui_mark_unread)
+                            else stringResource(Res.string.ui_mark_as_read),
+                        )
                     }
                     TextButton(
                         onClick = {
@@ -112,7 +120,7 @@ private fun InnerFeedScreen(
                             onOpen(article.url)
                         },
                     ) {
-                        Text("Read story")
+                        Text(stringResource(Res.string.ui_read_story))
                         Spacer(Modifier.width(6.dp))
                         LoomIcon(
                             Glyph.ARROW,
@@ -127,17 +135,26 @@ private fun InnerFeedScreen(
     if (showFollow)
         AlertDialog(
             onDismissRequest = { if (!busy) onShowFollow(false) },
-            title = { Text("Follow a feed") },
+            title = { Text(stringResource(Res.string.ui_follow_a_feed_a533eb8)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Paste an RSS or Atom feed URL. Articles will refresh automatically.")
-                    OutlinedTextField(url, onUrl, label = { Text("https://…") }, singleLine = true)
-                    ErrorNotice(error, onDismiss)
+                    Text(stringResource(Res.string.ui_paste_an_rss_or_atom_feed_url_articles_will))
+                    OutlinedTextField(
+                        url,
+                        onUrl,
+                        label = { Text(stringResource(Res.string.ui_feed_url_hint)) },
+                        singleLine = true,
+                    )
+                    ErrorNotice(localizedMessage(error), onDismiss)
                 }
             },
-            confirmButton = { LoomButton("Follow feed", onFollow, loading = busy) },
+            confirmButton = {
+                LoomButton(stringResource(Res.string.ui_follow_feed), onFollow, loading = busy)
+            },
             dismissButton = {
-                TextButton(onClick = { onShowFollow(false) }, enabled = !busy) { Text("Cancel") }
+                TextButton(onClick = { onShowFollow(false) }, enabled = !busy) {
+                    Text(stringResource(Res.string.ui_cancel))
+                }
             },
         )
 }

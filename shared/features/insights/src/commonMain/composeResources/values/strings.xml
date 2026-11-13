@@ -1,0 +1,26 @@
+<resources>
+  <string name="message_month_currency_household_total_minor_units_you_paid_minor">Month,Currency,Household total (minor units),You paid (minor units),Your share (minor units),Opening balance (minor units),Closing balance (minor units)</string>
+  <string name="message_date_description_category_amount_minor_units_your_share_minor">Date,Description,Category,Amount (minor units),Your share (minor units)</string>
+  <string name="message_statement_saved_later_changes_create_a_new_revision">Statement saved. Later changes create a new revision.</string>
+  <string name="ui_the_bigger_picture">THE BIGGER PICTURE</string>
+  <string name="ui_a_little_perspective">A little perspective.</string>
+  <string name="ui_see_where_it_went_and_where_things_stand">See where it went, and where things stand.</string>
+  <string name="ui_previous">Previous</string>
+  <string name="ui_next">Next</string>
+  <string name="ui_household_spending">HOUSEHOLD SPENDING</string>
+  <string name="ui_1_s_shared_expenses_this_month">%1$s shared expenses this month</string>
+  <string name="ui_your_month">Your month</string>
+  <string name="ui_you_paid">You paid</string>
+  <string name="ui_your_share">Your share</string>
+  <string name="ui_opening_balance">Opening balance</string>
+  <string name="ui_closing_balance">Closing balance</string>
+  <string name="ui_a_positive_balance_means_you_re_owed_money_repayments">A positive balance means you’re owed money. Repayments affect balances, not spending.</string>
+  <string name="ui_where_it_went">Where it went</string>
+  <string name="ui_export_statement_as_csv">Export statement as CSV</string>
+  <string name="ui_saving">Saving…</string>
+  <string name="ui_save_statement_snapshot">Save statement snapshot</string>
+  <plurals name="monthly_expense_count">
+    <item quantity="one">%1$d shared expense this month</item>
+    <item quantity="other">%1$d shared expenses this month</item>
+  </plurals>
+</resources>

@@ -1,0 +1,23 @@
+<resources>
+  <string name="ui_a_little_more_together">A LITTLE MORE TOGETHER</string>
+  <string name="ui_home_in_harmony">Home, in harmony.</string>
+  <string name="ui_less_to_keep_in_your_head_more_space_for">Less to keep in your head. More space for your people.</string>
+  <string name="ui_1_s_items">%1$s items</string>
+  <string name="ui_on_the_shopping_list">On the shopping list</string>
+  <string name="ui_you_re_owed">You’re owed</string>
+  <string name="ui_you_owe">You owe</string>
+  <string name="ui_a_gentle_reminder">A gentle reminder</string>
+  <string name="ui_see_all">See all</string>
+  <string name="ui_a_clear_calendar">A clear calendar.</string>
+  <string name="ui_enjoy_a_little_breathing_room">Enjoy a little breathing room.</string>
+  <string name="ui_pick_up_a_few_things">Pick up a few things</string>
+  <string name="ui_open_list">Open list</string>
+  <string name="ui_a_moment_for_yourself">A moment for yourself</string>
+  <string name="ui_fresh_reads_from_the_places_you_love_put_the">Fresh reads from the places you love. Put the kettle on.</string>
+  <string name="ui_visit_the_reading_corner">Visit the reading corner</string>
+  <string name="ui_woven_together_one_little_thing_at_a_time">Woven together, one little thing at a time.</string>
+  <plurals name="shopping_item_count">
+    <item quantity="one">%1$d item</item>
+    <item quantity="other">%1$d items</item>
+  </plurals>
+</resources>

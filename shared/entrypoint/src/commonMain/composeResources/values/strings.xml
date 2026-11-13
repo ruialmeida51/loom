@@ -1,0 +1,17 @@
+<resources>
+    <string name="ui_loom">Loom</string>
+    <string name="ui_back">‹ Back</string>
+    <string name="ui_our_household">OUR HOUSEHOLD</string>
+    <string name="ui_feed">Feed</string>
+    <string name="ui_shopping">Shopping</string>
+    <string name="ui_money">Money</string>
+    <string name="ui_loom_preview_sample_data">Loom preview · Sample data</string>
+    <string name="ui_open_preview">Open preview</string>
+    <string name="ui_choose_a_preview_household">Choose a preview household</string>
+    <string name="ui_done">Done</string>
+    <string name="token_home">Home</string>
+    <string name="token_feed">Feed</string>
+    <string name="token_shopping">Shopping</string>
+    <string name="token_money">Money</string>
+    <string name="ui_monthly_statement">Monthly statement</string>
+</resources>

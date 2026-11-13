@@ -7,7 +7,7 @@ class RegisterUseCase(private val source: AuthenticationDataSource) {
     suspend operator fun invoke(email: String, password: String): AppResult<Unit> {
         if (!email.contains('@') || password.length < 12)
             return AppResult.Failure(
-                "Use a valid email and a password with at least 12 characters.",
+                "authentication.message_use_a_valid_email_and_a_password_with_at",
             )
         return source.register(email.trim(), password)
     }

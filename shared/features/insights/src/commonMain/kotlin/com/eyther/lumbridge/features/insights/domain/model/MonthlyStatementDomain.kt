@@ -14,7 +14,13 @@ data class MonthlyStatementDomain(
     val categories: Map<String, Long>,
     val expenses: List<ExpenseDomain>,
 ) {
-    fun csv(currency: String, userId: String): String {
+    fun csv(
+        currency: String,
+        userId: String,
+        summaryHeader: String =
+            "month,currency,household_total_minor,you_paid_minor,your_share_minor,opening_balance_minor,closing_balance_minor",
+        expenseHeader: String = "date,description,category,amount_minor,your_share_minor",
+    ): String {
         fun quote(value: String): String {
             val safe =
                 if (value.firstOrNull() in listOf('=', '+', '-', '@', '\t', '\r')) "'" + value
@@ -23,12 +29,12 @@ data class MonthlyStatementDomain(
         }
         val lines =
             mutableListOf(
-                "Month,Currency,Household total (minor units),You paid (minor units),Your share (minor units),Opening balance (minor units),Closing balance (minor units)",
+                summaryHeader,
             )
         lines +=
             "$month,$currency,$totalMinor,$paidMinor,$shareMinor,$openingBalanceMinor,$closingBalanceMinor"
         lines += ""
-        lines += "Date,Description,Category,Amount (minor units),Your share (minor units)"
+        lines += expenseHeader
         expenses.forEach { expense ->
             lines +=
                 "${expense.occurredOn},${quote(expense.title)},${quote(expense.category)},${expense.amountMinor},${expense.shares[userId]?:0}"

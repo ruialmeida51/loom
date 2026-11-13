@@ -3,7 +3,6 @@ package com.eyther.lumbridge.features.household.data.network.datasource
 import com.eyther.lumbridge.core.data.SupabaseAccess
 import com.eyther.lumbridge.core.data.safeApiCall
 import com.eyther.lumbridge.core.domain.AppResult
-import com.eyther.lumbridge.features.household.data.demo.DemoHousehold
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
@@ -60,32 +59,19 @@ class CommonHouseholdDataSource(private val access: SupabaseAccess) : HouseholdD
         Unit
     }
 
-    override suspend fun members(householdId: String): AppResult<List<MemberDomain>> =
-        if (householdId == DemoHousehold.ID)
-            AppResult.Success(
-                listOf(
-                    MemberDomain(DemoHousehold.USER, "You", "owner"),
-                    MemberDomain(DemoHousehold.ALEX, "Alex", "member"),
-                    MemberDomain(DemoHousehold.SAM, "Sam", "member"),
-                ),
+    override suspend fun members(householdId: String): AppResult<List<MemberDomain>> = safeApiCall {
+        access
+            .requireClient()
+            .postgrest
+            .rpc(
+                "household_members_with_names",
+                buildJsonObject { put("p_household_id", householdId) },
             )
-        else
-            safeApiCall {
-                access
-                    .requireClient()
-                    .postgrest
-                    .rpc(
-                        "household_members_with_names",
-                        buildJsonObject { put("p_household_id", householdId) },
-                    )
-                    .decodeList<MemberDto>()
-                    .map { MemberDomain(it.userId, it.name, it.role) }
-            }
+            .decodeList<MemberDto>()
+            .map { MemberDomain(it.userId, it.name, it.role) }
+    }
 
     override suspend fun invite(householdId: String) = safeApiCall {
-        require(householdId != DemoHousehold.ID) {
-            "Invitations are available in your own household."
-        }
         access
             .requireClient()
             .postgrest

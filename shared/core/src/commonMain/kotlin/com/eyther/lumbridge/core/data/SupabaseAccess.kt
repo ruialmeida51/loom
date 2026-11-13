@@ -37,10 +37,10 @@ class SupabaseAccess(sessionStorage: SessionManager) {
             }
 
     fun requireClient(): SupabaseClient =
-        checkNotNull(client) { "Sign-in is not available in this preview." }
+        checkNotNull(client) { "core.message_sign_in_is_not_available_in_this_preview" }
 
     fun userId(): String =
-        requireClient().auth.currentUserOrNull()?.id ?: error("Please sign in again.")
+        requireClient().auth.currentUserOrNull()?.id ?: error("core.message_please_sign_in_again")
 
     /**
      * RLS authorizes rows. Realtime invalidates this query; periodic reload also repairs missed

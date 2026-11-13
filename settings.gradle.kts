@@ -13,6 +13,8 @@ dependencyResolutionManagement {
     }
 }
 
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 rootProject.name = "Loom"
 
 include(":androidApp", ":desktopApp")

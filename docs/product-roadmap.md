@@ -15,11 +15,11 @@ This document records the agreed direction. Planned capabilities below are not y
 
 ## Existing foundation
 
-The app already supports multiple households, creating and joining households, invitations, household switching, one shared shopping list per household, reminders with daily/weekly repeats, expense splitting and repayments, monthly recurring expense entries, monthly statements/statistics/CSV, RSS subscriptions, and light/dark/system themes.
+The app already supports multiple households, creating and joining households, invitations, household switching, multiple named shared shopping lists with editing, undo, favorites, and reuse, reminders with daily/weekly repeats, expense splitting and repayments, monthly recurring expense schedules with pause/resume/cancel controls, monthly statements/statistics/CSV, RSS subscriptions, and light/dark/system themes.
 
 The live app currently requires a connection. Sample-household changes are held in memory. Real push delivery still requires Firebase/APNs configuration as described in [backend setup](backend.md).
 
-## Next delivery: finish everyday shopping workflows
+## Delivered: everyday shopping workflows
 
 1. Edit item names, quantities, and categories; undo accidental removals and changes.
 2. Add multiple named shopping lists within each household. New households start with a Groceries list; members can add lists such as Pharmacy, DIY, or Weekend barbecue.
@@ -30,6 +30,8 @@ The live app currently requires a connection. Sample-household changes are held 
 
 The hierarchy is household → shopping list → item. Store tags or filters can follow when useful; a new store does not require a new household. Named lists are shared with the household initially.
 
+Monthly recurring-expense management was delivered alongside shopping: payment dates determine the monthly anchor, schedules can be paused/resumed/cancelled, and existing ledger entries remain intact. Production/demo separation, resource-backed UI text, named Gradle references, and an automated ownership audit are also in place.
+
 ## Following delivery: complete money and bill management
 
 - Correct or void expenses and repayments with a visible change history. Keep balances consistent and preserve already-issued statement revisions.
@@ -39,7 +41,7 @@ The hierarchy is household → shopping list → item. Store tags or filters can
 - Show expected monthly spending and each member's contribution alongside actual recorded expenses.
 - Connect a completed shopping trip to an expense: enter the receipt total, confirm the payer and participants, then record the split and include it in reporting.
 
-These capabilities extend the current monthly recurring expense entries; they do not imply automatic bank payments.
+These capabilities extend the current monthly recurring expense schedules with pause/resume/cancel controls; they do not imply automatic bank payments.
 
 ## Following delivery: coordinate shared responsibilities
 

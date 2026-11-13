@@ -20,8 +20,8 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":shared:core"))
-            api(project(":shared:features:household"))
+            api(projects.shared.core)
+            api(projects.shared.features.household)
             api(libs.compose.runtime)
             api(libs.compose.foundation)
             api(libs.compose.ui)
@@ -42,3 +42,5 @@ kotlin {
         }
     }
 }
+
+compose.resources { packageOfResClass = "com.eyther.lumbridge.features.feed.generated.resources" }

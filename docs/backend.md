@@ -48,6 +48,12 @@ The default allowlist includes BBC, The Guardian, Hacker News, Ars Technica, Fee
 ## Operations
 
 - Monitor `cron.job_run_details`, Edge Function logs, and notification delivery state for failures.
-- Authenticated database and HTTP operations require a connection; the sample household is session-only.
+- Authenticated database and HTTP operations require a connection; the dedicated preview holds its sample households in memory.
 - Supabase Auth’s leaked-password protection is currently a project setting to enable in the [password security configuration](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). The app requires at least 12 characters at registration.
 - Security advisor INFO messages about archived prototype tables do not describe the active app schema. New unused-index notices are expected before the app has traffic.
+
+## Shopping and recurring schedules
+
+`shopping_lists_and_recurring_controls` creates per-household lists, backfills existing items into Groceries, and creates a default list for new households. Shopping writes use membership-checked RPCs and server-owned versions so stale edits/undo cannot overwrite an intervening change. Batch insertion is transactional and retry-safe. Archived lists keep their items; at least one list must remain active.
+
+Recurring schedules are readable by household members and manageable by their payer, creator, or the household owner. Pause/cancel stop future entries, resuming schedules the next future monthly occurrence, and cancellation retains expense history. Recorded-payment dates use the household timezone and cannot be in the future. Schedule changes increment a version only when values change, preserving compatibility with the minute worker.

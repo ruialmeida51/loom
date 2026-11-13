@@ -9,9 +9,11 @@ import kotlinx.datetime.TimeZone
 class CreateHouseholdUseCase(private val source: HouseholdDataSource) {
     suspend operator fun invoke(name: String, currency: String): AppResult<HouseholdDomain> {
         if (name.trim().length !in 2..60)
-            return AppResult.Failure("Give your household a name between 2 and 60 characters.")
+            return AppResult.Failure(
+                "household.message_give_your_household_a_name_between_2_and_60",
+            )
         if (currency !in HouseholdCurrencyDomain.supportedCodes)
-            return AppResult.Failure("Choose a supported currency.")
+            return AppResult.Failure("household.message_choose_a_supported_currency")
         return source.create(name.trim(), currency, TimeZone.currentSystemDefault().id)
     }
 }

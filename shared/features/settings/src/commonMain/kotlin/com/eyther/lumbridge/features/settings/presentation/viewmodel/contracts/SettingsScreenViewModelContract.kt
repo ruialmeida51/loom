@@ -1,8 +1,5 @@
 package com.eyther.lumbridge.features.settings.presentation.viewmodel.contracts
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.settings.domain.model.SettingsDomain

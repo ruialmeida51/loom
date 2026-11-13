@@ -13,6 +13,7 @@ data class ExpensesState(
     val balances: Map<String, Long> = emptyMap(),
     val title: String = "",
     val amount: String = "",
+    val occurredOn: String = "",
     val paidBy: String = "",
     val category: String = "Groceries",
     val selected: Set<String> = emptySet(),
@@ -32,6 +33,8 @@ abstract class ExpensesScreenViewModelContract : LoomViewModel() {
     abstract val state: StateFlow<ExpensesState>
 
     abstract fun title(value: String)
+
+    abstract fun occurredOn(value: String)
 
     abstract fun amount(value: String)
 

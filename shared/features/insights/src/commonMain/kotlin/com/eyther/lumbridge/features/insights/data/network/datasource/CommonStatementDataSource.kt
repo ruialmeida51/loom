@@ -12,9 +12,6 @@ class CommonStatementDataSource(
     private val context: HouseholdContextDomain,
 ) : StatementDataSource {
     override suspend fun save(month: String) = safeApiCall {
-        require(!context.demo) {
-            "You can save monthly statements in your own household. The sample statement can be exported."
-        }
         access
             .requireClient()
             .postgrest

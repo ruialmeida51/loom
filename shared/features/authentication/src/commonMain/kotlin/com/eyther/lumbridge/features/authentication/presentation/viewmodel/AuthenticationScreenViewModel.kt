@@ -1,15 +1,11 @@
 package com.eyther.lumbridge.features.authentication.presentation.viewmodel
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.coroutines.stateflow.*
 import com.eyther.lumbridge.core.domain.AppResult
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.features.authentication.domain.usecase.RegisterUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInUseCase
-import com.eyther.lumbridge.features.authentication.domain.usecase.StartDemoUseCase
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.AuthenticationScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.AuthenticationState
 import kotlinx.coroutines.flow.*
@@ -17,7 +13,6 @@ import kotlinx.coroutines.flow.*
 class AuthenticationScreenViewModel(
     private val signIn: SignInUseCase,
     private val register: RegisterUseCase,
-    private val startDemo: StartDemoUseCase,
 ) : AuthenticationScreenViewModelContract() {
     private data class InnerInputState(
         val email: String = "",
@@ -52,8 +47,6 @@ class AuthenticationScreenViewModel(
         mutableState.update { it.copy(error = null) }
     }
 
-    override fun demo() = startDemo()
-
     override fun submit() {
         if (mutableState.value.busy) return
         val input = inputState.value
@@ -72,7 +65,7 @@ class AuthenticationScreenViewModel(
                             password = "",
                             message =
                                 if (input.registering)
-                                    "Check your email to confirm your account, then sign in."
+                                    "authentication.message_check_your_email_to_confirm_your_account_then_sign"
                                 else null,
                         )
                 }

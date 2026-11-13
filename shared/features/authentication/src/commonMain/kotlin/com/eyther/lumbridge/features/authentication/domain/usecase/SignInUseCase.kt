@@ -6,7 +6,7 @@ import com.eyther.lumbridge.features.authentication.domain.datasource.Authentica
 class SignInUseCase(private val source: AuthenticationDataSource) {
     suspend operator fun invoke(email: String, password: String): AppResult<Unit> {
         if (!email.contains('@') || password.isBlank())
-            return AppResult.Failure("Enter your email and password.")
+            return AppResult.Failure("authentication.message_enter_your_email_and_password")
         return source.signIn(email.trim(), password)
     }
 }

@@ -1,8 +1,5 @@
 package com.eyther.lumbridge.features.insights.presentation.viewmodel
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.coroutines.stateflow.*
 import com.eyther.lumbridge.core.domain.AppResult
@@ -68,7 +65,8 @@ class InsightsScreenViewModel(
                     mutableState.update {
                         it.copy(
                             busy = false,
-                            message = "Statement saved. Later changes create a new revision.",
+                            message =
+                                "insights.message_statement_saved_later_changes_create_a_new_revision",
                         )
                     }
                 is AppResult.Failure ->

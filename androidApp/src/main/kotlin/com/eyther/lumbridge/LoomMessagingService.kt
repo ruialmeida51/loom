@@ -42,9 +42,11 @@ class LoomMessagingService : FirebaseMessagingService() {
         val notification =
             NotificationCompat.Builder(this, "loom_household")
                 .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(message.notification?.title ?: "A little nudge from Loom")
+                .setContentTitle(
+                    message.notification?.title ?: getString(R.string.notification_fallback_title),
+                )
                 .setContentText(
-                    message.notification?.body ?: "There’s something new in your household.",
+                    message.notification?.body ?: getString(R.string.notification_fallback_body),
                 )
                 .setContentIntent(pending)
                 .setAutoCancel(true)

@@ -9,21 +9,27 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
+import com.eyther.lumbridge.features.expenses.generated.resources.*
+import com.eyther.lumbridge.features.expenses.presentation.localization.localizedMessage
+import com.eyther.lumbridge.features.expenses.presentation.localization.localizedToken
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ExpensesScreen(
     vm: ExpensesScreenViewModelContract,
     context: HouseholdContextDomain,
     onInsights: () -> Unit,
+    onRecurringExpenses: () -> Unit,
 ) {
     val state by vm.state.platformCollectAsStateOnStart()
     InnerExpensesScreen(
@@ -33,6 +39,7 @@ fun ExpensesScreen(
         balances = state.balances,
         title = state.title,
         amount = state.amount,
+        occurredOn = state.occurredOn,
         paidBy = state.paidBy,
         selectedCategory = state.category,
         selected = state.selected,
@@ -48,8 +55,10 @@ fun ExpensesScreen(
         error = state.error,
         context = context,
         onInsights = onInsights,
+        onRecurringExpenses = onRecurringExpenses,
         onTitle = vm::title,
         onAmount = vm::amount,
+        onOccurredOn = vm::occurredOn,
         onPayer = vm::payer,
         onCategory = vm::category,
         onSelected = vm::selected,
@@ -75,6 +84,7 @@ private fun InnerExpensesScreen(
     balances: Map<String, Long>,
     title: String,
     amount: String,
+    occurredOn: String,
     paidBy: String,
     selectedCategory: String,
     selected: Set<String>,
@@ -90,8 +100,10 @@ private fun InnerExpensesScreen(
     error: String?,
     context: HouseholdContextDomain,
     onInsights: () -> Unit,
+    onRecurringExpenses: () -> Unit,
     onTitle: (String) -> Unit,
     onAmount: (String) -> Unit,
+    onOccurredOn: (String) -> Unit,
     onPayer: (String) -> Unit,
     onCategory: (String) -> Unit,
     onSelected: (String) -> Unit,
@@ -107,7 +119,8 @@ private fun InnerExpensesScreen(
     onSettle: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    fun name(id: String) = members.firstOrNull { it.id == id }?.name ?: "Former member"
+    val formerMemberLabel = stringResource(Res.string.ui_former_member)
+    fun name(id: String) = members.firstOrNull { it.id == id }?.name ?: formerMemberLabel
     val balance = balances[context.userId] ?: 0L
     LazyColumn(
         Modifier.fillMaxSize().padding(horizontal = 24.dp),
@@ -115,17 +128,25 @@ private fun InnerExpensesScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
+            TextButton(onClick = onRecurringExpenses) {
+                Text(stringResource(Res.string.ui_recurring_expenses))
+            }
+        }
+        item {
             PageHeading(
-                "FAIR & SQUARE",
-                "Money, untangled.",
-                "Shared costs. Clear balances. One less awkward conversation.",
+                stringResource(Res.string.ui_fair_square),
+                stringResource(Res.string.ui_money_untangled),
+                stringResource(
+                    Res.string.ui_shared_costs_clear_balances_one_less_awkward_conversation,
+                ),
             )
         }
-        item { ErrorNotice(error, onDismiss) }
+        item { ErrorNotice(localizedMessage(error), onDismiss) }
         item {
             LoomCard {
                 Text(
-                    if (balance >= 0) "YOU’RE OWED" else "YOU OWE",
+                    if (balance >= 0) stringResource(Res.string.ui_you_re_owed)
+                    else stringResource(Res.string.ui_you_owe),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.secondary,
                 )
@@ -135,22 +156,27 @@ private fun InnerExpensesScreen(
                     style = MaterialTheme.typography.displaySmall,
                 )
                 Text(
-                    if (balance == 0L) "All square. That’s a nice feeling."
-                    else "Across your household",
+                    if (balance == 0L)
+                        stringResource(Res.string.ui_all_square_that_s_a_nice_feeling)
+                    else stringResource(Res.string.ui_across_your_household),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    LoomButton("Add expense", { onShowAdd(true) }, Modifier.weight(1f))
+                    LoomButton(
+                        stringResource(Res.string.ui_add_expense),
+                        { onShowAdd(true) },
+                        Modifier.weight(1f),
+                    )
                     OutlinedButton(
                         onClick = { onShowSettle(true) },
                         modifier = Modifier.height(50.dp),
                     ) {
-                        Text("Settle up")
+                        Text(stringResource(Res.string.ui_settle_up))
                     }
                 }
             }
         }
-        item { SectionTitle("The household") }
+        item { SectionTitle(stringResource(Res.string.ui_the_household)) }
         items(members, key = { it.id }) { member ->
             val memberBalance = balances[member.id] ?: 0L
             Row(
@@ -161,10 +187,16 @@ private fun InnerExpensesScreen(
                 Text(
                     when {
                         memberBalance > 0 ->
-                            "Owed ${MoneyDomain(memberBalance,context.currency).formatted()}"
+                            stringResource(
+                                Res.string.ui_owed_1_s,
+                                MoneyDomain(memberBalance, context.currency).formatted(),
+                            )
                         memberBalance < 0 ->
-                            "Owes ${MoneyDomain(-memberBalance,context.currency).formatted()}"
-                        else -> "All square"
+                            stringResource(
+                                Res.string.ui_owes_1_s,
+                                MoneyDomain(-memberBalance, context.currency).formatted(),
+                            )
+                        else -> stringResource(Res.string.ui_all_square)
                     },
                     color =
                         if (memberBalance >= 0) MaterialTheme.colorScheme.secondary
@@ -172,12 +204,18 @@ private fun InnerExpensesScreen(
                 )
             }
         }
-        item { SectionTitle("Recent expenses", "Insights", onInsights) }
+        item {
+            SectionTitle(
+                stringResource(Res.string.ui_recent_expenses),
+                stringResource(Res.string.ui_insights),
+                onInsights,
+            )
+        }
         if (expenses.isEmpty())
             item {
                 EmptyNotice(
-                    "Start with the next shared cost.",
-                    "Add what you paid, then choose who to split it with.",
+                    stringResource(Res.string.ui_start_with_the_next_shared_cost),
+                    stringResource(Res.string.ui_add_what_you_paid_then_choose_who_to_split),
                 )
             }
         items(expenses.sortedByDescending { it.occurredOn }, key = { it.id }) { expense ->
@@ -186,13 +224,17 @@ private fun InnerExpensesScreen(
                     Column(Modifier.weight(1f)) {
                         Text(expense.title, style = MaterialTheme.typography.titleMedium)
                         Text(
-                            "${name(expense.paidBy)} paid · ${expense.category}",
+                            stringResource(
+                                Res.string.ui_1_s_paid_2_s,
+                                name(expense.paidBy),
+                                expense.category,
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         if (expense.recurring)
                             Text(
-                                "Monthly bill",
+                                stringResource(Res.string.ui_monthly_bill),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.secondary,
                             )
@@ -203,7 +245,11 @@ private fun InnerExpensesScreen(
                             style = MaterialTheme.typography.titleMedium,
                         )
                         Text(
-                            "Your share ${MoneyDomain(expense.shares[context.userId]?:0,context.currency).formatted()}",
+                            stringResource(
+                                Res.string.ui_your_share_1_s,
+                                MoneyDomain(expense.shares[context.userId] ?: 0, context.currency)
+                                    .formatted(),
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -211,10 +257,16 @@ private fun InnerExpensesScreen(
                 }
             }
         }
-        if (settlements.isNotEmpty()) item { SectionTitle("Repayments") }
+        if (settlements.isNotEmpty())
+            item { SectionTitle(stringResource(Res.string.ui_repayments)) }
         items(settlements, key = { it.id }) { settlement ->
             Text(
-                "${name(settlement.from)} paid ${name(settlement.to)} ${MoneyDomain(settlement.amountMinor,context.currency).formatted()}",
+                stringResource(
+                    Res.string.ui_1_s_paid_2_s_3_s,
+                    name(settlement.from),
+                    name(settlement.to),
+                    MoneyDomain(settlement.amountMinor, context.currency).formatted(),
+                ),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
@@ -222,7 +274,7 @@ private fun InnerExpensesScreen(
     if (showAdd)
         AlertDialog(
             onDismissRequest = { if (!busy) onShowAdd(false) },
-            title = { Text("Add a shared expense") },
+            title = { Text(stringResource(Res.string.ui_add_a_shared_expense)) },
             text = {
                 Column(
                     Modifier.verticalScroll(rememberScrollState()),
@@ -231,29 +283,43 @@ private fun InnerExpensesScreen(
                     OutlinedTextField(
                         title,
                         onTitle,
-                        label = { Text("What was it for?") },
+                        label = { Text(stringResource(Res.string.ui_what_was_it_for)) },
                         singleLine = true,
                     )
                     OutlinedTextField(
                         amount,
                         onAmount,
-                        label = { Text("Amount · ${context.currency}") },
+                        label = {
+                            Text(stringResource(Res.string.ui_amount_1_s, context.currency))
+                        },
                         singleLine = true,
                     )
-                    Text("Who paid?", style = MaterialTheme.typography.labelLarge)
+                    OutlinedTextField(
+                        occurredOn,
+                        onOccurredOn,
+                        label = { Text(stringResource(Res.string.ui_payment_date)) },
+                        singleLine = true,
+                    )
+                    Text(
+                        stringResource(Res.string.ui_who_paid),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                     members.forEach { member ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(paidBy == member.id, { onPayer(member.id) })
                             Text(member.name)
                         }
                     }
-                    Text("Split with", style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        stringResource(Res.string.ui_split_with),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         listOf("Equal", "Amounts", "Percent").forEach { mode ->
                             FilterChip(
                                 splitMode == mode,
                                 { onSplitMode(mode) },
-                                label = { Text(mode) },
+                                label = { Text(localizedToken(mode)) },
                             )
                         }
                     }
@@ -273,43 +339,65 @@ private fun InnerExpensesScreen(
                                 )
                         }
                     }
-                    Text("Category", style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        stringResource(Res.string.ui_category),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                     listOf("Groceries", "Bills", "Food & drink", "Home", "Other").forEach { category
                         ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(selectedCategory == category, { onCategory(category) })
-                            Text(category)
+                            Text(localizedToken(category))
                         }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(recurring, onRecurring)
-                        Text("Repeat this bill monthly")
+                        Checkbox(
+                            recurring,
+                            onRecurring,
+                            modifier = Modifier.testTag("expense_recurring"),
+                        )
+                        Text(stringResource(Res.string.ui_repeat_this_bill_monthly))
                     }
-                    ErrorNotice(error, onDismiss)
+                    if (recurring)
+                        Text(
+                            stringResource(Res.string.ui_repeat_explanation),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    ErrorNotice(localizedMessage(error), onDismiss)
                 }
             },
-            confirmButton = { LoomButton("Save expense", onAdd, loading = busy) },
+            confirmButton = {
+                LoomButton(stringResource(Res.string.ui_save_expense), onAdd, loading = busy)
+            },
             dismissButton = {
-                TextButton(onClick = { onShowAdd(false) }, enabled = !busy) { Text("Cancel") }
+                TextButton(onClick = { onShowAdd(false) }, enabled = !busy) {
+                    Text(stringResource(Res.string.ui_cancel))
+                }
             },
         )
     if (showSettle)
         AlertDialog(
             onDismissRequest = { if (!busy) onShowSettle(false) },
-            title = { Text("Record a repayment") },
+            title = { Text(stringResource(Res.string.ui_record_a_repayment)) },
             text = {
                 Column(
                     Modifier.verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Text("Money sent by", style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        stringResource(Res.string.ui_money_sent_by),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                     members.forEach { member ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(from == member.id, { onFrom(member.id) })
                             Text(member.name)
                         }
                     }
-                    Text("Received by", style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        stringResource(Res.string.ui_received_by),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                     members.forEach { member ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(to == member.id, { onTo(member.id) })
@@ -319,19 +407,25 @@ private fun InnerExpensesScreen(
                     OutlinedTextField(
                         settleAmount,
                         onSettleAmount,
-                        label = { Text("Amount · ${context.currency}") },
+                        label = {
+                            Text(stringResource(Res.string.ui_amount_1_s, context.currency))
+                        },
                         singleLine = true,
                     )
                     Text(
-                        "This records a payment you’ve already made or received.",
+                        stringResource(Res.string.ui_this_records_a_payment_you_ve_already_made_or),
                         style = MaterialTheme.typography.bodySmall,
                     )
-                    ErrorNotice(error, onDismiss)
+                    ErrorNotice(localizedMessage(error), onDismiss)
                 }
             },
-            confirmButton = { LoomButton("Record repayment", onSettle, loading = busy) },
+            confirmButton = {
+                LoomButton(stringResource(Res.string.ui_record_repayment), onSettle, loading = busy)
+            },
             dismissButton = {
-                TextButton(onClick = { onShowSettle(false) }, enabled = !busy) { Text("Cancel") }
+                TextButton(onClick = { onShowSettle(false) }, enabled = !busy) {
+                    Text(stringResource(Res.string.ui_cancel))
+                }
             },
         )
 }

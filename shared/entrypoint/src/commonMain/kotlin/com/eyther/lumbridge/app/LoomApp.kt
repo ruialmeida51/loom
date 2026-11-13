@@ -5,13 +5,13 @@ import androidx.compose.runtime.*
 import com.eyther.lumbridge.app.di.applicationModule
 import com.eyther.lumbridge.app.navigation.LauncherHost
 import com.eyther.lumbridge.core.presentation.*
+import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import org.koin.compose.KoinApplication
 
 @Composable
 fun LoomApp() {
     KoinApplication(application = { modules(applicationModule) }) {
-        val themeName by
-            com.eyther.lumbridge.features.settings.data.local.ThemePreferences.mode.collectAsState()
+        val themeName by ThemePreferences.mode.collectAsState()
         val theme = ThemeMode.valueOf(themeName)
         LoomTheme(theme) { Surface { LauncherHost() } }
     }

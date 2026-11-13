@@ -1,0 +1,16 @@
+<resources>
+    <string name="message_use_a_valid_email_and_a_password_with_at">Use a valid email and a password with at least 12 characters.</string>
+    <string name="message_enter_your_email_and_password">Enter your email and password.</string>
+    <string name="message_check_your_email_to_confirm_your_account_then_sign">Check your email to confirm your account, then sign in.</string>
+    <string name="ui_welcome_to_loom">WELCOME TO LOOM</string>
+    <string name="ui_life_woven_together">Life, woven together.</string>
+    <string name="ui_a_calmer_home_for_the_things_you_share">A calmer home for the things you share.</string>
+    <string name="ui_make_yourself_at_home">Make yourself at home</string>
+    <string name="ui_welcome_home">Welcome home</string>
+    <string name="ui_email">Email</string>
+    <string name="ui_password">Password</string>
+    <string name="ui_create_account">Create account</string>
+    <string name="ui_sign_in">Sign in</string>
+    <string name="ui_already_have_an_account_sign_in">Already have an account? Sign in</string>
+    <string name="ui_new_here_create_an_account">New here? Create an account</string>
+</resources>

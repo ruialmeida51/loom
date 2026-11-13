@@ -1,0 +1,24 @@
+<resources>
+    <string name="message_give_your_reminder_a_title_up_to_160_characters">Give your reminder a title, up to 160 characters.</string>
+    <string name="message_choose_a_repeat_option">Choose a repeat option.</string>
+    <string name="message_use_a_date_like_2026_11_13_and_a">Use a date like 2026-11-13 and a time like 18:30.</string>
+    <string name="ui_a_gentle_nudge">A GENTLE NUDGE</string>
+    <string name="ui_room_in_your_head">Room in your head.</string>
+    <string name="ui_the_little_things_remembered_together">The little things, remembered together.</string>
+    <string name="ui_add_a_reminder">Add a reminder</string>
+    <string name="ui_nothing_on_your_mind">Nothing on your mind.</string>
+    <string name="ui_add_a_reminder_and_let_loom_keep_track_of">Add a reminder and let Loom keep track of it.</string>
+    <string name="ui_repeats_1_s">Repeats %1$s</string>
+    <string name="ui_remove">Remove</string>
+    <string name="ui_a_little_reminder">A little reminder</string>
+    <string name="ui_what_needs_doing">What needs doing?</string>
+    <string name="ui_date_yyyy_mm_dd">Date · YYYY-MM-DD</string>
+    <string name="ui_time_hh_mm">Time · HH:mm</string>
+    <string name="ui_times_are_in_1_s">Times are in %1$s</string>
+    <string name="ui_once">Once</string>
+    <string name="ui_save_reminder">Save reminder</string>
+    <string name="ui_cancel">Cancel</string>
+    <string name="token_no_repeat">No repeat</string>
+    <string name="token_daily">Daily</string>
+    <string name="token_weekly">Weekly</string>
+</resources>

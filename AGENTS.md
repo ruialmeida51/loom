@@ -10,6 +10,10 @@ Follow the Plannot-derived architecture described in `docs/architecture.md`.
 - Feature models and policies live in their owning feature domain, even when several features use them. Depend on that feature directly; do not move them into core for convenience or add core aliases.
 - Core contains only reusable infrastructure and generic utilities. Keep sample data in its feature's data package, preferences and device registration in settings, exports in insights, and app routes in entrypoint.
 - Feature dependencies are allowed and must remain acyclic. Declare direct dependencies when importing another feature's types.
+- Keep demo fixtures and port implementations in `entrypoint/app/demo`; production screens, domain models, and Common DataSources must not branch on a demo mode.
+- Put UI copy, plurals, accessibility labels, and validation text in owning-module string resources. Keep resource classes out of domain; map stable error codes in presentation.
+- Use named Gradle project references such as `projects.shared.features.household`.
+- Run `python3 tools/audit_project.py` before committing changes.
 - Do not add Repository classes or inner layer/composables Gradle modules.
 - Keep form inputs private and mirror them through `observeWith`; state reducers must be pure.
 - Screens collect state; InnerScreens receive individual values and callbacks. Hosts own navigation and shared ViewModels.

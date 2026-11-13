@@ -6,7 +6,7 @@ import com.eyther.lumbridge.features.household.domain.model.HouseholdCurrencyDom
 data class MoneyDomain(val minorUnits: Long, val currency: String) {
     init {
         require(currency in HouseholdCurrencyDomain.supportedCodes) {
-            "Choose a supported currency."
+            "expenses.message_choose_a_supported_currency"
         }
     }
 
@@ -29,14 +29,18 @@ data class MoneyDomain(val minorUnits: Long, val currency: String) {
         fun parse(text: String, currency: String): MoneyDomain {
             val clean = text.trim().replace(',', '.')
             require(Regex("[0-9]+(?:[.][0-9]{1,2})?").matches(clean)) {
-                "Enter an amount with at most two decimal places."
+                "expenses.message_enter_an_amount_with_at_most_two_decimal_places"
             }
             val pieces = clean.split('.')
             val whole =
-                requireNotNull(pieces.first().toLongOrNull()) { "That amount is too large." }
-            require(whole <= MAX_MINOR_UNITS / 100) { "That amount is too large." }
+                requireNotNull(pieces.first().toLongOrNull()) {
+                    "expenses.message_that_amount_is_too_large"
+                }
+            require(whole <= MAX_MINOR_UNITS / 100) { "expenses.message_that_amount_is_too_large" }
             val minor = whole * 100 + pieces.getOrElse(1) { "" }.padEnd(2, '0').toLong()
-            require(minor in 1..MAX_MINOR_UNITS) { "Enter an amount greater than zero." }
+            require(minor in 1..MAX_MINOR_UNITS) {
+                "expenses.message_enter_an_amount_greater_than_zero"
+            }
             return MoneyDomain(minor, currency)
         }
     }

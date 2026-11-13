@@ -6,7 +6,7 @@ import platform.UIKit.*
 
 @OptIn(ExperimentalForeignApi::class)
 actual object PlatformExport {
-    actual fun shareCsv(filename: String, content: String) {
+    actual fun shareCsv(filename: String, content: String, title: String) {
         val safeName = filename.replace(Regex("[^A-Za-z0-9._-]"), "_")
         val path = NSTemporaryDirectory() + safeName
         (content as NSString).writeToFile(

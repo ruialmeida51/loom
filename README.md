@@ -10,19 +10,20 @@ Application ID and iOS bundle ID: **`com.eyther.lumbridge`**.
 
 ## What’s included
 
-- Household creation, owner invitations, and joining with one-time codes.
-- A shared shopping list with quantities, categories, checked items, and live synchronization.
+- Multiple households, owner invitations, quick switching, and restoring the last accessible household.
+- Named shared shopping lists with editing, undo, favorites, quick entry, moving items, and list rename/archive/restore.
 - Household reminders, daily/weekly repeats, timezone handling, and completion.
 - Shared expenses with equal, exact-amount, and percentage splits; balances and repayments.
-- Monthly recurring expense entries, monthly reports, category statistics, CSV export, and immutable statement revisions.
+- Monthly recurring expense schedules with payment dates, pause/resume/cancel controls, monthly reports, statistics, CSV export, and immutable statement revisions.
 - RSS/Atom subscriptions with per-user read state and scheduled server refreshes.
 - Light, dark, and system themes using the Loom gold and yarn branding.
 - Supabase Edge Functions for FCM/APNs push delivery, retries, device rotation, and scheduled household work.
-- A sample household that works without cloud configuration. Demo changes stay in memory for the session.
+- A dedicated desktop preview with isolated demo data sources and sample households. Production screens and data sources contain no demo branches.
+- Feature-owned string/plural resources, localized validation messages, accessibility labels, and named Gradle project references.
 
-Recurring bills generate expense records; repayments record money you have already sent or received.
+Recurring schedules generate monthly expense records; repayments record money you have already sent or received. Pausing skips future entries, resuming skips paused months, and cancellation preserves recorded expense history.
 
-The [product roadmap](docs/product-roadmap.md) covers the agreed next improvements: multiple shopping lists, better editing and corrections, bill management, and shared responsibilities. Offline functionality is deferred.
+The [product roadmap](docs/product-roadmap.md) records delivered work and following milestones. Offline functionality is deferred. See the [architecture and localization audit](docs/implementation-audit.md).
 
 ## Architecture
 
@@ -41,6 +42,7 @@ desktopApp/                  Development preview for the shared UI
 shared/
   core/                      Generic utilities, encrypted storage, transport, theme, navigation
   entrypoint/                Composition root, Koin bindings, navigation Hosts, iOS framework
+    .../app/demo/            Dedicated preview entry point, fixtures, and demo port implementations
   features/
     authentication/          domain/ · data/ · presentation/
     household/               domain/ · data/ · presentation/
@@ -72,11 +74,11 @@ Use JDK 23, Android Studio with AGP 9.4 support, Android SDK 37, and Xcode on a 
    ./gradlew :androidApp:assembleDebug
    ```
 
-The app uses Loom’s live project through `config/loom-public.properties`, which contains only its public URL and publishable client key. The welcome screen also offers a sample household without signing in. To use a different project, copy `loom.properties.example` to the gitignored `loom.properties`; environment variables override both files. Server secret keys are rejected by the build.
+The app uses Loom’s live project through `config/loom-public.properties`, which contains only its public URL and publishable client key. To use a different project, copy `loom.properties.example` to the gitignored `loom.properties`; environment variables override both files. Server secret keys are rejected by the build.
 
 For iOS, open `iosApp/iosApp.xcodeproj`, select the **Loom** scheme, select your signing team, and run on an iOS 16+ simulator/device. Xcode builds the shared `LoomFoundation` framework through Gradle. A physical device and APNs credentials are needed for push delivery.
 
-For the desktop development preview:
+For the desktop development preview, `desktopApp` starts the dedicated `LoomDemoApp` graph in `entrypoint/app/demo`. It uses the shared screens with in-memory implementations of feature domain ports:
 
 ```sh
 ./gradlew :desktopApp:run
@@ -85,15 +87,27 @@ For the desktop development preview:
 ## Validate
 
 ```sh
-./gradlew :shared:features:expenses:jvmTest \
+./gradlew :shared:features:household:jvmTest :shared:features:shopping:jvmTest \
+  :shared:features:expenses:jvmTest \
   :shared:features:insights:jvmTest :shared:features:reminders:jvmTest \
   :shared:entrypoint:jvmTest :androidApp:assembleDebug
+python3 tools/audit_project.py
 python3 tools/test_database.py
 cd supabase/functions
 deno task check
 deno task test
 ```
 
-The database test starts a disposable PostgreSQL container, applies the migrations, tests authorization and finance invariants, and removes the container. It never touches the hosted project. Compose tests exercise adding a shopping item, navigation, and theme switching; screenshots are saved under `build/screenshots`.
+The database test starts a disposable PostgreSQL container, applies the migrations, tests authorization and finance invariants, and removes the container. It never touches the hosted project. Compose tests exercise multi-list creation/rename/archive/restore, item editing and undo, household switching, creating and controlling recurring expenses, navigation, and theme switching; screenshots are saved under `build/screenshots`.
 
 The existing Loom Supabase project is `eeyfhmlyopuobtgdfbql`. Its unused prototype was retired into a private `loom_legacy` schema; existing sign-in accounts were retained. The repository includes baseline markers for its five previous migrations so future migration history remains aligned.
+
+## Screenshots
+
+<img src="docs/screenshots/shopping-lists-light.png" width="260" alt="Named shopping lists in Loom" /> <img src="docs/screenshots/recurring-light.png" width="260" alt="Managing a paused recurring expense" />
+
+## Localization
+
+Each feature owns its default English catalog in `src/commonMain/composeResources/values/strings.xml`; core owns generic components and entrypoint owns navigation/preview copy. Add `values-<language>/strings.xml` catalogs for translations. UI text, plurals, accessibility labels, and validation messages resolve resources in presentation. Domain code carries stable error codes and never imports Compose resource classes. Stored category identifiers, currency codes, URLs, and user/RSS content remain data.
+
+Android app labels and notification fallbacks use native `res/values/strings.xml`. CSV header resources preserve their comma-separated column counts when translated.

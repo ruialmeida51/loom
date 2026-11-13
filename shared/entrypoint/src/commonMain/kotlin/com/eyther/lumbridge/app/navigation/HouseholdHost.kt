@@ -9,18 +9,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.app.navigation.push.PendingPush
+import com.eyther.lumbridge.app.presentation.localization.localizedToken
 import com.eyther.lumbridge.core.navigation.composables.navigation3.HorizontalSlideNavDisplay
 import com.eyther.lumbridge.core.navigation.model.*
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpensesScreen
+import com.eyther.lumbridge.features.expenses.presentation.screen.RecurringExpensesScreen
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesViewModelContract
 import com.eyther.lumbridge.features.feed.presentation.screen.FeedScreen
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
 import com.eyther.lumbridge.features.home.presentation.screen.HomeScreen
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import com.eyther.lumbridge.features.household.presentation.components.HouseholdBadge
 import com.eyther.lumbridge.features.insights.data.export.PlatformExport
 import com.eyther.lumbridge.features.insights.presentation.screen.InsightsScreen
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsScreenViewModelContract
@@ -31,11 +36,13 @@ import com.eyther.lumbridge.features.settings.presentation.screen.SettingsScreen
 import com.eyther.lumbridge.features.settings.presentation.viewmodel.contracts.SettingsScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.presentation.screen.ShoppingScreen
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.*
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.loom_logo
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.subclass
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -51,6 +58,8 @@ private sealed interface HouseholdDestination : NavDestination {
 
     @Serializable data object Reminders : HouseholdDestination
 
+    @Serializable data object RecurringExpenses : HouseholdDestination
+
     @Serializable data object Insights : HouseholdDestination
 
     @Serializable data object Settings : HouseholdDestination
@@ -62,6 +71,7 @@ fun HouseholdHost(
     onSwitchHousehold: () -> Unit,
     onSignOut: () -> Unit,
 ) {
+    val exportTitle = stringResource(Res.string.ui_monthly_statement)
     val preferencesUseCase: ObserveSettingsUseCase = koinInject()
     val preferences by preferencesUseCase().collectAsState()
     val mode = runCatching { ThemeMode.valueOf(preferences.theme) }.getOrDefault(ThemeMode.SYSTEM)
@@ -80,6 +90,7 @@ fun HouseholdHost(
                 subclass(HouseholdDestination.Shopping::class)
                 subclass(HouseholdDestination.Money::class)
                 subclass(HouseholdDestination.Reminders::class)
+                subclass(HouseholdDestination.RecurringExpenses::class)
                 subclass(HouseholdDestination.Insights::class)
                 subclass(HouseholdDestination.Settings::class)
             }
@@ -108,11 +119,14 @@ fun HouseholdHost(
                     ) {
                         Image(
                             painterResource(Res.drawable.loom_logo),
-                            "Loom",
+                            stringResource(Res.string.ui_loom),
                             Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)),
                         )
                         Spacer(Modifier.width(10.dp))
-                        Text("Loom", style = MaterialTheme.typography.headlineMedium)
+                        Text(
+                            stringResource(Res.string.ui_loom),
+                            style = MaterialTheme.typography.headlineMedium,
+                        )
                         Spacer(Modifier.weight(1f))
                         IconButton(
                             onClick = { navigator.navigateTo(HouseholdDestination.Reminders) },
@@ -131,17 +145,26 @@ fun HouseholdHost(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         if (state.getActiveBackStack()?.size ?: 0 > 1) {
-                            TextButton(onClick = navigator::goBack) { Text("‹ Back") }
+                            TextButton(onClick = navigator::goBack) {
+                                Text(stringResource(Res.string.ui_back))
+                            }
                             Spacer(Modifier.width(8.dp))
                         }
-                        Text(
-                            context.name,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
+                        TextButton(
+                            onClick = onSwitchHousehold,
+                            modifier = Modifier.testTag("household_switch"),
+                        ) {
+                            HouseholdBadge(context.id, context.name)
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                context.name + " ⌄",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.secondary,
+                            )
+                        }
                         Spacer(Modifier.weight(1f))
                         Text(
-                            "OUR HOUSEHOLD",
+                            stringResource(Res.string.ui_our_household),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -156,9 +179,21 @@ fun HouseholdHost(
                     val tabs =
                         listOf(
                             Triple(HouseholdDestination.Home, "Home", Glyph.HOME),
-                            Triple(HouseholdDestination.Feed, "Feed", Glyph.FEED),
-                            Triple(HouseholdDestination.Shopping, "Shopping", Glyph.SHOPPING),
-                            Triple(HouseholdDestination.Money, "Money", Glyph.MONEY),
+                            Triple(
+                                HouseholdDestination.Feed,
+                                stringResource(Res.string.ui_feed),
+                                Glyph.FEED,
+                            ),
+                            Triple(
+                                HouseholdDestination.Shopping,
+                                stringResource(Res.string.ui_shopping),
+                                Glyph.SHOPPING,
+                            ),
+                            Triple(
+                                HouseholdDestination.Money,
+                                stringResource(Res.string.ui_money),
+                                Glyph.MONEY,
+                            ),
                         )
                     tabs.forEach { (destination, label, glyph) ->
                         NavigationBarItem(
@@ -173,7 +208,7 @@ fun HouseholdHost(
                                         else MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             },
-                            label = { Text(label) },
+                            label = { Text(localizedToken(label)) },
                         )
                     }
                 }
@@ -199,19 +234,31 @@ fun HouseholdHost(
                     HouseholdDestination.Shopping ->
                         ShoppingScreen(koinViewModel<ShoppingScreenViewModelContract>())
                     HouseholdDestination.Money ->
-                        ExpensesScreen(koinViewModel<ExpensesScreenViewModelContract>(), context) {
-                            navigator.navigateTo(HouseholdDestination.Insights)
-                        }
+                        ExpensesScreen(
+                            koinViewModel<ExpensesScreenViewModelContract>(),
+                            context,
+                            onInsights = { navigator.navigateTo(HouseholdDestination.Insights) },
+                            onRecurringExpenses = {
+                                navigator.navigateTo(HouseholdDestination.RecurringExpenses)
+                            },
+                        )
                     HouseholdDestination.Reminders ->
                         RemindersScreen(
                             koinViewModel<RemindersScreenViewModelContract>(),
                             context.timeZone,
                         )
+                    HouseholdDestination.RecurringExpenses ->
+                        RecurringExpensesScreen(
+                            koinViewModel<RecurringExpensesViewModelContract>(),
+                            context,
+                        )
                     HouseholdDestination.Insights ->
                         InsightsScreen(
                             koinViewModel<InsightsScreenViewModelContract>(),
                             context,
-                            PlatformExport::shareCsv,
+                            { filename, content ->
+                                PlatformExport.shareCsv(filename, content, exportTitle)
+                            },
                         )
                     HouseholdDestination.Settings ->
                         SettingsScreen(
