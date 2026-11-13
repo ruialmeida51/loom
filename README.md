@@ -2,7 +2,7 @@
 
 # Loom
 
-**Life, woven together.** A Kotlin Multiplatform household companion for Android and iOS, with shared Compose UI and a Supabase backend.
+**Life, woven together.** A Kotlin Multiplatform household companion for roommates and couples on Android and iOS, with shared Compose UI and a Supabase backend.
 
 Application ID and iOS bundle ID: **`com.eyther.lumbridge`**.
 
@@ -21,6 +21,8 @@ Application ID and iOS bundle ID: **`com.eyther.lumbridge`**.
 - A sample household that works without cloud configuration. Demo changes stay in memory for the session.
 
 Recurring bills generate expense records; repayments record money you have already sent or received.
+
+The [product roadmap](docs/product-roadmap.md) covers the agreed next improvements: multiple shopping lists, better editing and corrections, bill management, and shared responsibilities. Offline functionality is deferred.
 
 ## Architecture
 

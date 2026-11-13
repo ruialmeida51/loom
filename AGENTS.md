@@ -1,5 +1,7 @@
 # Loom engineering conventions
 
+Loom focuses on household management for roommates and couples. Follow the delivery priorities in `docs/product-roadmap.md`; offline functionality is deferred.
+
 Follow the Plannot-derived architecture described in `docs/architecture.md`.
 
 - One Gradle module per feature; domain/data/presentation are Kotlin packages.
