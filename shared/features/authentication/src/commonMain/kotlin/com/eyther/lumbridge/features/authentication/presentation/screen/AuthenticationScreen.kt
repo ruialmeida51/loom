@@ -8,7 +8,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.domain.*
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.AuthenticationScreenViewModelContract

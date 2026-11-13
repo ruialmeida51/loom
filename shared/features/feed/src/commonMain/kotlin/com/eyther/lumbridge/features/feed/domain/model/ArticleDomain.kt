@@ -1,7 +1,5 @@
 package com.eyther.lumbridge.features.feed.domain.model
 
-import com.eyther.lumbridge.core.domain.*
-
 data class ArticleDomain(
     val id: String,
     val title: String,

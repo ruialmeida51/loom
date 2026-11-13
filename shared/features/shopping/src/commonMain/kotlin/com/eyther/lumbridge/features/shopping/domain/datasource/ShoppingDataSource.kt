@@ -1,6 +1,6 @@
 package com.eyther.lumbridge.features.shopping.domain.datasource
 
-import com.eyther.lumbridge.core.domain.*
+import com.eyther.lumbridge.core.domain.AppResult
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import kotlinx.coroutines.flow.Flow
 

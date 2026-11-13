@@ -7,7 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.eyther.lumbridge.core.data.NativePushBridge
+import com.eyther.lumbridge.features.settings.data.notifications.NativePushBridge
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 

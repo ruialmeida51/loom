@@ -1,7 +1,5 @@
 package com.eyther.lumbridge.features.expenses.domain.model
 
-import com.eyther.lumbridge.core.domain.MoneyDomain
-
 object ExpenseSplitDomain {
     fun equal(amountMinor: Long, memberIds: List<String>): Map<String, Long> {
         require(amountMinor in 1..MoneyDomain.MAX_MINOR_UNITS) { "Enter a valid amount." }

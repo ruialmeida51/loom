@@ -52,10 +52,6 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.ktor.okhttp)
-            implementation(
-                project.dependencies.platform("com.google.firebase:firebase-bom:34.19.0"),
-            )
-            implementation("com.google.firebase:firebase-messaging")
             implementation("androidx.core:core-ktx:1.19.1")
         }
         jvmMain.dependencies {

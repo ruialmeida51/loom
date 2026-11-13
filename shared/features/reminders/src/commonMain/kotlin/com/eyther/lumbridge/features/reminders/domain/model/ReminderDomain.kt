@@ -1,6 +1,5 @@
 package com.eyther.lumbridge.features.reminders.domain.model
 
-import com.eyther.lumbridge.core.domain.*
 import kotlin.time.Instant
 import kotlinx.datetime.*
 

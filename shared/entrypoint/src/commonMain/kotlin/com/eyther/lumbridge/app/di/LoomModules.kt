@@ -1,9 +1,10 @@
 package com.eyther.lumbridge.app.di
 
 import com.eyther.lumbridge.core.data.*
-import com.eyther.lumbridge.core.domain.*
+import com.eyther.lumbridge.features.authentication.data.local.SecureSessionManager
 import com.eyther.lumbridge.features.authentication.data.network.datasource.CommonAuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
+import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
 import com.eyther.lumbridge.features.authentication.domain.usecase.ObserveSessionUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RegisterUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInUseCase
@@ -29,8 +30,10 @@ import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedS
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeOverviewUseCase
 import com.eyther.lumbridge.features.home.presentation.viewmodel.HomeScreenViewModel
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
+import com.eyther.lumbridge.features.household.data.demo.DemoHousehold
 import com.eyther.lumbridge.features.household.data.network.datasource.CommonHouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
+import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.CreateHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsUseCase
@@ -52,6 +55,8 @@ import com.eyther.lumbridge.features.reminders.domain.usecase.RemoveReminderUseC
 import com.eyther.lumbridge.features.reminders.presentation.viewmodel.RemindersScreenViewModel
 import com.eyther.lumbridge.features.reminders.presentation.viewmodel.contracts.RemindersScreenViewModelContract
 import com.eyther.lumbridge.features.settings.data.network.datasource.CommonSettingsDataSource
+import com.eyther.lumbridge.features.settings.data.notifications.CommonPushDeviceDataSource
+import com.eyther.lumbridge.features.settings.domain.datasource.PushDeviceDataSource
 import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
 import com.eyther.lumbridge.features.settings.domain.usecase.ObserveSettingsUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetNotificationsUseCase
@@ -71,8 +76,15 @@ import org.koin.dsl.module
 
 /** The same explicit DataSource → UseCase → ViewModel contract bindings as Plannot. */
 val applicationModule = module {
-    single { SupabaseAccess() }
-    single<AuthenticationDataSource> { CommonAuthenticationDataSource(get()) }
+    single { SupabaseAccess(SecureSessionManager()) }
+    single<PushDeviceDataSource> { CommonPushDeviceDataSource(get()) }
+    single<AuthenticationDataSource> {
+        CommonAuthenticationDataSource(
+            get(),
+            get(),
+            AuthSessionDomain(DemoHousehold.USER, "you@example.com", true),
+        )
+    }
     single { ObserveSessionUseCase(get()) }
     single { SignInUseCase(get()) }
     single { RegisterUseCase(get()) }

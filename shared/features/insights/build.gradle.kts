@@ -21,6 +21,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":shared:core"))
+            api(project(":shared:features:household"))
             implementation(project(":shared:features:expenses"))
             api(libs.compose.runtime)
             api(libs.compose.foundation)
@@ -36,6 +37,7 @@ kotlin {
             api(libs.koin.compose)
             api(libs.koin.viewmodel)
         }
+        androidMain.dependencies { implementation("androidx.core:core-ktx:1.19.1") }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.coroutines.test)

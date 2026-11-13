@@ -1,6 +1,5 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
-import com.eyther.lumbridge.core.domain.*
 import com.eyther.lumbridge.core.presentation.LoomViewModel
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain

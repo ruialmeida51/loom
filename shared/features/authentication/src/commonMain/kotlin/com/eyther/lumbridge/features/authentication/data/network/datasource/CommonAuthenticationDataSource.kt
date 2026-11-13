@@ -2,21 +2,24 @@ package com.eyther.lumbridge.features.authentication.data.network.datasource
 
 import com.eyther.lumbridge.core.data.SupabaseAccess
 import com.eyther.lumbridge.core.data.safeApiCall
-import com.eyther.lumbridge.core.domain.*
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
+import com.eyther.lumbridge.features.settings.domain.datasource.PushDeviceDataSource
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-class CommonAuthenticationDataSource(private val access: SupabaseAccess) :
-    AuthenticationDataSource {
+class CommonAuthenticationDataSource(
+    private val access: SupabaseAccess,
+    private val pushDevices: PushDeviceDataSource,
+    private val demoSession: AuthSessionDomain,
+) : AuthenticationDataSource {
     private var demo = !access.configured
     private val mutableSession =
         MutableStateFlow<AuthSessionDomain?>(
-            if (demo) AuthSessionDomain(DemoHousehold.USER, "you@example.com", true) else null,
+            if (demo) demoSession else null,
         )
     override val session = mutableSession.asStateFlow()
     override val configured
@@ -38,7 +41,7 @@ class CommonAuthenticationDataSource(private val access: SupabaseAccess) :
                                 else -> null
                             }
                     if (status is SessionStatus.Authenticated && !demo)
-                        access.syncPushRegistration()
+                        pushDevices.syncRegistration()
                 }
             }
         }
@@ -64,7 +67,7 @@ class CommonAuthenticationDataSource(private val access: SupabaseAccess) :
     override suspend fun signOut() = safeApiCall {
         if (!demo) {
             try {
-                access.unregisterCurrentPushDevice()
+                pushDevices.unregisterCurrentDevice()
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {}
@@ -76,6 +79,6 @@ class CommonAuthenticationDataSource(private val access: SupabaseAccess) :
 
     override fun startDemo() {
         demo = true
-        mutableSession.value = AuthSessionDomain(DemoHousehold.USER, "you@example.com", true)
+        mutableSession.value = demoSession
     }
 }

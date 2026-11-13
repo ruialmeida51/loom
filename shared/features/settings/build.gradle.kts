@@ -20,7 +20,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":shared:features:household"))
+            api(project(":shared:features:household"))
             api(project(":shared:core"))
             api(libs.compose.runtime)
             api(libs.compose.foundation)
@@ -35,6 +35,12 @@ kotlin {
             api(libs.koin.core)
             api(libs.koin.compose)
             api(libs.koin.viewmodel)
+        }
+        androidMain.dependencies {
+            implementation(
+                project.dependencies.platform("com.google.firebase:firebase-bom:34.19.0"),
+            )
+            implementation("com.google.firebase:firebase-messaging")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

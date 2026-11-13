@@ -3,12 +3,13 @@ package com.eyther.lumbridge.app.navigation
 import androidx.compose.runtime.*
 import com.eyther.lumbridge.app.di.householdModule
 import com.eyther.lumbridge.core.data.SupabaseAccess
-import com.eyther.lumbridge.core.domain.*
 import com.eyther.lumbridge.features.authentication.domain.usecase.ObserveSessionUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
 import com.eyther.lumbridge.features.authentication.presentation.screen.AuthenticationScreen
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.AuthenticationScreenViewModelContract
+import com.eyther.lumbridge.features.household.data.demo.DemoHousehold
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
+import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.presentation.screen.HouseholdScreen
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
 import kotlinx.coroutines.launch

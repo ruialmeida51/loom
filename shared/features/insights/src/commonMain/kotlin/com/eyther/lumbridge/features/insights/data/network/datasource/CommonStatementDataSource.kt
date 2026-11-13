@@ -2,7 +2,7 @@ package com.eyther.lumbridge.features.insights.data.network.datasource
 
 import com.eyther.lumbridge.core.data.SupabaseAccess
 import com.eyther.lumbridge.core.data.safeApiCall
-import com.eyther.lumbridge.core.domain.*
+import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.serialization.json.*

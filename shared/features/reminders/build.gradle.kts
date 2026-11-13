@@ -21,6 +21,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":shared:core"))
+            api(project(":shared:features:household"))
             api(libs.compose.runtime)
             api(libs.compose.foundation)
             api(libs.compose.ui)

@@ -20,6 +20,23 @@ presentation/
 
 Core and the composition root stay small shared modules. There are no Repository classes and no separate composables modules. Feature UI does not access Supabase or instantiate DataSources.
 
+## Domain ownership and dependencies
+
+Sharing a model does not change which domain owns it. A feature imports another feature's domain and declares a direct Gradle dependency when it needs that model. Feature dependencies are allowed; circular dependencies are not.
+
+| Owner | Responsibility |
+| --- | --- |
+| `household/domain/model` | Household, member, selected household context, and supported household currency policy |
+| `expenses/domain/model` | Money amounts, splitting, repayments, and ledger rules |
+| `authentication/data/local` | Secure authentication session serialization over core's native storage |
+| `settings/data` | Local preferences, notification permission/token adapters, and push-device registration |
+| `insights/data/export` | Native monthly-statement CSV sharing |
+| `household/data/demo` | Sample household fixtures |
+| `entrypoint/navigation/push` | App-specific push destinations and pending navigation |
+| `core` | Generic results, clock/ID utilities, Supabase transport, native storage, Compose components, theme rendering, flow helpers, and navigation machinery |
+
+For example, expenses depends on household for its context and currency policy; insights depends on expenses for money and ledger models. Authentication coordinates device registration through settings' `PushDeviceDataSource` domain port. The composition root supplies the sample authentication session using household demo data. Core has no dependency on any feature and provides no aliases for feature models.
+
 ## State and navigation
 
 - Form values belong to a private `InnerInputState`; they are mirrored into public immutable screen state.
@@ -31,7 +48,7 @@ Core and the composition root stay small shared modules. There are no Repository
 
 ## Data and money
 
-DataSource operations map failures to `AppResult` at the I/O boundary and preserve coroutine cancellation. SQL/HTTP models remain in data. Realtime events invalidate household queries; periodic refresh repairs missed events. Queries use keyset pagination so the Data API’s row cap does not truncate balances.
+DataSource operations map failures to `AppResult` at the I/O boundary and preserve coroutine cancellation. SQL/HTTP models remain in data. Realtime events invalidate household queries; periodic refresh repairs missed events. Household's data package supplies keyset pagination so the Data API's row cap does not truncate balances.
 
 Money is stored in integer minor units. Equal splits distribute remainder cents in a stable member-ID order; percentages use the largest-remainder method. Database transactions validate active members, share totals, authorship, and idempotency IDs. A positive balance means the member is owed money; recording a repayment decreases that credit and the sender’s debt.
 

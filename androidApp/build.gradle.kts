@@ -37,5 +37,6 @@ dependencies {
     implementation("androidx.core:core-ktx:1.19.1")
     implementation(project(":shared:entrypoint"))
     implementation(project(":shared:core"))
+    implementation(project(":shared:features:settings"))
     implementation(libs.activity.compose)
 }

@@ -5,7 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.coroutines.stateflow.*
-import com.eyther.lumbridge.core.domain.*
+import com.eyther.lumbridge.core.domain.AppResult
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.features.authentication.domain.usecase.RegisterUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInUseCase

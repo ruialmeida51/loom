@@ -71,6 +71,24 @@ class HouseholdLedgerTest {
     }
 
     @Test
+    fun suggestedRepaymentsHaveStableOrderAcrossPlatforms() {
+        val balances = linkedMapOf("d" to -200L, "b" to 150L, "c" to -100L, "a" to 150L)
+        val expected =
+            listOf(
+                SuggestedSettlementDomain("c", "a", 100L),
+                SuggestedSettlementDomain("d", "a", 50L),
+                SuggestedSettlementDomain("d", "b", 150L),
+            )
+        assertEquals(expected, HouseholdLedgerDomain.suggestions(balances))
+        assertEquals(
+            expected,
+            HouseholdLedgerDomain.suggestions(
+                balances.entries.reversed().associate { it.key to it.value },
+            ),
+        )
+    }
+
+    @Test
     fun suggestedRepaymentsReconcileToZero() {
         for (total in 1L..500L) {
             val expenses = listOf(expense(total))

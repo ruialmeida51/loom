@@ -7,9 +7,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.domain.*
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
+import com.eyther.lumbridge.features.household.domain.model.HouseholdCurrencyDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
 import kotlinx.coroutines.flow.*
@@ -85,7 +85,7 @@ private fun InnerHouseholdScreen(
             )
             Text("Household currency", style = MaterialTheme.typography.labelLarge)
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                MoneyDomain.supportedCurrencies.forEach { currency ->
+                HouseholdCurrencyDomain.supportedCodes.forEach { currency ->
                     FilterChip(
                         selected = currencyValue == currency,
                         onClick = { onCurrency(currency) },

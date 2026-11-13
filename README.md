@@ -37,7 +37,7 @@ androidApp/                  Android application and FCM integration
 iosApp/                      Native SwiftUI host, APNs delegate, Xcode project
 desktopApp/                  Development preview for the shared UI
 shared/
-  core/                      Domain primitives, encrypted storage, networking, theme, navigation
+  core/                      Generic utilities, encrypted storage, transport, theme, navigation
   entrypoint/                Composition root, Koin bindings, navigation Hosts, iOS framework
   features/
     authentication/          domain/ · data/ · presentation/
@@ -53,6 +53,8 @@ supabase/                    Versioned schema, functions, schedules, database in
 ```
 
 Screens collect lifecycle-aware state and pass individual values/callbacks to `Inner*Screen`. ViewModels use private `InnerInputState` and Plannot’s `observeWith` helpers. DataSource interfaces live in domain; `Common*` implementations own I/O. The composition root uses explicit Koin DSL factories bound to contracts, without annotation/code-generation submodules.
+
+Models stay in their owning feature: household owns `HouseholdContextDomain`, expenses owns `MoneyDomain`, and other features depend on those domains directly. Core has no feature dependencies. Sample data, settings preferences, notification registration, statement exports, and app-specific routes also stay with their respective owners. See the ownership table in [architecture details](docs/architecture.md).
 
 See [architecture details](docs/architecture.md) and [backend setup](docs/backend.md).
 
@@ -81,7 +83,7 @@ For the desktop development preview:
 ## Validate
 
 ```sh
-./gradlew :shared:core:jvmTest :shared:features:expenses:jvmTest \
+./gradlew :shared:features:expenses:jvmTest \
   :shared:features:insights:jvmTest :shared:features:reminders:jvmTest \
   :shared:entrypoint:jvmTest :androidApp:assembleDebug
 python3 tools/test_database.py

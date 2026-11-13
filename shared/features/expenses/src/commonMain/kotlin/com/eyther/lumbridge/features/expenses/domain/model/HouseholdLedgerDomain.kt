@@ -1,7 +1,5 @@
 package com.eyther.lumbridge.features.expenses.domain.model
 
-import com.eyther.lumbridge.core.domain.MoneyDomain
-
 object HouseholdLedgerDomain {
     /**
      * A positive balance means the member is owed money. Settlements reduce the corresponding debt.
@@ -27,15 +25,17 @@ object HouseholdLedgerDomain {
             add(settlement.from, settlement.amountMinor)
             add(settlement.to, -settlement.amountMinor)
         }
-        return balances.toSortedMap()
+        return balances.entries.sortedBy { it.key }.associate { it.key to it.value }
     }
 
     fun suggestions(balances: Map<String, Long>): List<SuggestedSettlementDomain> {
         require(balances.values.sum() == 0L) {
             "Balances must reconcile before suggesting repayments."
         }
-        val debtors = balances.filterValues { it < 0 }.toSortedMap().toMutableMap()
-        val creditors = balances.filterValues { it > 0 }.toSortedMap().toMutableMap()
+        val ordered = balances.entries.sortedBy { it.key }
+        val debtors = ordered.filter { it.value < 0 }
+        val creditors =
+            ordered.filter { it.value > 0 }.associate { it.key to it.value }.toMutableMap()
         val result = mutableListOf<SuggestedSettlementDomain>()
         for ((debtor, originalDebt) in debtors) {
             var debt = -originalDebt

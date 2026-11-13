@@ -3,7 +3,7 @@ package com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import com.eyther.lumbridge.core.domain.*
+import com.eyther.lumbridge.core.domain.todayIso
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.features.insights.domain.model.MonthlyStatementDomain
 import kotlinx.coroutines.flow.*

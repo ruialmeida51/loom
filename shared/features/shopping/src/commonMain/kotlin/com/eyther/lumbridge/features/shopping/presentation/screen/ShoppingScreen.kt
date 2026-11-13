@@ -9,7 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.domain.*
 import com.eyther.lumbridge.core.presentation.*
 import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
