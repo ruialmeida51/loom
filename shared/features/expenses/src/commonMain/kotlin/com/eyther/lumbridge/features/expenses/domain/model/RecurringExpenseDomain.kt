@@ -14,6 +14,7 @@ data class RecurringExpenseDomain(
     val version: Long,
     val shares: Map<String, Long>,
 ) {
+
     val status
         get() =
             if (cancelled) RecurringExpenseStatusDomain.CANCELLED

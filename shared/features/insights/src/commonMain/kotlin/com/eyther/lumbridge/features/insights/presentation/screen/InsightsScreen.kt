@@ -1,46 +1,81 @@
 package com.eyther.lumbridge.features.insights.presentation.screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.*
-import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.PageHeading
+import com.eyther.lumbridge.core.presentation.components.SectionTitle
+import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
-import com.eyther.lumbridge.features.expenses.presentation.localization.expenseCategoryLabel
+import com.eyther.lumbridge.features.expenses.presentation.mapper.expenseCategoryLabel
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.domain.model.MonthlyStatementDomain
-import com.eyther.lumbridge.features.insights.generated.resources.*
-import com.eyther.lumbridge.features.insights.presentation.localization.localizedMessage
+import com.eyther.lumbridge.features.insights.generated.resources.Res
+import com.eyther.lumbridge.features.insights.generated.resources.monthly_expense_count
+import com.eyther.lumbridge.features.insights.generated.resources.statement_csv_expense_header
+import com.eyther.lumbridge.features.insights.generated.resources.statement_csv_summary_header
+import com.eyther.lumbridge.features.insights.generated.resources.statement_export_title
+import com.eyther.lumbridge.features.insights.generated.resources.ui_a_little_perspective
+import com.eyther.lumbridge.features.insights.generated.resources.ui_a_positive_balance_means_you_re_owed_money_repayments
+import com.eyther.lumbridge.features.insights.generated.resources.ui_closing_balance
+import com.eyther.lumbridge.features.insights.generated.resources.ui_export_statement_as_csv
+import com.eyther.lumbridge.features.insights.generated.resources.ui_household_spending
+import com.eyther.lumbridge.features.insights.generated.resources.ui_next
+import com.eyther.lumbridge.features.insights.generated.resources.ui_opening_balance
+import com.eyther.lumbridge.features.insights.generated.resources.ui_previous
+import com.eyther.lumbridge.features.insights.generated.resources.ui_save_statement_snapshot
+import com.eyther.lumbridge.features.insights.generated.resources.ui_saving
+import com.eyther.lumbridge.features.insights.generated.resources.ui_see_where_it_went_and_where_things_stand
+import com.eyther.lumbridge.features.insights.generated.resources.ui_the_bigger_picture
+import com.eyther.lumbridge.features.insights.generated.resources.ui_where_it_went
+import com.eyther.lumbridge.features.insights.generated.resources.ui_you_paid
+import com.eyther.lumbridge.features.insights.generated.resources.ui_your_month
+import com.eyther.lumbridge.features.insights.generated.resources.ui_your_share
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsScreenViewModelContract
-import kotlinx.coroutines.flow.*
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun InsightsScreen(
-    vm: InsightsScreenViewModelContract,
+    viewModel: InsightsScreenViewModelContract,
     context: HouseholdContextDomain,
-    onExport: (String, String) -> Unit,
 ) {
-    val state by vm.state.platformCollectAsStateOnStart()
+    val state by viewModel.state.platformCollectAsStateOnStart()
     InnerInsightsScreen(
         month = state.month,
         statement = state.statement,
         busy = state.busy,
-        message = localizedMessage(state.message),
+        message = state.message,
         error = state.error,
         context = context,
-        onExport = onExport,
-        onPrevious = vm::previous,
-        onNext = vm::next,
-        onDismiss = vm::dismiss,
-        onSave = vm::save,
+        onExport = viewModel::onExportStatement,
+        onPrevious = viewModel::onPreviousMonth,
+        onNext = viewModel::onNextMonth,
+        onDismiss = viewModel::onDismissMessage,
+        onSave = viewModel::onSaveStatement,
     )
 }
 
@@ -49,20 +84,21 @@ private fun InnerInsightsScreen(
     month: String,
     statement: MonthlyStatementDomain?,
     busy: Boolean,
-    message: String?,
-    error: String?,
+    message: TextResource?,
+    error: TextResource?,
     context: HouseholdContextDomain,
-    onExport: (String, String) -> Unit,
+    onExport: (String, String, String) -> Unit,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     onDismiss: () -> Unit,
     onSave: () -> Unit,
 ) {
+    val exportTitle = stringResource(Res.string.statement_export_title)
     val summaryHeader =
-        stringResource(Res.string.message_month_currency_household_total_minor_units_you_paid_minor)
+        stringResource(Res.string.statement_csv_summary_header)
     val expenseHeader =
         stringResource(
-            Res.string.message_date_description_category_amount_minor_units_your_share_minor,
+            Res.string.statement_csv_expense_header,
         )
     LazyColumn(
         Modifier.fillMaxSize().padding(horizontal = 24.dp),
@@ -89,9 +125,9 @@ private fun InnerInsightsScreen(
                 OutlinedButton(onClick = onNext) { Text(stringResource(Res.string.ui_next)) }
             }
         }
-        item { ErrorNotice(localizedMessage(error), onDismiss) }
+        item { ErrorNotice(error, onDismiss) }
         message?.let { message ->
-            item { Text(message, color = MaterialTheme.colorScheme.secondary) }
+            item { Text(message.getString(), color = MaterialTheme.colorScheme.secondary) }
         }
         statement?.let { statement ->
             item {
@@ -185,11 +221,12 @@ private fun InnerInsightsScreen(
                         onExport(
                             "loom-${month}.csv",
                             statement.csv(
-                                context.currency,
-                                context.userId,
-                                summaryHeader,
-                                expenseHeader,
+                                currency = context.currency,
+                                userId = context.userId,
+                                summaryHeader = summaryHeader,
+                                expenseHeader = expenseHeader,
                             ),
+                            exportTitle,
                         )
                     },
                     Modifier.fillMaxWidth(),

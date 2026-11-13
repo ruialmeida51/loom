@@ -1,10 +1,15 @@
 package com.eyther.lumbridge.features.insights.domain
 
-import com.eyther.lumbridge.features.expenses.domain.model.*
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
+import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.insights.domain.model.MonthlyStatementDomain
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class MonthlyStatementTest {
+
     @Test
     fun monthBoundaryAndRepaymentAreAccountedSeparately() {
         val members = listOf("a", "b", "c")

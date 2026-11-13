@@ -3,7 +3,7 @@ package com.eyther.lumbridge
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import com.eyther.lumbridge.core.data.PlatformStorage
+import com.eyther.lumbridge.core.data.local.PlatformStorage
 
 class LoomApplication : Application() {
     override fun onCreate() {

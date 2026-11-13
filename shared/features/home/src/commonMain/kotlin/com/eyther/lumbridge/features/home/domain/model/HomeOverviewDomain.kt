@@ -2,7 +2,6 @@ package com.eyther.lumbridge.features.home.domain.model
 
 import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
-import kotlinx.coroutines.flow.*
 
 data class HomeOverviewDomain(
     val shopping: List<ShoppingItemDomain>,

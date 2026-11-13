@@ -2,36 +2,75 @@ package com.eyther.lumbridge.features.home.presentation.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.*
-import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.components.EmptyNotice
+import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.PageHeading
+import com.eyther.lumbridge.core.presentation.components.SectionTitle
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
+import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.home.domain.model.HomeOverviewDomain
-import com.eyther.lumbridge.features.home.generated.resources.*
-import com.eyther.lumbridge.features.home.presentation.localization.localizedMessage
+import com.eyther.lumbridge.features.home.generated.resources.Res
+import com.eyther.lumbridge.features.home.generated.resources.shopping_item_count
+import com.eyther.lumbridge.features.home.generated.resources.ui_a_clear_calendar
+import com.eyther.lumbridge.features.home.generated.resources.ui_a_gentle_reminder
+import com.eyther.lumbridge.features.home.generated.resources.ui_a_little_more_together
+import com.eyther.lumbridge.features.home.generated.resources.ui_a_moment_for_yourself
+import com.eyther.lumbridge.features.home.generated.resources.ui_enjoy_a_little_breathing_room
+import com.eyther.lumbridge.features.home.generated.resources.ui_fresh_reads_from_the_places_you_love_put_the
+import com.eyther.lumbridge.features.home.generated.resources.ui_home_in_harmony
+import com.eyther.lumbridge.features.home.generated.resources.ui_less_to_keep_in_your_head_more_space_for
+import com.eyther.lumbridge.features.home.generated.resources.ui_on_the_shopping_list
+import com.eyther.lumbridge.features.home.generated.resources.ui_open_list
+import com.eyther.lumbridge.features.home.generated.resources.ui_pick_up_a_few_things
+import com.eyther.lumbridge.features.home.generated.resources.ui_see_all
+import com.eyther.lumbridge.features.home.generated.resources.ui_visit_the_reading_corner
+import com.eyther.lumbridge.features.home.generated.resources.ui_woven_together_one_little_thing_at_a_time
+import com.eyther.lumbridge.features.home.generated.resources.ui_you_owe
+import com.eyther.lumbridge.features.home.generated.resources.ui_you_re_owed
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.take
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun HomeScreen(
-    vm: HomeScreenViewModelContract,
+    viewModel: HomeScreenViewModelContract,
     context: HouseholdContextDomain,
     onShopping: () -> Unit,
     onReminders: () -> Unit,
     onMoney: () -> Unit,
     onFeed: () -> Unit,
 ) {
-    val state by vm.state.platformCollectAsStateOnStart()
+    val state by viewModel.state.platformCollectAsStateOnStart()
     InnerHomeScreen(
         overview = state.overview,
         error = state.error,
@@ -40,14 +79,14 @@ fun HomeScreen(
         onReminders = onReminders,
         onMoney = onMoney,
         onFeed = onFeed,
-        onDismiss = vm::dismiss,
+        onDismiss = viewModel::onDismissError,
     )
 }
 
 @Composable
 private fun InnerHomeScreen(
     overview: HomeOverviewDomain?,
-    error: String?,
+    error: TextResource?,
     context: HouseholdContextDomain,
     onShopping: () -> Unit,
     onReminders: () -> Unit,
@@ -68,7 +107,7 @@ private fun InnerHomeScreen(
             )
         }
 
-        item { ErrorNotice(localizedMessage(error), onDismiss) }
+        item { ErrorNotice(error, onDismiss) }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Surface(

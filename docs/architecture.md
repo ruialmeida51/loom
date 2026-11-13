@@ -8,11 +8,17 @@ Loom retains Plannot’s separation of responsibilities and replaces its many in
 domain/
   model/          Immutable domain facts and policies
   datasource/     Ports; no transport or UI types
+  errors/         Feature-owned AppError families
   usecase/        Business operations and orchestration
 data/
   network/
-    datasource/   Common implementations, private serialized DTOs and mapping
+    datasource/   Common implementations and I/O operations
+    model/
+      request/    One serializable request per file
+      response/   One serializable response per file
+    mapper/       Pure transport mappings and server-error normalization
 presentation/
+  mapper/         Typed errors/domain values to UI resources
   viewmodel/
     contracts/    Observable state and event contracts
   screen/         Screen + pure InnerScreen
@@ -42,13 +48,19 @@ For example, expenses depends on household for its context and currency policy; 
 - Form values belong to a private `InnerInputState`; they are mirrored into public immutable screen state.
 - Plannot’s `observeWith`, `updateState`, launch strategies, and ViewModel launch helper are adapted under Loom’s package name.
 - `Screen` collects state with lifecycle awareness. `InnerScreen` receives values and callbacks.
-- Hosts own typed serializable destinations, saved back stacks, navigation callbacks, and ViewModel lifetimes.
+- Hosts own saved back stacks, navigation callbacks, and ViewModel lifetimes. Typed serializable destination models live in `entrypoint/app/navigation/model`.
 - Plannot’s Navigator, NavigationState, NavDisplay wrappers, and transitions are adapted in core. A modifier is applied once so nested Hosts do not duplicate outer Scaffold padding.
 - A household gets its own isolated Koin graph. Switching households disposes the graph and its navigation entries. Koin factories bind ViewModels to their contracts.
 
 ## Data and money
 
-DataSource operations map failures to `AppResult` at the I/O boundary and preserve coroutine cancellation. SQL/HTTP models remain in data. Realtime events invalidate household queries; periodic refresh repairs missed events. Household's data package supplies keyset pagination so the Data API's row cap does not truncate balances.
+DataSource operations return `AppResult.Failure(error: AppError)` at the I/O boundary and preserve coroutine cancellation. Feature-owned sealed error families live in `domain/errors`; `core/domain/errors` contains generic failures such as connection, session, and access errors. Only data adapters inspect SQLSTATE, Supabase SDK error codes, or deployed server messages. They retain the cause for diagnostics and return a typed error before it leaves data. Domain and presentation never parse failure text.
+
+Network request/response classes each have their own file in `data/network/model/request` or `response`. Every wire property declares `@SerialName`. Pure `DomainToRequest` and `ResponseToDomain` mappings live in `data/network/mapper`, separate from DTOs and Common DataSources. Sources receive Supabase access through the composition root; transport tests inject a client using Ktor's MockEngine.
+
+Read streams use `stream()` or a descriptive variant when a port offers several streams, consumed by `Get…StreamUseCase`. Fallible streams expose `Flow<AppResult<T>>`, so realtime errors follow the same typed boundary as writes. Cached session/settings streams expose their current domain state. `GetExpenseLedgerStreamUseCase` owns ledger aggregation; insights builds monthly statements in its own stream use case.
+
+ Realtime events invalidate household queries; periodic refresh repairs missed events. Household's data package supplies keyset pagination so the Data API's row cap does not truncate balances.
 
 Money is stored in integer minor units. Equal splits distribute remainder cents in a stable member-ID order; percentages use the largest-remainder method. Database transactions validate active members, share totals, authorship, and idempotency IDs. A positive balance means the member is owed money; recording a repayment decreases that credit and the sender’s debt.
 
@@ -66,6 +78,6 @@ The private worker tables deny client access. The worker secret is generated int
 
 `LoomApp` composes production sources. The desktop preview and UI tests explicitly use `LoomDemoApp` under `entrypoint/app/demo`; feature screens are shared through the same ViewModel contracts and use cases. Demo sources implement domain ports inside the preview package. No demo flag is stored in authentication or household domain models.
 
-Features own their string/plural catalogs and presentation message mappings. Domain failures use stable codes; resource resolution stays in presentation. App routes and generic components own their respective catalogs. Build dependencies use Gradle-generated references such as `projects.shared.features.household`, with `TYPESAFE_PROJECT_ACCESSORS` enabled.
+Features own their string/plural catalogs and presentation message mappings. Domain failures use typed errors. Non-Composable presentation mappers produce `TextResource`; ViewModels store those resources in error, info, and undo state, and Compose resolves them for the current locale. App routes and generic components own their respective catalogs. Build dependencies use Gradle-generated references such as `projects.shared.features.household`, with `TYPESAFE_PROJECT_ACCESSORS` enabled.
 
-Run `python3 tools/audit_project.py` to check package paths, feature dependencies, domain imports, demo isolation, UI resource use, and named project references.
+Run `python3 tools/audit_project.py` to check package paths, feature dependencies, domain imports, demo isolation, typed error boundaries, transport-model files/annotations, stream naming, explicit imports, UI resource use, and named project references.

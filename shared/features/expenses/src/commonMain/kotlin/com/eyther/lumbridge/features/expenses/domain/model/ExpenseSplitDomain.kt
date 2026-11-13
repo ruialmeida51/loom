@@ -1,16 +1,19 @@
 package com.eyther.lumbridge.features.expenses.domain.model
 
+import com.eyther.lumbridge.core.domain.errors.requireDomain
+import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseError
+
 object ExpenseSplitDomain {
     fun equal(amountMinor: Long, memberIds: List<String>): Map<String, Long> {
-        require(amountMinor in 1..MoneyDomain.MAX_MINOR_UNITS) {
-            "expenses.message_enter_a_valid_amount"
+        requireDomain(amountMinor in 1..MoneyDomain.MAX_MINOR_UNITS) {
+            ExpenseError.InvalidAmount()
         }
-        require(
+        requireDomain(
             memberIds.isNotEmpty() &&
                 memberIds.size <= 100 &&
                 memberIds.distinct().size == memberIds.size,
         ) {
-            "expenses.message_choose_distinct_household_members"
+            ExpenseError.DuplicateParticipants()
         }
         val members = memberIds.sorted()
         val base = amountMinor / members.size
@@ -21,16 +24,16 @@ object ExpenseSplitDomain {
     }
 
     fun percentages(amountMinor: Long, percentages: Map<String, Int>): Map<String, Long> {
-        require(amountMinor in 1..MoneyDomain.MAX_MINOR_UNITS) {
-            "expenses.message_enter_a_valid_amount"
+        requireDomain(amountMinor in 1..MoneyDomain.MAX_MINOR_UNITS) {
+            ExpenseError.InvalidAmount()
         }
-        require(
+        requireDomain(
             percentages.isNotEmpty() &&
                 percentages.size <= 100 &&
                 percentages.values.all { it in 0..100 } &&
                 percentages.values.sum() == 100,
         ) {
-            "expenses.message_percentages_must_add_up_to_100"
+            ExpenseError.InvalidPercentages()
         }
         val shares =
             percentages
@@ -48,17 +51,17 @@ object ExpenseSplitDomain {
     }
 
     fun validate(amountMinor: Long, shares: Map<String, Long>) {
-        require(amountMinor in 1..MoneyDomain.MAX_MINOR_UNITS) {
-            "expenses.message_enter_a_valid_amount"
+        requireDomain(amountMinor in 1..MoneyDomain.MAX_MINOR_UNITS) {
+            ExpenseError.InvalidAmount()
         }
-        require(shares.isNotEmpty() && shares.size <= 100) {
-            "expenses.message_choose_who_to_split_with"
+        requireDomain(shares.isNotEmpty() && shares.size <= 100) {
+            ExpenseError.NoParticipants()
         }
-        require(shares.values.all { it in 0..amountMinor }) {
-            "expenses.message_each_share_must_be_between_zero_and_the_total"
+        requireDomain(shares.values.all { it in 0..amountMinor }) {
+            ExpenseError.InvalidShare()
         }
-        require(shares.values.sum() == amountMinor) {
-            "expenses.message_the_shares_must_add_up_to_the_full_amount"
+        requireDomain(shares.values.sum() == amountMinor) {
+            ExpenseError.IncorrectSplitTotal()
         }
     }
 }

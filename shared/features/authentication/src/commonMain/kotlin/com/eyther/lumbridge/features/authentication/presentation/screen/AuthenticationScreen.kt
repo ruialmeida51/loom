@@ -1,36 +1,58 @@
 package com.eyther.lumbridge.features.authentication.presentation.screen
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.*
-import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
-import com.eyther.lumbridge.features.authentication.generated.resources.*
-import com.eyther.lumbridge.features.authentication.presentation.localization.localizedMessage
+import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.PageHeading
+import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.authentication.generated.resources.Res
+import com.eyther.lumbridge.features.authentication.generated.resources.ui_a_calmer_home_for_the_things_you_share
+import com.eyther.lumbridge.features.authentication.generated.resources.ui_already_have_an_account_sign_in
+import com.eyther.lumbridge.features.authentication.generated.resources.ui_create_account
+import com.eyther.lumbridge.features.authentication.generated.resources.ui_email
+import com.eyther.lumbridge.features.authentication.generated.resources.ui_life_woven_together
+import com.eyther.lumbridge.features.authentication.generated.resources.ui_make_yourself_at_home
+import com.eyther.lumbridge.features.authentication.generated.resources.ui_new_here_create_an_account
+import com.eyther.lumbridge.features.authentication.generated.resources.ui_password
+import com.eyther.lumbridge.features.authentication.generated.resources.ui_sign_in
+import com.eyther.lumbridge.features.authentication.generated.resources.ui_welcome_home
+import com.eyther.lumbridge.features.authentication.generated.resources.ui_welcome_to_loom
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.AuthenticationScreenViewModelContract
-import kotlinx.coroutines.flow.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun AuthenticationScreen(vm: AuthenticationScreenViewModelContract) {
-    val state by vm.state.platformCollectAsStateOnStart()
+fun AuthenticationScreen(viewModel: AuthenticationScreenViewModelContract) {
+    val state by viewModel.state.platformCollectAsStateOnStart()
     InnerAuthenticationScreen(
         email = state.email,
         password = state.password,
         registering = state.registering,
         busy = state.busy,
-        message = localizedMessage(state.message),
+        message = state.message,
         error = state.error,
-        onEmail = vm::email,
-        onPassword = vm::password,
-        onToggleRegister = vm::toggleRegister,
-        onSubmit = vm::submit,
-        onDismiss = vm::dismiss,
+        onEmail = viewModel::onEmailChanged,
+        onPassword = viewModel::onPasswordChanged,
+        onToggleRegister = viewModel::onToggleRegistration,
+        onSubmit = viewModel::onSubmit,
+        onDismiss = viewModel::onDismissError,
     )
 }
 
@@ -40,8 +62,8 @@ private fun InnerAuthenticationScreen(
     password: String,
     registering: Boolean,
     busy: Boolean,
-    message: String?,
-    error: String?,
+    message: TextResource?,
+    error: TextResource?,
     onEmail: (String) -> Unit,
     onPassword: (String) -> Unit,
     onToggleRegister: () -> Unit,
@@ -66,8 +88,8 @@ private fun InnerAuthenticationScreen(
             else stringResource(Res.string.ui_welcome_home),
             style = MaterialTheme.typography.headlineMedium,
         )
-        ErrorNotice(localizedMessage(error), onDismiss)
-        message?.let { Text(it, color = MaterialTheme.colorScheme.secondary) }
+        ErrorNotice(error, onDismiss)
+        message?.let { Text(it.getString(), color = MaterialTheme.colorScheme.secondary) }
         OutlinedTextField(
             email,
             onEmail,

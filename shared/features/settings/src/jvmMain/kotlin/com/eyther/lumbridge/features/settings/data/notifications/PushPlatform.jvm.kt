@@ -1,6 +1,8 @@
 package com.eyther.lumbridge.features.settings.data.notifications
 
+import com.eyther.lumbridge.features.settings.domain.errors.SettingsError
+
 actual object PushPlatform {
     actual suspend fun requestToken(): Pair<String, String> =
-        error("settings.message_push_notifications_are_available_in_the_android_and_ios")
+        throw SettingsError.UnsupportedPlatform()
 }

@@ -1,12 +1,13 @@
 package com.eyther.lumbridge.features.authentication.data.local
 
-import com.eyther.lumbridge.core.data.PlatformStorage
+import com.eyther.lumbridge.core.data.local.PlatformStorage
 import io.github.jan.supabase.auth.SessionManager
 import io.github.jan.supabase.auth.exception.NoSessionFoundException
 import io.github.jan.supabase.auth.user.UserSession
 import kotlinx.serialization.json.Json
 
 class SecureSessionManager : SessionManager {
+
     private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun saveSession(session: UserSession) =

@@ -1,16 +1,24 @@
 package com.eyther.lumbridge.app.demo.data
 
-import com.eyther.lumbridge.core.domain.safeCall
+import com.eyther.lumbridge.core.domain.errors.requireDomain
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
-import com.eyther.lumbridge.features.shopping.domain.model.*
+import com.eyther.lumbridge.features.shopping.domain.errors.ShoppingError
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
 class DemoShoppingDataSource(private val store: DemoHouseholdStore) : ShoppingDataSource {
-    override fun observe() = store.shopping
 
-    override suspend fun add(items: List<ShoppingItemDomain>) = safeCall {
+    override fun stream() = store.shopping.map { AppResult.Success(it) }
+
+    override suspend fun addItems(items: List<ShoppingItemDomain>) = safeCall {
         items.forEach { item ->
-            require(store.shopping.value.activeLists.any { it.id == item.listId })
+            requireDomain(store.shopping.value.activeLists.any { it.id == item.listId }) {
+                ShoppingError.ActiveListRequired()
+            }
             item.validated()
         }
         val saved = items.map { it.copy(version = 1) }
@@ -23,12 +31,14 @@ class DemoShoppingDataSource(private val store: DemoHouseholdStore) : ShoppingDa
         saved
     }
 
-    override suspend fun save(item: ShoppingItemDomain) = safeCall {
-        val before = store.shopping.value.items.first { it.id == item.id }
-        require(before.version == item.version) {
-            "shopping.message_this_item_changed_refresh_before_undoing_or_editing_it"
+    override suspend fun saveItem(item: ShoppingItemDomain) = safeCall {
+        val before = store.shopping.value.items.firstOrNull { it.id == item.id } ?: throw ShoppingError.ItemNotFound()
+        requireDomain(before.version == item.version) {
+            ShoppingError.ItemChanged()
         }
-        require(store.shopping.value.activeLists.any { it.id == item.listId })
+        requireDomain(store.shopping.value.activeLists.any { it.id == item.listId }) {
+                ShoppingError.ActiveListRequired()
+            }
         val saved = item.validated().copy(version = item.version + 1)
         store.shopping.update {
             it.copy(items = it.items.map { old -> if (old.id == item.id) saved else old })
@@ -38,19 +48,21 @@ class DemoShoppingDataSource(private val store: DemoHouseholdStore) : ShoppingDa
 
     override suspend fun saveList(list: ShoppingListDomain) = safeCall {
         val before = store.shopping.value.lists.firstOrNull { it.id == list.id }
-        require(before == null || before.version == list.version)
-        require(
+        requireDomain(before == null || before.version == list.version) {
+            ShoppingError.ListChanged()
+        }
+        requireDomain(
             !list.archived || before?.archived == true || store.shopping.value.activeLists.size > 1,
         ) {
-            "shopping.message_keep_at_least_one_shopping_list_active"
+            ShoppingError.LastActiveList()
         }
-        require(
+        requireDomain(
             list.archived ||
                 store.shopping.value.activeLists.none {
                     it.id != list.id && it.name.equals(list.name.trim(), true)
                 },
         ) {
-            "shopping.message_list_name_exists"
+            ShoppingError.ListNameAlreadyExists()
         }
         val saved = list.validated().copy(version = list.version + 1)
         store.shopping.update { it.copy(lists = it.lists.filterNot { it.id == list.id } + saved) }

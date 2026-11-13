@@ -1,17 +1,24 @@
 package com.eyther.lumbridge.features.shopping.domain.usecase
 
-import com.eyther.lumbridge.core.domain.*
+import com.eyther.lumbridge.core.domain.errors.requireDomain
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
+import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
+import com.eyther.lumbridge.features.shopping.domain.errors.ShoppingError
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 
-class AddShoppingItemsUseCase(private val source: ShoppingDataSource) {
+class AddShoppingItemsUseCase(
+    private val shoppingDataSource: ShoppingDataSource,
+) {
+
     suspend operator fun invoke(
         items: List<ShoppingItemDomain>,
     ): AppResult<List<ShoppingItemDomain>> = safeCall {
-        require(items.size in 1..50) { "shopping.message_add_between_1_and_50_items_at_once" }
-        require(items.all { it.version == 0L && !it.removed }) {
-            "shopping.message_add_new_items_to_the_list"
+        requireDomain(items.size in 1..50) { ShoppingError.InvalidBatchSize() }
+        requireDomain(items.all { it.version == 0L && !it.removed }) {
+            ShoppingError.ItemsAlreadySaved()
         }
-        source.add(items.map { it.validated() }).getOrThrow()
+        shoppingDataSource.addItems(items.map { it.validated() }).getOrThrow()
     }
 }

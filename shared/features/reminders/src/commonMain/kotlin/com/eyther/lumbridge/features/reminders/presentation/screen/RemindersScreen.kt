@@ -1,26 +1,58 @@
 package com.eyther.lumbridge.features.reminders.presentation.screen
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.*
-import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.components.EmptyNotice
+import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.PageHeading
+import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
-import com.eyther.lumbridge.features.reminders.generated.resources.*
-import com.eyther.lumbridge.features.reminders.presentation.localization.localizedMessage
-import com.eyther.lumbridge.features.reminders.presentation.localization.localizedToken
+import com.eyther.lumbridge.features.reminders.generated.resources.Res
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_a_gentle_nudge
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_a_little_reminder
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_add_a_reminder
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_add_a_reminder_and_let_loom_keep_track_of
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_cancel
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_date_yyyy_mm_dd
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_nothing_on_your_mind
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_remove
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_repeats_1_s
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_room_in_your_head
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_save_reminder
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_the_little_things_remembered_together
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_time_hh_mm
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_times_are_in_1_s
+import com.eyther.lumbridge.features.reminders.generated.resources.ui_what_needs_doing
+import com.eyther.lumbridge.features.reminders.presentation.mapper.reminderRecurrenceLabel
 import com.eyther.lumbridge.features.reminders.presentation.viewmodel.contracts.RemindersScreenViewModelContract
-import kotlinx.coroutines.flow.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun RemindersScreen(vm: RemindersScreenViewModelContract, timeZone: String) {
-    val state by vm.state.platformCollectAsStateOnStart()
+fun RemindersScreen(viewModel: RemindersScreenViewModelContract, timeZone: String) {
+    val state by viewModel.state.platformCollectAsStateOnStart()
     InnerRemindersScreen(
         items = state.items,
         title = state.title,
@@ -31,15 +63,15 @@ fun RemindersScreen(vm: RemindersScreenViewModelContract, timeZone: String) {
         busy = state.busy,
         error = state.error,
         timeZone = timeZone,
-        onShowAdd = vm::showAdd,
-        onTitle = vm::title,
-        onDate = vm::date,
-        onTime = vm::time,
-        onRecurrence = vm::recurrence,
-        onDismiss = vm::dismiss,
-        onAdd = vm::add,
-        onComplete = vm::complete,
-        onRemove = vm::remove,
+        onShowAdd = viewModel::onAddSheetVisibilityChanged,
+        onTitle = viewModel::onTitleChanged,
+        onDate = viewModel::onDateChanged,
+        onTime = viewModel::onTimeChanged,
+        onRecurrence = viewModel::onRecurrenceChanged,
+        onDismiss = viewModel::onDismissError,
+        onAdd = viewModel::onSaveReminder,
+        onComplete = viewModel::onCompleteReminder,
+        onRemove = viewModel::onRemoveReminder,
     )
 }
 
@@ -52,7 +84,7 @@ private fun InnerRemindersScreen(
     recurrence: String,
     showAdd: Boolean,
     busy: Boolean,
-    error: String?,
+    error: TextResource?,
     timeZone: String,
     onShowAdd: (Boolean) -> Unit,
     onTitle: (String) -> Unit,
@@ -76,7 +108,7 @@ private fun InnerRemindersScreen(
                 stringResource(Res.string.ui_the_little_things_remembered_together),
             )
         }
-        item { ErrorNotice(localizedMessage(error), onDismiss) }
+        item { ErrorNotice(error, onDismiss) }
         item {
             LoomButton(
                 stringResource(Res.string.ui_add_a_reminder),
@@ -109,7 +141,7 @@ private fun InnerRemindersScreen(
                             Text(
                                 stringResource(
                                     Res.string.ui_repeats_1_s,
-                                    localizedToken(reminder.recurrence),
+                                    reminderRecurrenceLabel(reminder.recurrence),
                                 ),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.secondary,
@@ -160,13 +192,13 @@ private fun InnerRemindersScreen(
                                 { onRecurrence(repeat) },
                                 label = {
                                     Text(
-                                        localizedToken(repeat),
+                                        reminderRecurrenceLabel(repeat),
                                     )
                                 },
                             )
                         }
                     }
-                    ErrorNotice(localizedMessage(error), onDismiss)
+                    ErrorNotice(error, onDismiss)
                 }
             },
             confirmButton = {

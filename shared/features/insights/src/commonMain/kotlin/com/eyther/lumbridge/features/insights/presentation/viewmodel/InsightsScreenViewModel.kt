@@ -1,77 +1,115 @@
 package com.eyther.lumbridge.features.insights.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.stateflow.*
-import com.eyther.lumbridge.core.domain.AppResult
+import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
+import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.todayIso
-import com.eyther.lumbridge.core.presentation.*
-import com.eyther.lumbridge.features.expenses.domain.usecase.ObserveExpensesUseCase
-import com.eyther.lumbridge.features.expenses.domain.usecase.ObserveSettlementsUseCase
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
-import com.eyther.lumbridge.features.insights.domain.model.MonthlyStatementDomain
+import com.eyther.lumbridge.features.insights.domain.usecase.ExportStatementUseCase
+import com.eyther.lumbridge.features.insights.domain.usecase.GetMonthlyStatementStreamUseCase
 import com.eyther.lumbridge.features.insights.domain.usecase.SaveStatementUseCase
+import com.eyther.lumbridge.features.insights.generated.resources.Res
+import com.eyther.lumbridge.features.insights.generated.resources.statement_saved
+import com.eyther.lumbridge.features.insights.presentation.mapper.toInsightsTextResource
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsScreenViewModelContract
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsState
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 
 class InsightsScreenViewModel(
-    observeExpenses: ObserveExpensesUseCase,
-    observeSettlements: ObserveSettlementsUseCase,
+    private val getMonthlyStatementStreamUseCase: GetMonthlyStatementStreamUseCase,
     private val saveStatementUseCase: SaveStatementUseCase,
     private val context: HouseholdContextDomain,
+    private val exportStatementUseCase: ExportStatementUseCase,
 ) : InsightsScreenViewModelContract() {
-    private val month = MutableStateFlow(todayIso(context.timeZone).take(7))
+
+    private val selectedMonth = MutableStateFlow(todayIso(context.timeZone).take(7))
+
     private val mutableState = MutableStateFlow(InsightsState())
+        .observeWith(viewModelScope) { state ->
+            getMonthlyStatementStreamUseCase(selectedMonth).updateState(state) { result ->
+                when (result) {
+                    is AppResult.Success -> copy(
+                        statement = result.value,
+                        month = result.value.month,
+                        error = null,
+                    )
+
+                    is AppResult.Failure -> copy(error = result.error.toInsightsTextResource())
+                }
+            }
+        }
+
     override val state = mutableState.asStateFlow()
 
-    init {
-        mutableState.observeWith(viewModelScope) {
-            combine(observeExpenses(), observeSettlements(), month) { expenses, settlements, month
-                    ->
-                    MonthlyStatementDomain.build(month, context.userId, expenses, settlements)
-                }
-                .catch { error -> mutableState.update { it.copy(error = error.message) } }
-                .onEach { statement ->
-                    mutableState.update { it.copy(statement = statement, month = statement.month) }
-                }
+    override fun onPreviousMonth() {
+        changeMonth(offset = -1)
+    }
+
+    override fun onNextMonth() {
+        changeMonth(offset = 1)
+    }
+
+    override fun onDismissMessage() {
+        mutableState.update { oldState ->
+            oldState.copy(error = null, message = null)
         }
     }
 
-    override fun previous() {
-        changeMonth(-1)
+    override fun onSaveStatement() {
+        if (state.value.busy) return
+        val month = state.value.month
+
+        mutableState.update { oldState ->
+            oldState.copy(busy = true, error = null)
+        }
+
+        launch {
+            val result = saveStatementUseCase(month)
+
+            mutableState.update { oldState ->
+                when (result) {
+                    is AppResult.Success -> oldState.copy(
+                        busy = false,
+                        message = TextResource.Resource(Res.string.statement_saved),
+                    )
+
+                    is AppResult.Failure -> oldState.copy(
+                        busy = false,
+                        error = result.error.toInsightsTextResource(),
+                    )
+                }
+            }
+        }
     }
 
-    override fun next() {
-        changeMonth(1)
+    override fun onExportStatement(filename: String, content: String, title: String) {
+        if (state.value.busy) return
+
+        mutableState.update { oldState ->
+            oldState.copy(busy = true, error = null)
+        }
+
+        launch {
+            val result = exportStatementUseCase(filename = filename, content = content, title = title)
+
+            mutableState.update { oldState ->
+                oldState.copy(
+                    busy = false,
+                    error = (result as? AppResult.Failure)?.error?.toInsightsTextResource(),
+                )
+            }
+        }
     }
 
     private fun changeMonth(offset: Int) {
-        val parts = month.value.split('-')
-        val index = parts[0].toInt() * 12 + parts[1].toInt() - 1 + offset
-        month.value = "${index/12}-${(index%12+1).toString().padStart(2,'0')}"
-    }
-
-    override fun dismiss() {
-        mutableState.update { it.copy(error = null, message = null) }
-    }
-
-    override fun save() {
-        if (mutableState.value.busy) return
-        val month = mutableState.value.month
-        mutableState.update { it.copy(busy = true, error = null) }
-        launch {
-            when (val result = saveStatementUseCase(month)) {
-                is AppResult.Success ->
-                    mutableState.update {
-                        it.copy(
-                            busy = false,
-                            message =
-                                "insights.message_statement_saved_later_changes_create_a_new_revision",
-                        )
-                    }
-                is AppResult.Failure ->
-                    mutableState.update { it.copy(busy = false, error = result.message) }
-            }
-        }
+        val date = LocalDate.parse("${selectedMonth.value}-01")
+        selectedMonth.value = date.plus(DatePeriod(months = offset)).toString().take(7)
     }
 }

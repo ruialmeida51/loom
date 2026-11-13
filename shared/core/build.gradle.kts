@@ -99,12 +99,12 @@ val generateLoomConfig =
         doLast {
             generatedConfig
                 .get()
-                .file("com/eyther/lumbridge/core/data/LoomBuildConfig.kt")
+                .file("com/eyther/lumbridge/core/data/network/config/LoomBuildConfig.kt")
                 .asFile
                 .apply {
                     parentFile.mkdirs()
                     writeText(
-                        "package com.eyther.lumbridge.core.data\ninternal object LoomBuildConfig {\n const val supabaseUrl = \"$loomUrl\"\n const val supabasePublishableKey = \"$loomKey\"\n}\n",
+                        "package com.eyther.lumbridge.core.data.network.config\ninternal object LoomBuildConfig {\n const val supabaseUrl = \"$loomUrl\"\n const val supabasePublishableKey = \"$loomKey\"\n}\n",
                     )
                 }
         }

@@ -3,7 +3,7 @@ package com.eyther.lumbridge.features.insights.data.export
 import android.content.ClipData
 import android.content.Intent
 import androidx.core.content.FileProvider
-import com.eyther.lumbridge.core.data.PlatformStorage
+import com.eyther.lumbridge.core.data.local.PlatformStorage
 import java.io.File
 
 actual object PlatformExport {

@@ -1,7 +1,7 @@
 <resources>
-    <string name="message_give_your_reminder_a_title_up_to_160_characters">Give your reminder a title, up to 160 characters.</string>
-    <string name="message_choose_a_repeat_option">Choose a repeat option.</string>
-    <string name="message_use_a_date_like_2026_11_13_and_a">Use a date like 2026-11-13 and a time like 18:30.</string>
+    <string name="error_invalid_title">Give your reminder a title, up to 160 characters.</string>
+    <string name="error_invalid_recurrence">Choose a repeat option.</string>
+    <string name="error_invalid_date_time">Use a date like 2026-11-13 and a time like 18:30.</string>
     <string name="ui_a_gentle_nudge">A GENTLE NUDGE</string>
     <string name="ui_room_in_your_head">Room in your head.</string>
     <string name="ui_the_little_things_remembered_together">The little things, remembered together.</string>
@@ -21,4 +21,5 @@
     <string name="token_no_repeat">No repeat</string>
     <string name="token_daily">Daily</string>
     <string name="token_weekly">Weekly</string>
+    <string name="error_access_denied">This reminder is no longer available to your household.</string>
 </resources>

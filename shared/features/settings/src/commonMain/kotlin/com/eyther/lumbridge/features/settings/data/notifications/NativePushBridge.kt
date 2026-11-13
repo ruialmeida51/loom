@@ -1,9 +1,10 @@
 package com.eyther.lumbridge.features.settings.data.notifications
 
-import com.eyther.lumbridge.core.data.PlatformStorage
+import com.eyther.lumbridge.core.data.local.PlatformStorage
+import com.eyther.lumbridge.features.settings.domain.errors.SettingsError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** iOS AppDelegate and Android's messaging service deliver native tokens here. */
 object NativePushBridge {
@@ -25,9 +26,6 @@ object NativePushBridge {
     }
 
     suspend fun awaitToken(): Pair<String, String> =
-        withTimeout(20_000) { token.first { it != null }!! }
-}
-
-expect object PushPlatform {
-    suspend fun requestToken(): Pair<String, String>
+        withTimeoutOrNull(20_000) { token.first { it != null }!! }
+            ?: throw SettingsError.RegistrationFailed()
 }

@@ -40,6 +40,7 @@ data class NavigationState(
     internal val startRoot: NavKey,
     internal val root: MutableState<NavKey>,
 ) {
+
     // Initialise the activeRoot property with the value of root at the time of creation.
     var activeRoot: NavKey by root
 

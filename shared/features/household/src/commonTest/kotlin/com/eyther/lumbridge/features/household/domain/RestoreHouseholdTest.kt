@@ -1,34 +1,45 @@
 package com.eyther.lumbridge.features.household.domain
 
-import com.eyther.lumbridge.core.domain.*
-import com.eyther.lumbridge.features.household.domain.datasource.*
-import com.eyther.lumbridge.features.household.domain.model.*
-import com.eyther.lumbridge.features.household.domain.usecase.*
-import kotlin.test.*
+import com.eyther.lumbridge.core.domain.errors.CommonError
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
+import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
+import com.eyther.lumbridge.features.household.domain.datasource.HouseholdSelectionDataSource
+import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
+import com.eyther.lumbridge.features.household.domain.model.MemberDomain
+import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.RestoreHouseholdUseCase
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class RestoreHouseholdTest {
+
     private class Selection : HouseholdSelectionDataSource {
+
         val values = mutableMapOf<String, String>()
 
-        override fun lastSelected(userId: String) = values[userId]
+        override suspend fun getLastSelected(userId: String) = AppResult.Success(values[userId])
 
-        override fun select(userId: String, householdId: String?) {
+        override suspend fun select(userId: String, householdId: String?): AppResult<Unit> {
             if (householdId == null) values.remove(userId) else values[userId] = householdId
+            return AppResult.Success(Unit)
         }
     }
 
     private class Households(val visible: List<HouseholdDomain>) : HouseholdDataSource {
-        override suspend fun list() = AppResult.Success(visible)
 
-        override suspend fun create(name: String, currency: String, timeZone: String) =
-            AppResult.Failure("unused")
+        override suspend fun getHouseholds() = AppResult.Success(visible)
 
-        override suspend fun join(token: String) = AppResult.Success(Unit)
+        override suspend fun createHousehold(name: String, currency: String, timeZone: String) =
+            AppResult.Failure(CommonError.Unknown())
 
-        override suspend fun members(householdId: String) =
+        override suspend fun joinHousehold(token: String) = AppResult.Success(Unit)
+
+        override suspend fun getMembers(householdId: String) =
             AppResult.Success(emptyList<MemberDomain>())
 
-        override suspend fun invite(householdId: String) = AppResult.Failure("unused")
+        override suspend fun createInvitation(householdId: String) = AppResult.Failure(CommonError.Unknown())
     }
 
     @Test
@@ -41,7 +52,7 @@ class RestoreHouseholdTest {
                     )
                     .getOrThrow()
             assertNull(result)
-            assertNull(selection.lastSelected("alice"))
+            assertNull(selection.getLastSelected("alice").getOrThrow())
         }
 
     @Test
@@ -59,6 +70,6 @@ class RestoreHouseholdTest {
                     GetHouseholdsUseCase(Households(listOf(household))),
                 )
             assertEquals(household, restore("alice").getOrThrow())
-            assertEquals("other", selection.lastSelected("bob"))
+            assertEquals("other", selection.getLastSelected("bob").getOrThrow())
         }
 }

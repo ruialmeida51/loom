@@ -3,13 +3,22 @@ package com.eyther.lumbridge.app.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.eyther.lumbridge.app.di.householdModule
-import com.eyther.lumbridge.core.data.SupabaseAccess
-import com.eyther.lumbridge.core.domain.AppResult
-import com.eyther.lumbridge.features.authentication.domain.usecase.ObserveSessionUseCase
+import com.eyther.lumbridge.core.data.network.SupabaseAccess
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
 import com.eyther.lumbridge.features.authentication.presentation.screen.AuthenticationScreen
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.AuthenticationScreenViewModelContract
@@ -27,8 +36,8 @@ import org.koin.dsl.koinApplication
 
 @Composable
 fun LauncherHost() {
-    val observeSession: ObserveSessionUseCase = koinInject()
-    val session by observeSession().collectAsState()
+    val getSessionStreamUseCase: GetSessionStreamUseCase = koinInject()
+    val session by getSessionStreamUseCase().collectAsState()
     val signOut: SignOutUseCase = koinInject()
     val access: SupabaseAccess = koinInject()
     val source: HouseholdDataSource = koinInject()

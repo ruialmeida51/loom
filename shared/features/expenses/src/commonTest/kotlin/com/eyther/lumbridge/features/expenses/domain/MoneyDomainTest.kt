@@ -1,9 +1,13 @@
 package com.eyther.lumbridge.features.expenses.domain
 
+import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseError
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class MoneyDomainTest {
+
     @Test
     fun parsesWithoutFloatingPoint() {
         assertEquals(123, MoneyDomain.parse("1.23", "EUR").minorUnits)
@@ -13,8 +17,12 @@ class MoneyDomainTest {
 
     @Test
     fun rejectsInvalidAndOverflowAmounts() {
-        listOf("0", "-1", "1.001", "NaN", "1e3", "9999999999999999999999999999").forEach {
-            assertFailsWith<IllegalArgumentException> { MoneyDomain.parse(it, "EUR") }
+        listOf("-1", "1.001", "NaN", "1e3").forEach {
+            assertFailsWith<ExpenseError.InvalidAmountPrecision> { MoneyDomain.parse(it, "EUR") }
+        }
+        assertFailsWith<ExpenseError.AmountNotPositive> { MoneyDomain.parse("0", "EUR") }
+        assertFailsWith<ExpenseError.AmountTooLarge> {
+            MoneyDomain.parse("9999999999999999999999999999", "EUR")
         }
     }
 
@@ -25,6 +33,6 @@ class MoneyDomainTest {
 
     @Test
     fun currencyCannotSilentlyUseTheWrongExponent() {
-        assertFailsWith<IllegalArgumentException> { MoneyDomain(100, "JPY") }
+        assertFailsWith<ExpenseError.UnsupportedCurrency> { MoneyDomain(100, "JPY") }
     }
 }

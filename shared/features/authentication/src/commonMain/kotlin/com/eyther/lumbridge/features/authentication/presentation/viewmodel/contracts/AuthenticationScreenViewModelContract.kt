@@ -1,27 +1,19 @@
 package com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts
 
-import com.eyther.lumbridge.core.presentation.*
-import kotlinx.coroutines.flow.*
-
-data class AuthenticationState(
-    val email: String = "",
-    val password: String = "",
-    val registering: Boolean = false,
-    val busy: Boolean = false,
-    val message: String? = null,
-    val error: String? = null,
-)
+import com.eyther.lumbridge.core.viewmodel.LoomViewModel
+import kotlinx.coroutines.flow.StateFlow
 
 abstract class AuthenticationScreenViewModelContract : LoomViewModel() {
+
     abstract val state: StateFlow<AuthenticationState>
 
-    abstract fun email(value: String)
+    abstract fun onEmailChanged(value: String)
 
-    abstract fun password(value: String)
+    abstract fun onPasswordChanged(value: String)
 
-    abstract fun toggleRegister()
+    abstract fun onToggleRegistration()
 
-    abstract fun submit()
+    abstract fun onSubmit()
 
-    abstract fun dismiss()
+    abstract fun onDismissError()
 }

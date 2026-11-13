@@ -11,6 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 tools/audit_project.py
+      - name: Configure Android Firebase
+        env:
+          LOOM_FIREBASE_CONFIG: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$LOOM_FIREBASE_CONFIG" ]; then
+            printf '%s' "$LOOM_FIREBASE_CONFIG" > androidApp/google-services.json
+          fi
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -21,7 +28,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - run: sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest :shared:features:insights:jvmTest :shared:features:reminders:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
+      - run: ./gradlew :shared:core:jvmTest :shared:features:authentication:jvmTest :shared:features:settings:jvmTest :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest :shared:features:insights:jvmTest :shared:features:reminders:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
       - run: python3 tools/test_database.py
       - uses: denoland/setup-deno@v2
         with:

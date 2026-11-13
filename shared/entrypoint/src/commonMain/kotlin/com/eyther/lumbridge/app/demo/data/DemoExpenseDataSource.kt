@@ -1,17 +1,24 @@
 package com.eyther.lumbridge.app.demo.data
 
-import com.eyther.lumbridge.core.domain.*
+import com.eyther.lumbridge.core.domain.newId
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
-import com.eyther.lumbridge.features.expenses.domain.model.*
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.MonthlyRecurrenceDomain
+import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDate
 
 class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseDataSource {
-    override fun observeExpenses() = store.expenses
 
-    override fun observeSettlements() = store.settlements
+    override fun streamExpenses() = store.expenses.map { AppResult.Success(it) }
 
-    override suspend fun add(expense: ExpenseDomain) = safeCall {
+    override fun streamSettlements() = store.settlements.map { AppResult.Success(it) }
+
+    override suspend fun addExpense(expense: ExpenseDomain) = safeCall {
         if (store.expenses.value.none { it.id == expense.id }) {
             store.expenses.update { it + expense }
             if (expense.recurring) {
@@ -38,7 +45,7 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
         Unit
     }
 
-    override suspend fun settle(settlement: SettlementDomain) = safeCall {
+    override suspend fun recordSettlement(settlement: SettlementDomain) = safeCall {
         store.settlements.update { it.filterNot { row -> row.id == settlement.id } + settlement }
         Unit
     }

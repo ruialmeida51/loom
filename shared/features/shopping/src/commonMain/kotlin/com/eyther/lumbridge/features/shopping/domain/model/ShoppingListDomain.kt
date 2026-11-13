@@ -1,14 +1,18 @@
 package com.eyther.lumbridge.features.shopping.domain.model
 
+import com.eyther.lumbridge.core.domain.errors.requireDomain
+import com.eyther.lumbridge.features.shopping.domain.errors.ShoppingError
+
 data class ShoppingListDomain(
     val id: String,
     val name: String,
     val archived: Boolean = false,
     val version: Long = 0,
 ) {
+
     fun validated(): ShoppingListDomain {
-        require(name.trim().length in 1..60) {
-            "shopping.message_give_the_list_a_name_up_to_60_characters"
+        requireDomain(name.trim().length in 1..60) {
+            ShoppingError.InvalidListName()
         }
         return copy(name = name.trim())
     }

@@ -1,5 +1,5 @@
 <resources>
-  <string name="message_enter_a_secure_rss_or_atom_feed_url_beginning">Enter a secure RSS or Atom feed URL beginning with https://.</string>
+  <string name="error_invalid_url">Enter a secure RSS or Atom feed URL beginning with https://.</string>
   <string name="ui_a_moment_for_you">A MOMENT FOR YOU</string>
   <string name="ui_the_reading_corner">The reading corner</string>
   <string name="ui_your_favourite_corners_of_the_internet_in_one_quiet">Your favourite corners of the internet, in one quiet place.</string>
@@ -15,4 +15,6 @@
   <string name="ui_follow_feed">Follow feed</string>
   <string name="ui_cancel">Cancel</string>
   <string name="ui_feed_url_hint" translatable="false">https://…</string>
+    <string name="error_already_followed">Your household already follows this feed.</string>
+    <string name="error_refresh_failed">The feed was added, but could not be refreshed. It will refresh automatically.</string>
 </resources>

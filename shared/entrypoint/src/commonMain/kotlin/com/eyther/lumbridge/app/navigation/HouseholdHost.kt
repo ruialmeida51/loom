@@ -1,69 +1,77 @@
 package com.eyther.lumbridge.app.navigation
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.app.navigation.model.HouseholdDestination
 import com.eyther.lumbridge.app.navigation.push.PendingPush
-import com.eyther.lumbridge.app.presentation.localization.localizedToken
 import com.eyther.lumbridge.core.navigation.composables.navigation3.HorizontalSlideNavDisplay
-import com.eyther.lumbridge.core.navigation.model.*
-import com.eyther.lumbridge.core.presentation.*
+import com.eyther.lumbridge.core.navigation.model.Navigator
+import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
+import com.eyther.lumbridge.core.presentation.theme.LoomTheme
+import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpensesScreen
 import com.eyther.lumbridge.features.expenses.presentation.screen.RecurringExpensesScreen
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
-import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.feed.presentation.screen.FeedScreen
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
 import com.eyther.lumbridge.features.home.presentation.screen.HomeScreen
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.presentation.components.HouseholdBadge
-import com.eyther.lumbridge.features.insights.data.export.PlatformExport
 import com.eyther.lumbridge.features.insights.presentation.screen.InsightsScreen
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsScreenViewModelContract
 import com.eyther.lumbridge.features.reminders.presentation.screen.RemindersScreen
 import com.eyther.lumbridge.features.reminders.presentation.viewmodel.contracts.RemindersScreenViewModelContract
-import com.eyther.lumbridge.features.settings.domain.usecase.ObserveSettingsUseCase
+import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
 import com.eyther.lumbridge.features.settings.presentation.screen.SettingsScreen
 import com.eyther.lumbridge.features.settings.presentation.viewmodel.contracts.SettingsScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.presentation.screen.ShoppingScreen
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
-import com.eyther.lumbridge.shared.entrypoint.generated.resources.*
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.loom_logo
-import kotlinx.serialization.Serializable
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.token_home
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_back
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_feed
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_loom
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_money
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_our_household
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_shopping
 import kotlinx.serialization.modules.subclass
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-
-@Serializable
-private sealed interface HouseholdDestination : NavDestination {
-    @Serializable data object Home : HouseholdDestination
-
-    @Serializable data object Feed : HouseholdDestination
-
-    @Serializable data object Shopping : HouseholdDestination
-
-    @Serializable data object Money : HouseholdDestination
-
-    @Serializable data object Reminders : HouseholdDestination
-
-    @Serializable data object RecurringExpenses : HouseholdDestination
-
-    @Serializable data object Insights : HouseholdDestination
-
-    @Serializable data object Settings : HouseholdDestination
-}
 
 @Composable
 fun HouseholdHost(
@@ -71,8 +79,7 @@ fun HouseholdHost(
     onSwitchHousehold: () -> Unit,
     onSignOut: () -> Unit,
 ) {
-    val exportTitle = stringResource(Res.string.ui_monthly_statement)
-    val preferencesUseCase: ObserveSettingsUseCase = koinInject()
+    val preferencesUseCase: GetSettingsStreamUseCase = koinInject()
     val preferences by preferencesUseCase().collectAsState()
     val mode = runCatching { ThemeMode.valueOf(preferences.theme) }.getOrDefault(ThemeMode.SYSTEM)
     LoomTheme(mode) {
@@ -178,7 +185,11 @@ fun HouseholdHost(
                 ) {
                     val tabs =
                         listOf(
-                            Triple(HouseholdDestination.Home, "Home", Glyph.HOME),
+                            Triple(
+                                HouseholdDestination.Home,
+                                stringResource(Res.string.token_home),
+                                Glyph.HOME,
+                            ),
                             Triple(
                                 HouseholdDestination.Feed,
                                 stringResource(Res.string.ui_feed),
@@ -208,7 +219,7 @@ fun HouseholdHost(
                                         else MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             },
-                            label = { Text(localizedToken(label)) },
+                            label = { Text(label) },
                         )
                     }
                 }
@@ -249,16 +260,13 @@ fun HouseholdHost(
                         )
                     HouseholdDestination.RecurringExpenses ->
                         RecurringExpensesScreen(
-                            koinViewModel<RecurringExpensesViewModelContract>(),
+                            koinViewModel<RecurringExpensesScreenViewModelContract>(),
                             context,
                         )
                     HouseholdDestination.Insights ->
                         InsightsScreen(
-                            koinViewModel<InsightsScreenViewModelContract>(),
-                            context,
-                            { filename, content ->
-                                PlatformExport.shareCsv(filename, content, exportTitle)
-                            },
+                            viewModel = koinViewModel<InsightsScreenViewModelContract>(),
+                            context = context,
                         )
                     HouseholdDestination.Settings ->
                         SettingsScreen(

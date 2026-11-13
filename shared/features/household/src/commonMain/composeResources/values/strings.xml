@@ -1,7 +1,7 @@
 <resources>
-    <string name="message_enter_the_invitation_code_you_received">Enter the invitation code you received.</string>
-    <string name="message_give_your_household_a_name_between_2_and_60">Give your household a name between 2 and 60 characters.</string>
-    <string name="message_choose_a_supported_currency">Choose a supported currency.</string>
+    <string name="error_invalid_invitation">Enter the invitation code you received.</string>
+    <string name="error_invalid_name">Give your household a name between 2 and 60 characters.</string>
+    <string name="error_unsupported_currency">Choose a supported currency.</string>
     <string name="ui_your_people">YOUR PEOPLE</string>
     <string name="ui_make_yourself_at_home">Make yourself at home.</string>
     <string name="ui_choose_a_household_create_a_new_one_or_join">Choose a household, create a new one, or join your people.</string>
@@ -14,4 +14,8 @@
     <string name="ui_invitation_code">Invitation code</string>
     <string name="ui_join_household">Join household</string>
     <string name="ui_sign_out">Sign out</string>
+    <string name="error_expired_invitation">This invitation is invalid or has expired.</string>
+    <string name="error_already_joined">You are already in this household.</string>
+    <string name="error_household_full">This household is full.</string>
+    <string name="error_owner_required">Only the household owner can invite members.</string>
 </resources>

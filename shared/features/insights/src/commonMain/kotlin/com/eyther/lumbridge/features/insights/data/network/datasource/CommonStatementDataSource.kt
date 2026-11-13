@@ -1,27 +1,28 @@
 package com.eyther.lumbridge.features.insights.data.network.datasource
 
-import com.eyther.lumbridge.core.data.SupabaseAccess
-import com.eyther.lumbridge.core.data.safeApiCall
+import com.eyther.lumbridge.core.data.network.SupabaseAccess
+import com.eyther.lumbridge.core.data.network.safeApiCall
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import com.eyther.lumbridge.features.insights.data.network.model.request.SaveStatementRequest
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
 import io.github.jan.supabase.postgrest.postgrest
-import kotlinx.serialization.json.*
+import io.github.jan.supabase.postgrest.rpc
 
 class CommonStatementDataSource(
     private val access: SupabaseAccess,
     private val context: HouseholdContextDomain,
 ) : StatementDataSource {
-    override suspend fun save(month: String) = safeApiCall {
-        access
-            .requireClient()
-            .postgrest
-            .rpc(
-                "save_monthly_statement",
-                buildJsonObject {
-                    put("p_household_id", context.id)
-                    put("p_month", "$month-01")
-                },
+
+    override suspend fun saveStatement(month: String): AppResult<Unit> {
+        return safeApiCall {
+            val request = SaveStatementRequest(
+                householdId = context.id,
+                month = "$month-01",
             )
-        Unit
+
+            access.requireClient().postgrest.rpc("save_monthly_statement", request)
+            Unit
+        }
     }
 }

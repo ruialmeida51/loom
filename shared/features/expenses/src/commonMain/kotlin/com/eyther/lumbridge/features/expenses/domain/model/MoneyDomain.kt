@@ -1,12 +1,15 @@
 package com.eyther.lumbridge.features.expenses.domain.model
 
+import com.eyther.lumbridge.core.domain.errors.requireDomain
+import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseError
 import com.eyther.lumbridge.features.household.domain.model.HouseholdCurrencyDomain
 
 /** Money is stored in minor units. V1 households choose a supported two-decimal currency. */
 data class MoneyDomain(val minorUnits: Long, val currency: String) {
+
     init {
-        require(currency in HouseholdCurrencyDomain.supportedCodes) {
-            "expenses.message_choose_a_supported_currency"
+        requireDomain(currency in HouseholdCurrencyDomain.supportedCodes) {
+            ExpenseError.UnsupportedCurrency()
         }
     }
 
@@ -26,22 +29,27 @@ data class MoneyDomain(val minorUnits: Long, val currency: String) {
     companion object {
         const val MAX_MINOR_UNITS = 100_000_000_000L
 
+        fun parseShare(text: String, currency: String): MoneyDomain {
+            if (text.trim() in setOf("0", "0.00", "0,00")) {
+                return MoneyDomain(minorUnits = 0, currency = currency)
+            }
+            return parse(text = text, currency = currency)
+        }
+
         fun parse(text: String, currency: String): MoneyDomain {
             val clean = text.trim().replace(',', '.')
-            require(Regex("[0-9]+(?:[.][0-9]{1,2})?").matches(clean)) {
-                "expenses.message_enter_an_amount_with_at_most_two_decimal_places"
+            requireDomain(Regex("[0-9]+(?:[.][0-9]{1,2})?").matches(clean)) {
+                ExpenseError.InvalidAmountPrecision()
             }
             val pieces = clean.split('.')
             val whole =
-                requireNotNull(pieces.first().toLongOrNull()) {
-                    "expenses.message_that_amount_is_too_large"
-                }
-            require(whole <= MAX_MINOR_UNITS / 100) { "expenses.message_that_amount_is_too_large" }
+                pieces.first().toLongOrNull() ?: throw ExpenseError.AmountTooLarge()
+            requireDomain(whole <= MAX_MINOR_UNITS / 100) { ExpenseError.AmountTooLarge() }
             val minor = whole * 100 + pieces.getOrElse(1) { "" }.padEnd(2, '0').toLong()
-            require(minor in 1..MAX_MINOR_UNITS) {
-                "expenses.message_enter_an_amount_greater_than_zero"
+            requireDomain(minor in 1..MAX_MINOR_UNITS) {
+                ExpenseError.AmountNotPositive()
             }
-            return MoneyDomain(minor, currency)
+            return MoneyDomain(minorUnits = minor, currency = currency)
         }
     }
 }

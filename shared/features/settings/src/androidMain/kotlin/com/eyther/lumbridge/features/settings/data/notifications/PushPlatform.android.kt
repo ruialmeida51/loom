@@ -1,6 +1,8 @@
 package com.eyther.lumbridge.features.settings.data.notifications
 
-import com.eyther.lumbridge.core.data.PlatformStorage
+import com.eyther.lumbridge.core.data.local.PlatformStorage
+import com.eyther.lumbridge.core.domain.errors.requireDomain
+import com.eyther.lumbridge.features.settings.domain.errors.SettingsError
 import com.google.firebase.FirebaseApp
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlin.coroutines.resume
@@ -14,16 +16,16 @@ actual object PushPlatform {
 
     actual suspend fun requestToken(): Pair<String, String> =
         withContext(Dispatchers.Main.immediate) {
-            require(FirebaseApp.getApps(PlatformStorage.applicationContext).isNotEmpty()) {
-                "settings.message_notifications_aren_t_available_in_this_build_yet"
+            requireDomain(FirebaseApp.getApps(PlatformStorage.applicationContext).isNotEmpty()) {
+                SettingsError.ProviderUnavailable()
             }
             val granted = suspendCancellableCoroutine { continuation ->
                 val requester = permissionRequester
                 if (requester == null) continuation.resume(false)
                 else requester { if (continuation.isActive) continuation.resume(it) }
             }
-            require(granted) {
-                "settings.message_allow_notifications_in_your_phone_s_settings_to_receive"
+            requireDomain(granted) {
+                SettingsError.PermissionDenied()
             }
             val token =
                 suspendCancellableCoroutine<String> { continuation ->
@@ -32,10 +34,7 @@ actual object PushPlatform {
                             if (task.isSuccessful) continuation.resume(task.result)
                             else
                                 continuation.resumeWithException(
-                                    task.exception
-                                        ?: IllegalStateException(
-                                            "settings.message_couldn_t_register_notifications_please_try_again",
-                                        ),
+                                    SettingsError.RegistrationFailed(cause = task.exception),
                                 )
                         }
                     }

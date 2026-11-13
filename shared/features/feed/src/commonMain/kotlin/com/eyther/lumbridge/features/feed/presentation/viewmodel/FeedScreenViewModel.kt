@@ -1,78 +1,121 @@
 package com.eyther.lumbridge.features.feed.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.stateflow.*
-import com.eyther.lumbridge.core.domain.AppResult
-import com.eyther.lumbridge.core.presentation.*
+import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
+import com.eyther.lumbridge.core.coroutines.stateflow.updateState
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
-import com.eyther.lumbridge.features.feed.domain.usecase.ObserveFeedUseCase
+import com.eyther.lumbridge.features.feed.presentation.mapper.toFeedTextResource
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedState
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class FeedScreenViewModel(
-    observe: ObserveFeedUseCase,
-    private val followFeed: FollowFeedUseCase,
-    private val mark: MarkArticleReadUseCase,
+    private val getFeedStreamUseCase: GetFeedStreamUseCase,
+    private val followFeedUseCase: FollowFeedUseCase,
+    private val markArticleReadUseCase: MarkArticleReadUseCase,
 ) : FeedScreenViewModelContract() {
-    private data class InnerInputState(val url: String = "")
+
+    private data class InnerInputState(
+        val url: String = "",
+    )
 
     private val inputState = MutableStateFlow(InnerInputState())
 
-    private val mutableState =
-        MutableStateFlow(FeedState()).observeWith(viewModelScope) { state ->
-            inputState.updateState(state) { copy(url = it.url) }
+    private val mutableState = MutableStateFlow(FeedState())
+        .observeWith(viewModelScope) { state ->
+            inputState.updateState(state) { input ->
+                copy(url = input.url)
+            }
         }
+        .observeWith(viewModelScope) { state ->
+            getFeedStreamUseCase().updateState(state) { result ->
+                when (result) {
+                    is AppResult.Success -> copy(items = result.value, error = null)
+                    is AppResult.Failure -> copy(error = result.error.toFeedTextResource())
+                }
+            }
+        }
+
     override val state = mutableState.asStateFlow()
 
-    init {
-        mutableState.observeWith(viewModelScope) {
-            observe()
-                .catch { error -> mutableState.update { it.copy(error = error.message) } }
-                .onEach { items -> mutableState.update { it.copy(items = items) } }
+    override fun onUrlChanged(value: String) {
+        inputState.update { oldState ->
+            oldState.copy(url = value)
         }
     }
 
-    override fun url(value: String) {
-        inputState.update { it.copy(url = value) }
-    }
-
-    override fun showFollow(value: Boolean) {
+    override fun onFollowSheetVisibilityChanged(value: Boolean) {
         if (value) inputState.value = InnerInputState()
-        mutableState.update { it.copy(showFollow = value) }
+
+        mutableState.update { oldState ->
+            oldState.copy(showFollow = value, error = null)
+        }
     }
 
-    override fun unreadOnly(value: Boolean) {
-        mutableState.update { it.copy(unreadOnly = value) }
+    override fun onUnreadOnlyChanged(value: Boolean) {
+        mutableState.update { oldState ->
+            oldState.copy(unreadOnly = value)
+        }
     }
 
-    override fun dismiss() {
-        mutableState.update { it.copy(error = null) }
+    override fun onDismissError() {
+        mutableState.update { oldState ->
+            oldState.copy(error = null)
+        }
     }
 
-    override fun follow() {
-        if (mutableState.value.busy) return
+    override fun onFollowFeed() {
+        if (state.value.busy) return
         val url = inputState.value.url
-        mutableState.update { it.copy(busy = true, error = null) }
+
+        mutableState.update { oldState ->
+            oldState.copy(busy = true, error = null)
+        }
+
         launch {
-            when (val result = followFeed(url)) {
-                is AppResult.Success ->
-                    mutableState.update { it.copy(showFollow = false, url = "", busy = false) }
-                is AppResult.Failure ->
-                    mutableState.update { it.copy(error = result.message, busy = false) }
+            when (val result = followFeedUseCase(url)) {
+                is AppResult.Success -> {
+                    inputState.update { oldState ->
+                        oldState.copy(url = "")
+                    }
+                    mutableState.update { oldState ->
+                        oldState.copy(showFollow = false, busy = false)
+                    }
+                }
+
+                is AppResult.Failure -> mutableState.update { oldState ->
+                    oldState.copy(
+                        busy = false,
+                        error = result.error.toFeedTextResource(),
+                    )
+                }
             }
         }
     }
 
-    override fun markRead(item: ArticleDomain, read: Boolean) {
-        mutableState.update { old ->
-            old.copy(items = old.items.map { if (it.id == item.id) it.copy(read = read) else it })
-        }
+    override fun onMarkRead(item: ArticleDomain, read: Boolean) {
         launch {
-            val result = mark(item.id, read)
-            if (result is AppResult.Failure) mutableState.update { it.copy(error = result.message) }
+            val result = markArticleReadUseCase(id = item.id, read = read)
+
+            mutableState.update { oldState ->
+                when (result) {
+                    is AppResult.Success -> oldState.copy(
+                        items = oldState.items.map { article ->
+                            if (article.id == item.id) article.copy(read = read) else article
+                        },
+                    )
+
+                    is AppResult.Failure -> oldState.copy(
+                        error = result.error.toFeedTextResource(),
+                    )
+                }
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ package com.eyther.lumbridge.core.navigation.model
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.navigation3.runtime.NavKey
 import kotlin.reflect.KClass
@@ -17,6 +18,7 @@ import kotlin.reflect.KClass
 class Navigator(
     val state: NavigationState,
 ) {
+
     /**
      * Navigates to the specified [destination].
      *

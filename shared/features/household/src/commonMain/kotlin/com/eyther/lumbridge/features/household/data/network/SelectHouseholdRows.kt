@@ -1,6 +1,6 @@
 package com.eyther.lumbridge.features.household.data.network
 
-import com.eyther.lumbridge.core.data.SupabaseAccess
+import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.Dispatchers
