@@ -12,6 +12,10 @@ internal fun Exception.toAuthenticationError(): AppError {
     return when (errorCode) {
         AuthErrorCode.InvalidCredentials -> AuthenticationError.InvalidCredentials(cause = this)
         AuthErrorCode.EmailNotConfirmed -> AuthenticationError.EmailNotConfirmed(cause = this)
+        AuthErrorCode.EmailAddressInvalid -> AuthenticationError.InvalidEmail(cause = this)
+        AuthErrorCode.OtpExpired -> AuthenticationError.VerificationCodeExpired(cause = this)
+        AuthErrorCode.EmailAddressNotAuthorized, AuthErrorCode.EmailProviderDisabled ->
+            AuthenticationError.EmailDeliveryUnavailable(cause = this)
         AuthErrorCode.EmailExists, AuthErrorCode.UserAlreadyExists ->
             AuthenticationError.EmailAlreadyRegistered(cause = this)
         AuthErrorCode.OverRequestRateLimit, AuthErrorCode.OverEmailSendRateLimit ->

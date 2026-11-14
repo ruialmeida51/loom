@@ -7,8 +7,12 @@ import com.eyther.lumbridge.features.analytics.data.local.datasource.CommonAnaly
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
-import com.eyther.lumbridge.features.authentication.presentation.viewmodel.AuthenticationScreenViewModel
-import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.AuthenticationScreenViewModelContract
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.EmailVerificationScreenViewModel
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.LoginScreenViewModel
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.RegisterScreenViewModel
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.EmailVerificationScreenViewModelContract
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.LoginScreenViewModelContract
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.RegisterScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
@@ -31,6 +35,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 
@@ -48,6 +53,14 @@ class LoomGraphTest {
 
         override suspend fun register(email: String, password: String): AppResult<Unit> =
             error("This graph test does not register accounts")
+
+        override suspend fun verifyEmail(email: String, code: String): AppResult<Unit> =
+            AppResult.Success(Unit)
+
+        override suspend fun resendVerificationEmail(email: String): AppResult<Unit> =
+            AppResult.Success(Unit)
+
+        override suspend fun sendSignInCode(email: String): AppResult<Unit> = AppResult.Success(Unit)
 
         override suspend fun signOut(): AppResult<Unit> = error("This graph test does not sign out")
     }
@@ -86,14 +99,24 @@ class LoomGraphTest {
             )
         }
         try {
-            val authentication = graph.koin.get<AuthenticationScreenViewModelContract>()
+            val authentication = graph.koin.get<LoginScreenViewModelContract>()
+            val registration = graph.koin.get<RegisterScreenViewModelContract>()
+            val verification = graph.koin.get<EmailVerificationScreenViewModelContract> {
+                parametersOf(
+                    EmailVerificationScreenViewModelContract.Params(email = "member@example.com", codeRequested = false),
+                )
+            }
             val household = graph.koin.get<HouseholdScreenViewModelContract>()
             try {
-                assertIs<AuthenticationScreenViewModel>(authentication)
+                assertIs<LoginScreenViewModel>(authentication)
+                assertIs<RegisterScreenViewModel>(registration)
+                assertIs<EmailVerificationScreenViewModel>(verification)
                 assertIs<HouseholdScreenViewModel>(household)
                 assertSame(graph.koin.get<GetHouseholdsUseCase>(), graph.koin.get<GetHouseholdsUseCase>())
             } finally {
                 authentication.viewModelScope.cancel()
+                registration.viewModelScope.cancel()
+                verification.viewModelScope.cancel()
                 household.viewModelScope.cancel()
             }
         } finally {

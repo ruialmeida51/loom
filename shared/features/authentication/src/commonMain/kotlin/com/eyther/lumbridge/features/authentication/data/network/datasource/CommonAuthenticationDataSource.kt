@@ -7,8 +7,10 @@ import com.eyther.lumbridge.features.authentication.data.network.mapper.toAuthen
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
 import com.eyther.lumbridge.features.settings.domain.datasource.PushDeviceDataSource
+import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.providers.builtin.OTP
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,6 +72,32 @@ class CommonAuthenticationDataSource(
                 this.password = password
             }
             Unit
+        }
+    }
+
+    override suspend fun verifyEmail(email: String, code: String): AppResult<Unit> {
+        return safeApiCall(mapError = Exception::toAuthenticationError) {
+            access.requireClient().auth.verifyEmailOtp(
+                type = OtpType.Email.EMAIL,
+                email = email,
+                token = code,
+            )
+            Unit
+        }
+    }
+
+    override suspend fun resendVerificationEmail(email: String): AppResult<Unit> {
+        return safeApiCall(mapError = Exception::toAuthenticationError) {
+            access.requireClient().auth.resendEmail(type = OtpType.Email.SIGNUP, email = email)
+        }
+    }
+
+    override suspend fun sendSignInCode(email: String): AppResult<Unit> {
+        return safeApiCall(mapError = Exception::toAuthenticationError) {
+            access.requireClient().auth.signInWith(OTP) {
+                this.email = email
+                createUser = false
+            }
         }
     }
 

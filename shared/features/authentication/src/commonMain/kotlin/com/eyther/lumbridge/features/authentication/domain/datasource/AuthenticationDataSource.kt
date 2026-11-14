@@ -12,5 +12,13 @@ interface AuthenticationDataSource {
 
     suspend fun register(email: String, password: String): AppResult<Unit>
 
+    /** Verifies the email code and publishes the resulting session through [stream]. */
+    suspend fun verifyEmail(email: String, code: String): AppResult<Unit>
+
+    suspend fun resendVerificationEmail(email: String): AppResult<Unit>
+
+    /** Requests access for an existing account without silently registering a new one. */
+    suspend fun sendSignInCode(email: String): AppResult<Unit>
+
     suspend fun signOut(): AppResult<Unit>
 }

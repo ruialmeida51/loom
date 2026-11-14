@@ -23,6 +23,20 @@ Apply `supabase/schedules.sql` after setting the SQL session variable `loom.proj
 
 The worker creates due recurring expenses, saves closed-month statements, and processes push deliveries. Duplicate runs preserve expense/notification identity. The feed worker processes the oldest subscriptions first, with bounded batches and fetch timeouts.
 
+## Authentication email delivery
+
+Password sign-in does not send an email. **Email me a sign-in code** explicitly requests a code for an existing account; it sets `createUser = false` so registration and its terms step cannot be bypassed. New accounts must verify their email; the app accepts a code and can resend the signup confirmation. An `email_not_confirmed` password sign-in failure opens that verification screen. Resending preserves the challenge purpose: existing-account sign-in requests another login code, while registration resends the signup confirmation.
+
+Both email templates must include `{{ .Token }}`. In [Authentication → Email Templates](https://supabase.com/dashboard/project/eeyfhmlyopuobtgdfbql/auth/templates), paste [confirmation.html](../supabase/templates/confirmation.html) into **Confirm signup**, with subject **Verify your Loom email**, and [sign_in.html](../supabase/templates/sign_in.html) into **Magic Link**, with subject **Your Loom sign-in code**. The repository config enables the same templates and confirmations for local development. Codes are entered in the app, so these flows do not depend on an email link returning through a website or native deep link.
+
+The 2026-11-14 investigation found `invalid_credentials` sign-ins and `user_repeated_signup` requests for already confirmed accounts. Supabase deliberately accepts repeated signup requests without sending a fresh confirmation or revealing that an account exists. Use password sign-in or the explicit sign-in-code action for an existing account.
+
+Configure a production sender under [Authentication → SMTP Settings](https://supabase.com/dashboard/project/eeyfhmlyopuobtgdfbql/auth/smtp). Supabase’s built-in sender only delivers to organization team addresses and currently permits two messages per hour; it does not provide production delivery guarantees. Use a verified sending domain with an SMTP provider, and keep its credentials only in Supabase. Never put them in the app, GitHub client configuration, or chat. Follow the provider’s domain verification instructions and turn off link tracking for auth email.
+
+Check [Auth logs](https://supabase.com/dashboard/project/eeyfhmlyopuobtgdfbql/logs/auth-logs) for `email_address_not_authorized`, rate-limit or delivery failures. A successful API request confirms acceptance, not inbox delivery; verify delivery with a real address and the provider’s delivery log after configuring SMTP. The app keeps these SDK codes in data, mapping them to typed domain failures and localized messages.
+
+These hosted Auth settings are separate from SQL migrations. The connected Supabase tools currently expose database/log operations but not Auth configuration; no hosted template or SMTP change is implied by editing `config.toml`.
+
 ## Android push
 
 1. Register the Android application **`com.eyther.lumbridge`** in your Firebase project.

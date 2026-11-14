@@ -26,8 +26,6 @@ import com.eyther.lumbridge.features.analytics.domain.usecase.GetAnalyticsPrefer
 import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
-import com.eyther.lumbridge.features.authentication.presentation.screen.AuthenticationScreen
-import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.AuthenticationScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.RememberHouseholdUseCase
@@ -89,8 +87,7 @@ fun LauncherHost() {
     }
     when {
         session == null ->
-            AuthenticationScreen(
-                viewModel = koinViewModel<AuthenticationScreenViewModelContract>(),
+            AuthenticationHost(
                 onOpenLegalDocument = { document ->
                     uriHandler.openUri(getLegalDocumentsUseCase().url(document = document))
                 },

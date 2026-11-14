@@ -30,13 +30,21 @@ class RegisterUseCaseTest {
             return AppResult.Success(Unit)
         }
 
+        override suspend fun verifyEmail(email: String, code: String): AppResult<Unit> =
+            AppResult.Success(Unit)
+
+        override suspend fun resendVerificationEmail(email: String): AppResult<Unit> =
+            AppResult.Success(Unit)
+
+        override suspend fun sendSignInCode(email: String): AppResult<Unit> = AppResult.Success(Unit)
+
         override suspend fun signOut(): AppResult<Unit> = error("Sign-out is outside this test")
     }
 
     @Test
     fun registrationRequiresExplicitTermsAcceptanceBeforeContactingTheServer() = runTest {
         val dataSource = RegistrationDataSource()
-        val register = RegisterUseCase(source = dataSource)
+        val register = RegisterUseCase(authenticationDataSource = dataSource)
 
         val result = register(
             email = "roommate@example.test",
@@ -51,7 +59,7 @@ class RegisterUseCaseTest {
     @Test
     fun acceptedTermsDoNotBypassCredentialValidation() = runTest {
         val dataSource = RegistrationDataSource()
-        val register = RegisterUseCase(source = dataSource)
+        val register = RegisterUseCase(authenticationDataSource = dataSource)
 
         val result = register(email = "invalid", password = "short", acceptedTerms = true)
 
@@ -62,7 +70,7 @@ class RegisterUseCaseTest {
     @Test
     fun validRegistrationForwardsOnlyValidatedCredentials() = runTest {
         val dataSource = RegistrationDataSource()
-        val register = RegisterUseCase(source = dataSource)
+        val register = RegisterUseCase(authenticationDataSource = dataSource)
 
         val result = register(
             email = " roommate@example.test ",

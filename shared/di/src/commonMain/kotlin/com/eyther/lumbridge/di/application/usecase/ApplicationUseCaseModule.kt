@@ -3,8 +3,10 @@ package com.eyther.lumbridge.di.application.usecase
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RegisterUseCase
+import com.eyther.lumbridge.features.authentication.domain.usecase.RequestEmailCodeUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
+import com.eyther.lumbridge.features.authentication.domain.usecase.VerifyEmailUseCase
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdSelectionDataSource
 import com.eyther.lumbridge.features.household.domain.usecase.CreateHouseholdUseCase
@@ -27,16 +29,30 @@ class ApplicationUseCaseModule {
 
     @Single
     fun provideRegisterUseCase(
-        source: AuthenticationDataSource,
+        authenticationDataSource: AuthenticationDataSource,
     ): RegisterUseCase = RegisterUseCase(
-        source = source,
+        authenticationDataSource = authenticationDataSource,
+    )
+
+    @Single
+    fun provideVerifyEmailUseCase(
+        authenticationDataSource: AuthenticationDataSource,
+    ): VerifyEmailUseCase = VerifyEmailUseCase(
+        authenticationDataSource = authenticationDataSource,
+    )
+
+    @Single
+    fun provideRequestEmailCodeUseCase(
+        authenticationDataSource: AuthenticationDataSource,
+    ): RequestEmailCodeUseCase = RequestEmailCodeUseCase(
+        authenticationDataSource = authenticationDataSource,
     )
 
     @Single
     fun provideSignInUseCase(
-        source: AuthenticationDataSource,
+        authenticationDataSource: AuthenticationDataSource,
     ): SignInUseCase = SignInUseCase(
-        source = source,
+        authenticationDataSource = authenticationDataSource,
     )
 
     @Single
