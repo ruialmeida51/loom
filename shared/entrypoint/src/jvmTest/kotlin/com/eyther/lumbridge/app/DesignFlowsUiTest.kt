@@ -14,6 +14,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -25,8 +26,10 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.unit.Density
+import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.home.data.EmptyHomeViewModel
+import com.eyther.lumbridge.app.home.data.HomeRetryFixture
 import com.eyther.lumbridge.core.presentation.components.toolbar.Toolbar
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
@@ -36,6 +39,7 @@ import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
+import kotlinx.coroutines.cancel
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
 
@@ -136,6 +140,43 @@ class DesignFlowsUiTest {
             captureNode(tag = "empty_home", name = "home-empty-light")
             onNodeWithText("Open list").performClick()
             assertTrue(openedShopping)
+        }
+
+    @Test
+    fun anInitialLoadFailureNeverLooksLikeAnEmptyHouseholdAndRetryLoadsRealContent() =
+        runSkikoComposeUiTest(size = Size(440f, 760f)) {
+            val fixture = HomeRetryFixture()
+            val viewModel = fixture.viewModel()
+            try {
+                setContent {
+                    LoomTheme(mode = ThemeMode.LIGHT) {
+                        HomeScreen(
+                            viewModel = viewModel,
+                            context = fixture.context,
+                            onShopping = {},
+                            onReminders = {},
+                            onMoney = {},
+                            onFeed = {},
+                        )
+                    }
+                }
+                waitUntil(timeoutMillis = 5000) {
+                    onAllNodesWithText("Try again").fetchSemanticsNodes().isNotEmpty()
+                }
+                onNodeWithText("Your home needs a moment.").assertExists()
+                onNodeWithText("Check your connection and try again.").assertExists()
+                onNodeWithTag("home_shopping_empty").assertDoesNotExist()
+                onNodeWithTag("home_shopping_preview").assertDoesNotExist()
+                onNodeWithText("All settled up").assertDoesNotExist()
+                onNodeWithText("Try again").performClick()
+                waitUntil(timeoutMillis = 5000) {
+                    onAllNodesWithTag("home_shopping_preview").fetchSemanticsNodes().isNotEmpty()
+                }
+                onNodeWithText("Your home needs a moment.").assertDoesNotExist()
+                kotlin.test.assertEquals(2, fixture.loads)
+            } finally {
+                viewModel.viewModelScope.cancel()
+            }
         }
 
     @Test

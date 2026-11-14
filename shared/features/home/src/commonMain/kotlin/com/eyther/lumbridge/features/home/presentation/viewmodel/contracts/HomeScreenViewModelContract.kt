@@ -7,5 +7,7 @@ abstract class HomeScreenViewModelContract : LoomViewModel() {
 
     abstract val state: StateFlow<HomeState>
 
+    abstract fun onRetry()
+
     abstract fun onDismissError()
 }

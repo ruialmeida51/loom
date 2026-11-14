@@ -9,12 +9,13 @@ import com.eyther.lumbridge.features.home.presentation.model.HomeShoppingUi
 
 data class HomeState(
     val overview: HomeOverviewDomain? = null,
+    val loading: Boolean = true,
     val currency: String = "EUR",
     val timeZone: String = "UTC",
     val error: TextResource? = null,
 ) {
 
-    val loading: Boolean = overview == null && error == null
+    val hasOverview: Boolean = overview != null
     val shoppingCount: Int = overview?.shopping?.size ?: 0
     val shopping: List<HomeShoppingUi> =
         overview?.shopping.orEmpty().take(3).map { item ->

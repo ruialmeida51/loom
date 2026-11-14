@@ -10,6 +10,7 @@ internal class EmptyHomeViewModel : HomeScreenViewModelContract() {
     private val mutableState =
         MutableStateFlow(
             HomeState(
+                loading = false,
                 overview =
                     HomeOverviewDomain(
                         shopping = emptyList(),
@@ -20,6 +21,8 @@ internal class EmptyHomeViewModel : HomeScreenViewModelContract() {
             ),
         )
     override val state = mutableState.asStateFlow()
+
+    override fun onRetry() = Unit
 
     override fun onDismissError() = Unit
 }
