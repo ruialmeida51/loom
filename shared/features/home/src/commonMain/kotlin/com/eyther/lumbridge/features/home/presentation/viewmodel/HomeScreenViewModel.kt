@@ -18,21 +18,24 @@ class HomeScreenViewModel(
     context: HouseholdContextDomain,
 ) : HomeScreenViewModelContract() {
 
-    private val mutableState = MutableStateFlow(HomeState(currency = context.currency))
-        .observeWith(viewModelScope) { state ->
-            getHomeOverviewStreamUseCase().updateState(state) { result ->
-                when (result) {
-                    is AppResult.Success -> copy(
-                        overview = result.value,
-                        error = null,
-                    )
+    private val mutableState =
+        MutableStateFlow(HomeState(currency = context.currency, timeZone = context.timeZone))
+            .observeWith(viewModelScope) { state ->
+                getHomeOverviewStreamUseCase().updateState(state) { result ->
+                    when (result) {
+                        is AppResult.Success ->
+                            copy(
+                                overview = result.value,
+                                error = null,
+                            )
 
-                    is AppResult.Failure -> copy(
-                        error = result.error.toTextResource(),
-                    )
+                        is AppResult.Failure ->
+                            copy(
+                                error = result.error.toTextResource(),
+                            )
+                    }
                 }
             }
-        }
 
     override val state = mutableState.asStateFlow()
 

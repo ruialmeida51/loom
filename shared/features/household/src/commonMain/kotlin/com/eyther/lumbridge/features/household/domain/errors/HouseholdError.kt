@@ -6,6 +6,8 @@ sealed class HouseholdError(cause: Throwable? = null) : AppError(cause) {
 
     class InvalidInvitation(cause: Throwable? = null) : HouseholdError(cause)
 
+    class InvalidNickname(cause: Throwable? = null) : HouseholdError(cause)
+
     class InvalidName(cause: Throwable? = null) : HouseholdError(cause)
 
     class UnsupportedCurrency(cause: Throwable? = null) : HouseholdError(cause)

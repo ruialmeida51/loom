@@ -2,7 +2,9 @@
 
 Loom focuses on household management for roommates and couples. Follow the delivery priorities in `docs/product-roadmap.md`; offline functionality is deferred.
 
-Follow the Plannot-derived architecture described in `docs/architecture.md`.
+Follow the Plannot-derived architecture described in `docs/architecture.md` and the screen and interaction language in `docs/design-language.md`.
+
+- Keep sheet controllers and registrations in entrypoint Hosts, their typed navigation models in separate navigation/model/sheet files, and pure form content in the owning feature presentation package. Core owns only generic sheet/layout infrastructure. Use grouped rows for related content and dialogs only for brief confirmations.
 
 - One Gradle module per feature; domain/data/presentation are Kotlin packages.
 - Keep the Host → Screen → ViewModel contract/implementation → UseCase → DataSource boundary.

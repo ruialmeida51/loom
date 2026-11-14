@@ -8,6 +8,8 @@ Application ID and iOS bundle ID: **`com.eyther.lumbridge`**.
 
 <img src="docs/screenshots/home-light.png" width="260" alt="Loom household overview in light mode" /> <img src="docs/screenshots/home-dark.png" width="260" alt="Loom household overview in dark mode" />
 
+Editing sheets: [Shopping on a short screen](docs/screenshots/shopping-sheet-narrow.png), [Nickname](docs/screenshots/nickname-sheet-light.png), and [dark mode](docs/screenshots/nickname-sheet-dark.png).
+
 Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [Create account](docs/screenshots/auth-register-light.png), and [Verification](docs/screenshots/auth-verification-light.png).
 
 ## What’s included
@@ -25,7 +27,7 @@ Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [C
 - A dedicated desktop preview with isolated demo data sources and sample households. Production screens and data sources contain no demo branches.
 - Feature-owned string/plural resources, localized validation messages, accessibility labels, and named Gradle project references.
 - Optional Android Firebase Analytics with explicit consent, no household content in events, and advertising identifiers disabled.
-- Public privacy, terms and account-deletion pages linked from authentication and Settings, plus signed Play internal-draft releases through GitHub Actions.
+- Public privacy, terms and account-deletion pages linked from authentication and Settings, plus signed Firebase builds and explicit Play internal-draft releases with GitHub release tags.
 
 Recurring schedules generate monthly expense records; repayments record money you have already sent or received. Pausing skips future entries, resuming skips paused months, and cancellation preserves recorded expense history.
 
@@ -69,9 +71,9 @@ Screens collect lifecycle-aware state and pass individual values/callbacks to `I
 
 Models stay in their owning feature: household owns `HouseholdContextDomain`, expenses owns `MoneyDomain`, and other features depend on those domains directly. Core has no feature dependencies. Sample data, settings preferences, notification registration, statement exports, and app-specific routes also stay with their respective owners. See the ownership table in [architecture details](docs/architecture.md).
 
-See [architecture details](docs/architecture.md) and [backend setup](docs/backend.md).
+See [architecture details](docs/architecture.md), [screen and interaction language](docs/design-language.md), and [backend setup](docs/backend.md).
 
-For Android signing, required secrets, Play uploads and public policy URLs, follow [Play Store release setup](docs/play-store-release.md). See the [data-safety worksheet](docs/data-safety.md) and [support-assisted account-deletion runbook](docs/account-deletion.md).
+For automatic 4.0.x versions, Firebase distribution, Android signing, required secrets, Play uploads and public policy URLs, follow [Play Store release setup](docs/play-store-release.md). See the [data-safety worksheet](docs/data-safety.md) and [support-assisted account-deletion runbook](docs/account-deletion.md).
 
 ## Run
 
@@ -111,7 +113,7 @@ For the desktop development preview, `desktopApp` starts the dedicated `LoomDemo
   :shared:entrypoint:jvmTest :androidApp:assembleDebug
 python3 tools/audit_project.py
 python3 -m unittest discover -s tools/tests -p 'test_*.py'
-node --test tools/tests/play_release_test.mjs
+node --test tools/tests/*.mjs
 python3 tools/test_database.py
 cd supabase/functions
 deno task check

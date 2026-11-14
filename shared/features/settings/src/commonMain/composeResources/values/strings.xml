@@ -23,4 +23,13 @@
   <string name="ui_household_details">%1$s · %2$s</string>
   <string name="analytics_title">Optional usage analytics</string>
   <string name="analytics_description">Help improve Loom with Google Firebase Analytics. Share screen visits and feature-use counts, with app and device information. We never send your email, household content, or financial amounts. Off by default; change this choice anytime.</string>
+  <string name="ui_your_profile">Your profile</string>
+  <string name="ui_nickname_title">Nickname</string>
+  <string name="ui_nickname_description">Change how your name appears in every household.</string>
+  <string name="ui_preferences">Preferences</string>
+  <string name="ui_edit_nickname">Make yourself known</string>
+  <string name="ui_nickname_help">Use the name your people know you by. It appears on lists, expenses and reminders.</string>
+  <string name="ui_save_nickname">Save nickname</string>
+  <string name="ui_cancel">Cancel</string>
+  <string name="ui_done">Done</string>
 </resources>

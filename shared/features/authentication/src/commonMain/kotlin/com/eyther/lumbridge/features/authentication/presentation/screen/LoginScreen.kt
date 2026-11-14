@@ -23,7 +23,6 @@ import com.eyther.lumbridge.features.authentication.generated.resources.login_em
 import com.eyther.lumbridge.features.authentication.generated.resources.ui_new_here_create_an_account
 import com.eyther.lumbridge.features.authentication.generated.resources.ui_sign_in
 import com.eyther.lumbridge.features.authentication.generated.resources.ui_welcome_home
-import com.eyther.lumbridge.features.authentication.generated.resources.ui_welcome_to_loom
 import com.eyther.lumbridge.features.authentication.presentation.components.AuthenticationLayout
 import com.eyther.lumbridge.features.authentication.presentation.components.EmailInput
 import com.eyther.lumbridge.features.authentication.presentation.components.GoogleSignInButton
@@ -91,18 +90,32 @@ private fun InnerLoginScreen(
 ) {
     AuthenticationLayout(title = stringResource(Res.string.ui_sign_in)) {
         PageHeading(
-            eyebrow = stringResource(Res.string.ui_welcome_to_loom),
             title = stringResource(Res.string.ui_welcome_home),
             subtitle = stringResource(Res.string.login_description),
         )
         error?.let { message ->
             ErrorNotice(message = message, onDismiss = onDismissError)
         }
-        GoogleSignInButton(onClick = onGoogleSignIn, loading = startingGoogle, enabled = !signingIn && !requestingCode)
-        Text(stringResource(Res.string.google_terms_notice), style = MaterialTheme.typography.bodySmall)
-        Text(stringResource(Res.string.login_email_alternative), style = MaterialTheme.typography.labelLarge)
+        GoogleSignInButton(
+            onClick = onGoogleSignIn,
+            loading = startingGoogle,
+            enabled = !signingIn && !requestingCode,
+        )
+        Text(
+            stringResource(Res.string.google_terms_notice),
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Text(
+            stringResource(Res.string.login_email_alternative),
+            style = MaterialTheme.typography.labelLarge,
+        )
         EmailInput(value = email, onValueChanged = onEmailChanged, enabled = !busy)
-        PasswordInput(value = password, onValueChanged = onPasswordChanged, enabled = !busy, onSubmit = onSubmit)
+        PasswordInput(
+            value = password,
+            onValueChanged = onPasswordChanged,
+            enabled = !busy,
+            onSubmit = onSubmit,
+        )
         LoomButton(
             text = stringResource(Res.string.ui_sign_in),
             onClick = onSubmit,
@@ -136,7 +149,8 @@ private fun HandleRedirects(
         onHandled()
         when (destination) {
             RedirectTo.Register -> onRegister()
-            is RedirectTo.VerifyEmail -> onVerifyEmail(destination.email, destination.codeRequested, destination.purpose)
+            is RedirectTo.VerifyEmail ->
+                onVerifyEmail(destination.email, destination.codeRequested, destination.purpose)
         }
     }
 }

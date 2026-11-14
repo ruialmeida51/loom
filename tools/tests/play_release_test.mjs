@@ -36,7 +36,7 @@ test('planning closes the temporary edit and never commits a release', async () 
     if (options.method === 'DELETE') return new Response(null, { status: 204 });
     throw new Error('Unexpected request');
   };
-  assert.equal(await plan(account, '', request), 4);
+  assert.equal((await plan(account, '', request)).versionCode, 4);
   assert.equal(requests.at(-1)[1], 'DELETE');
   assert.ok(requests.every(([url]) => !url.includes(':commit')));
 });

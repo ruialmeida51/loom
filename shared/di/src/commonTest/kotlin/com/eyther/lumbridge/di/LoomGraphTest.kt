@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -70,7 +71,8 @@ class LoomGraphTest {
         override suspend fun resendVerificationEmail(email: String): AppResult<Unit> =
             AppResult.Success(Unit)
 
-        override suspend fun sendSignInCode(email: String): AppResult<Unit> = AppResult.Success(Unit)
+        override suspend fun sendSignInCode(email: String): AppResult<Unit> =
+            AppResult.Success(Unit)
 
         override suspend fun signOut(): AppResult<Unit> = error("This graph test does not sign out")
     }
@@ -89,8 +91,16 @@ class LoomGraphTest {
         override suspend fun joinHousehold(token: String): AppResult<Unit> =
             error("This graph test does not join households")
 
+        override fun streamMembers(householdId: String): Flow<AppResult<List<MemberDomain>>> =
+            flow {
+                emit(getMembers(householdId = householdId))
+            }
+
         override suspend fun getMembers(householdId: String): AppResult<List<MemberDomain>> =
             AppResult.Success(emptyList())
+
+        override suspend fun updateNickname(userId: String, nickname: String): AppResult<Unit> =
+            AppResult.Success(Unit)
 
         override suspend fun createInvitation(householdId: String): AppResult<String> =
             error("This graph test does not create invitations")
@@ -111,11 +121,15 @@ class LoomGraphTest {
         try {
             val authentication = graph.koin.get<LoginScreenViewModelContract>()
             val registration = graph.koin.get<RegisterScreenViewModelContract>()
-            val verification = graph.koin.get<EmailVerificationScreenViewModelContract> {
-                parametersOf(
-                    EmailVerificationScreenViewModelContract.Params(email = "member@example.com", codeRequested = false),
-                )
-            }
+            val verification =
+                graph.koin.get<EmailVerificationScreenViewModelContract> {
+                    parametersOf(
+                        EmailVerificationScreenViewModelContract.Params(
+                            email = "member@example.com",
+                            codeRequested = false,
+                        ),
+                    )
+                }
             val household = graph.koin.get<HouseholdScreenViewModelContract>()
             val createHousehold = graph.koin.get<CreateHouseholdScreenViewModelContract>()
             val joinHousehold = graph.koin.get<JoinHouseholdScreenViewModelContract>()
@@ -126,7 +140,10 @@ class LoomGraphTest {
                 assertIs<HouseholdScreenViewModel>(household)
                 assertIs<CreateHouseholdScreenViewModel>(createHousehold)
                 assertIs<JoinHouseholdScreenViewModel>(joinHousehold)
-                assertSame(graph.koin.get<GetHouseholdsUseCase>(), graph.koin.get<GetHouseholdsUseCase>())
+                assertSame(
+                    graph.koin.get<GetHouseholdsUseCase>(),
+                    graph.koin.get<GetHouseholdsUseCase>(),
+                )
             } finally {
                 authentication.viewModelScope.cancel()
                 registration.viewModelScope.cancel()
@@ -143,13 +160,14 @@ class LoomGraphTest {
 
     @Test
     fun householdGraphsIsolateTheirSourcesAndKeepTheSharedAnalyticsChoice() {
-        val firstContext = HouseholdContextDomain(
-            id = "first-household",
-            userId = "member",
-            name = "First household",
-            currency = "EUR",
-            timeZone = "UTC",
-        )
+        val firstContext =
+            HouseholdContextDomain(
+                id = "first-household",
+                userId = "member",
+                name = "First household",
+                currency = "EUR",
+                timeZone = "UTC",
+            )
         val secondContext = firstContext.copy(id = "second-household", name = "Second household")
         val analytics = CommonAnalyticsDataSource()
         val households = HouseholdStub()
@@ -180,8 +198,14 @@ class LoomGraphTest {
             assertSame(analytics, first.koin.get<AnalyticsDataSource>())
             assertSame(analytics, second.koin.get<AnalyticsDataSource>())
             assertSame(households, second.koin.get<HouseholdDataSource>())
-            assertNotSame(first.koin.get<ShoppingDataSource>(), second.koin.get<ShoppingDataSource>())
-            assertNotSame(first.koin.get<GetShoppingStreamUseCase>(), second.koin.get<GetShoppingStreamUseCase>())
+            assertNotSame(
+                first.koin.get<ShoppingDataSource>(),
+                second.koin.get<ShoppingDataSource>(),
+            )
+            assertNotSame(
+                first.koin.get<GetShoppingStreamUseCase>(),
+                second.koin.get<GetShoppingStreamUseCase>(),
+            )
         } finally {
             first.close()
             second.close()

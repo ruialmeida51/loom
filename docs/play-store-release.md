@@ -1,6 +1,10 @@
 # Android releases
 
-The **Play Store release** workflow builds `com.eyther.lumbridge` with the existing upload key. It can save a signed AAB or upload it as an **internal-track draft**. It never promotes a production rollout or makes a draft available to testers.
+The **Android release** workflow builds `com.eyther.lumbridge` with the existing upload key. App changes on `main` go to **Firebase App Distribution**. An explicit **Play** run uploads an **internal-track draft**, then creates the matching GitHub release and `v<version>` tag. Firebase builds create neither a GitHub release nor a tag. Production promotion remains a separate Play Console action.
+
+Release versions start at **4.0.0**. Each successful Firebase or Play release advances the same patch sequence: `4.0.0`, `4.0.1`, `4.0.2`. Android build codes also increase across both destinations. The planner reads Play uploads, Firebase builds and successful GitHub deployment metadata, so Firebase's expiry of older builds does not reset the counter. Planning alone does not consume a version. Uploads share a serial queue; avoid concurrent manual uploads outside the workflow.
+
+`loomVersionName` in `gradle.properties` is the minimum release version and the local development version. Raise that floor when starting a new major/minor series. iOS marketing metadata also starts at 4.0.0; iOS distribution is not configured by this Android workflow.
 
 ## Credentials
 
@@ -51,7 +55,10 @@ Keep a secure backup of the original keystore. Do not generate a replacement for
 1. Enable **Google Play Android Developer API** in the service account's Google Cloud project.
 2. In **Play Console → Users and permissions**, invite the service account's `client_email`. Give it access to Loom, permission to view app information, and permission to release to testing tracks. Production-release permission is unnecessary for this workflow.
 3. The app must already have a manual upload and be enrolled in Play App Signing. Compare the keystore certificate's SHA-256 fingerprint with **Play Console → App integrity → Upload key certificate**.
-4. Enable Google Analytics for the existing Firebase project if it is not enabled. Use a short event-data retention period in Analytics; disable Google Signals and advertising integrations for this app. Do not add advertising IDs or household/account identifiers to the event schema.
+4. In Google Cloud project **lumbridge-app**, enable the **Firebase App Distribution API** (`firebaseappdistribution.googleapis.com`). Grant the same service account **Firebase App Distribution Admin** (`roles/firebaseappdistro.admin`) on that project. This is a Firebase/GCP permission in addition to its separate Play Console permissions; GCP Editor and domain-wide delegation are unnecessary.
+5. Open Firebase Console → **App Distribution** for the existing Android app `com.eyther.lumbridge` and complete its initial setup. The workflow reads its app ID from `GOOGLE_SERVICES_JSON`; no new secret or CLI login token is needed.
+6. Optional: list existing tester group aliases in `distribution/firebase-groups.txt`, one per line. An empty file uploads builds without sending invitations. A manual run can override the groups in its **tester_groups** field.
+7. Enable Google Analytics for the existing Firebase project if it is not enabled. Use a short event-data retention period in Analytics; disable Google Signals and advertising integrations for this app. Do not add advertising IDs or household/account identifiers to the event schema.
 
 Play publishing credentials and FCM server credentials have separate purposes. Uploading an AAB does not configure notification delivery from Supabase.
 
@@ -71,14 +78,16 @@ The pages identify the app as **Loom** and use the dedicated developer email. Th
 
 ## Build and upload
 
-1. Open **[Actions → Play Store release](https://github.com/ruialmeida51/loom/actions/workflows/play-release.yml) → Run workflow** on `main`.
-2. Leave **version code** empty to read Play's existing tracks, APKs and bundles and choose the next code. Use an override only if you need a higher code than that. Planning opens and deletes a temporary edit without committing a release.
-3. Set the user-facing version, for example `0.2.0`.
-4. Leave **publish** unchecked for the first run. The workflow verifies credentials, runs tests, and saves the signed AAB and R8 mapping as `loom-play-<version-code>`.
-5. After the build passes and the policy pages are live, run again with **publish** checked to upload an internal draft. Uploads are serialized to reduce version collisions; avoid simultaneous manual Play uploads.
-6. Review the draft in Play Console, complete the app declarations, and explicitly start internal testing when ready. Production promotion remains a separate Play Console action.
+1. Open **[Actions → Android release](https://github.com/ruialmeida51/loom/actions/workflows/play-release.yml) → Run workflow**.
+2. Choose **check** to verify the service-account connections and calculate the next version without building, uploading, tagging or consuming that version. This can run on a feature branch before merging workflow changes.
+3. Choose **firebase** on `main` to upload a signed APK. App changes merged to `main` do this automatically. Tester groups come from the committed aliases file unless the manual run supplies an override.
+4. Choose **play** on `main` to upload a signed AAB as an internal draft. After a successful upload, the workflow creates GitHub prerelease `v<version>` at the exact source commit and attaches the AAB. The release notes identify the internal-draft status. The corresponding R8 mapping is retained in the Actions artifact.
+5. Leave **version_code** empty unless an external upload requires a higher override. User-facing versions are automatic.
+6. Review a Play draft in Play Console, complete the app declarations, and explicitly start internal testing when ready. Production rollout remains manual.
 
-The workflow validates inputs without printing credentials and removes temporary signing/service-account files even on failure. A build-only run still needs Play access to allocate a valid version code. Downloaded AABs are release artifacts; retain their matching mapping files.
+The workflow runs tests before packaging, validates inputs without printing credentials, and removes private signing/service-account files even on failure. The release-history records are deployment metadata; they do not publish a GitHub release for Firebase builds.
+
+Firebase APKs use the upload certificate. When a Play installation uses a different app-signing certificate, Android requires removing that installation before installing the Firebase APK.
 
 ## Console declarations
 
@@ -89,10 +98,11 @@ Typical failures:
 | Failure | Check |
 | --- | --- |
 | Missing release setting | The exact secret name, especially `ANDROID_UPLOAD_STORE_PASSWORD`. |
+| Firebase access denied | Enable the App Distribution API and grant Firebase App Distribution Admin on lumbridge-app. Run **check** again. |
 | Cannot authenticate/access Loom | Service-account JSON, API enablement, app access and testing-release permissions. |
 | Keystore/key cannot be opened | Store password, alias and private-key password; test locally with `keytool`. |
 | Wrong signing certificate | Use the app's registered upload key, not a new debug/replacement key. |
-| Version already used | Leave the override empty, or choose a code above every Play upload. |
+| Version already used | Leave the override empty, or choose a code above every Play and Firebase upload. |
 | Public policy verification fails | Publish **Legal pages** and wait for the configured URLs to serve the current policy version. |
 
 Reference: [Google Play Developer API setup](https://developers.google.com/android-publisher/getting_started), [Firebase collection controls](https://firebase.google.com/docs/analytics/configure-data-collection), and [Play account-deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111).

@@ -17,7 +17,9 @@ import com.eyther.lumbridge.features.home.domain.usecase.GetHomeOverviewStreamUs
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.UpdateMemberNicknameUseCase
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportDataSource
 import com.eyther.lumbridge.features.insights.domain.usecase.ExportStatementUseCase
@@ -42,86 +44,105 @@ import org.koin.core.annotation.Single
 
 @Module
 class HouseholdUseCaseModule {
+    @Single
+    fun provideGetMembersUseCase(householdDataSource: HouseholdDataSource): GetMembersUseCase =
+        GetMembersUseCase(householdDataSource = householdDataSource)
+
+    @Single
+    fun provideUpdateMemberNicknameUseCase(
+        householdDataSource: HouseholdDataSource,
+    ): UpdateMemberNicknameUseCase =
+        UpdateMemberNicknameUseCase(householdDataSource = householdDataSource)
 
     @Single
     fun provideAddExpenseUseCase(
         expenseDataSource: ExpenseDataSource,
         members: GetMembersUseCase,
         context: HouseholdContextDomain,
-    ): AddExpenseUseCase = AddExpenseUseCase(
-        expenseDataSource = expenseDataSource,
-        members = members,
-        context = context,
-    )
+    ): AddExpenseUseCase =
+        AddExpenseUseCase(
+            expenseDataSource = expenseDataSource,
+            members = members,
+            context = context,
+        )
 
     @Single
     fun provideControlRecurringExpenseUseCase(
         recurringExpenseDataSource: RecurringExpenseDataSource,
-    ): ControlRecurringExpenseUseCase = ControlRecurringExpenseUseCase(
-        recurringExpenseDataSource = recurringExpenseDataSource,
-    )
+    ): ControlRecurringExpenseUseCase =
+        ControlRecurringExpenseUseCase(
+            recurringExpenseDataSource = recurringExpenseDataSource,
+        )
 
     @Single
     fun provideGetExpenseLedgerStreamUseCase(
         getExpensesStreamUseCase: GetExpensesStreamUseCase,
         getSettlementsStreamUseCase: GetSettlementsStreamUseCase,
-    ): GetExpenseLedgerStreamUseCase = GetExpenseLedgerStreamUseCase(
-        getExpensesStreamUseCase = getExpensesStreamUseCase,
-        getSettlementsStreamUseCase = getSettlementsStreamUseCase,
-    )
+    ): GetExpenseLedgerStreamUseCase =
+        GetExpenseLedgerStreamUseCase(
+            getExpensesStreamUseCase = getExpensesStreamUseCase,
+            getSettlementsStreamUseCase = getSettlementsStreamUseCase,
+        )
 
     @Single
     fun provideGetExpensesStreamUseCase(
         expenseDataSource: ExpenseDataSource,
-    ): GetExpensesStreamUseCase = GetExpensesStreamUseCase(
-        expenseDataSource = expenseDataSource,
-    )
+    ): GetExpensesStreamUseCase =
+        GetExpensesStreamUseCase(
+            expenseDataSource = expenseDataSource,
+        )
 
     @Single
     fun provideGetRecurringExpensesStreamUseCase(
         recurringExpenseDataSource: RecurringExpenseDataSource,
-    ): GetRecurringExpensesStreamUseCase = GetRecurringExpensesStreamUseCase(
-        recurringExpenseDataSource = recurringExpenseDataSource,
-    )
+    ): GetRecurringExpensesStreamUseCase =
+        GetRecurringExpensesStreamUseCase(
+            recurringExpenseDataSource = recurringExpenseDataSource,
+        )
 
     @Single
     fun provideGetSettlementsStreamUseCase(
         expenseDataSource: ExpenseDataSource,
-    ): GetSettlementsStreamUseCase = GetSettlementsStreamUseCase(
-        expenseDataSource = expenseDataSource,
-    )
+    ): GetSettlementsStreamUseCase =
+        GetSettlementsStreamUseCase(
+            expenseDataSource = expenseDataSource,
+        )
 
     @Single
     fun provideRecordSettlementUseCase(
         expenseDataSource: ExpenseDataSource,
         members: GetMembersUseCase,
         context: HouseholdContextDomain,
-    ): RecordSettlementUseCase = RecordSettlementUseCase(
-        expenseDataSource = expenseDataSource,
-        members = members,
-        context = context,
-    )
+    ): RecordSettlementUseCase =
+        RecordSettlementUseCase(
+            expenseDataSource = expenseDataSource,
+            members = members,
+            context = context,
+        )
 
     @Single
     fun provideFollowFeedUseCase(
         feedDataSource: FeedDataSource,
-    ): FollowFeedUseCase = FollowFeedUseCase(
-        feedDataSource = feedDataSource,
-    )
+    ): FollowFeedUseCase =
+        FollowFeedUseCase(
+            feedDataSource = feedDataSource,
+        )
 
     @Single
     fun provideGetFeedStreamUseCase(
         feedDataSource: FeedDataSource,
-    ): GetFeedStreamUseCase = GetFeedStreamUseCase(
-        feedDataSource = feedDataSource,
-    )
+    ): GetFeedStreamUseCase =
+        GetFeedStreamUseCase(
+            feedDataSource = feedDataSource,
+        )
 
     @Single
     fun provideMarkArticleReadUseCase(
         feedDataSource: FeedDataSource,
-    ): MarkArticleReadUseCase = MarkArticleReadUseCase(
-        feedDataSource = feedDataSource,
-    )
+    ): MarkArticleReadUseCase =
+        MarkArticleReadUseCase(
+            feedDataSource = feedDataSource,
+        )
 
     @Single
     fun provideGetHomeOverviewStreamUseCase(
@@ -129,126 +150,143 @@ class HouseholdUseCaseModule {
         getRemindersStreamUseCase: GetRemindersStreamUseCase,
         getExpenseLedgerStreamUseCase: GetExpenseLedgerStreamUseCase,
         context: HouseholdContextDomain,
-    ): GetHomeOverviewStreamUseCase = GetHomeOverviewStreamUseCase(
-        getShoppingStreamUseCase = getShoppingStreamUseCase,
-        getRemindersStreamUseCase = getRemindersStreamUseCase,
-        getExpenseLedgerStreamUseCase = getExpenseLedgerStreamUseCase,
-        context = context,
-    )
+    ): GetHomeOverviewStreamUseCase =
+        GetHomeOverviewStreamUseCase(
+            getShoppingStreamUseCase = getShoppingStreamUseCase,
+            getRemindersStreamUseCase = getRemindersStreamUseCase,
+            getExpenseLedgerStreamUseCase = getExpenseLedgerStreamUseCase,
+            context = context,
+        )
 
     @Single
     fun provideCreateInvitationUseCase(
         householdDataSource: HouseholdDataSource,
-    ): CreateInvitationUseCase = CreateInvitationUseCase(
-        householdDataSource = householdDataSource,
-    )
+    ): CreateInvitationUseCase =
+        CreateInvitationUseCase(
+            householdDataSource = householdDataSource,
+        )
 
     @Single
-    fun provideGetMembersUseCase(
+    fun provideGetMembersStreamUseCase(
         householdDataSource: HouseholdDataSource,
-    ): GetMembersUseCase = GetMembersUseCase(
-        householdDataSource = householdDataSource,
-    )
+    ): GetMembersStreamUseCase =
+        GetMembersStreamUseCase(
+            householdDataSource = householdDataSource,
+        )
 
     @Single
     fun provideExportStatementUseCase(
         statementExportDataSource: StatementExportDataSource,
-    ): ExportStatementUseCase = ExportStatementUseCase(
-        statementExportDataSource = statementExportDataSource,
-    )
+    ): ExportStatementUseCase =
+        ExportStatementUseCase(
+            statementExportDataSource = statementExportDataSource,
+        )
 
     @Single
     fun provideGetMonthlyStatementStreamUseCase(
         getExpenseLedgerStreamUseCase: GetExpenseLedgerStreamUseCase,
         context: HouseholdContextDomain,
-    ): GetMonthlyStatementStreamUseCase = GetMonthlyStatementStreamUseCase(
-        getExpenseLedgerStreamUseCase = getExpenseLedgerStreamUseCase,
-        context = context,
-    )
+    ): GetMonthlyStatementStreamUseCase =
+        GetMonthlyStatementStreamUseCase(
+            getExpenseLedgerStreamUseCase = getExpenseLedgerStreamUseCase,
+            context = context,
+        )
 
     @Single
     fun provideSaveStatementUseCase(
         statementDataSource: StatementDataSource,
-    ): SaveStatementUseCase = SaveStatementUseCase(
-        statementDataSource = statementDataSource,
-    )
+    ): SaveStatementUseCase =
+        SaveStatementUseCase(
+            statementDataSource = statementDataSource,
+        )
 
     @Single
     fun provideAddReminderUseCase(
         reminderDataSource: ReminderDataSource,
         context: HouseholdContextDomain,
-    ): AddReminderUseCase = AddReminderUseCase(
-        reminderDataSource = reminderDataSource,
-        context = context,
-    )
+    ): AddReminderUseCase =
+        AddReminderUseCase(
+            reminderDataSource = reminderDataSource,
+            context = context,
+        )
 
     @Single
     fun provideCompleteReminderUseCase(
         reminderDataSource: ReminderDataSource,
-    ): CompleteReminderUseCase = CompleteReminderUseCase(
-        reminderDataSource = reminderDataSource,
-    )
+    ): CompleteReminderUseCase =
+        CompleteReminderUseCase(
+            reminderDataSource = reminderDataSource,
+        )
 
     @Single
     fun provideGetRemindersStreamUseCase(
         reminderDataSource: ReminderDataSource,
-    ): GetRemindersStreamUseCase = GetRemindersStreamUseCase(
-        reminderDataSource = reminderDataSource,
-    )
+    ): GetRemindersStreamUseCase =
+        GetRemindersStreamUseCase(
+            reminderDataSource = reminderDataSource,
+        )
 
     @Single
     fun provideRemoveReminderUseCase(
         reminderDataSource: ReminderDataSource,
-    ): RemoveReminderUseCase = RemoveReminderUseCase(
-        reminderDataSource = reminderDataSource,
-    )
+    ): RemoveReminderUseCase =
+        RemoveReminderUseCase(
+            reminderDataSource = reminderDataSource,
+        )
 
     @Single
     fun provideGetSettingsStreamUseCase(
         settingsDataSource: SettingsDataSource,
-    ): GetSettingsStreamUseCase = GetSettingsStreamUseCase(
-        settingsDataSource = settingsDataSource,
-    )
+    ): GetSettingsStreamUseCase =
+        GetSettingsStreamUseCase(
+            settingsDataSource = settingsDataSource,
+        )
 
     @Single
     fun provideSetNotificationsUseCase(
         settingsDataSource: SettingsDataSource,
-    ): SetNotificationsUseCase = SetNotificationsUseCase(
-        settingsDataSource = settingsDataSource,
-    )
+    ): SetNotificationsUseCase =
+        SetNotificationsUseCase(
+            settingsDataSource = settingsDataSource,
+        )
 
     @Single
     fun provideSetThemeUseCase(
         settingsDataSource: SettingsDataSource,
-    ): SetThemeUseCase = SetThemeUseCase(
-        settingsDataSource = settingsDataSource,
-    )
+    ): SetThemeUseCase =
+        SetThemeUseCase(
+            settingsDataSource = settingsDataSource,
+        )
 
     @Single
     fun provideAddShoppingItemsUseCase(
         shoppingDataSource: ShoppingDataSource,
-    ): AddShoppingItemsUseCase = AddShoppingItemsUseCase(
-        shoppingDataSource = shoppingDataSource,
-    )
+    ): AddShoppingItemsUseCase =
+        AddShoppingItemsUseCase(
+            shoppingDataSource = shoppingDataSource,
+        )
 
     @Single
     fun provideGetShoppingStreamUseCase(
         shoppingDataSource: ShoppingDataSource,
-    ): GetShoppingStreamUseCase = GetShoppingStreamUseCase(
-        shoppingDataSource = shoppingDataSource,
-    )
+    ): GetShoppingStreamUseCase =
+        GetShoppingStreamUseCase(
+            shoppingDataSource = shoppingDataSource,
+        )
 
     @Single
     fun provideSaveShoppingItemUseCase(
         shoppingDataSource: ShoppingDataSource,
-    ): SaveShoppingItemUseCase = SaveShoppingItemUseCase(
-        shoppingDataSource = shoppingDataSource,
-    )
+    ): SaveShoppingItemUseCase =
+        SaveShoppingItemUseCase(
+            shoppingDataSource = shoppingDataSource,
+        )
 
     @Single
     fun provideSaveShoppingListUseCase(
         shoppingDataSource: ShoppingDataSource,
-    ): SaveShoppingListUseCase = SaveShoppingListUseCase(
-        shoppingDataSource = shoppingDataSource,
-    )
+    ): SaveShoppingListUseCase =
+        SaveShoppingListUseCase(
+            shoppingDataSource = shoppingDataSource,
+        )
 }

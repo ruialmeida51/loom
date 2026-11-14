@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.core.navigation.model
 
+import androidx.compose.runtime.getValue
 import androidx.navigation3.runtime.NavKey
 
 /**

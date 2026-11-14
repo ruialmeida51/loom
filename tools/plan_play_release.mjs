@@ -1,25 +1,11 @@
-import { createSign } from 'node:crypto';
+import { authorizeGoogle, accessAssertion, PUBLISHER_SCOPE } from './google_service_account.mjs';
 import { readFileSync, appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-const OAUTH_URL = 'https://oauth2.googleapis.com/token';
+export { accessAssertion };
+
 const API_ROOT = 'https://androidpublisher.googleapis.com/androidpublisher/v3';
 const PACKAGE_NAME = 'com.eyther.lumbridge';
-
-export function accessAssertion(account, now = Math.floor(Date.now() / 1000)) {
-  const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
-  const header = encode({ alg: 'RS256', typ: 'JWT' });
-  const payload = encode({
-    iss: account.client_email,
-    scope: 'https://www.googleapis.com/auth/androidpublisher',
-    aud: OAUTH_URL,
-    iat: now,
-    exp: now + 3600,
-  });
-  const message = `${header}.${payload}`;
-  const signature = createSign('RSA-SHA256').update(message).sign(account.private_key, 'base64url');
-  return `${message}.${signature}`;
-}
 
 export function nextVersionCode(tracks, bundles, apks, requested = '') {
   const releases = (tracks.tracks ?? []).flatMap(track => track.releases ?? []);
@@ -35,17 +21,7 @@ export function nextVersionCode(tracks, bundles, apks, requested = '') {
 }
 
 export async function plan(account, requested = '', request = fetch) {
-  const tokenResponse = await request(OAUTH_URL, {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: accessAssertion(account),
-    }),
-  });
-  if (!tokenResponse.ok) throw new Error('Google refused service-account authentication. Check the service-account JSON key.');
-  const { access_token: token } = await tokenResponse.json();
-  if (!token) throw new Error('Google did not return an access token.');
+  const token = await authorizeGoogle(account, PUBLISHER_SCOPE, request);
   const headers = { authorization: `Bearer ${token}`, 'content-type': 'application/json' };
   const app = `${API_ROOT}/applications/${PACKAGE_NAME}/edits`;
   const editResponse = await request(app, { method: 'POST', headers, body: '{}' });
@@ -58,7 +34,10 @@ export async function plan(account, requested = '', request = fetch) {
     const responses = await Promise.all(['tracks', 'bundles', 'apks'].map(resource => request(`${endpoint}/${resource}`, { headers })));
     if (responses.some(response => !response.ok)) throw new Error('Could not read existing Play version codes. Check service-account permissions.');
     const [tracks, bundles, apks] = await Promise.all(responses.map(response => response.json()));
-    result = nextVersionCode(tracks, bundles, apks, requested);
+    result = {
+      versionCode: nextVersionCode(tracks, bundles, apks, requested),
+      versionNames: (tracks.tracks ?? []).flatMap(track => track.releases ?? []).map(release => release.name).filter(Boolean),
+    };
   } finally {
     const response = await request(endpoint, { method: 'DELETE', headers });
     if (!response.ok && response.status !== 404) throw new Error('Could not close the temporary Play version-planning edit. No release was committed.');
@@ -71,8 +50,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const [credentialPath, requested = ''] = process.argv.slice(2);
     const account = JSON.parse(readFileSync(credentialPath, 'utf8'));
     const code = await plan(account, requested);
-    if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `version_code=${code}\n`);
-    process.stdout.write(`Next Loom Play version code: ${code}\n`);
+    if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `version_code=${code.versionCode}\n`);
+    process.stdout.write(`Next Loom Play version code: ${code.versionCode}\n`);
   } catch (error) {
     const safeMessages = ['Google refused', 'Google did not', 'Cannot access Loom', 'Play returned', 'Could not', 'Choose a version'];
     process.stderr.write(safeMessages.some(prefix => error.message.startsWith(prefix)) ? `${error.message}\n` : 'Play release planning failed. Verify the service-account key and its app permissions.\n');

@@ -21,7 +21,6 @@ import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.authentication.generated.resources.Res
-import com.eyther.lumbridge.features.authentication.generated.resources.verification_check_inbox
 import com.eyther.lumbridge.features.authentication.generated.resources.verification_code_label
 import com.eyther.lumbridge.features.authentication.generated.resources.verification_description
 import com.eyther.lumbridge.features.authentication.generated.resources.verification_help
@@ -34,7 +33,10 @@ import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contr
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun EmailVerificationScreen(viewModel: EmailVerificationScreenViewModelContract, onBack: () -> Unit) {
+fun EmailVerificationScreen(
+    viewModel: EmailVerificationScreenViewModelContract,
+    onBack: () -> Unit,
+) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerEmailVerificationScreen(
         email = state.email,
@@ -73,7 +75,6 @@ private fun InnerEmailVerificationScreen(
 ) {
     AuthenticationLayout(title = stringResource(Res.string.verify_email_title), onBack = onBack) {
         PageHeading(
-            eyebrow = stringResource(Res.string.verification_check_inbox),
             title = stringResource(Res.string.verify_email_title),
             subtitle = stringResource(Res.string.verification_description, email),
         )
@@ -81,14 +82,20 @@ private fun InnerEmailVerificationScreen(
             value = code,
             onValueChange = onCodeChanged,
             label = { Text(stringResource(Res.string.verification_code_label)) },
-            modifier = Modifier.fillMaxWidth().testTag("verification_code").semantics { contentType = ContentType.SmsOtpCode },
+            modifier =
+                Modifier.fillMaxWidth().testTag("verification_code").semantics {
+                    contentType = ContentType.SmsOtpCode
+                },
             singleLine = true,
             enabled = !verifying && !resending,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+            keyboardOptions =
+                KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onVerify() }),
         )
         error?.let { value -> ErrorNotice(message = value, onDismiss = onDismissError) }
-        message?.let { value -> Text(value.getString(), color = MaterialTheme.colorScheme.secondary) }
+        message?.let { value ->
+            Text(value.getString(), color = MaterialTheme.colorScheme.secondary)
+        }
         LoomButton(
             text = stringResource(Res.string.verification_submit),
             onClick = onVerify,
@@ -96,7 +103,10 @@ private fun InnerEmailVerificationScreen(
             loading = verifying,
             enabled = canVerify,
         )
-        Text(stringResource(Res.string.verification_help), style = MaterialTheme.typography.bodySmall)
+        Text(
+            stringResource(Res.string.verification_help),
+            style = MaterialTheme.typography.bodySmall,
+        )
         LoomButton(
             text = stringResource(Res.string.verification_resend),
             onClick = onResend,

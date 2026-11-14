@@ -38,7 +38,6 @@ import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel_sche
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel_this_schedule
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancelled
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_each_active_schedule_records_an_expense_on_its_due
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_every_month_sorted
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_former_member
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_future_entries_will_stop_expenses_already_recorded_stay_in
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_keep_schedule
@@ -88,13 +87,12 @@ private fun InnerRecurringExpensesScreen(
 ) {
     var cancellation by remember { mutableStateOf<RecurringExpenseDomain?>(null) }
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 24.dp).testTag("recurring_content"),
+        Modifier.fillMaxSize().padding(horizontal = 20.dp).testTag("recurring_content"),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(vertical = 20.dp),
     ) {
         item {
             PageHeading(
-                stringResource(Res.string.ui_every_month_sorted),
                 stringResource(Res.string.ui_recurring_expenses),
                 stringResource(Res.string.ui_manage_the_fixed_expenses_you_share_at_home),
             )

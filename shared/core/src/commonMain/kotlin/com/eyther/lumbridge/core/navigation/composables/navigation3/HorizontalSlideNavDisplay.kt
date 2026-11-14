@@ -1,13 +1,13 @@
 package com.eyther.lumbridge.core.navigation.composables.navigation3
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.navigation3.runtime.NavKey
-import com.eyther.lumbridge.core.navigation.animation.slideInTransitionSpec
-import com.eyther.lumbridge.core.navigation.animation.slidePopInTransitionSpec
-import com.eyther.lumbridge.core.navigation.animation.slidePredictivePopTransitionSpec
+import androidx.navigationevent.NavigationEvent
+import com.eyther.lumbridge.core.navigation.animation.backSlideTransition
+import com.eyther.lumbridge.core.navigation.animation.forwardSlideTransition
 import com.eyther.lumbridge.core.navigation.model.NavigationState
 import com.eyther.lumbridge.core.navigation.model.Navigator
 import kotlin.reflect.KClass
@@ -18,22 +18,19 @@ fun HorizontalSlideNavDisplay(
     navigator: Navigator,
     navigationState: NavigationState,
     metadata: Map<KClass<out NavKey>, Map<String, Any>> = emptyMap(),
-    snackbarHost: @Composable () -> Unit = {},
     content: @Composable (key: NavKey) -> Unit,
 ) {
-    Scaffold(
+    val direction = if (LocalLayoutDirection.current == LayoutDirection.Ltr) 1 else -1
+    DefaultNavDisplay(
         modifier = modifier,
-        snackbarHost = snackbarHost,
-    ) {
-        DefaultNavDisplay(
-            modifier = Modifier.fillMaxSize(),
-            navigator = navigator,
-            navigationState = navigationState,
-            transitionSpec = { slideInTransitionSpec },
-            popTransitionSpec = { slidePopInTransitionSpec },
-            predictivePopTransitionSpec = { slidePredictivePopTransitionSpec },
-            metadata = metadata,
-            content = content,
-        )
-    }
+        navigator = navigator,
+        navigationState = navigationState,
+        transitionSpec = { forwardSlideTransition(direction = direction) },
+        popTransitionSpec = { backSlideTransition(direction = direction) },
+        predictivePopTransitionSpec = { edge ->
+            backSlideTransition(direction = if (edge == NavigationEvent.EDGE_RIGHT) -1 else 1)
+        },
+        metadata = metadata,
+        content = content,
+    )
 }

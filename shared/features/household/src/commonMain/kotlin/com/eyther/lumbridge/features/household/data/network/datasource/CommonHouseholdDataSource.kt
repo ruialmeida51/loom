@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.household.data.network.datasource
 
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
+import com.eyther.lumbridge.core.data.network.asApiResult
 import com.eyther.lumbridge.core.data.network.safeApiCall
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.household.data.network.mapper.toDomain
@@ -8,7 +9,9 @@ import com.eyther.lumbridge.features.household.data.network.mapper.toHouseholdEr
 import com.eyther.lumbridge.features.household.data.network.model.request.CreateHouseholdRequest
 import com.eyther.lumbridge.features.household.data.network.model.request.HouseholdRequest
 import com.eyther.lumbridge.features.household.data.network.model.request.JoinHouseholdRequest
+import com.eyther.lumbridge.features.household.data.network.model.request.UpdateNicknameRequest
 import com.eyther.lumbridge.features.household.data.network.model.response.HouseholdResponse
+import com.eyther.lumbridge.features.household.data.network.model.response.MemberProfileResponse
 import com.eyther.lumbridge.features.household.data.network.model.response.MemberResponse
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
@@ -16,18 +19,26 @@ import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.update
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CommonHouseholdDataSource(
     private val access: SupabaseAccess,
 ) : HouseholdDataSource {
+
+    private val memberChanges = MutableStateFlow(0L)
 
     override suspend fun getHouseholds(): AppResult<List<HouseholdDomain>> {
         return safeApiCall(
             mapError = Exception::toHouseholdError,
         ) {
-            access.requireClient().from("households").select()
-                .decodeList<HouseholdResponse>()
-                .map { it.toDomain() }
+            access.requireClient().from("households").select().decodeList<HouseholdResponse>().map {
+                it.toDomain()
+            }
         }
     }
 
@@ -39,12 +50,14 @@ class CommonHouseholdDataSource(
         return safeApiCall(
             mapError = Exception::toHouseholdError,
         ) {
-            val request = CreateHouseholdRequest(
-                name = name,
-                currency = currency,
-                timeZone = timeZone,
-            )
-            val id = access.requireClient().postgrest.rpc("create_household", request).decodeAs<String>()
+            val request =
+                CreateHouseholdRequest(
+                    name = name,
+                    currency = currency,
+                    timeZone = timeZone,
+                )
+            val id =
+                access.requireClient().postgrest.rpc("create_household", request).decodeAs<String>()
 
             HouseholdDomain(
                 id = id,
@@ -66,15 +79,42 @@ class CommonHouseholdDataSource(
         }
     }
 
-    override suspend fun getMembers(householdId: String): AppResult<List<MemberDomain>> {
-        return safeApiCall(
-            mapError = Exception::toHouseholdError,
-        ) {
-            val request = HouseholdRequest(householdId = householdId)
+    override fun streamMembers(householdId: String): Flow<AppResult<List<MemberDomain>>> =
+        memberChanges
+            .flatMapLatest {
+                access.watch(table = "profiles", scopeId = householdId) {
+                    loadMembers(householdId = householdId)
+                }
+            }
+            .asApiResult(mapError = Exception::toHouseholdError)
 
-            access.requireClient().postgrest.rpc("household_members_with_names", request)
-                .decodeList<MemberResponse>()
-                .map { it.toDomain() }
+    override suspend fun getMembers(householdId: String): AppResult<List<MemberDomain>> =
+        safeApiCall(mapError = Exception::toHouseholdError) {
+            loadMembers(householdId = householdId)
+        }
+
+    private suspend fun loadMembers(householdId: String): List<MemberDomain> {
+        val request = HouseholdRequest(householdId = householdId)
+        return access
+            .requireClient()
+            .postgrest
+            .rpc("household_members_with_names", request)
+            .decodeList<MemberResponse>()
+            .map { it.toDomain() }
+    }
+
+    override suspend fun updateNickname(userId: String, nickname: String): AppResult<Unit> {
+        return safeApiCall(mapError = Exception::toHouseholdError) {
+            access
+                .requireClient()
+                .from("profiles")
+                .update(UpdateNicknameRequest(displayName = nickname)) {
+                    filter { eq("id", userId) }
+                    select()
+                }
+                .decodeSingle<MemberProfileResponse>()
+            memberChanges.update { oldVersion -> oldVersion + 1L }
+            Unit
         }
     }
 
@@ -84,7 +124,11 @@ class CommonHouseholdDataSource(
         ) {
             val request = HouseholdRequest(householdId = householdId)
 
-            access.requireClient().postgrest.rpc("create_household_invite", request).decodeAs<String>()
+            access
+                .requireClient()
+                .postgrest
+                .rpc("create_household_invite", request)
+                .decodeAs<String>()
         }
     }
 }

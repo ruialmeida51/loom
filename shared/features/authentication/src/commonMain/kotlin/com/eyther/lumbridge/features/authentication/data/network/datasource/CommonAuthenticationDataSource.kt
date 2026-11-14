@@ -5,6 +5,7 @@ import com.eyther.lumbridge.core.data.network.safeApiCall
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.authentication.data.network.config.AuthenticationRedirect
 import com.eyther.lumbridge.features.authentication.data.network.mapper.toAuthenticationError
+import com.eyther.lumbridge.features.authentication.data.network.mapper.toDomain
 import com.eyther.lumbridge.features.authentication.data.network.mapper.toGoogleSignInError
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.errors.AuthenticationError
@@ -46,12 +47,7 @@ class CommonAuthenticationDataSource(
         access.client?.let { client ->
             scope.launch {
                 client.auth.sessionStatus.collect { status ->
-                    mutableSession.value = when (status) {
-                        is SessionStatus.Authenticated -> status.session.user?.let { user ->
-                            AuthSessionDomain(userId = user.id, email = user.email.orEmpty())
-                        }
-                        else -> null
-                    }
+                    mutableSession.value = status.toDomain(previous = mutableSession.value)
 
                     if (status is SessionStatus.Authenticated) {
                         pushDevices.syncRegistration()
@@ -60,14 +56,16 @@ class CommonAuthenticationDataSource(
             }
             scope.launch {
                 callbackEvents.collect { callback ->
-                    googleSignInResult.value = when (callback) {
-                        is AppResult.Failure -> callback
-                        is AppResult.Success -> safeApiCall(mapError = Exception::toGoogleSignInError) {
-                            client.auth.awaitInitialization()
-                            client.auth.exchangeCodeForSession(code = callback.value)
-                            Unit
+                    googleSignInResult.value =
+                        when (callback) {
+                            is AppResult.Failure -> callback
+                            is AppResult.Success ->
+                                safeApiCall(mapError = Exception::toGoogleSignInError) {
+                                    client.auth.awaitInitialization()
+                                    client.auth.exchangeCodeForSession(code = callback.value)
+                                    Unit
+                                }
                         }
-                    }
                 }
             }
         }
@@ -75,7 +73,8 @@ class CommonAuthenticationDataSource(
 
     override fun stream(): StateFlow<AuthSessionDomain?> = mutableSession.asStateFlow()
 
-    override fun streamGoogleSignInResults(): Flow<AppResult<Unit>> = googleSignInResult.filterNotNull()
+    override fun streamGoogleSignInResults(): Flow<AppResult<Unit>> =
+        googleSignInResult.filterNotNull()
 
     override suspend fun signInWithGoogle(): AppResult<Unit> {
         googleSignInResult.value = null
@@ -113,11 +112,15 @@ class CommonAuthenticationDataSource(
 
     override suspend fun verifyEmail(email: String, code: String): AppResult<Unit> {
         return safeApiCall(mapError = Exception::toAuthenticationError) {
-            val result = access.requireClient().auth.verifyEmailOtp(
-                type = OtpType.Email.EMAIL,
-                email = email,
-                token = code,
-            )
+            val result =
+                access
+                    .requireClient()
+                    .auth
+                    .verifyEmailOtp(
+                        type = OtpType.Email.EMAIL,
+                        email = email,
+                        token = code,
+                    )
             if (result !is OtpVerifyResult.Authenticated) {
                 throw AuthenticationError.VerificationFailed()
             }

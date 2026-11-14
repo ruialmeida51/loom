@@ -14,7 +14,7 @@ jobs:
       - name: Validate release tooling and legal pages
         run: |
           python3 -m unittest discover -s tools/tests -p 'test_*.py'
-          node --test tools/tests/play_release_test.mjs
+          node --test tools/tests/*.mjs
           python3 tools/build_legal_site.py
           python3 tools/check_legal_site.py
       - name: Configure Android Firebase

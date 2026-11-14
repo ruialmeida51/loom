@@ -2,33 +2,31 @@ package com.eyther.lumbridge.features.settings.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
-import com.eyther.lumbridge.core.presentation.components.LoomButton
-import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.PageHeading
+import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsPreferencesDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
@@ -38,18 +36,20 @@ import com.eyther.lumbridge.features.settings.domain.model.SettingsDomain
 import com.eyther.lumbridge.features.settings.generated.resources.Res
 import com.eyther.lumbridge.features.settings.generated.resources.analytics_description
 import com.eyther.lumbridge.features.settings.generated.resources.analytics_title
-import com.eyther.lumbridge.features.settings.generated.resources.ui_a_little_light_a_little_dark_or_follow_your
 import com.eyther.lumbridge.features.settings.generated.resources.ui_appearance
 import com.eyther.lumbridge.features.settings.generated.resources.ui_gentle_nudges
 import com.eyther.lumbridge.features.settings.generated.resources.ui_household_details
 import com.eyther.lumbridge.features.settings.generated.resources.ui_invite_someone_home
 import com.eyther.lumbridge.features.settings.generated.resources.ui_just_the_way_you_like_it
-import com.eyther.lumbridge.features.settings.generated.resources.ui_loom_life_woven_together
-import com.eyther.lumbridge.features.settings.generated.resources.ui_one_time_invitation_expires_in_48_hours
+import com.eyther.lumbridge.features.settings.generated.resources.ui_nickname_description
+import com.eyther.lumbridge.features.settings.generated.resources.ui_nickname_title
+import com.eyther.lumbridge.features.settings.generated.resources.ui_preferences
 import com.eyther.lumbridge.features.settings.generated.resources.ui_reminders_and_shared_expenses
 import com.eyther.lumbridge.features.settings.generated.resources.ui_sign_out
 import com.eyther.lumbridge.features.settings.generated.resources.ui_switch_household
 import com.eyther.lumbridge.features.settings.generated.resources.ui_your_little_corner
+import com.eyther.lumbridge.features.settings.generated.resources.ui_your_profile
+import com.eyther.lumbridge.features.settings.presentation.components.SettingsToggleRow
 import com.eyther.lumbridge.features.settings.presentation.mapper.settingsOptionLabel
 import com.eyther.lumbridge.features.settings.presentation.viewmodel.contracts.SettingsScreenViewModelContract
 import org.jetbrains.compose.resources.stringResource
@@ -66,15 +66,18 @@ fun SettingsScreen(
     InnerSettingsScreen(
         preferences = state.preferences,
         analytics = state.analytics,
-        onAnalyticsConsent = viewModel::onAnalyticsConsentChanged,
         members = state.members,
-        invitation = state.invitation,
+        nickname = state.currentMember?.name.orEmpty(),
+        canEditNickname = state.canEditNickname,
+        canManageHousehold = state.canManageHousehold,
         busy = state.busy,
         error = state.error,
         context = context,
+        onNickname = viewModel::onEditNickname,
         onSwitchHousehold = onSwitchHousehold,
         onTheme = viewModel::onThemeSelected,
         onNotifications = viewModel::onNotificationsChanged,
+        onAnalyticsConsent = viewModel::onAnalyticsConsentChanged,
         onInvite = viewModel::onCreateInvitation,
         onSignOut = onSignOut,
         onOpenLegalDocument = onOpenLegalDocument,
@@ -86,157 +89,150 @@ fun SettingsScreen(
 private fun InnerSettingsScreen(
     preferences: SettingsDomain,
     analytics: AnalyticsPreferencesDomain,
-    onAnalyticsConsent: (Boolean) -> Unit,
     members: List<MemberDomain>,
-    invitation: String?,
+    nickname: String,
+    canEditNickname: Boolean,
+    canManageHousehold: Boolean,
     busy: Boolean,
     error: TextResource?,
     context: HouseholdContextDomain,
+    onNickname: () -> Unit,
     onSwitchHousehold: () -> Unit,
     onSignOut: () -> Unit,
     onOpenLegalDocument: (LegalDocumentDomain) -> Unit,
     onTheme: (String) -> Unit,
     onNotifications: (Boolean) -> Unit,
+    onAnalyticsConsent: (Boolean) -> Unit,
     onInvite: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 24.dp).testTag("settings_content"),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).testTag("settings_content"),
         contentPadding = PaddingValues(vertical = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         item {
             PageHeading(
-                stringResource(Res.string.ui_just_the_way_you_like_it),
-                stringResource(Res.string.ui_your_little_corner),
+                title = stringResource(Res.string.ui_your_little_corner),
+                subtitle = stringResource(Res.string.ui_just_the_way_you_like_it),
             )
         }
         error?.let { message ->
-            item(key = "error") {
-                ErrorNotice(message = message, onDismiss = onDismiss)
+            item(key = "error") { ErrorNotice(message = message, onDismiss = onDismiss) }
+        }
+        item {
+            SectionTitle(title = stringResource(Res.string.ui_your_profile))
+            GroupedSurface {
+                NavigationRow(
+                    title = nickname.ifBlank { stringResource(Res.string.ui_nickname_title) },
+                    description = stringResource(Res.string.ui_nickname_description),
+                    onClick = onNickname,
+                    enabled = canEditNickname,
+                    modifier = Modifier.testTag("edit_nickname"),
+                )
             }
         }
         item {
-            LoomCard {
-                Text(
-                    stringResource(Res.string.ui_appearance),
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Text(
-                    stringResource(Res.string.ui_a_little_light_a_little_dark_or_follow_your),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("SYSTEM", "LIGHT", "DARK").forEach { theme ->
-                        FilterChip(
-                            preferences.theme == theme,
-                            { onTheme(theme) },
-                            label = { Text(settingsOptionLabel(theme)) },
-                        )
-                    }
-                }
-            }
-        }
-        item {
-            LoomCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(
-                            stringResource(Res.string.ui_gentle_nudges),
-                            style = MaterialTheme.typography.titleLarge,
-                        )
-                        Text(
-                            stringResource(Res.string.ui_reminders_and_shared_expenses),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Switch(preferences.notifications, onNotifications, enabled = !busy)
-                }
-            }
-        }
-        if (analytics.available) {
-            item {
-                LoomCard {
-                    val analyticsTitle = stringResource(Res.string.analytics_title)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                text = analyticsTitle,
-                                style = MaterialTheme.typography.titleLarge,
-                            )
-                            Text(
-                                text = stringResource(Res.string.analytics_description),
-                                style = MaterialTheme.typography.bodySmall,
+            SectionTitle(title = stringResource(Res.string.ui_preferences))
+            GroupedSurface {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = stringResource(Res.string.ui_appearance),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ThemeMode.entries.forEach { theme ->
+                            FilterChip(
+                                selected = preferences.theme == theme.name,
+                                onClick = { onTheme(theme.name) },
+                                label = { Text(settingsOptionLabel(theme.name)) },
                             )
                         }
-                        Switch(
-                            modifier = Modifier
-                                .testTag("analytics_consent")
-                                .semantics { contentDescription = analyticsTitle },
-                            checked = analytics.enabled,
-                            onCheckedChange = onAnalyticsConsent,
-                            enabled = !busy,
-                        )
                     }
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                SettingsToggleRow(
+                    title = stringResource(Res.string.ui_gentle_nudges),
+                    description = stringResource(Res.string.ui_reminders_and_shared_expenses),
+                    checked = preferences.notifications,
+                    onCheckedChange = onNotifications,
+                    enabled = !busy,
+                )
+                if (analytics.available) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    SettingsToggleRow(
+                        title = stringResource(Res.string.analytics_title),
+                        description = stringResource(Res.string.analytics_description),
+                        checked = analytics.enabled,
+                        onCheckedChange = onAnalyticsConsent,
+                        enabled = !busy,
+                        modifier = Modifier.testTag("analytics_consent"),
+                    )
                 }
             }
         }
         item {
-            LoomCard {
-                Text(context.name, style = MaterialTheme.typography.headlineMedium)
-                Text(
+            SectionTitle(title = context.name)
+            Text(
+                text =
                     stringResource(
                         Res.string.ui_household_details,
                         context.currency,
                         context.timeZone,
                     ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                members.forEach { member ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(member.name)
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        item {
+            GroupedSurface {
+                members.forEachIndexed { index, member ->
+                    if (index > 0)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
                         Text(
-                            settingsOptionLabel(member.role),
-                            style = MaterialTheme.typography.bodySmall,
+                            text = member.name,
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            text = settingsOptionLabel(member.role),
+                            style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
-                if (members.any { it.id == context.userId && it.role == "owner" })
-                    LoomButton(
-                        stringResource(Res.string.ui_invite_someone_home),
-                        onInvite,
-                        loading = busy,
+                if (canManageHousehold) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    NavigationRow(
+                        title = stringResource(Res.string.ui_invite_someone_home),
+                        onClick = onInvite,
+                        enabled = !busy,
                     )
-                invitation?.let { token ->
-                    Text(
-                        stringResource(Res.string.ui_one_time_invitation_expires_in_48_hours),
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                    SelectionContainer { Text(token, style = MaterialTheme.typography.bodySmall) }
                 }
-                TextButton(onClick = onSwitchHousehold) {
-                    Text(stringResource(Res.string.ui_switch_household))
-                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                NavigationRow(
+                    title = stringResource(Res.string.ui_switch_household),
+                    onClick = onSwitchHousehold,
+                    enabled = !busy,
+                )
             }
         }
-
+        item { LegalLinks(onOpenDocument = onOpenLegalDocument, showAccountDeletion = true) }
         item {
-            LegalLinks(onOpenDocument = onOpenLegalDocument, showAccountDeletion = true)
-        }
-        item {
-            OutlinedButton(onClick = onSignOut, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = onSignOut,
+                enabled = !busy,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 Text(stringResource(Res.string.ui_sign_out))
             }
-        }
-        item {
-            Text(
-                stringResource(Res.string.ui_loom_life_woven_together),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }

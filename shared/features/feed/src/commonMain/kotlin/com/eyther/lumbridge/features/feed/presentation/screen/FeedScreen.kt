@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.feed.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,10 +11,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,8 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
-import com.eyther.lumbridge.core.presentation.components.LoomButton
-import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.ListRow
 import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
@@ -36,16 +32,10 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
 import com.eyther.lumbridge.features.feed.generated.resources.Res
 import com.eyther.lumbridge.features.feed.generated.resources.ui_a_fresh_page
-import com.eyther.lumbridge.features.feed.generated.resources.ui_a_moment_for_you
-import com.eyther.lumbridge.features.feed.generated.resources.ui_cancel
-import com.eyther.lumbridge.features.feed.generated.resources.ui_feed_url_hint
 import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_a_feed
-import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_a_feed_a533eb8
 import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_an_rss_or_atom_feed_to_bring_your
-import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_feed
 import com.eyther.lumbridge.features.feed.generated.resources.ui_mark_as_read
 import com.eyther.lumbridge.features.feed.generated.resources.ui_mark_unread
-import com.eyther.lumbridge.features.feed.generated.resources.ui_paste_an_rss_or_atom_feed_url_articles_will
 import com.eyther.lumbridge.features.feed.generated.resources.ui_read_story
 import com.eyther.lumbridge.features.feed.generated.resources.ui_the_reading_corner
 import com.eyther.lumbridge.features.feed.generated.resources.ui_unread_only
@@ -58,19 +48,12 @@ fun FeedScreen(viewModel: FeedScreenViewModelContract, onOpen: (String) -> Unit)
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerFeedScreen(
         items = state.visibleArticles,
-        url = state.url,
-        showFollow = state.showFollow,
         unreadOnly = state.unreadOnly,
-        busy = state.busy,
         error = state.displayError,
-        formError = state.formError,
-        canFollow = state.canFollow,
         onOpen = onOpen,
-        onUrl = viewModel::onUrlChanged,
         onShowFollow = viewModel::onFollowSheetVisibilityChanged,
         onUnreadOnly = viewModel::onUnreadOnlyChanged,
         onDismiss = viewModel::onDismissError,
-        onFollow = viewModel::onFollowFeed,
         onMarkRead = viewModel::onMarkRead,
     )
 }
@@ -78,29 +61,21 @@ fun FeedScreen(viewModel: FeedScreenViewModelContract, onOpen: (String) -> Unit)
 @Composable
 private fun InnerFeedScreen(
     items: List<ArticleDomain>,
-    url: String,
-    showFollow: Boolean,
     unreadOnly: Boolean,
-    busy: Boolean,
     error: TextResource?,
-    formError: TextResource?,
-    canFollow: Boolean,
     onOpen: (String) -> Unit,
-    onUrl: (String) -> Unit,
     onShowFollow: (Boolean) -> Unit,
     onUnreadOnly: (Boolean) -> Unit,
     onDismiss: () -> Unit,
-    onFollow: () -> Unit,
     onMarkRead: (ArticleDomain, Boolean) -> Unit,
 ) {
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 24.dp),
+        Modifier.fillMaxSize().padding(horizontal = 20.dp),
         contentPadding = PaddingValues(vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
             PageHeading(
-                stringResource(Res.string.ui_a_moment_for_you),
                 stringResource(Res.string.ui_the_reading_corner),
                 stringResource(Res.string.ui_your_favourite_corners_of_the_internet_in_one_quiet),
             )
@@ -134,13 +109,13 @@ private fun InnerFeedScreen(
                 )
             }
         items(items, key = { it.id }) { article ->
-            LoomCard {
+            ListRow {
                 Text(
                     article.source.uppercase(),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.secondary,
                 )
-                Text(article.title, style = MaterialTheme.typography.headlineMedium)
+                Text(article.title, style = MaterialTheme.typography.titleLarge)
                 Text(
                     article.summary,
                     style = MaterialTheme.typography.bodyMedium,
@@ -175,36 +150,4 @@ private fun InnerFeedScreen(
             }
         }
     }
-    if (showFollow)
-        AlertDialog(
-            onDismissRequest = { onShowFollow(false) },
-            title = { Text(stringResource(Res.string.ui_follow_a_feed_a533eb8)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(stringResource(Res.string.ui_paste_an_rss_or_atom_feed_url_articles_will))
-                    OutlinedTextField(
-                        url,
-                        onUrl,
-                        label = { Text(stringResource(Res.string.ui_feed_url_hint)) },
-                        singleLine = true,
-                    )
-                    formError?.let { message ->
-                        ErrorNotice(message = message, onDismiss = onDismiss)
-                    }
-                }
-            },
-            confirmButton = {
-                LoomButton(
-                    text = stringResource(Res.string.ui_follow_feed),
-                    onClick = onFollow,
-                    loading = busy,
-                    enabled = canFollow,
-                )
-            },
-            dismissButton = {
-                TextButton(onClick = { onShowFollow(false) }, enabled = !busy) {
-                    Text(stringResource(Res.string.ui_cancel))
-                }
-            },
-        )
 }

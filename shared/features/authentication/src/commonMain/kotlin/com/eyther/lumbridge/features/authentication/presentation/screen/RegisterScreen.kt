@@ -22,7 +22,6 @@ import com.eyther.lumbridge.features.authentication.generated.resources.register
 import com.eyther.lumbridge.features.authentication.generated.resources.ui_already_have_an_account_sign_in
 import com.eyther.lumbridge.features.authentication.generated.resources.ui_create_account
 import com.eyther.lumbridge.features.authentication.generated.resources.ui_make_yourself_at_home
-import com.eyther.lumbridge.features.authentication.generated.resources.ui_welcome_to_loom
 import com.eyther.lumbridge.features.authentication.presentation.components.AuthenticationLayout
 import com.eyther.lumbridge.features.authentication.presentation.components.EmailInput
 import com.eyther.lumbridge.features.authentication.presentation.components.PasswordInput
@@ -80,12 +79,16 @@ private fun InnerRegisterScreen(
 ) {
     AuthenticationLayout(title = stringResource(Res.string.ui_create_account), onBack = onBack) {
         PageHeading(
-            eyebrow = stringResource(Res.string.ui_welcome_to_loom),
             title = stringResource(Res.string.ui_make_yourself_at_home),
             subtitle = stringResource(Res.string.register_description),
         )
         EmailInput(value = email, onValueChanged = onEmailChanged, enabled = !busy)
-        PasswordInput(value = password, onValueChanged = onPasswordChanged, enabled = !busy, onSubmit = onSubmit)
+        PasswordInput(
+            value = password,
+            onValueChanged = onPasswordChanged,
+            enabled = !busy,
+            onSubmit = onSubmit,
+        )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(
                 checked = acceptedTerms,

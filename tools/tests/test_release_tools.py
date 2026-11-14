@@ -17,7 +17,7 @@ TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 import build_legal_site
 import check_legal_site
-import prepare_play_release
+import prepare_release
 
 
 class Links(HTMLParser):
@@ -46,13 +46,13 @@ class ReleasePreparationTest(unittest.TestCase):
         self.keystore = b'not-a-real-keystore' * 16
         self.environment = {
             'RUNNER_TEMP': str(self.directory / 'runner'),
-            'LOOM_VERSION_NAME': '0.2.0',
+            'LOOM_VERSION_NAME': '4.0.0',
             'LOOM_UPLOAD_STORE_PASSWORD': self.secret,
             'LOOM_UPLOAD_KEY_PASSWORD': self.secret,
             'LOOM_UPLOAD_KEY_ALIAS': 'test-upload',
             'LOOM_KEYSTORE_BASE64': base64.encodebytes(self.keystore).decode(),
-            'LOOM_FIREBASE_CONFIG': json.dumps({'client': [
-                {'client_info': {'android_client_info': {'package_name': 'com.eyther.lumbridge'}}},
+            'LOOM_FIREBASE_CONFIG': json.dumps({'project_info': {'project_number': '123'}, 'client': [
+                {'client_info': {'mobilesdk_app_id': '1:123:android:abc123', 'android_client_info': {'package_name': 'com.eyther.lumbridge'}}},
             ]}),
             'LOOM_PLAY_SERVICE_ACCOUNT': json.dumps({
                 'type': 'service_account',
@@ -64,11 +64,12 @@ class ReleasePreparationTest(unittest.TestCase):
     def test_preparation_accepts_wrapped_base64_and_limits_private_file_permissions(self):
         output = io.StringIO()
         with patch.dict(os.environ, self.environment, clear=True), redirect_stdout(output):
-            prepare_play_release.prepare()
+            prepare_release.prepare()
         runner = self.directory / 'runner'
         self.assertEqual(self.keystore, (runner / 'loom-upload.jks').read_bytes())
         for name in ('loom-upload.jks', 'loom-play-service-account.json'):
             self.assertEqual(0o600, stat.S_IMODE((runner / name).stat().st_mode))
+        self.assertEqual({'firebaseApp': 'projects/123/apps/1:123:android:abc123'}, json.loads((runner / 'loom-release-config.json').read_text()))
         self.assertNotIn(self.secret, output.getvalue())
         self.assertNotIn(self.environment['LOOM_KEYSTORE_BASE64'], output.getvalue())
 
@@ -76,7 +77,7 @@ class ReleasePreparationTest(unittest.TestCase):
         del self.environment['LOOM_UPLOAD_STORE_PASSWORD']
         with patch.dict(os.environ, self.environment, clear=True):
             with self.assertRaisesRegex(ValueError, 'LOOM_UPLOAD_STORE_PASSWORD'):
-                prepare_play_release.prepare()
+                prepare_release.prepare()
         self.assertFalse((self.directory / 'runner/loom-upload.jks').exists())
 
     def test_version_and_app_identity_are_validated(self):
@@ -84,15 +85,15 @@ class ReleasePreparationTest(unittest.TestCase):
             with self.subTest(version=version):
                 with patch.dict(os.environ, {**self.environment, 'LOOM_VERSION_CODE': version}, clear=True):
                     with self.assertRaisesRegex(ValueError, 'version code'):
-                        prepare_play_release.prepare()
+                        prepare_release.prepare()
         with patch.dict(os.environ, {**self.environment, 'LOOM_FIREBASE_CONFIG': '{"client": []}'}, clear=True):
             with self.assertRaisesRegex(ValueError, 'matching Loom Android client'):
-                prepare_play_release.prepare()
+                prepare_release.prepare()
 
     def test_malformed_private_json_is_not_echoed_by_the_cli(self):
         environment = {**os.environ, **self.environment, 'LOOM_PLAY_SERVICE_ACCOUNT': self.secret}
         result = subprocess.run(
-            [sys.executable, str(TOOLS / 'prepare_play_release.py')],
+            [sys.executable, str(TOOLS / 'prepare_release.py')],
             env=environment, capture_output=True, text=True, check=False,
         )
         self.assertNotEqual(0, result.returncode)

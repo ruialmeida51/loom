@@ -35,18 +35,24 @@ data class ExpensesState(
     val formError: TextResource? = null,
 ) {
 
+    val canCreateExpense: Boolean = members.isNotEmpty() && !busy
+    val canRecordSettlement: Boolean = members.size > 1 && !busy
+
     val displayError: TextResource? = error ?: loadError
 
-    val ownBalance: BalanceSummaryUi = BalanceSummaryUi(
-        money = MoneyDomain(minorUnits = balances[userId] ?: 0L, currency = currency),
-    )
+    val ownBalance: BalanceSummaryUi =
+        BalanceSummaryUi(
+            money = MoneyDomain(minorUnits = balances[userId] ?: 0L, currency = currency),
+        )
     val memberNames: Map<String, String> = members.associate { it.id to it.name }
     val memberBalances: List<MemberBalanceUi> = members.map { member ->
         MemberBalanceUi(
             member = member,
-            balance = BalanceSummaryUi(
-                money = MoneyDomain(minorUnits = balances[member.id] ?: 0L, currency = currency),
-            ),
+            balance =
+                BalanceSummaryUi(
+                    money =
+                        MoneyDomain(minorUnits = balances[member.id] ?: 0L, currency = currency),
+                ),
         )
     }
 }

@@ -1,49 +1,33 @@
 package com.eyther.lumbridge.features.home.presentation.screen
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
-import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
-import com.eyther.lumbridge.core.presentation.components.icon.Glyph
-import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
-import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
-import com.eyther.lumbridge.features.home.domain.model.HomeOverviewDomain
 import com.eyther.lumbridge.features.home.generated.resources.Res
 import com.eyther.lumbridge.features.home.generated.resources.shopping_item_count
 import com.eyther.lumbridge.features.home.generated.resources.ui_a_clear_calendar
 import com.eyther.lumbridge.features.home.generated.resources.ui_a_gentle_reminder
-import com.eyther.lumbridge.features.home.generated.resources.ui_a_little_more_together
 import com.eyther.lumbridge.features.home.generated.resources.ui_a_moment_for_yourself
+import com.eyther.lumbridge.features.home.generated.resources.ui_all_settled
 import com.eyther.lumbridge.features.home.generated.resources.ui_enjoy_a_little_breathing_room
 import com.eyther.lumbridge.features.home.generated.resources.ui_fresh_reads_from_the_places_you_love_put_the
 import com.eyther.lumbridge.features.home.generated.resources.ui_home_in_harmony
@@ -52,13 +36,15 @@ import com.eyther.lumbridge.features.home.generated.resources.ui_on_the_shopping
 import com.eyther.lumbridge.features.home.generated.resources.ui_open_list
 import com.eyther.lumbridge.features.home.generated.resources.ui_pick_up_a_few_things
 import com.eyther.lumbridge.features.home.generated.resources.ui_see_all
+import com.eyther.lumbridge.features.home.generated.resources.ui_shopping_clear
+import com.eyther.lumbridge.features.home.generated.resources.ui_shopping_clear_description
 import com.eyther.lumbridge.features.home.generated.resources.ui_visit_the_reading_corner
-import com.eyther.lumbridge.features.home.generated.resources.ui_woven_together_one_little_thing_at_a_time
 import com.eyther.lumbridge.features.home.generated.resources.ui_you_owe
 import com.eyther.lumbridge.features.home.generated.resources.ui_you_re_owed
+import com.eyther.lumbridge.features.home.presentation.model.HomeReminderUi
+import com.eyther.lumbridge.features.home.presentation.model.HomeShoppingUi
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
-import kotlinx.coroutines.flow.take
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -73,10 +59,12 @@ fun HomeScreen(
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerHomeScreen(
-        overview = state.overview,
+        loading = state.loading,
+        shoppingCount = state.shoppingCount,
+        shopping = state.shopping,
+        reminders = state.reminders,
         balance = state.balance,
         error = state.error,
-        context = context,
         onShopping = onShopping,
         onReminders = onReminders,
         onMoney = onMoney,
@@ -87,10 +75,12 @@ fun HomeScreen(
 
 @Composable
 private fun InnerHomeScreen(
-    overview: HomeOverviewDomain?,
+    loading: Boolean,
+    shoppingCount: Int,
+    shopping: List<HomeShoppingUi>,
+    reminders: List<HomeReminderUi>,
     balance: BalanceSummaryUi,
     error: TextResource?,
-    context: HouseholdContextDomain,
     onShopping: () -> Unit,
     onReminders: () -> Unit,
     onMoney: () -> Unit,
@@ -98,180 +88,112 @@ private fun InnerHomeScreen(
     onDismiss: () -> Unit,
 ) {
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 24.dp),
-        contentPadding = PaddingValues(top = 22.dp, bottom = 30.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).testTag("home_content"),
+        contentPadding = PaddingValues(vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         item {
             PageHeading(
-                stringResource(Res.string.ui_a_little_more_together),
-                stringResource(Res.string.ui_home_in_harmony),
-                stringResource(Res.string.ui_less_to_keep_in_your_head_more_space_for),
+                title = stringResource(Res.string.ui_home_in_harmony),
+                subtitle = stringResource(Res.string.ui_less_to_keep_in_your_head_more_space_for),
             )
         }
-
         error?.let { message ->
-
-            item(key = "error") {
-
-                ErrorNotice(message = message, onDismiss = onDismiss)
-
-            }
-
+            item(key = "error") { ErrorNotice(message = message, onDismiss = onDismiss) }
         }
-        item {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Surface(
-                    Modifier.weight(1f).clickable(onClick = onShopping),
-                    shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                ) {
-                    Column(
-                        Modifier.padding(18.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        LoomIcon(
-                            Glyph.SHOPPING,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                        Text(
+        if (loading) {
+            item { LoadingRows() }
+        } else {
+            item {
+                GroupedSurface {
+                    NavigationRow(
+                        title =
                             pluralStringResource(
                                 Res.plurals.shopping_item_count,
-                                overview?.shopping?.size ?: 0,
-                                overview?.shopping?.size ?: 0,
+                                shoppingCount,
+                                shoppingCount,
                             ),
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                        Text(
-                            stringResource(Res.string.ui_on_the_shopping_list),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                    }
-                }
-                Surface(
-                    Modifier.weight(1f).clickable(onClick = onMoney),
-                    shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                ) {
-                    Column(
-                        Modifier.padding(18.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        LoomIcon(Glyph.MONEY, tint = MaterialTheme.colorScheme.onSecondaryContainer)
-                        Text(
-                            balance.amount,
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        )
-                        Text(
-                            if (balance.isOwed) stringResource(Res.string.ui_you_re_owed)
-                            else stringResource(Res.string.ui_you_owe),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        )
-                    }
+                        description = stringResource(Res.string.ui_on_the_shopping_list),
+                        onClick = onShopping,
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    NavigationRow(
+                        title = balance.amount,
+                        description =
+                            when {
+                                balance.money.minorUnits == 0L ->
+                                    stringResource(Res.string.ui_all_settled)
+                                balance.isOwed -> stringResource(Res.string.ui_you_re_owed)
+                                else -> stringResource(Res.string.ui_you_owe)
+                            },
+                        onClick = onMoney,
+                    )
                 }
             }
-        }
-        item {
-            SectionTitle(
-                stringResource(Res.string.ui_a_gentle_reminder),
-                stringResource(Res.string.ui_see_all),
-                onReminders,
-            )
-        }
-        if (overview?.reminders?.isEmpty() == true)
             item {
-                EmptyNotice(
-                    stringResource(Res.string.ui_a_clear_calendar),
-                    stringResource(Res.string.ui_enjoy_a_little_breathing_room),
+                SectionTitle(
+                    title = stringResource(Res.string.ui_a_gentle_reminder),
+                    action = stringResource(Res.string.ui_see_all),
+                    onAction = onReminders,
                 )
-            }
-        overview?.reminders?.take(2)?.forEach { reminder ->
-            item {
-                LoomCard {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            Modifier.size(42.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.secondaryContainer,
-                                    RoundedCornerShape(14.dp),
-                                ),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            LoomIcon(Glyph.BELL, tint = MaterialTheme.colorScheme.secondary)
-                        }
-                        Spacer(Modifier.width(14.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(reminder.title, style = MaterialTheme.typography.titleMedium)
-                            Text(
-                                reminder.dueLabel(context.timeZone),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                if (reminders.isEmpty()) {
+                    EmptyNotice(
+                        title = stringResource(Res.string.ui_a_clear_calendar),
+                        description = stringResource(Res.string.ui_enjoy_a_little_breathing_room),
+                    )
+                } else {
+                    GroupedSurface {
+                        reminders.forEachIndexed { index, reminder ->
+                            if (index > 0)
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            NavigationRow(
+                                title = reminder.title,
+                                description = reminder.due,
+                                onClick = onReminders,
                             )
                         }
-                        IconButton(onClick = onReminders) { LoomIcon(Glyph.ARROW) }
                     }
                 }
             }
-        }
-        item {
-            SectionTitle(
-                stringResource(Res.string.ui_pick_up_a_few_things),
-                stringResource(Res.string.ui_open_list),
-                onShopping,
-            )
-        }
-        item {
-            LoomCard {
-                overview?.shopping?.take(3)?.forEachIndexed { index, item ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            Modifier.size(20.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.surfaceVariant,
-                                    RoundedCornerShape(6.dp),
-                                ),
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Text(item.name, Modifier.weight(1f))
-                        Text(
-                            item.quantity,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+            item {
+                SectionTitle(
+                    title = stringResource(Res.string.ui_pick_up_a_few_things),
+                    action = stringResource(Res.string.ui_open_list),
+                    onAction = onShopping,
+                )
+                if (shopping.isEmpty()) {
+                    EmptyNotice(
+                        title = stringResource(Res.string.ui_shopping_clear),
+                        description = stringResource(Res.string.ui_shopping_clear_description),
+                        modifier = Modifier.testTag("home_shopping_empty"),
+                    )
+                } else {
+                    GroupedSurface(modifier = Modifier.testTag("home_shopping_preview")) {
+                        shopping.forEachIndexed { index, item ->
+                            if (index > 0)
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            NavigationRow(
+                                title = item.name,
+                                description = item.quantity.takeIf { it.isNotBlank() },
+                                onClick = onShopping,
+                            )
+                        }
                     }
-                    if (index < minOf(2, overview.shopping.lastIndex))
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
             }
-        }
-        item {
-            LoomCard {
-                Text(
-                    stringResource(Res.string.ui_a_moment_for_yourself),
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-                Text(
-                    stringResource(Res.string.ui_fresh_reads_from_the_places_you_love_put_the),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                TextButton(onClick = onFeed) {
-                    Text(stringResource(Res.string.ui_visit_the_reading_corner))
-                    Spacer(Modifier.width(8.dp))
-                    LoomIcon(Glyph.ARROW, tint = MaterialTheme.colorScheme.primary)
+            item {
+                SectionTitle(title = stringResource(Res.string.ui_a_moment_for_yourself))
+                GroupedSurface {
+                    NavigationRow(
+                        title = stringResource(Res.string.ui_visit_the_reading_corner),
+                        description =
+                            stringResource(
+                                Res.string.ui_fresh_reads_from_the_places_you_love_put_the,
+                            ),
+                        onClick = onFeed,
+                    )
                 }
             }
-        }
-        item {
-            Text(
-                stringResource(Res.string.ui_woven_together_one_little_thing_at_a_time),
-                Modifier.fillMaxWidth().padding(vertical = 10.dp),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }

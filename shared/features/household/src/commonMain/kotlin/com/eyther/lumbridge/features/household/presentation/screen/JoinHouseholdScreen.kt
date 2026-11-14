@@ -21,7 +21,11 @@ import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun JoinHouseholdScreen(viewModel: JoinHouseholdScreenViewModelContract, onJoined: () -> Unit, onBack: () -> Unit) {
+fun JoinHouseholdScreen(
+    viewModel: JoinHouseholdScreenViewModelContract,
+    onJoined: () -> Unit,
+    onBack: () -> Unit,
+) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     HandleRedirects(state.redirectTo, onJoined, viewModel::onRedirectHandled)
     InnerJoinHouseholdScreen(

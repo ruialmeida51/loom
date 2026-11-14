@@ -12,6 +12,8 @@ import com.eyther.lumbridge.features.household.domain.usecase.RestoreHouseholdUs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class RestoreHouseholdTest {
 
@@ -36,10 +38,19 @@ class RestoreHouseholdTest {
 
         override suspend fun joinHousehold(token: String) = AppResult.Success(Unit)
 
+        override fun streamMembers(householdId: String): Flow<AppResult<List<MemberDomain>>> =
+            flow {
+                emit(getMembers(householdId = householdId))
+            }
+
         override suspend fun getMembers(householdId: String) =
             AppResult.Success(emptyList<MemberDomain>())
 
-        override suspend fun createInvitation(householdId: String) = AppResult.Failure(CommonError.Unknown())
+        override suspend fun updateNickname(userId: String, nickname: String): AppResult<Unit> =
+            AppResult.Success(Unit)
+
+        override suspend fun createInvitation(householdId: String) =
+            AppResult.Failure(CommonError.Unknown())
     }
 
     @Test
