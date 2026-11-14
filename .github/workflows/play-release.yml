@@ -100,7 +100,6 @@ jobs:
           releaseName: ${{ inputs.version_name }}
           whatsNewDirectory: distribution/whatsnew
           mappingFile: androidApp/build/outputs/mapping/release/mapping.txt
-          changesNotSentForReview: true
       - name: Remove signing credentials
         if: always()
         run: rm -f -- "$RUNNER_TEMP/loom-upload.jks" "$RUNNER_TEMP/loom-play-service-account.json" androidApp/google-services.json
