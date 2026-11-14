@@ -40,3 +40,7 @@ include(":shared:features:insights")
 include(":shared:features:settings")
 
 include(":shared:features:home")
+
+include(":shared:features:analytics")
+
+include(":shared:features:legal")

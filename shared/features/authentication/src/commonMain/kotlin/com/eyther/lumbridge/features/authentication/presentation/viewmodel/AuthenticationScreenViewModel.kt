@@ -24,6 +24,7 @@ class AuthenticationScreenViewModel(
     private data class InnerInputState(
         val email: String = "",
         val password: String = "",
+        val acceptedTerms: Boolean = false,
         val registering: Boolean = false,
     )
 
@@ -36,6 +37,7 @@ class AuthenticationScreenViewModel(
                     email = input.email,
                     password = input.password,
                     registering = input.registering,
+                    acceptedTerms = input.acceptedTerms,
                 )
             }
         }
@@ -56,7 +58,10 @@ class AuthenticationScreenViewModel(
 
     override fun onToggleRegistration() {
         inputState.update { oldState ->
-            oldState.copy(registering = !oldState.registering)
+            oldState.copy(
+                registering = !oldState.registering,
+                acceptedTerms = false,
+            )
         }
         mutableState.update { oldState ->
             oldState.copy(error = null, message = null)
@@ -66,6 +71,12 @@ class AuthenticationScreenViewModel(
     override fun onDismissError() {
         mutableState.update { oldState ->
             oldState.copy(error = null)
+        }
+    }
+
+    override fun onTermsAcceptedChanged(accepted: Boolean) {
+        inputState.update { oldState ->
+            oldState.copy(acceptedTerms = accepted)
         }
     }
 
@@ -79,7 +90,11 @@ class AuthenticationScreenViewModel(
 
         launch {
             val result = if (input.registering) {
-                registerUseCase(email = input.email, password = input.password)
+                registerUseCase(
+                    email = input.email,
+                    password = input.password,
+                    acceptedTerms = input.acceptedTerms,
+                )
             } else {
                 signInUseCase(email = input.email, password = input.password)
             }

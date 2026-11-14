@@ -15,9 +15,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import com.eyther.lumbridge.app.di.householdModule
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
+import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
+import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
+import com.eyther.lumbridge.features.analytics.domain.usecase.GetAnalyticsPreferencesStreamUseCase
+import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
 import com.eyther.lumbridge.features.authentication.presentation.screen.AuthenticationScreen
@@ -28,6 +34,7 @@ import com.eyther.lumbridge.features.household.domain.usecase.RememberHouseholdU
 import com.eyther.lumbridge.features.household.domain.usecase.RestoreHouseholdUseCase
 import com.eyther.lumbridge.features.household.presentation.screen.HouseholdScreen
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
+import com.eyther.lumbridge.features.legal.domain.usecase.GetLegalDocumentsUseCase
 import kotlinx.coroutines.launch
 import org.koin.compose.KoinIsolatedContext
 import org.koin.compose.koinInject
@@ -36,8 +43,14 @@ import org.koin.dsl.koinApplication
 
 @Composable
 fun LauncherHost() {
+    val getLegalDocumentsUseCase: GetLegalDocumentsUseCase = koinInject()
+    val uriHandler = LocalUriHandler.current
     val getSessionStreamUseCase: GetSessionStreamUseCase = koinInject()
     val session by getSessionStreamUseCase().collectAsState()
+    val analyticsDataSource: AnalyticsDataSource = koinInject()
+    val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase = koinInject()
+    val getAnalyticsPreferencesStreamUseCase: GetAnalyticsPreferencesStreamUseCase = koinInject()
+    val analyticsPreferences by getAnalyticsPreferencesStreamUseCase().collectAsState()
     val signOut: SignOutUseCase = koinInject()
     val access: SupabaseAccess = koinInject()
     val source: HouseholdDataSource = koinInject()
@@ -64,9 +77,24 @@ fun LauncherHost() {
         }
         restoring = false
     }
+    val publicScreen = when {
+        session == null -> AnalyticsScreenDomain.AUTHENTICATION
+        context == null && !restoring -> AnalyticsScreenDomain.HOUSEHOLDS
+        else -> null
+    }
+    LaunchedEffect(publicScreen, analyticsPreferences.enabled) {
+        if (publicScreen != null) {
+            trackAnalyticsEventUseCase(event = AnalyticsEventDomain.ScreenViewed(screen = publicScreen))
+        }
+    }
     when {
         session == null ->
-            AuthenticationScreen(koinViewModel<AuthenticationScreenViewModelContract>())
+            AuthenticationScreen(
+                viewModel = koinViewModel<AuthenticationScreenViewModelContract>(),
+                onOpenLegalDocument = { document ->
+                    uriHandler.openUri(getLegalDocumentsUseCase().url(document = document))
+                },
+            )
         restoring ->
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -95,7 +123,16 @@ fun LauncherHost() {
             key(selected.id, selected.userId) {
                 val graph =
                     remember(selected) {
-                        koinApplication { modules(householdModule(selected, access, source)) }
+                        koinApplication {
+                            modules(
+                                householdModule(
+                                    context = selected,
+                                    access = access,
+                                    householdSource = source,
+                                    analyticsDataSource = analyticsDataSource,
+                                ),
+                            )
+                        }
                     }
                 DisposableEffect(graph) { onDispose { graph.close() } }
                 KoinIsolatedContext(context = graph) {

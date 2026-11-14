@@ -7,6 +7,8 @@ import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -151,6 +153,12 @@ class LoomUiTest {
         onNodeWithText("Shopping", useUnmergedTree = true).performClick()
         onNodeWithTag("list_First aid").assertExists()
         onNodeWithContentDescription("Settings").performClick()
+        onNodeWithTag("settings_content").performScrollToNode(hasTestTag("analytics_consent"))
+        onNodeWithTag("analytics_consent").assertIsOff()
+        onNodeWithTag("analytics_consent").performClick().assertIsOn()
+        onNodeWithTag("analytics_consent").performClick().assertIsOff()
+        capture("settings-privacy")
+        onNodeWithTag("settings_content").performScrollToNode(hasText("Dark"))
         onNodeWithText("Dark", useUnmergedTree = true).performClick()
         onNodeWithText("Home", useUnmergedTree = true).performClick()
         onNodeWithText("Home, in harmony.").assertExists()

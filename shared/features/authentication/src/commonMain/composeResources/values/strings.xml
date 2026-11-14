@@ -18,4 +18,6 @@
     <string name="error_email_already_registered">An account already uses this email.</string>
     <string name="error_too_many_attempts">Too many attempts. Please try again later.</string>
     <string name="error_weak_password">Choose a stronger password.</string>
+    <string name="accept_terms">I agree to the Terms of Use and have read the Privacy Policy.</string>
+    <string name="error_terms_not_accepted">Read and accept the terms before creating your account.</string>
 </resources>

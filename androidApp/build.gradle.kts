@@ -5,6 +5,13 @@ plugins {
 
 if (file("google-services.json").exists()) apply(plugin = "com.google.gms.google-services")
 
+val releaseVersionCode = providers.gradleProperty("loomVersionCode").orElse("1").get().toInt()
+val releaseVersionName = providers.gradleProperty("loomVersionName").orElse("0.1.0").get()
+require(releaseVersionCode in 1..2_100_000_000) { "loomVersionCode must be a valid positive Play version code" }
+require(Regex("[0-9][A-Za-z0-9.+_-]{0,49}").matches(releaseVersionName)) { "Invalid loomVersionName" }
+
+val uploadStorePath = providers.environmentVariable("LOOM_UPLOAD_STORE_FILE").orNull
+
 android {
     namespace = "com.eyther.lumbridge"
     compileSdk = 37
@@ -12,11 +19,22 @@ android {
         applicationId = "com.eyther.lumbridge"
         minSdk = 30
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = releaseVersionCode
+        versionName = releaseVersionName
+    }
+    signingConfigs {
+        if (uploadStorePath != null) {
+            create("upload") {
+                storeFile = file(uploadStorePath)
+                storePassword = providers.environmentVariable("LOOM_UPLOAD_STORE_PASSWORD").get()
+                keyAlias = providers.environmentVariable("LOOM_UPLOAD_KEY_ALIAS").get()
+                keyPassword = providers.environmentVariable("LOOM_UPLOAD_KEY_PASSWORD").get()
+            }
+        }
     }
     buildTypes {
         release {
+            if (uploadStorePath != null) signingConfig = signingConfigs.getByName("upload")
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

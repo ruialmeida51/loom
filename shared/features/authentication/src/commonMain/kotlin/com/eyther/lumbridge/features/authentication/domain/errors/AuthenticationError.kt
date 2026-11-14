@@ -4,6 +4,8 @@ import com.eyther.lumbridge.core.domain.errors.AppError
 
 sealed class AuthenticationError(cause: Throwable? = null) : AppError(cause) {
 
+    class TermsNotAccepted : AuthenticationError()
+
     class InvalidRegistration(cause: Throwable? = null) : AuthenticationError(cause)
 
     class MissingCredentials(cause: Throwable? = null) : AuthenticationError(cause)

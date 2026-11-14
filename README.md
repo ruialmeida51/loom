@@ -20,6 +20,8 @@ Application ID and iOS bundle ID: **`com.eyther.lumbridge`**.
 - Supabase Edge Functions for FCM/APNs push delivery, retries, device rotation, and scheduled household work.
 - A dedicated desktop preview with isolated demo data sources and sample households. Production screens and data sources contain no demo branches.
 - Feature-owned string/plural resources, localized validation messages, accessibility labels, and named Gradle project references.
+- Optional Android Firebase Analytics with explicit consent, no household content in events, and advertising identifiers disabled.
+- Public privacy, terms and account-deletion pages linked from authentication and Settings, plus signed Play internal-draft releases through GitHub Actions.
 
 Recurring schedules generate monthly expense records; repayments record money you have already sent or received. Pausing skips future entries, resuming skips paused months, and cancellation preserves recorded expense history.
 
@@ -53,6 +55,8 @@ shared/
     feed/                    domain/ · data/ · presentation/
     insights/                domain/ · data/ · presentation/
     settings/                domain/ · data/ · presentation/
+    analytics/               domain/ · data/ · presentation/
+    legal/                   domain/ · data/ · presentation/
 supabase/                    Versioned schema, functions, schedules, database integration tests
 ```
 
@@ -61,6 +65,8 @@ Screens collect lifecycle-aware state and pass individual values/callbacks to `I
 Models stay in their owning feature: household owns `HouseholdContextDomain`, expenses owns `MoneyDomain`, and other features depend on those domains directly. Core has no feature dependencies. Sample data, settings preferences, notification registration, statement exports, and app-specific routes also stay with their respective owners. See the ownership table in [architecture details](docs/architecture.md).
 
 See [architecture details](docs/architecture.md) and [backend setup](docs/backend.md).
+
+For Android signing, required secrets, Play uploads and public policy URLs, follow [Play Store release setup](docs/play-store-release.md). See the [data-safety worksheet](docs/data-safety.md) and [support-assisted account-deletion runbook](docs/account-deletion.md).
 
 ## Run
 
@@ -92,6 +98,8 @@ For the desktop development preview, `desktopApp` starts the dedicated `LoomDemo
   :shared:features:insights:jvmTest :shared:features:reminders:jvmTest \
   :shared:entrypoint:jvmTest :androidApp:assembleDebug
 python3 tools/audit_project.py
+python3 -m unittest discover -s tools/tests -p 'test_*.py'
+node --test tools/tests/play_release_test.mjs
 python3 tools/test_database.py
 cd supabase/functions
 deno task check

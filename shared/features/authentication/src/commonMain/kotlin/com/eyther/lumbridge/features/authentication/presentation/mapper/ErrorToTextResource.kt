@@ -10,10 +10,12 @@ import com.eyther.lumbridge.features.authentication.generated.resources.error_em
 import com.eyther.lumbridge.features.authentication.generated.resources.error_invalid_credentials
 import com.eyther.lumbridge.features.authentication.generated.resources.error_invalid_registration
 import com.eyther.lumbridge.features.authentication.generated.resources.error_missing_credentials
+import com.eyther.lumbridge.features.authentication.generated.resources.error_terms_not_accepted
 import com.eyther.lumbridge.features.authentication.generated.resources.error_too_many_attempts
 import com.eyther.lumbridge.features.authentication.generated.resources.error_weak_password
 
 fun AppError.toAuthenticationTextResource(): TextResource = when (this) {
+    is AuthenticationError.TermsNotAccepted -> TextResource.Resource(Res.string.error_terms_not_accepted)
     is AuthenticationError.InvalidRegistration -> TextResource.Resource(Res.string.error_invalid_registration)
     is AuthenticationError.MissingCredentials -> TextResource.Resource(Res.string.error_missing_credentials)
     is AuthenticationError.InvalidCredentials -> TextResource.Resource(Res.string.error_invalid_credentials)

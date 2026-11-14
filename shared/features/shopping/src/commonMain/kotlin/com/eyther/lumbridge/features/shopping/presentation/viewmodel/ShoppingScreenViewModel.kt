@@ -6,6 +6,9 @@ import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsActionDomain
+import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
+import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.domain.usecase.AddShoppingItemsUseCase
@@ -33,6 +36,7 @@ class ShoppingScreenViewModel(
     private val addShoppingItemsUseCase: AddShoppingItemsUseCase,
     private val saveShoppingItemUseCase: SaveShoppingItemUseCase,
     private val saveShoppingListUseCase: SaveShoppingListUseCase,
+    private val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
 ) : ShoppingScreenViewModelContract() {
 
     private data class InnerInputState(
@@ -189,6 +193,13 @@ class ShoppingScreenViewModel(
 
         launch {
             val result = addShoppingItemsUseCase(items)
+            if (result is AppResult.Success) {
+                trackAnalyticsEventUseCase(
+                    event = AnalyticsEventDomain.ActionCompleted(
+                        action = AnalyticsActionDomain.SHOPPING_ITEMS_ADDED,
+                    ),
+                )
+            }
 
             mutableState.update { oldState ->
                 when (result) {

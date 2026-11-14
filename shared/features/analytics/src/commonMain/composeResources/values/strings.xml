@@ -1,0 +1,3 @@
+<resources>
+    <string name="analytics_consent_failed">Could not save your analytics choice. Please try again.</string>
+</resources>

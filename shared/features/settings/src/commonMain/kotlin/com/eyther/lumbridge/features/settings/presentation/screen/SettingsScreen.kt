@@ -19,6 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoomButton
@@ -26,17 +29,22 @@ import com.eyther.lumbridge.core.presentation.components.LoomCard
 import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsPreferencesDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
+import com.eyther.lumbridge.features.legal.domain.model.LegalDocumentDomain
+import com.eyther.lumbridge.features.legal.presentation.components.LegalLinks
 import com.eyther.lumbridge.features.settings.domain.model.SettingsDomain
 import com.eyther.lumbridge.features.settings.generated.resources.Res
+import com.eyther.lumbridge.features.settings.generated.resources.analytics_description
+import com.eyther.lumbridge.features.settings.generated.resources.analytics_title
 import com.eyther.lumbridge.features.settings.generated.resources.ui_a_little_light_a_little_dark_or_follow_your
 import com.eyther.lumbridge.features.settings.generated.resources.ui_appearance
 import com.eyther.lumbridge.features.settings.generated.resources.ui_gentle_nudges
 import com.eyther.lumbridge.features.settings.generated.resources.ui_household_details
 import com.eyther.lumbridge.features.settings.generated.resources.ui_invite_someone_home
 import com.eyther.lumbridge.features.settings.generated.resources.ui_just_the_way_you_like_it
-import com.eyther.lumbridge.features.settings.generated.resources.ui_loom_0_1_0_nlife_woven_together
+import com.eyther.lumbridge.features.settings.generated.resources.ui_loom_life_woven_together
 import com.eyther.lumbridge.features.settings.generated.resources.ui_one_time_invitation_expires_in_48_hours
 import com.eyther.lumbridge.features.settings.generated.resources.ui_reminders_and_shared_expenses
 import com.eyther.lumbridge.features.settings.generated.resources.ui_sign_out
@@ -52,10 +60,13 @@ fun SettingsScreen(
     context: HouseholdContextDomain,
     onSwitchHousehold: () -> Unit,
     onSignOut: () -> Unit,
+    onOpenLegalDocument: (LegalDocumentDomain) -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerSettingsScreen(
         preferences = state.preferences,
+        analytics = state.analytics,
+        onAnalyticsConsent = viewModel::onAnalyticsConsentChanged,
         members = state.members,
         invitation = state.invitation,
         busy = state.busy,
@@ -66,6 +77,7 @@ fun SettingsScreen(
         onNotifications = viewModel::onNotificationsChanged,
         onInvite = viewModel::onCreateInvitation,
         onSignOut = onSignOut,
+        onOpenLegalDocument = onOpenLegalDocument,
         onDismiss = viewModel::onDismissError,
     )
 }
@@ -73,6 +85,8 @@ fun SettingsScreen(
 @Composable
 private fun InnerSettingsScreen(
     preferences: SettingsDomain,
+    analytics: AnalyticsPreferencesDomain,
+    onAnalyticsConsent: (Boolean) -> Unit,
     members: List<MemberDomain>,
     invitation: String?,
     busy: Boolean,
@@ -80,13 +94,14 @@ private fun InnerSettingsScreen(
     context: HouseholdContextDomain,
     onSwitchHousehold: () -> Unit,
     onSignOut: () -> Unit,
+    onOpenLegalDocument: (LegalDocumentDomain) -> Unit,
     onTheme: (String) -> Unit,
     onNotifications: (Boolean) -> Unit,
     onInvite: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 24.dp),
+        Modifier.fillMaxSize().padding(horizontal = 24.dp).testTag("settings_content"),
         contentPadding = PaddingValues(vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
@@ -136,6 +151,33 @@ private fun InnerSettingsScreen(
                 }
             }
         }
+        if (analytics.available) {
+            item {
+                LoomCard {
+                    val analyticsTitle = stringResource(Res.string.analytics_title)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                text = analyticsTitle,
+                                style = MaterialTheme.typography.titleLarge,
+                            )
+                            Text(
+                                text = stringResource(Res.string.analytics_description),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        Switch(
+                            modifier = Modifier
+                                .testTag("analytics_consent")
+                                .semantics { contentDescription = analyticsTitle },
+                            checked = analytics.enabled,
+                            onCheckedChange = onAnalyticsConsent,
+                            enabled = !busy,
+                        )
+                    }
+                }
+            }
+        }
         item {
             LoomCard {
                 Text(context.name, style = MaterialTheme.typography.headlineMedium)
@@ -178,13 +220,16 @@ private fun InnerSettingsScreen(
         }
 
         item {
+            LegalLinks(onOpenDocument = onOpenLegalDocument, showAccountDeletion = true)
+        }
+        item {
             OutlinedButton(onClick = onSignOut, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(Res.string.ui_sign_out))
             }
         }
         item {
             Text(
-                stringResource(Res.string.ui_loom_0_1_0_nlife_woven_together),
+                stringResource(Res.string.ui_loom_life_woven_together),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

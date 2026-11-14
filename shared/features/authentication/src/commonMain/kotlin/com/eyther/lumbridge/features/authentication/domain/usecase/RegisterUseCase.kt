@@ -6,11 +6,18 @@ import com.eyther.lumbridge.features.authentication.domain.errors.Authentication
 
 class RegisterUseCase(private val source: AuthenticationDataSource) {
 
-    suspend operator fun invoke(email: String, password: String): AppResult<Unit> {
-        if (!email.contains('@') || password.length < 12)
-            return AppResult.Failure(
-                AuthenticationError.InvalidRegistration(),
-            )
-        return source.register(email.trim(), password)
+    suspend operator fun invoke(
+        email: String,
+        password: String,
+        acceptedTerms: Boolean,
+    ): AppResult<Unit> {
+        if (!acceptedTerms) {
+            return AppResult.Failure(error = AuthenticationError.TermsNotAccepted())
+        }
+        if (!email.contains('@') || password.length < 12) {
+            return AppResult.Failure(error = AuthenticationError.InvalidRegistration())
+        }
+
+        return source.register(email = email.trim(), password = password)
     }
 }

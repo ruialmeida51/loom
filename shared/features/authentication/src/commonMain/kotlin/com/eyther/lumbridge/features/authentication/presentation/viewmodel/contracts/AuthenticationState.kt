@@ -5,6 +5,7 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 data class AuthenticationState(
     val email: String = "",
     val password: String = "",
+    val acceptedTerms: Boolean = false,
     val registering: Boolean = false,
     val busy: Boolean = false,
     val message: TextResource? = null,

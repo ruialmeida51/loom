@@ -1,0 +1,106 @@
+name: Play Store release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: Optional version code override; leave empty to choose the next Play version
+        type: string
+        required: false
+      version_name:
+        description: User-facing version
+        type: string
+        default: '0.2.0'
+        required: true
+      publish:
+        description: Upload the signed bundle as a draft on the internal testing track
+        type: boolean
+        default: false
+
+concurrency:
+  group: loom-play-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: play-internal
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release inputs and prepare signing
+        env:
+          LOOM_VERSION_CODE: ${{ inputs.version_code }}
+          LOOM_VERSION_NAME: ${{ inputs.version_name }}
+          LOOM_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          LOOM_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          LOOM_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+          LOOM_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          LOOM_FIREBASE_CONFIG: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          LOOM_PLAY_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          LOOM_PUBLISH: ${{ inputs.publish }}
+        run: python3 tools/prepare_play_release.py
+      - name: Plan next Play version
+        id: plan
+        env:
+          LOOM_REQUESTED_VERSION_CODE: ${{ inputs.version_code }}
+        run: node tools/plan_play_release.mjs "$RUNNER_TEMP/loom-play-service-account.json" "$LOOM_REQUESTED_VERSION_CODE"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '23'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - run: sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - run: python3 tools/audit_project.py
+      - name: Validate release tooling
+        run: |
+          python3 -m unittest discover -s tools/tests -p 'test_*.py'
+          node --test tools/tests/play_release_test.mjs
+      - name: Test and build signed bundle
+        env:
+          LOOM_UPLOAD_STORE_FILE: ${{ runner.temp }}/loom-upload.jks
+          LOOM_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          LOOM_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+          LOOM_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          LOOM_VERSION_CODE: ${{ steps.plan.outputs.version_code }}
+          LOOM_VERSION_NAME: ${{ inputs.version_name }}
+        run: >-
+          ./gradlew :shared:features:analytics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest
+          :shared:features:household:jvmTest :shared:features:shopping:jvmTest
+          :shared:features:expenses:jvmTest :shared:features:insights:jvmTest
+          :shared:features:reminders:jvmTest :shared:features:settings:jvmTest
+          :shared:entrypoint:jvmTest :androidApp:bundleRelease
+          -PloomVersionCode="$LOOM_VERSION_CODE" -PloomVersionName="$LOOM_VERSION_NAME"
+      - name: Save signed release bundle and mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: loom-play-${{ steps.plan.outputs.version_code }}
+          path: |
+            androidApp/build/outputs/bundle/release/*.aab
+            androidApp/build/outputs/mapping/release/mapping.txt
+          if-no-files-found: error
+      - name: Verify public legal pages
+        if: inputs.publish
+        run: python3 tools/check_legal_site.py --live
+      - name: Upload internal draft
+        if: inputs.publish
+        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5
+        with:
+          serviceAccountJson: ${{ runner.temp }}/loom-play-service-account.json
+          packageName: com.eyther.lumbridge
+          releaseFiles: androidApp/build/outputs/bundle/release/*.aab
+          tracks: internal
+          status: draft
+          releaseName: ${{ inputs.version_name }}
+          whatsNewDirectory: distribution/whatsnew
+          mappingFile: androidApp/build/outputs/mapping/release/mapping.txt
+          changesNotSentForReview: true
+      - name: Remove signing credentials
+        if: always()
+        run: rm -f -- "$RUNNER_TEMP/loom-upload.jks" "$RUNNER_TEMP/loom-play-service-account.json" androidApp/google-services.json
