@@ -12,6 +12,7 @@ import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertSame
 import kotlinx.coroutines.test.runTest
@@ -38,6 +39,17 @@ class AuthenticationErrorTest {
             )
             assertSame(invalidCredentials, credentialsError.cause)
             assertIs<AuthenticationError.EmailNotConfirmed>(assertIs<AppResult.Failure>(emailResult).error)
+
+            val otherFailures = listOf(
+                "email_address_invalid" to AuthenticationError.InvalidEmail::class,
+                "email_address_not_authorized" to AuthenticationError.EmailDeliveryUnavailable::class,
+                "over_email_send_rate_limit" to AuthenticationError.TooManyAttempts::class,
+                "otp_expired" to AuthenticationError.VerificationCodeExpired::class,
+            )
+            otherFailures.forEach { (code, expected) ->
+                val failure = AuthRestException(code, "opaque server text", response).toAuthenticationError()
+                assertEquals(expected, failure::class)
+            }
         } finally {
             client.close()
         }

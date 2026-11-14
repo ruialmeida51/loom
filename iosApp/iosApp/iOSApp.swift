@@ -7,7 +7,13 @@ import LoomFoundation
 struct LoomNativeApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     var body: some Scene {
-        WindowGroup { ComposeView().ignoresSafeArea() }
+        WindowGroup {
+            ComposeView()
+                .ignoresSafeArea()
+                .onOpenURL { url in
+                    NativeAuthCallbacksKt.openAuthenticationCallback(url: url.absoluteString)
+                }
+        }
     }
 }
 struct ComposeView: UIViewControllerRepresentable {

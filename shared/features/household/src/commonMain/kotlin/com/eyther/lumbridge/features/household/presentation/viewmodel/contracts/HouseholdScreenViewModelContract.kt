@@ -7,17 +7,8 @@ abstract class HouseholdScreenViewModelContract : LoomViewModel() {
 
     abstract val state: StateFlow<HouseholdState>
 
-    abstract fun onNameChanged(value: String)
-
-    abstract fun onInvitationCodeChanged(value: String)
-
-    abstract fun onCurrencyChanged(value: String)
-
     abstract fun onDismissError()
 
     abstract fun onRefresh()
 
-    abstract fun onCreateHousehold()
-
-    abstract fun onJoinHousehold()
 }

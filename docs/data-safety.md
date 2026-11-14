@@ -4,7 +4,7 @@ This describes the current Android implementation. Reconcile it with the current
 
 | Data | Use | Collection choice |
 | --- | --- | --- |
-| Email address, account ID and display name | Authentication, account management, household membership and member identification. | Required for the signed-in service. |
+| Email address, account ID, display name and Google-provided profile information when using Google sign-in | Authentication, account management, household membership and member identification. | Required for the signed-in service. |
 | Shopping lists, reminders, household names, invitations, RSS URLs and read state | Shared household features, feed delivery and personalization within the app. These are user content/other app data; text may include personal information. | Feature-dependent; users choose which content to add. |
 | Expense descriptions, amounts, participants, balances, repayments and statement snapshots | Financial recordkeeping and household splitting. No bank account, card number, payment execution or credit assessment is implemented. | Optional financial features. |
 | Firebase Messaging installation/registration identifiers, platform and notification preferences | Messaging infrastructure and delivery of requested reminders and household updates. | The SDK initializes with the app and can create identifiers before notification opt-in. Household token registration and notifications are optional; notification permission does not opt into analytics. |

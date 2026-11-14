@@ -11,6 +11,7 @@ source_count = 0
 catalogs = 0
 resource_count = 0
 transport_count = 0
+screen_count = 0
 
 for build in (ROOT / 'shared/features').glob('*/build.gradle.kts'):
     owner = build.parent.name
@@ -71,6 +72,15 @@ for source in (ROOT / 'shared').rglob('*.kt'):
             if re.search(r'\.observeWith\([^)]*\)\s*\{[^}]*mutableState\.update', text, re.S):
                 issues.append(f'Use updateState inside observeWith: {path}')
         if '/presentation/screen/' in str(source):
+            screen_count += 1
+            screens = re.findall(r'^fun (\w+Screen)\(', text, re.M)
+            if screens != [source.stem]:
+                issues.append(f'Each destination needs its own matching screen file: {path}')
+            viewmodels = source.parent.parent / 'viewmodel'
+            if not (viewmodels / f'{source.stem}ViewModel.kt').is_file() or not (viewmodels / 'contracts' / f'{source.stem}ViewModelContract.kt').is_file():
+                issues.append(f'Screen needs a matching ViewModel and contract: {path}')
+            if re.search(r'\b(?:registering|historyOnly|attentionOnly|screenMode)\s*:', text):
+                issues.append(f'Distinct workflows need separate screens and ViewModels: {path}')
             if re.search(r'\.(?:filter|filterNot|groupBy|sortedBy|sortedByDescending|sortedWith|sumOf|count)\s*[({]', text):
                 issues.append(f'Prepare filtered/grouped/ordered collections in presentation state: {path}')
             if re.search(r'\.(?:csv|canManage)\s*\(', text):
@@ -144,5 +154,6 @@ print('PASS: Gradle uses named project references; features contain no layer mod
 print('PASS: DI providers stay in shared/di; feature modules do not depend on composition.')
 print('PASS: typed domain failures, resource-backed UI messages, stream naming and explicit imports.')
 print('PASS: screens receive prepared collections; exports and permission decisions stay outside composables.')
+print(f'PASS: {screen_count} destination screens have matching ViewModel implementations and contracts.')
 print(f'PASS: {transport_count} transport models have separate files/packages and explicit wire field names.')
 print(f'PASS: UI copy resource checks; {catalogs} catalogs with {resource_count} string/plural resources.')

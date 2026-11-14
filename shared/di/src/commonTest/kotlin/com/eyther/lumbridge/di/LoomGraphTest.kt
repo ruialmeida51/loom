@@ -7,15 +7,23 @@ import com.eyther.lumbridge.features.analytics.data.local.datasource.CommonAnaly
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
-import com.eyther.lumbridge.features.authentication.presentation.viewmodel.AuthenticationScreenViewModel
-import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.AuthenticationScreenViewModelContract
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.EmailVerificationScreenViewModel
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.LoginScreenViewModel
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.RegisterScreenViewModel
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.EmailVerificationScreenViewModelContract
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.LoginScreenViewModelContract
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.RegisterScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsUseCase
+import com.eyther.lumbridge.features.household.presentation.viewmodel.CreateHouseholdScreenViewModel
 import com.eyther.lumbridge.features.household.presentation.viewmodel.HouseholdScreenViewModel
+import com.eyther.lumbridge.features.household.presentation.viewmodel.JoinHouseholdScreenViewModel
+import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.CreateHouseholdScreenViewModelContract
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
+import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.JoinHouseholdScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
 import kotlin.test.Test
@@ -25,12 +33,15 @@ import kotlin.test.assertSame
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 
@@ -43,11 +54,23 @@ class LoomGraphTest {
 
         override fun stream(): StateFlow<AuthSessionDomain?> = MutableStateFlow(null)
 
+        override suspend fun signInWithGoogle(): AppResult<Unit> = AppResult.Success(Unit)
+
+        override fun streamGoogleSignInResults(): Flow<AppResult<Unit>> = emptyFlow()
+
         override suspend fun signIn(email: String, password: String): AppResult<Unit> =
             error("This graph test does not sign in")
 
         override suspend fun register(email: String, password: String): AppResult<Unit> =
             error("This graph test does not register accounts")
+
+        override suspend fun verifyEmail(email: String, code: String): AppResult<Unit> =
+            AppResult.Success(Unit)
+
+        override suspend fun resendVerificationEmail(email: String): AppResult<Unit> =
+            AppResult.Success(Unit)
+
+        override suspend fun sendSignInCode(email: String): AppResult<Unit> = AppResult.Success(Unit)
 
         override suspend fun signOut(): AppResult<Unit> = error("This graph test does not sign out")
     }
@@ -86,15 +109,31 @@ class LoomGraphTest {
             )
         }
         try {
-            val authentication = graph.koin.get<AuthenticationScreenViewModelContract>()
+            val authentication = graph.koin.get<LoginScreenViewModelContract>()
+            val registration = graph.koin.get<RegisterScreenViewModelContract>()
+            val verification = graph.koin.get<EmailVerificationScreenViewModelContract> {
+                parametersOf(
+                    EmailVerificationScreenViewModelContract.Params(email = "member@example.com", codeRequested = false),
+                )
+            }
             val household = graph.koin.get<HouseholdScreenViewModelContract>()
+            val createHousehold = graph.koin.get<CreateHouseholdScreenViewModelContract>()
+            val joinHousehold = graph.koin.get<JoinHouseholdScreenViewModelContract>()
             try {
-                assertIs<AuthenticationScreenViewModel>(authentication)
+                assertIs<LoginScreenViewModel>(authentication)
+                assertIs<RegisterScreenViewModel>(registration)
+                assertIs<EmailVerificationScreenViewModel>(verification)
                 assertIs<HouseholdScreenViewModel>(household)
+                assertIs<CreateHouseholdScreenViewModel>(createHousehold)
+                assertIs<JoinHouseholdScreenViewModel>(joinHousehold)
                 assertSame(graph.koin.get<GetHouseholdsUseCase>(), graph.koin.get<GetHouseholdsUseCase>())
             } finally {
                 authentication.viewModelScope.cancel()
+                registration.viewModelScope.cancel()
+                verification.viewModelScope.cancel()
                 household.viewModelScope.cancel()
+                createHousehold.viewModelScope.cancel()
+                joinHousehold.viewModelScope.cancel()
             }
         } finally {
             graph.close()

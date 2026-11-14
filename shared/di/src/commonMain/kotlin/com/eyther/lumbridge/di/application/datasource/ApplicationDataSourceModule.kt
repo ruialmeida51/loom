@@ -4,8 +4,11 @@ import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.createLoomSupabaseClient
 import com.eyther.lumbridge.features.analytics.data.local.datasource.CommonAnalyticsDataSource
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
+import com.eyther.lumbridge.features.authentication.data.local.SecureCodeVerifierCache
 import com.eyther.lumbridge.features.authentication.data.local.SecureSessionManager
+import com.eyther.lumbridge.features.authentication.data.network.config.configureLoomAuthentication
 import com.eyther.lumbridge.features.authentication.data.network.datasource.CommonAuthenticationDataSource
+import com.eyther.lumbridge.features.authentication.data.platform.NativeAuthenticationBridge
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.household.data.local.CommonHouseholdSelectionDataSource
 import com.eyther.lumbridge.features.household.data.network.datasource.CommonHouseholdDataSource
@@ -21,7 +24,14 @@ class ApplicationDataSourceModule {
 
     @Single
     fun provideSupabaseAccess(): SupabaseAccess = SupabaseAccess(
-        client = createLoomSupabaseClient(sessionStorage = SecureSessionManager()),
+        client = createLoomSupabaseClient(
+            configureAuthentication = {
+                configureLoomAuthentication(
+                    sessionStorage = SecureSessionManager(),
+                    verifierCache = SecureCodeVerifierCache(),
+                )
+            },
+        ),
     )
 
     @Single
@@ -41,6 +51,7 @@ class ApplicationDataSourceModule {
     ): AuthenticationDataSource = CommonAuthenticationDataSource(
         access = access,
         pushDevices = pushDevices,
+        callbackEvents = NativeAuthenticationBridge.stream(),
     )
 
     @Single

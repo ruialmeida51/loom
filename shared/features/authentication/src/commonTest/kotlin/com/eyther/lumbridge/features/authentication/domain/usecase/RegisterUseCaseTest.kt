@@ -8,8 +8,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.runTest
 
 class RegisterUseCaseTest {
@@ -22,6 +24,10 @@ class RegisterUseCaseTest {
 
         override fun stream(): StateFlow<AuthSessionDomain?> = MutableStateFlow(null)
 
+        override suspend fun signInWithGoogle(): AppResult<Unit> = AppResult.Success(Unit)
+
+        override fun streamGoogleSignInResults(): Flow<AppResult<Unit>> = emptyFlow()
+
         override suspend fun signIn(email: String, password: String): AppResult<Unit> =
             error("Sign-in is outside this test")
 
@@ -30,13 +36,21 @@ class RegisterUseCaseTest {
             return AppResult.Success(Unit)
         }
 
+        override suspend fun verifyEmail(email: String, code: String): AppResult<Unit> =
+            AppResult.Success(Unit)
+
+        override suspend fun resendVerificationEmail(email: String): AppResult<Unit> =
+            AppResult.Success(Unit)
+
+        override suspend fun sendSignInCode(email: String): AppResult<Unit> = AppResult.Success(Unit)
+
         override suspend fun signOut(): AppResult<Unit> = error("Sign-out is outside this test")
     }
 
     @Test
     fun registrationRequiresExplicitTermsAcceptanceBeforeContactingTheServer() = runTest {
         val dataSource = RegistrationDataSource()
-        val register = RegisterUseCase(source = dataSource)
+        val register = RegisterUseCase(authenticationDataSource = dataSource)
 
         val result = register(
             email = "roommate@example.test",
@@ -51,7 +65,7 @@ class RegisterUseCaseTest {
     @Test
     fun acceptedTermsDoNotBypassCredentialValidation() = runTest {
         val dataSource = RegistrationDataSource()
-        val register = RegisterUseCase(source = dataSource)
+        val register = RegisterUseCase(authenticationDataSource = dataSource)
 
         val result = register(email = "invalid", password = "short", acceptedTerms = true)
 
@@ -62,7 +76,7 @@ class RegisterUseCaseTest {
     @Test
     fun validRegistrationForwardsOnlyValidatedCredentials() = runTest {
         val dataSource = RegistrationDataSource()
-        val register = RegisterUseCase(source = dataSource)
+        val register = RegisterUseCase(authenticationDataSource = dataSource)
 
         val result = register(
             email = " roommate@example.test ",

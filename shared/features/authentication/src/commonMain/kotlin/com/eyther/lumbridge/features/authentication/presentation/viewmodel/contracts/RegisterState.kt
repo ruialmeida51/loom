@@ -2,12 +2,14 @@ package com.eyther.lumbridge.features.authentication.presentation.viewmodel.cont
 
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 
-data class AuthenticationState(
+data class RegisterState(
     val email: String = "",
     val password: String = "",
     val acceptedTerms: Boolean = false,
-    val registering: Boolean = false,
     val busy: Boolean = false,
-    val message: TextResource? = null,
     val error: TextResource? = null,
-)
+    val redirectTo: RegisterScreenViewModelContract.RedirectTo? = null,
+) {
+
+    val canSubmit: Boolean = email.isNotBlank() && password.isNotBlank() && acceptedTerms
+}
