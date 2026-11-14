@@ -31,9 +31,6 @@ kotlin {
             api(libs.coroutines.core)
             api(libs.serialization.json)
             api(libs.datetime)
-            api(libs.koin.core)
-            api(libs.koin.compose)
-            api(libs.koin.viewmodel)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

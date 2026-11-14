@@ -23,6 +23,8 @@ include(":shared:core")
 
 include(":shared:entrypoint")
 
+include(":shared:di")
+
 include(":shared:features:authentication")
 
 include(":shared:features:household")

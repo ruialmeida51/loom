@@ -43,8 +43,9 @@ iosApp/                      Native SwiftUI host, APNs delegate, Xcode project
 desktopApp/                  Development preview for the shared UI
 shared/
   core/                      Generic utilities, encrypted storage, transport, theme, navigation
-  entrypoint/                Composition root, Koin bindings, navigation Hosts, iOS framework
+  entrypoint/                App entry points, navigation Hosts, iOS framework
     .../app/demo/            Dedicated preview entry point, fixtures, and demo port implementations
+  di/                        Central annotated application/household providers and graph assembly
   features/
     authentication/          domain/ · data/ · presentation/
     household/               domain/ · data/ · presentation/
@@ -60,7 +61,7 @@ shared/
 supabase/                    Versioned schema, functions, schedules, database integration tests
 ```
 
-Screens collect lifecycle-aware state and pass individual values/callbacks to `Inner*Screen`. ViewModels use private `InnerInputState` and Plannot’s `observeWith` helpers. DataSource interfaces live in domain; `Common*` implementations own I/O and translate server failures into typed domain errors. Streams use `stream()` and `Get…StreamUseCase`; request/response DTOs and mappers have separate files. The composition root uses explicit Koin DSL factories bound to contracts, without annotation/code-generation submodules.
+Screens collect lifecycle-aware state and pass individual values/callbacks to `Inner*Screen`. ViewModels use private `InnerInputState` and Plannot’s `observeWith` helpers. DataSource interfaces live in domain; `Common*` implementations own I/O and translate server failures into typed domain errors. Streams use `stream()` and `Get…StreamUseCase`; request/response DTOs and mappers have separate files. The dedicated `shared/di` module follows Plannot's annotated provider pattern with `@Module`, `@Single` and `@KoinViewModel` bound to contracts. Koin's compiler plugin processes these providers; feature classes contain no DI registrations.
 
 Models stay in their owning feature: household owns `HouseholdContextDomain`, expenses owns `MoneyDomain`, and other features depend on those domains directly. Core has no feature dependencies. Sample data, settings preferences, notification registration, statement exports, and app-specific routes also stay with their respective owners. See the ownership table in [architecture details](docs/architecture.md).
 
@@ -93,7 +94,10 @@ For the desktop development preview, `desktopApp` starts the dedicated `LoomDemo
 ## Validate
 
 ```sh
-./gradlew :shared:features:household:jvmTest :shared:features:shopping:jvmTest \
+./gradlew :shared:di:jvmTest :shared:core:jvmTest \
+  :shared:features:authentication:jvmTest :shared:features:analytics:jvmTest \
+  :shared:features:settings:jvmTest \
+  :shared:features:household:jvmTest :shared:features:shopping:jvmTest \
   :shared:features:expenses:jvmTest \
   :shared:features:insights:jvmTest :shared:features:reminders:jvmTest \
   :shared:entrypoint:jvmTest :androidApp:assembleDebug

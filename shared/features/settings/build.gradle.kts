@@ -34,9 +34,6 @@ kotlin {
             api(libs.coroutines.core)
             api(libs.serialization.json)
             api(libs.datetime)
-            api(libs.koin.core)
-            api(libs.koin.compose)
-            api(libs.koin.viewmodel)
         }
         androidMain.dependencies {
             implementation(
