@@ -1,7 +1,10 @@
 <resources>
     <string name="ui_loom">Loom</string>
-    <string name="ui_back">‹ Back</string>
-    <string name="ui_our_household">OUR HOUSEHOLD</string>
+    <string name="toolbar_reminders">Reminders</string>
+    <string name="toolbar_recurring_expenses">Recurring expenses</string>
+    <string name="toolbar_insights">Monthly insights</string>
+    <string name="toolbar_settings">Settings</string>
+    <string name="toolbar_switch_household">Switch household: %1$s</string>
     <string name="ui_feed">Feed</string>
     <string name="ui_shopping">Shopping</string>
     <string name="ui_money">Money</string>

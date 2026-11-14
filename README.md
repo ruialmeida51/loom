@@ -114,6 +114,8 @@ The existing Loom Supabase project is `eeyfhmlyopuobtgdfbql`. Its unused prototy
 
 <img src="docs/screenshots/shopping-lists-light.png" width="260" alt="Named shopping lists in Loom" /> <img src="docs/screenshots/recurring-light.png" width="260" alt="Managing a paused recurring expense" />
 
+<img src="docs/screenshots/settings-privacy.png" width="260" alt="Contextual Settings toolbar, back navigation and optional analytics consent" />
+
 ## Localization
 
 Each feature owns its default English catalog in `src/commonMain/composeResources/values/strings.xml`; core owns generic components and entrypoint owns navigation/preview copy. Add `values-<language>/strings.xml` catalogs for translations. UI text, plurals, accessibility labels, and validation messages resolve resources in presentation. Domain failures carry typed `AppError` subclasses and never import Compose resource classes. Data adapters alone normalize server codes; presentation maps typed failures to `TextResource`. Stored category identifiers, currency codes, URLs, and user/RSS content remain data.

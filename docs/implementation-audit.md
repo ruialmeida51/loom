@@ -61,3 +61,11 @@ The package audit passes for 309 Kotlin files, 27 separate network transport mod
 All 50 JVM tests pass, including seven analytics-consent/schema checks, three registration checks and the shared Compose flow with the consent toggle. Six Python release/publication tests and four Node version-planning/authentication tests pass without live credentials. Common Kotlin metadata compilation and the minified Android release bundle pass. The merged Android manifest starts analytics disabled and contains no advertising/AdServices identifiers permissions.
 
 Signed CI credentials, Play API permissions, public DNS/HTTPS, and the internal draft upload require external verification through their release workflows. The repository's iOS CI remains the macOS/Xcode check. Account deletion currently uses the documented support-assisted process, not an automatic endpoint. Firebase Analytics is integrated for Android only.
+
+## Contextual toolbar audit — 2026-11-14
+
+The app-specific toolbar lives under `entrypoint/app/navigation/components`; it receives household context and navigation callbacks from the Host. Only generic toolbar and menu primitives live in core. Menu rendering items are separate from the component and are not stored in ViewModel state. Back/menu labels and screen titles use resources; the back drawable is adapted from Plannot and mirrors for right-to-left layouts.
+
+The single toolbar replaces the old branding and household rows. It shows the current destination and household, preserves quick household switching, and exposes back navigation only when the active stack can pop. Reminders and Settings use the overflow menu without offering a duplicate link to the current screen.
+
+The package audit passes for 313 Kotlin files and 346 string/plural resources. The shared UI flow passes toolbar back navigation, root navigation, the overflow Settings action, switching households, consent changes and themes. Android debug and common Kotlin metadata builds pass. Updated screenshots are stored under `docs/screenshots`.
