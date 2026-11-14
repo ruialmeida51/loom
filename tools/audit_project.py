@@ -16,6 +16,8 @@ for build in (ROOT / 'shared/features').glob('*/build.gradle.kts'):
     owner = build.parent.name
     edges[owner] = set(re.findall(r'projects\.shared\.features\.([A-Za-z]+)', build.read_text()))
     assert build.parent.parent.name == 'features'
+    if 'projects.shared.di' in build.read_text():
+        issues.append(f'Feature depends on the composition module: {build.relative_to(ROOT)}')
     for nested in build.parent.rglob('build.gradle.kts'):
         if nested != build and 'build' not in nested.relative_to(build.parent).parts:
             issues.append(f'Layer Gradle module: {nested.relative_to(ROOT)}')
@@ -38,6 +40,14 @@ for source in (ROOT / 'shared').rglob('*.kt'):
         issues.append(f'Package/path mismatch: {path}')
     common = '/commonMain/' in str(source)
     imports = re.findall(r'^import\s+([^\s;]+)', text, re.M)
+    if common and path.parts[1] != 'di':
+        if any(imp in (
+            'org.koin.core.annotation.Module', 'org.koin.core.annotation.Single',
+            'org.koin.core.annotation.KoinViewModel', 'org.koin.android.annotation.KoinViewModel',
+        ) for imp in imports):
+            issues.append(f'DI provider outside shared/di: {path}')
+        if 'org.koin.dsl.module' in imports:
+            issues.append(f'Manual DI registration outside shared/di: {path}')
     if any(imp.endswith('.*') for imp in imports):
         issues.append(f'Wildcard import: {path}')
     if common:
@@ -126,6 +136,7 @@ print(f'PASS: {source_count} Kotlin files; feature ownership and package paths m
 print('PASS: domain imports, core boundaries, direct dependencies and acyclic feature graph.')
 print('PASS: production sources contain no demo graph imports or demo feature branches.')
 print('PASS: Gradle uses named project references; features contain no layer modules.')
+print('PASS: DI providers stay in shared/di; feature modules do not depend on composition.')
 print('PASS: typed domain failures, resource-backed UI messages, stream naming and explicit imports.')
 print(f'PASS: {transport_count} transport models have separate files/packages and explicit wire field names.')
 print(f'PASS: UI copy resource checks; {catalogs} catalogs with {resource_count} string/plural resources.')

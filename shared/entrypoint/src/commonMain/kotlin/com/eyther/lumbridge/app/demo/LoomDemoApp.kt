@@ -29,23 +29,13 @@ import com.eyther.lumbridge.app.demo.data.DemoReminderDataSource
 import com.eyther.lumbridge.app.demo.data.DemoSettingsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoShoppingDataSource
 import com.eyther.lumbridge.app.demo.data.DemoStatementDataSource
-import com.eyther.lumbridge.app.di.householdFeaturesModule
 import com.eyther.lumbridge.app.navigation.HouseholdHost
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
-import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
-import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
-import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
-import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
-import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
+import com.eyther.lumbridge.di.providedHouseholdModules
 import com.eyther.lumbridge.features.insights.data.export.CommonStatementExportDataSource
-import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
-import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportDataSource
-import com.eyther.lumbridge.features.reminders.domain.datasource.ReminderDataSource
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
-import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
-import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_choose_a_preview_household
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_done
@@ -54,7 +44,6 @@ import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_open_previe
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.KoinIsolatedContext
 import org.koin.dsl.koinApplication
-import org.koin.dsl.module
 
 /** Explicit development/test entry point. Production LoomApp never selects this graph. */
 @Composable
@@ -83,36 +72,19 @@ fun LoomDemoApp() {
                                 remember(store) {
                                     koinApplication {
                                         modules(
-                                            householdFeaturesModule(),
-                                            module {
-                                                single { store.context }
-                                                single<AnalyticsDataSource> { DemoAnalyticsDataSource() }
-                                                single<HouseholdDataSource> {
-                                                    DemoHouseholdDataSource(store)
-                                                }
-                                                single<ShoppingDataSource> {
-                                                    DemoShoppingDataSource(store)
-                                                }
-                                                single<ReminderDataSource> {
-                                                    DemoReminderDataSource(store)
-                                                }
-                                                single<ExpenseDataSource> {
-                                                    DemoExpenseDataSource(store)
-                                                }
-                                                single<RecurringExpenseDataSource> {
-                                                    DemoRecurringExpenseDataSource(store)
-                                                }
-                                                single<FeedDataSource> { DemoFeedDataSource(store) }
-                                                single<SettingsDataSource> {
-                                                    DemoSettingsDataSource()
-                                                }
-                                                single<StatementExportDataSource> {
-                                                    CommonStatementExportDataSource()
-                                                }
-                                                single<StatementDataSource> {
-                                                    DemoStatementDataSource()
-                                                }
-                                            },
+                                            providedHouseholdModules(
+                                                context = store.context,
+                                                householdDataSource = DemoHouseholdDataSource(store = store),
+                                                analyticsDataSource = DemoAnalyticsDataSource(),
+                                                shoppingDataSource = DemoShoppingDataSource(store = store),
+                                                reminderDataSource = DemoReminderDataSource(store = store),
+                                                expenseDataSource = DemoExpenseDataSource(store = store),
+                                                recurringExpenseDataSource = DemoRecurringExpenseDataSource(store = store),
+                                                feedDataSource = DemoFeedDataSource(store = store),
+                                                statementDataSource = DemoStatementDataSource(),
+                                                statementExportDataSource = CommonStatementExportDataSource(),
+                                                settingsDataSource = DemoSettingsDataSource(),
+                                            ),
                                         )
                                     }
                                 }

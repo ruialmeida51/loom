@@ -41,6 +41,7 @@ Sharing a model does not change which domain owns it. A feature imports another 
 | `legal` | Public document destinations, release policy configuration, and localized legal-link components |
 | `entrypoint/app/demo/data` | Preview-only household fixtures and implementations of feature domain ports |
 | `entrypoint/navigation/push` | App-specific push destinations and pending navigation |
+| `di` | Central annotated providers and application/household graph assembly; no domain models or feature logic |
 | `core` | Generic results, clock/ID utilities, Supabase transport, native storage, Compose components, theme rendering, flow helpers, and navigation machinery |
 
 For example, expenses depends on household for its context and currency policy; insights depends on expenses for money and ledger models. Authentication coordinates device registration through settings' `PushDeviceDataSource` domain port. `LoomDemoApp` is a dedicated preview entry point with its own graph. Production authentication, models, screens, and Common DataSources contain no demo mode or fixtures. Core has no dependency on any feature and provides no aliases for feature models.
@@ -52,7 +53,9 @@ For example, expenses depends on household for its context and currency policy; 
 - `Screen` collects state with lifecycle awareness. `InnerScreen` receives values and callbacks.
 - Hosts own saved back stacks, navigation callbacks, and ViewModel lifetimes. Typed serializable destination models live in `entrypoint/app/navigation/model`.
 - Plannot’s Navigator, NavigationState, NavDisplay wrappers, and transitions are adapted in core. A modifier is applied once so nested Hosts do not duplicate outer Scaffold padding.
-- A household gets its own isolated Koin graph. Switching households disposes the graph and its navigation entries. Koin factories bind ViewModels to their contracts.
+- A household gets its own isolated Koin graph. Switching households disposes the graph and its navigation entries. Annotated Koin providers in the dedicated `shared/di` module bind ViewModels to their contracts; entrypoint only opens/closes those graphs.
+
+All provider declarations live in `shared/di`, organized by application/household graph and datasource/usecase/viewmodel responsibility. `@Single` factories return domain ports without redundant `binds`; `@KoinViewModel(binds = [Contract::class])` factories return ViewModel contracts. Feature modules have no DI registration or annotation-processor configuration. Koin 4.2's compiler plugin processes the central providers on Kotlin 2.4 without KSP. Production graphs construct production adapters there; the preview supplies its port implementations to the same central household bindings without a demo dependency in production DI.
 
 The household Host renders a single compact toolbar adapted from Plannot. The current destination supplies the title; the household name remains visible as a subtitle. Nested destinations expose back navigation, while root tabs use the bottom navigation. Household switching has its own accessible action and Reminders/Settings use the overflow menu. Core owns only the generic `Toolbar`, `ActionMenu` and rendering item; app-specific destination labels and actions stay under `entrypoint/app/navigation/components`.
 

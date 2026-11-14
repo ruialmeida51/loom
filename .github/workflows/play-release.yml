@@ -71,7 +71,7 @@ jobs:
           LOOM_VERSION_CODE: ${{ steps.plan.outputs.version_code }}
           LOOM_VERSION_NAME: ${{ inputs.version_name }}
         run: >-
-          ./gradlew :shared:features:analytics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest
+          ./gradlew :shared:di:jvmTest :shared:features:analytics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest
           :shared:features:household:jvmTest :shared:features:shopping:jvmTest
           :shared:features:expenses:jvmTest :shared:features:insights:jvmTest
           :shared:features:reminders:jvmTest :shared:features:settings:jvmTest

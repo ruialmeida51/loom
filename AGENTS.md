@@ -18,6 +18,7 @@ Follow the Plannot-derived architecture described in `docs/architecture.md`.
 - Use descriptive action and dependency names, explicit API return types, named arguments for multi-parameter domain/DTO/DI calls, and explicit imports. ViewModel events use `on…` names; state update lambdas name the previous state `oldState`.
 - Give observable state, contract APIs, navigation models and reusable components focused files and packages. Keep reducers pure and use `updateState` within `observeWith`.
 - Use named Gradle project references such as `projects.shared.features.household`.
+- Keep all DI providers and graph assembly in the dedicated `shared/di` Gradle module. Follow Plannot's annotated provider pattern: `@Module`, `@Single` returning domain ports, and `@KoinViewModel(binds = [Contract::class])` returning contracts. Feature classes remain free of DI registration. Use Koin's compiler plugin for Kotlin 2.4; do not add KSP or manual `single`/`viewModel` registrations in features or entrypoint. Preview implementations stay in the dedicated demo package and are supplied through the central port-binding module.
 - Run `python3 tools/audit_project.py` before committing changes.
 - Do not add Repository classes or inner layer/composables Gradle modules.
 - Keep form inputs private and mirror them through `observeWith`; state reducers must be pure.

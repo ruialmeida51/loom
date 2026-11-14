@@ -16,9 +16,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import com.eyther.lumbridge.app.di.householdModule
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.di.householdModules
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
@@ -125,10 +125,10 @@ fun LauncherHost() {
                     remember(selected) {
                         koinApplication {
                             modules(
-                                householdModule(
+                                householdModules(
                                     context = selected,
                                     access = access,
-                                    householdSource = source,
+                                    householdDataSource = source,
                                     analyticsDataSource = analyticsDataSource,
                                 ),
                             )

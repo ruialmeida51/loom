@@ -69,3 +69,13 @@ The app-specific toolbar lives under `entrypoint/app/navigation/components`; it 
 The single toolbar replaces the old branding and household rows. It shows the current destination and household, preserves quick household switching, and exposes back navigation only when the active stack can pop. Reminders and Settings use the overflow menu without offering a duplicate link to the current screen.
 
 The package audit passes for 313 Kotlin files and 346 string/plural resources. The shared UI flow passes toolbar back navigation, root navigation, the overflow Settings action, switching households, consent changes and themes. Android debug and common Kotlin metadata builds pass. Updated screenshots are stored under `docs/screenshots`.
+
+## Central annotated DI audit — 2026-11-14
+
+All registration and graph assembly now live in the dedicated `shared/di` Gradle module. It contains application/household datasource, use-case and ViewModel provider modules, plus the shared analytics/legal providers. `@Single` factories return domain ports without redundant bindings. All ten `@KoinViewModel` factories bind and return their contracts. Feature classes retain their feature packages and contain no DI annotations or registration; unused Koin dependencies were removed from their build files.
+
+Koin 4.2.2 and compiler plugin 1.2.3 process the central providers on Kotlin 2.4.21. The entrypoint loads the supplied graph definitions. Each household gets a fresh graph; the production authentication/household source and analytics consent adapter are passed through deliberately. Preview implementations remain in `entrypoint/app/demo/data` and enter through a central port-binding module without a production dependency on demo classes.
+
+The audit passes for 322 Kotlin files, 27 separately packaged network models and 346 resources. It now rejects DI provider declarations outside `shared/di` and feature dependencies on the composition module. All 52 JVM tests pass, including annotated production ViewModel resolution with server-free stubs, household source isolation and shared consent, and the complete Compose preview flow. Android debug, common Kotlin metadata and the minified release bundle pass. iOS remains covered by the macOS/Xcode CI workflow.
+
+The release and toolbar PRs passed Android/iOS CI and were merged. Public policy, Terms and deletion pages are live and verified at `https://loom.eyther.dev`. Release secret structure and Google service-account authentication passed in Actions; Play app/API permissions blocked version planning before signing/upload. A Play draft has not been uploaded, and the upload-key passwords/certificate still require verification once Play access is granted.

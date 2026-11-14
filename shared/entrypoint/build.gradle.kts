@@ -28,6 +28,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(projects.shared.di)
             implementation(projects.shared.features.legal)
             implementation(projects.shared.features.analytics)
             api(projects.shared.core)
