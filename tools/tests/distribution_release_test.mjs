@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { nextReleaseVersion, nextVersionName } from '../plan_release.mjs';
-import { FirebaseDistribution } from '../firebase_distribution.mjs';
+import { FirebaseDistribution, parseTesterGroups } from '../firebase_distribution.mjs';
 import { ReleaseHistory } from '../release_history.mjs';
 
 const app = 'projects/123/apps/1:123:android:abc123';
@@ -113,4 +113,20 @@ test('recording Firebase history creates neither a GitHub release nor a Git tag'
   assert.deepEqual(calls[0].body.payload.loomRelease, { destination: 'firebase', versionName: '4.0.0', versionCode: 50 });
   assert.equal(calls[0].body.ref, 'a'.repeat(40));
   assert.equal(calls[1].body.state, 'success');
+});
+
+
+test('comment-only Firebase group configuration stays upload-only even with commas', () => {
+  assert.deepEqual(parseTesterGroups('# Existing Firebase tester group aliases, one per line. Empty means upload only.\n\n'), []);
+  assert.deepEqual(parseTesterGroups('  # A comment, another comma, and spaces\r\n'), []);
+});
+
+test('Firebase group configuration accepts line and comma separators and removes duplicates', () => {
+  assert.deepEqual(parseTesterGroups('internal, qa\n# ignored, whole line\ncouples\r\nqa\n'), ['internal', 'qa', 'couples']);
+});
+
+test('malformed group aliases fail instead of silently changing recipients', () => {
+  for (const input of ['internal testers', 'developer@example.test', 'projects/app/groups/internal', 'internal # comment']) {
+    assert.throws(() => parseTesterGroups(input), /Firebase tester group aliases/);
+  }
 });

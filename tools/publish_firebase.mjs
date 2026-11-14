@@ -1,6 +1,6 @@
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
-import { FirebaseDistribution } from './firebase_distribution.mjs';
+import { FirebaseDistribution, parseTesterGroups } from './firebase_distribution.mjs';
 
 try {
   const [credentialPath, configPath, apkPath, notesPath] = process.argv.slice(2);
@@ -8,8 +8,7 @@ try {
   const config = JSON.parse(readFileSync(configPath, 'utf8'));
   const client = await FirebaseDistribution.connect(account, config.firebaseApp);
   const configuredGroups = process.env.LOOM_FIREBASE_GROUPS?.trim() || readFileSync('distribution/firebase-groups.txt', 'utf8');
-  const groups = configuredGroups.split(/[,\n]/).map(group => group.trim()).filter(group => group && !group.startsWith('#'));
-  if (groups.some(group => !/^[A-Za-z0-9_-]+$/.test(group))) throw new Error('Firebase tester group aliases may contain only letters, digits, underscores and hyphens.');
+  const groups = parseTesterGroups(configuredGroups);
   const release = await client.upload({ binary: readFileSync(apkPath), fileName: basename(apkPath), notes: readFileSync(notesPath, 'utf8'), groups });
   const url = release.firebaseConsoleUri;
   if (!url || !url.startsWith('https://console.firebase.google.com/')) throw new Error('Firebase did not return a console URL.');
