@@ -38,10 +38,10 @@ class InsightsScreenViewModel(
                     is AppResult.Success -> copy(
                         statement = result.value,
                         month = result.value.month,
-                        error = null,
+                        loadError = null,
                     )
 
-                    is AppResult.Failure -> copy(error = result.error.toInsightsTextResource())
+                    is AppResult.Failure -> copy(loadError = result.error.toInsightsTextResource())
                 }
             }
         }
@@ -58,7 +58,7 @@ class InsightsScreenViewModel(
 
     override fun onDismissMessage() {
         mutableState.update { oldState ->
-            oldState.copy(error = null, message = null)
+            oldState.copy(error = null, loadError = null, message = null)
         }
     }
 
@@ -89,15 +89,27 @@ class InsightsScreenViewModel(
         }
     }
 
-    override fun onExportStatement(filename: String, content: String, title: String) {
+    /** Snapshots the displayed month before launching export; the UI supplies only localized labels. */
+    override fun onExportStatement(summaryHeader: String, expenseHeader: String, title: String) {
         if (state.value.busy) return
+        val statement = state.value.statement ?: return
+        val content = statement.csv(
+            currency = context.currency,
+            userId = context.userId,
+            summaryHeader = summaryHeader,
+            expenseHeader = expenseHeader,
+        )
 
         mutableState.update { oldState ->
             oldState.copy(busy = true, error = null)
         }
 
         launch {
-            val result = exportStatementUseCase(filename = filename, content = content, title = title)
+            val result = exportStatementUseCase(
+                filename = "loom-${statement.month}.csv",
+                content = content,
+                title = title,
+            )
 
             mutableState.update { oldState ->
                 oldState.copy(

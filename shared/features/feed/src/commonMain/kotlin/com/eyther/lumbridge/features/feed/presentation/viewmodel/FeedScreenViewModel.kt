@@ -36,8 +36,8 @@ class FeedScreenViewModel(
         .observeWith(viewModelScope) { state ->
             getFeedStreamUseCase().updateState(state) { result ->
                 when (result) {
-                    is AppResult.Success -> copy(items = result.value, error = null)
-                    is AppResult.Failure -> copy(error = result.error.toFeedTextResource())
+                    is AppResult.Success -> copy(items = result.value, loadError = null)
+                    is AppResult.Failure -> copy(loadError = result.error.toFeedTextResource())
                 }
             }
         }
@@ -51,10 +51,12 @@ class FeedScreenViewModel(
     }
 
     override fun onFollowSheetVisibilityChanged(value: Boolean) {
+        if (!value && state.value.busy) return
+
         if (value) inputState.value = InnerInputState()
 
         mutableState.update { oldState ->
-            oldState.copy(showFollow = value, error = null)
+            oldState.copy(showFollow = value, formError = null)
         }
     }
 
@@ -66,7 +68,7 @@ class FeedScreenViewModel(
 
     override fun onDismissError() {
         mutableState.update { oldState ->
-            oldState.copy(error = null)
+            oldState.copy(error = null, loadError = null, formError = null)
         }
     }
 
@@ -75,7 +77,7 @@ class FeedScreenViewModel(
         val url = inputState.value.url
 
         mutableState.update { oldState ->
-            oldState.copy(busy = true, error = null)
+            oldState.copy(busy = true, formError = null)
         }
 
         launch {
@@ -92,7 +94,7 @@ class FeedScreenViewModel(
                 is AppResult.Failure -> mutableState.update { oldState ->
                     oldState.copy(
                         busy = false,
-                        error = result.error.toFeedTextResource(),
+                        formError = result.error.toFeedTextResource(),
                     )
                 }
             }

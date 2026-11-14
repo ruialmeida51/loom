@@ -54,6 +54,7 @@ import com.eyther.lumbridge.features.insights.generated.resources.ui_where_it_we
 import com.eyther.lumbridge.features.insights.generated.resources.ui_you_paid
 import com.eyther.lumbridge.features.insights.generated.resources.ui_your_month
 import com.eyther.lumbridge.features.insights.generated.resources.ui_your_share
+import com.eyther.lumbridge.features.insights.presentation.model.SpendingCategoryUi
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsScreenViewModelContract
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
@@ -67,9 +68,10 @@ fun InsightsScreen(
     InnerInsightsScreen(
         month = state.month,
         statement = state.statement,
+        categoryRows = state.categoryRows,
         busy = state.busy,
         message = state.message,
-        error = state.error,
+        error = state.displayError,
         context = context,
         onExport = viewModel::onExportStatement,
         onPrevious = viewModel::onPreviousMonth,
@@ -83,6 +85,7 @@ fun InsightsScreen(
 private fun InnerInsightsScreen(
     month: String,
     statement: MonthlyStatementDomain?,
+    categoryRows: List<SpendingCategoryUi>,
     busy: Boolean,
     message: TextResource?,
     error: TextResource?,
@@ -125,7 +128,11 @@ private fun InnerInsightsScreen(
                 OutlinedButton(onClick = onNext) { Text(stringResource(Res.string.ui_next)) }
             }
         }
-        item { ErrorNotice(error, onDismiss) }
+        error?.let { message ->
+            item(key = "error") {
+                ErrorNotice(message = message, onDismiss = onDismiss)
+            }
+        }
         message?.let { message ->
             item { Text(message.getString(), color = MaterialTheme.colorScheme.secondary) }
         }
@@ -185,51 +192,42 @@ private fun InnerInsightsScreen(
                 }
             }
             item { SectionTitle(stringResource(Res.string.ui_where_it_went)) }
-            statement.categories.entries
-                .sortedByDescending { it.value }
-                .forEach { (category, amount) ->
-                    item {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            StatementRow(expenseCategoryLabel(category), amount, context.currency)
+            categoryRows.forEach { row ->
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        StatementRow(expenseCategoryLabel(row.category), row.amountMinor, context.currency)
+                        Box(
+                            Modifier.fillMaxWidth()
+                                .height(7.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(4.dp),
+                                ),
+                        ) {
                             Box(
-                                Modifier.fillMaxWidth()
+                                Modifier.fillMaxWidth(row.progress)
                                     .height(7.dp)
                                     .background(
-                                        MaterialTheme.colorScheme.surfaceVariant,
+                                        MaterialTheme.colorScheme.secondary,
                                         RoundedCornerShape(4.dp),
                                     ),
-                            ) {
-                                Box(
-                                    Modifier.fillMaxWidth(
-                                            if (statement.totalMinor == 0L) 0f
-                                            else amount.toFloat() / statement.totalMinor,
-                                        )
-                                        .height(7.dp)
-                                        .background(
-                                            MaterialTheme.colorScheme.secondary,
-                                            RoundedCornerShape(4.dp),
-                                        ),
-                                )
-                            }
+                            )
                         }
                     }
                 }
+            }
             item {
                 LoomButton(
                     stringResource(Res.string.ui_export_statement_as_csv),
                     {
                         onExport(
-                            "loom-${month}.csv",
-                            statement.csv(
-                                currency = context.currency,
-                                userId = context.userId,
-                                summaryHeader = summaryHeader,
-                                expenseHeader = expenseHeader,
-                            ),
+                            summaryHeader,
+                            expenseHeader,
                             exportTitle,
                         )
                     },
                     Modifier.fillMaxWidth(),
+                    enabled = !busy,
                 )
             }
             item {

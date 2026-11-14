@@ -93,9 +93,12 @@ import org.jetbrains.compose.resources.stringResource
 fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerShoppingScreen(
-        lists = state.snapshot.lists,
-        items = state.items,
-        suggestions = state.snapshot.suggestions(state.selectedListId),
+        lists = state.orderedLists,
+        activeLists = state.activeLists,
+        moveTargets = state.moveTargets,
+        sections = state.sections,
+        remainingCount = state.remainingCount,
+        suggestions = state.suggestions,
         selectedListId = state.selectedListId,
         selectedListName = state.selectedList?.name.orEmpty(),
         name = state.name,
@@ -108,7 +111,8 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
         showListForm = state.showListForm,
         listName = state.listName,
         busy = state.busy,
-        error = state.error,
+        error = state.displayError,
+        formError = state.formError,
         undoMessage = state.undoMessage,
         onSelectList = viewModel::onListSelected,
         onShowAdd = viewModel::onAddSheetVisibilityChanged,
@@ -138,7 +142,10 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
 @Composable
 private fun InnerShoppingScreen(
     lists: List<ShoppingListDomain>,
-    items: List<ShoppingItemDomain>,
+    activeLists: List<ShoppingListDomain>,
+    moveTargets: List<ShoppingListDomain>,
+    sections: Map<String, List<ShoppingItemDomain>>,
+    remainingCount: Int,
     suggestions: List<ShoppingItemDomain>,
     selectedListId: String,
     selectedListName: String,
@@ -153,6 +160,7 @@ private fun InnerShoppingScreen(
     listName: String,
     busy: Boolean,
     error: TextResource?,
+    formError: TextResource?,
     undoMessage: TextResource?,
     onSelectList: (String) -> Unit,
     onShowAdd: (Boolean) -> Unit,
@@ -177,7 +185,6 @@ private fun InnerShoppingScreen(
     onDismiss: () -> Unit,
     onRetry: () -> Unit,
 ) {
-    val activeLists = lists.filterNot { it.archived }.sortedBy { it.name.lowercase() }
     LazyColumn(
         Modifier.fillMaxSize().padding(horizontal = 24.dp).testTag("shopping_content"),
         verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -189,8 +196,8 @@ private fun InnerShoppingScreen(
                 stringResource(Res.string.ui_the_shopping_list),
                 pluralStringResource(
                     Res.plurals.items_to_pick_up,
-                    items.count { !it.checked },
-                    items.count { !it.checked },
+                    remainingCount,
+                    remainingCount,
                 ),
             )
         }
@@ -218,26 +225,30 @@ private fun InnerShoppingScreen(
                 }
             }
         }
-        item {
-            ErrorNotice(error, onDismiss)
-            if (error != null)
-                TextButton(onClick = onRetry) {
-                    Text(stringResource(Res.string.ui_refresh_and_retry))
+        if (error != null || undoMessage != null) {
+            item {
+                error?.let { message ->
+                    ErrorNotice(message = message, onDismiss = onDismiss)
                 }
-            if (undoMessage != null)
-                Row(
-                    Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        undoMessage.getString(),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    TextButton(onClick = onUndo, enabled = !busy) {
-                        Text(stringResource(Res.string.ui_undo))
+                if (error != null)
+                    TextButton(onClick = onRetry) {
+                        Text(stringResource(Res.string.ui_refresh_and_retry))
                     }
-                }
+                if (undoMessage != null)
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            undoMessage.getString(),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        TextButton(onClick = onUndo, enabled = !busy) {
+                            Text(stringResource(Res.string.ui_undo))
+                        }
+                    }
+            }
         }
         item {
             LoomButton(
@@ -261,8 +272,7 @@ private fun InnerShoppingScreen(
                 )
             }
         }
-        val visible = items.filter { showChecked || !it.checked }
-        if (visible.isEmpty())
+        if (sections.isEmpty())
             item {
                 EmptyNotice(
                     stringResource(Res.string.ui_all_picked_up),
@@ -271,95 +281,91 @@ private fun InnerShoppingScreen(
                     ),
                 )
             }
-        visible
-            .groupBy { it.category }
-            .forEach { (section, rows) ->
-                item {
-                    Text(
-                        shoppingCategoryLabel(section).uppercase(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary,
+        sections.forEach { (section, rows) ->
+            item {
+                Text(
+                    shoppingCategoryLabel(section).uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+            }
+            items(rows, key = { it.id }) { item ->
+                val favoriteLabel =
+                    stringResource(
+                        if (item.favorite) Res.string.ui_favorite_remove
+                        else Res.string.ui_favorite_add,
                     )
-                }
-                items(rows, key = { it.id }) { item ->
-                    val favoriteLabel =
-                        stringResource(
-                            if (item.favorite) Res.string.ui_favorite_remove
-                            else Res.string.ui_favorite_add,
+                var moving by remember(item.id) { mutableStateOf(false) }
+                LoomCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            item.checked,
+                            { onToggle(item) },
+                            enabled = !busy,
+                            modifier = Modifier.testTag("check_${item.name}"),
                         )
-                    var moving by remember(item.id) { mutableStateOf(false) }
-                    LoomCard {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                item.checked,
-                                { onToggle(item) },
-                                enabled = !busy,
-                                modifier = Modifier.testTag("check_${item.name}"),
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                item.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                textDecoration =
+                                    if (item.checked) TextDecoration.LineThrough
+                                    else TextDecoration.None,
                             )
-                            Column(Modifier.weight(1f)) {
+                            if (item.quantity.isNotBlank())
                                 Text(
-                                    item.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    textDecoration =
-                                        if (item.checked) TextDecoration.LineThrough
-                                        else TextDecoration.None,
+                                    item.quantity,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
-                                if (item.quantity.isNotBlank())
-                                    Text(
-                                        item.quantity,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                            }
-                            TextButton(
-                                onClick = { onFavorite(item) },
-                                enabled = !busy,
-                                modifier =
-                                    Modifier.testTag("favorite_${item.name}").semantics {
-                                        contentDescription = favoriteLabel
-                                    },
-                            ) {
-                                Text(if (item.favorite) "★" else "☆")
-                            }
                         }
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                            TextButton(
-                                onClick = { onEdit(item) },
-                                enabled = !busy,
-                                modifier = Modifier.testTag("edit_${item.name}"),
-                            ) {
-                                Text(stringResource(Res.string.ui_edit))
-                            }
-                            if (activeLists.size > 1)
-                                Box {
-                                    TextButton(onClick = { moving = true }, enabled = !busy) {
-                                        Text(stringResource(Res.string.ui_move))
-                                    }
-                                    DropdownMenu(moving, { moving = false }) {
-                                        activeLists
-                                            .filterNot { it.id == item.listId }
-                                            .forEach { list ->
-                                                DropdownMenuItem(
-                                                    text = { Text(list.name) },
-                                                    onClick = {
-                                                        moving = false
-                                                        onMove(item, list.id)
-                                                    },
-                                                )
-                                            }
+                        TextButton(
+                            onClick = { onFavorite(item) },
+                            enabled = !busy,
+                            modifier =
+                                Modifier.testTag("favorite_${item.name}").semantics {
+                                    contentDescription = favoriteLabel
+                                },
+                        ) {
+                            Text(if (item.favorite) "★" else "☆")
+                        }
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                        TextButton(
+                            onClick = { onEdit(item) },
+                            enabled = !busy,
+                            modifier = Modifier.testTag("edit_${item.name}"),
+                        ) {
+                            Text(stringResource(Res.string.ui_edit))
+                        }
+                        if (activeLists.size > 1)
+                            Box {
+                                TextButton(onClick = { moving = true }, enabled = !busy) {
+                                    Text(stringResource(Res.string.ui_move))
+                                }
+                                DropdownMenu(moving, { moving = false }) {
+                                    moveTargets.forEach { list ->
+                                        DropdownMenuItem(
+                                            text = { Text(list.name) },
+                                            onClick = {
+                                                moving = false
+                                                onMove(item, list.id)
+                                            },
+                                        )
                                     }
                                 }
-                            TextButton(
-                                onClick = { onRemove(item) },
-                                enabled = !busy,
-                                modifier = Modifier.testTag("remove_${item.name}"),
-                            ) {
-                                Text(stringResource(Res.string.ui_remove))
                             }
+                        TextButton(
+                            onClick = { onRemove(item) },
+                            enabled = !busy,
+                            modifier = Modifier.testTag("remove_${item.name}"),
+                        ) {
+                            Text(stringResource(Res.string.ui_remove))
                         }
                     }
                 }
             }
+        }
         if (suggestions.isNotEmpty())
             item {
                 Text(
@@ -382,7 +388,7 @@ private fun InnerShoppingScreen(
     }
     if (showAdd)
         AlertDialog(
-            onDismissRequest = { if (!busy) onShowAdd(false) },
+            onDismissRequest = { onShowAdd(false) },
             title = {
                 Text(
                     if (editing) stringResource(Res.string.ui_edit_item)
@@ -429,7 +435,9 @@ private fun InnerShoppingScreen(
                                 }
                             }
                     }
-                    ErrorNotice(error, onDismiss)
+                    formError?.let { message ->
+                        ErrorNotice(message = message, onDismiss = onDismiss)
+                    }
                 }
             },
             confirmButton = {
@@ -452,31 +460,31 @@ private fun InnerShoppingScreen(
             title = { Text(stringResource(Res.string.ui_shopping_lists)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    lists
-                        .sortedBy { it.name.lowercase() }
-                        .forEach { list ->
-                            Text(list.name, style = MaterialTheme.typography.titleMedium)
-                            Row {
-                                TextButton(
-                                    onClick = { onListForm(list) },
-                                    enabled = !busy,
-                                    modifier = Modifier.testTag("rename_${list.name}"),
-                                ) {
-                                    Text(stringResource(Res.string.ui_rename))
-                                }
-                                TextButton(
-                                    onClick = { onArchive(list) },
-                                    enabled = !busy && (list.archived || activeLists.size > 1),
-                                    modifier = Modifier.testTag("archive_${list.name}"),
-                                ) {
-                                    Text(
-                                        if (list.archived) stringResource(Res.string.ui_restore)
-                                        else stringResource(Res.string.ui_archive),
-                                    )
-                                }
+                    lists.forEach { list ->
+                        Text(list.name, style = MaterialTheme.typography.titleMedium)
+                        Row {
+                            TextButton(
+                                onClick = { onListForm(list) },
+                                enabled = !busy,
+                                modifier = Modifier.testTag("rename_${list.name}"),
+                            ) {
+                                Text(stringResource(Res.string.ui_rename))
+                            }
+                            TextButton(
+                                onClick = { onArchive(list) },
+                                enabled = !busy && (list.archived || activeLists.size > 1),
+                                modifier = Modifier.testTag("archive_${list.name}"),
+                            ) {
+                                Text(
+                                    if (list.archived) stringResource(Res.string.ui_restore)
+                                    else stringResource(Res.string.ui_archive),
+                                )
                             }
                         }
-                    ErrorNotice(error, onDismiss)
+                    }
+                    formError?.let { message ->
+                        ErrorNotice(message = message, onDismiss = onDismiss)
+                    }
                 }
             },
             confirmButton = {
@@ -485,14 +493,14 @@ private fun InnerShoppingScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { onShowLists(false) }) {
+                TextButton(onClick = { onShowLists(false) }, enabled = !busy) {
                     Text(stringResource(Res.string.ui_done))
                 }
             },
         )
     if (showListForm)
         AlertDialog(
-            onDismissRequest = { if (!busy) onCloseListForm() },
+            onDismissRequest = onCloseListForm,
             title = { Text(stringResource(Res.string.ui_name_your_list)) },
             text = {
                 Column {
@@ -502,7 +510,9 @@ private fun InnerShoppingScreen(
                         label = { Text(stringResource(Res.string.ui_list_name)) },
                         singleLine = true,
                     )
-                    ErrorNotice(error, onDismiss)
+                    formError?.let { message ->
+                        ErrorNotice(message = message, onDismiss = onDismiss)
+                    }
                 }
             },
             confirmButton = {

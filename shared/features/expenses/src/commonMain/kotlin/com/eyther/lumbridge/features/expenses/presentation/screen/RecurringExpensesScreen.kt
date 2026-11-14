@@ -54,6 +54,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.ui_refresh_and
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_rent_internet_and_subscriptions_can_live_here
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_resume
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_resuming_schedules_the_next_future_entry_paused_months_are
+import com.eyther.lumbridge.features.expenses.presentation.model.RecurringExpenseUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import org.jetbrains.compose.resources.stringResource
@@ -65,12 +66,9 @@ fun RecurringExpensesScreen(
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerRecurringExpensesScreen(
-        rules = state.rules,
-        payerNames = state.payerNames,
-        isOwner = state.isOwner,
+        rules = state.rows,
         busy = state.busy,
-        error = state.error,
-        userId = context.userId,
+        error = state.displayError,
         currency = context.currency,
         onControl = viewModel::onControlSchedule,
         onRetry = viewModel::onRetry,
@@ -80,12 +78,9 @@ fun RecurringExpensesScreen(
 
 @Composable
 private fun InnerRecurringExpensesScreen(
-    rules: List<RecurringExpenseDomain>,
-    payerNames: Map<String, String>,
-    isOwner: Boolean,
+    rules: List<RecurringExpenseUi>,
     busy: Boolean,
     error: TextResource?,
-    userId: String,
     currency: String,
     onControl: (RecurringExpenseDomain, RecurringExpenseActionDomain) -> Unit,
     onRetry: () -> Unit,
@@ -115,12 +110,13 @@ private fun InnerRecurringExpensesScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        item {
-            ErrorNotice(error, onDismiss)
-            if (error != null)
+        error?.let { message ->
+            item(key = "error") {
+                ErrorNotice(message = message, onDismiss = onDismiss)
                 TextButton(onClick = onRetry) {
                     Text(stringResource(Res.string.ui_refresh_and_retry))
                 }
+            }
         }
         if (rules.isEmpty())
             item {
@@ -129,7 +125,8 @@ private fun InnerRecurringExpensesScreen(
                     stringResource(Res.string.ui_rent_internet_and_subscriptions_can_live_here),
                 )
             }
-        items(rules, key = { it.id }) { rule ->
+        items(rules, key = { it.rule.id }) { row ->
+            val rule = row.rule
             LoomCard {
                 Text(rule.title, style = MaterialTheme.typography.titleLarge)
                 Text(
@@ -153,18 +150,17 @@ private fun InnerRecurringExpensesScreen(
                 Text(
                     stringResource(
                         Res.string.ui_payer_1_s,
-                        payerNames[rule.paidBy] ?: stringResource(Res.string.ui_former_member),
+                        row.payerName ?: stringResource(Res.string.ui_former_member),
                     ),
                     style = MaterialTheme.typography.bodySmall,
                 )
-                if (rule.canManage(userId, isOwner))
+                if (row.canManage)
                     Row {
                         TextButton(
                             onClick = {
                                 onControl(
                                     rule,
-                                    if (rule.active) RecurringExpenseActionDomain.PAUSE
-                                    else RecurringExpenseActionDomain.RESUME,
+                                    row.toggleAction,
                                 )
                             },
                             enabled = !busy,
@@ -183,7 +179,7 @@ private fun InnerRecurringExpensesScreen(
                             Text(stringResource(Res.string.ui_cancel_schedule))
                         }
                     }
-                if (!rule.active && !rule.cancelled)
+                if (row.isPaused)
                     Text(
                         stringResource(
                             Res.string

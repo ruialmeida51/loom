@@ -51,19 +51,20 @@ import com.eyther.lumbridge.features.feed.generated.resources.ui_the_reading_cor
 import com.eyther.lumbridge.features.feed.generated.resources.ui_unread_only
 import com.eyther.lumbridge.features.feed.generated.resources.ui_your_favourite_corners_of_the_internet_in_one_quiet
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
-import kotlinx.coroutines.flow.filter
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun FeedScreen(viewModel: FeedScreenViewModelContract, onOpen: (String) -> Unit) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerFeedScreen(
-        items = state.items,
+        items = state.visibleArticles,
         url = state.url,
         showFollow = state.showFollow,
         unreadOnly = state.unreadOnly,
         busy = state.busy,
-        error = state.error,
+        error = state.displayError,
+        formError = state.formError,
+        canFollow = state.canFollow,
         onOpen = onOpen,
         onUrl = viewModel::onUrlChanged,
         onShowFollow = viewModel::onFollowSheetVisibilityChanged,
@@ -82,6 +83,8 @@ private fun InnerFeedScreen(
     unreadOnly: Boolean,
     busy: Boolean,
     error: TextResource?,
+    formError: TextResource?,
+    canFollow: Boolean,
     onOpen: (String) -> Unit,
     onUrl: (String) -> Unit,
     onShowFollow: (Boolean) -> Unit,
@@ -102,7 +105,11 @@ private fun InnerFeedScreen(
                 stringResource(Res.string.ui_your_favourite_corners_of_the_internet_in_one_quiet),
             )
         }
-        item { ErrorNotice(error, onDismiss) }
+        error?.let { message ->
+            item(key = "error") {
+                ErrorNotice(message = message, onDismiss = onDismiss)
+            }
+        }
         item {
             Row(
                 Modifier.fillMaxWidth(),
@@ -119,15 +126,14 @@ private fun InnerFeedScreen(
                 }
             }
         }
-        val articles = items.filter { !unreadOnly || !it.read }
-        if (articles.isEmpty())
+        if (items.isEmpty())
             item {
                 EmptyNotice(
                     stringResource(Res.string.ui_a_fresh_page),
                     stringResource(Res.string.ui_follow_an_rss_or_atom_feed_to_bring_your),
                 )
             }
-        items(articles, key = { it.id }) { article ->
+        items(items, key = { it.id }) { article ->
             LoomCard {
                 Text(
                     article.source.uppercase(),
@@ -171,7 +177,7 @@ private fun InnerFeedScreen(
     }
     if (showFollow)
         AlertDialog(
-            onDismissRequest = { if (!busy) onShowFollow(false) },
+            onDismissRequest = { onShowFollow(false) },
             title = { Text(stringResource(Res.string.ui_follow_a_feed_a533eb8)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -182,11 +188,18 @@ private fun InnerFeedScreen(
                         label = { Text(stringResource(Res.string.ui_feed_url_hint)) },
                         singleLine = true,
                     )
-                    ErrorNotice(error, onDismiss)
+                    formError?.let { message ->
+                        ErrorNotice(message = message, onDismiss = onDismiss)
+                    }
                 }
             },
             confirmButton = {
-                LoomButton(stringResource(Res.string.ui_follow_feed), onFollow, loading = busy)
+                LoomButton(
+                    text = stringResource(Res.string.ui_follow_feed),
+                    onClick = onFollow,
+                    loading = busy,
+                    enabled = canFollow,
+                )
             },
             dismissButton = {
                 TextButton(onClick = { onShowFollow(false) }, enabled = !busy) {

@@ -82,6 +82,8 @@ import com.eyther.lumbridge.features.expenses.generated.resources.ui_you_owe
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_you_re_owed
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_your_share_1_s
 import com.eyther.lumbridge.features.expenses.presentation.mapper.expenseOptionLabel
+import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
+import com.eyther.lumbridge.features.expenses.presentation.model.MemberBalanceUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
@@ -99,7 +101,9 @@ fun ExpensesScreen(
         expenses = state.expenses,
         settlements = state.settlements,
         members = state.members,
-        balances = state.balances,
+        balance = state.ownBalance,
+        memberBalances = state.memberBalances,
+        memberNames = state.memberNames,
         title = state.title,
         amount = state.amount,
         occurredOn = state.occurredOn,
@@ -115,7 +119,8 @@ fun ExpensesScreen(
         to = state.to,
         settleAmount = state.settleAmount,
         busy = state.busy,
-        error = state.error,
+        error = state.displayError,
+        formError = state.formError,
         context = context,
         onInsights = onInsights,
         onRecurringExpenses = onRecurringExpenses,
@@ -144,7 +149,9 @@ private fun InnerExpensesScreen(
     expenses: List<ExpenseDomain>,
     settlements: List<SettlementDomain>,
     members: List<MemberDomain>,
-    balances: Map<String, Long>,
+    balance: BalanceSummaryUi,
+    memberBalances: List<MemberBalanceUi>,
+    memberNames: Map<String, String>,
     title: String,
     amount: String,
     occurredOn: String,
@@ -161,6 +168,7 @@ private fun InnerExpensesScreen(
     settleAmount: String,
     busy: Boolean,
     error: TextResource?,
+    formError: TextResource?,
     context: HouseholdContextDomain,
     onInsights: () -> Unit,
     onRecurringExpenses: () -> Unit,
@@ -183,8 +191,7 @@ private fun InnerExpensesScreen(
     onDismiss: () -> Unit,
 ) {
     val formerMemberLabel = stringResource(Res.string.ui_former_member)
-    fun name(id: String) = members.firstOrNull { it.id == id }?.name ?: formerMemberLabel
-    val balance = balances[context.userId] ?: 0L
+    fun name(id: String) = memberNames[id] ?: formerMemberLabel
     LazyColumn(
         Modifier.fillMaxSize().padding(horizontal = 24.dp),
         contentPadding = PaddingValues(vertical = 20.dp),
@@ -204,22 +211,25 @@ private fun InnerExpensesScreen(
                 ),
             )
         }
-        item { ErrorNotice(error, onDismiss) }
+        error?.let { message ->
+            item(key = "error") {
+                ErrorNotice(message = message, onDismiss = onDismiss)
+            }
+        }
         item {
             LoomCard {
                 Text(
-                    if (balance >= 0) stringResource(Res.string.ui_you_re_owed)
+                    if (balance.isOwed) stringResource(Res.string.ui_you_re_owed)
                     else stringResource(Res.string.ui_you_owe),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.secondary,
                 )
                 Text(
-                    MoneyDomain(if (balance < 0) -balance else balance, context.currency)
-                        .formatted(),
+                    balance.amount,
                     style = MaterialTheme.typography.displaySmall,
                 )
                 Text(
-                    if (balance == 0L)
+                    if (balance.isSettled)
                         stringResource(Res.string.ui_all_square_that_s_a_nice_feeling)
                     else stringResource(Res.string.ui_across_your_household),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -240,8 +250,9 @@ private fun InnerExpensesScreen(
             }
         }
         item { SectionTitle(stringResource(Res.string.ui_the_household)) }
-        items(members, key = { it.id }) { member ->
-            val memberBalance = balances[member.id] ?: 0L
+        items(memberBalances, key = { it.member.id }) { row ->
+            val member = row.member
+            val memberBalance = row.balance
             Row(
                 Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -249,20 +260,20 @@ private fun InnerExpensesScreen(
                 Text(member.name)
                 Text(
                     when {
-                        memberBalance > 0 ->
+                        !memberBalance.isSettled && memberBalance.isOwed ->
                             stringResource(
                                 Res.string.ui_owed_1_s,
-                                MoneyDomain(memberBalance, context.currency).formatted(),
+                                memberBalance.amount,
                             )
-                        memberBalance < 0 ->
+                        !memberBalance.isOwed ->
                             stringResource(
                                 Res.string.ui_owes_1_s,
-                                MoneyDomain(-memberBalance, context.currency).formatted(),
+                                memberBalance.amount,
                             )
                         else -> stringResource(Res.string.ui_all_square)
                     },
                     color =
-                        if (memberBalance >= 0) MaterialTheme.colorScheme.secondary
+                        if (memberBalance.isOwed) MaterialTheme.colorScheme.secondary
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -281,7 +292,7 @@ private fun InnerExpensesScreen(
                     stringResource(Res.string.ui_add_what_you_paid_then_choose_who_to_split),
                 )
             }
-        items(expenses.sortedByDescending { it.occurredOn }, key = { it.id }) { expense ->
+        items(expenses, key = { it.id }) { expense ->
             LoomCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
@@ -336,7 +347,7 @@ private fun InnerExpensesScreen(
     }
     if (showAdd)
         AlertDialog(
-            onDismissRequest = { if (!busy) onShowAdd(false) },
+            onDismissRequest = { onShowAdd(false) },
             title = { Text(stringResource(Res.string.ui_add_a_shared_expense)) },
             text = {
                 Column(
@@ -426,7 +437,9 @@ private fun InnerExpensesScreen(
                             stringResource(Res.string.ui_repeat_explanation),
                             style = MaterialTheme.typography.bodySmall,
                         )
-                    ErrorNotice(error, onDismiss)
+                    formError?.let { message ->
+                        ErrorNotice(message = message, onDismiss = onDismiss)
+                    }
                 }
             },
             confirmButton = {
@@ -440,7 +453,7 @@ private fun InnerExpensesScreen(
         )
     if (showSettle)
         AlertDialog(
-            onDismissRequest = { if (!busy) onShowSettle(false) },
+            onDismissRequest = { onShowSettle(false) },
             title = { Text(stringResource(Res.string.ui_record_a_repayment)) },
             text = {
                 Column(
@@ -479,7 +492,9 @@ private fun InnerExpensesScreen(
                         stringResource(Res.string.ui_this_records_a_payment_you_ve_already_made_or),
                         style = MaterialTheme.typography.bodySmall,
                     )
-                    ErrorNotice(error, onDismiss)
+                    formError?.let { message ->
+                        ErrorNotice(message = message, onDismiss = onDismiss)
+                    }
                 }
             },
             confirmButton = {

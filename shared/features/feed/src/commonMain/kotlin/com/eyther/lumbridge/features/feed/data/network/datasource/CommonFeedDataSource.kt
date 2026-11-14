@@ -11,6 +11,7 @@ import com.eyther.lumbridge.features.feed.data.network.model.request.FollowFeedR
 import com.eyther.lumbridge.features.feed.data.network.model.request.ReadArticleRequest
 import com.eyther.lumbridge.features.feed.data.network.model.request.RefreshFeedRequest
 import com.eyther.lumbridge.features.feed.data.network.model.response.ArticleResponse
+import com.eyther.lumbridge.features.feed.data.network.validation.parseFeedUrl
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.errors.FeedError
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
@@ -36,11 +37,12 @@ class CommonFeedDataSource(
         return safeApiCall(
             mapError = Exception::toFeedError,
         ) {
+            val address = parseFeedUrl(value = url)
             val id = newId()
             val request = FollowFeedRequest(
                 id = id,
                 householdId = context.id,
-                url = url,
+                url = address,
                 createdBy = context.userId,
             )
 

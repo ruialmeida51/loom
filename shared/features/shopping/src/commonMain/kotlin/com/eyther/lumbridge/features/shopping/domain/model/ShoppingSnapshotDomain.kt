@@ -5,11 +5,9 @@ data class ShoppingSnapshotDomain(
     val items: List<ShoppingItemDomain> = emptyList(),
 ) {
 
-    val activeLists
-        get() = lists.filterNot { it.archived }.sortedBy { it.name.lowercase() }
-
-    val activeItems
-        get() = items.filter { item -> !item.removed && activeLists.any { it.id == item.listId } }
+    val activeLists: List<ShoppingListDomain> = lists.filterNot { it.archived }.sortedBy { it.name.lowercase() }
+    private val activeListIds: Set<String> = activeLists.map { it.id }.toSet()
+    val activeItems: List<ShoppingItemDomain> = items.filter { !it.removed && it.listId in activeListIds }
 
     fun resolveActiveListId(preferredId: String): String =
         activeLists.firstOrNull { it.id == preferredId }?.id

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface FeedDataSource {
     fun stream(): Flow<AppResult<List<ArticleDomain>>>
 
+    /** Rejects malformed addresses before saving; a failed initial refresh preserves the subscription. */
     suspend fun followFeed(url: String): AppResult<Unit>
 
     suspend fun markArticleRead(id: String, read: Boolean): AppResult<Unit>

@@ -78,10 +78,10 @@ class ShoppingScreenViewModel(
                     is AppResult.Success -> copy(
                         snapshot = result.value,
                         selectedListId = result.value.resolveActiveListId(selectedListId),
-                        error = null,
+                        loadError = null,
                     )
 
-                    is AppResult.Failure -> copy(error = result.error.toShoppingTextResource())
+                    is AppResult.Failure -> copy(loadError = result.error.toShoppingTextResource())
                 }
             }
         }
@@ -95,6 +95,8 @@ class ShoppingScreenViewModel(
     }
 
     override fun onAddSheetVisibilityChanged(value: Boolean) {
+        if (!value && state.value.busy) return
+
         if (value) {
             editingItem = null
             requestIds = emptyList()
@@ -102,7 +104,7 @@ class ShoppingScreenViewModel(
         }
 
         mutableState.update { oldState ->
-            oldState.copy(showAdd = value, editing = false, error = null)
+            oldState.copy(showAdd = value, editing = false, formError = null)
         }
     }
 
@@ -115,7 +117,7 @@ class ShoppingScreenViewModel(
         )
 
         mutableState.update { oldState ->
-            oldState.copy(showAdd = true, editing = true, error = null)
+            oldState.copy(showAdd = true, editing = true, formError = null)
         }
     }
 
@@ -147,7 +149,7 @@ class ShoppingScreenViewModel(
 
     override fun onDismissError() {
         mutableState.update { oldState ->
-            oldState.copy(error = null)
+            oldState.copy(error = null, loadError = null, formError = null)
         }
     }
 
@@ -188,7 +190,7 @@ class ShoppingScreenViewModel(
         }
 
         mutableState.update { oldState ->
-            oldState.copy(busy = true, error = null)
+            oldState.copy(busy = true, formError = null)
         }
 
         launch {
@@ -217,7 +219,7 @@ class ShoppingScreenViewModel(
 
                     is AppResult.Failure -> oldState.copy(
                         busy = false,
-                        error = result.error.toShoppingTextResource(),
+                        formError = result.error.toShoppingTextResource(),
                     )
                 }
             }
@@ -308,8 +310,10 @@ class ShoppingScreenViewModel(
     }
 
     override fun onListsVisibilityChanged(value: Boolean) {
+        if (!value && state.value.busy) return
+
         mutableState.update { oldState ->
-            oldState.copy(showLists = value)
+            oldState.copy(showLists = value, formError = null)
         }
     }
 
@@ -321,13 +325,15 @@ class ShoppingScreenViewModel(
             oldState.copy(listName = list?.name.orEmpty())
         }
         mutableState.update { oldState ->
-            oldState.copy(showLists = false, showListForm = true, error = null)
+            oldState.copy(showLists = false, showListForm = true, formError = null)
         }
     }
 
     override fun onCloseListForm() {
+        if (state.value.busy) return
+
         mutableState.update { oldState ->
-            oldState.copy(showListForm = false)
+            oldState.copy(showListForm = false, formError = null)
         }
     }
 
@@ -356,7 +362,7 @@ class ShoppingScreenViewModel(
         val before = state.value.snapshot.items.firstOrNull { it.id == item.id } ?: return
 
         mutableState.update { oldState ->
-            oldState.copy(busy = true, error = null)
+            oldState.copy(busy = true, error = null, formError = null)
         }
 
         launch {
@@ -381,7 +387,8 @@ class ShoppingScreenViewModel(
                 is AppResult.Failure -> mutableState.update { oldState ->
                     oldState.copy(
                         busy = false,
-                        error = result.error.toShoppingTextResource(),
+                        error = if (closeForm) oldState.error else result.error.toShoppingTextResource(),
+                        formError = if (closeForm) result.error.toShoppingTextResource() else oldState.formError,
                     )
                 }
             }
@@ -392,7 +399,7 @@ class ShoppingScreenViewModel(
         if (state.value.busy) return
 
         mutableState.update { oldState ->
-            oldState.copy(busy = true, error = null)
+            oldState.copy(busy = true, formError = null)
         }
 
         launch {
@@ -415,7 +422,7 @@ class ShoppingScreenViewModel(
 
                     is AppResult.Failure -> oldState.copy(
                         busy = false,
-                        error = result.error.toShoppingTextResource(),
+                        formError = result.error.toShoppingTextResource(),
                     )
                 }
             }

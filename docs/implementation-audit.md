@@ -78,4 +78,17 @@ Koin 4.2.2 and compiler plugin 1.2.3 process the central providers on Kotlin 2.4
 
 The audit passes for 322 Kotlin files, 27 separately packaged network models and 346 resources. It now rejects DI provider declarations outside `shared/di` and feature dependencies on the composition module. All 52 JVM tests pass, including annotated production ViewModel resolution with server-free stubs, household source isolation and shared consent, and the complete Compose preview flow. Android debug, common Kotlin metadata and the minified release bundle pass. iOS remains covered by the macOS/Xcode CI workflow.
 
-The release and toolbar PRs passed Android/iOS CI and were merged. Public policy, Terms and deletion pages are live and verified at `https://loom.eyther.dev`. Release secret structure and Google service-account authentication passed in Actions; Play app/API permissions blocked version planning before signing/upload. A Play draft has not been uploaded, and the upload-key passwords/certificate still require verification once Play access is granted.
+The release and toolbar PRs passed Android/iOS CI and were merged. Public policy, Terms and deletion pages are live and verified at `https://loom.eyther.dev`. Signing credentials and Play API access are verified: [release run 43556121911](https://github.com/ruialmeida51/loom/actions/runs/43556121911) uploaded version `0.2.0` / code `48` as an internal-testing draft. Play rejected the explicit `changesNotSentForReview` override; the workflow now uses its default review handling. No public production rollout was performed.
+
+
+## UI state, errors and feed validation audit — 2026-11-14
+
+Screens receive filtered, grouped and ordered collections from feature presentation state. Balance direction and display amounts belong to the expenses presentation models, shared with Home through an explicit feature dependency. Recurring row actions derive from membership and schedule facts. Category progress belongs to insights presentation. Core gained no feature models.
+
+`ErrorNotice` accepts a visible, non-null message. Screens omit the lazy-list item when no error exists, avoiding blank spacing. Load, action and form failures have separate lifetimes: a successful stream refresh clears its load failure without erasing an action or dialog error. Dialogs forward dismissal events; ViewModels protect in-flight writes.
+
+Feed URL parsing uses Ktor in the feed data package before any client access or insert. It rejects incomplete HTTPS authorities, credentials, invalid ports/hosts, whitespace and excessive length, and normalizes the host while retaining paths and queries. The use case delegates without duplicating protocol parsing; failures remain typed `FeedError`. Server publisher/access policy remains authoritative.
+
+Statement export captures the displayed statement in the ViewModel, then generates CSV and invokes the export use case. Screens supply localized labels. Money magnitude formatting avoids negating `Long.MIN_VALUE`. Focused KDocs explain these constraints and the error lifetimes.
+
+All 60 JVM tests pass, including feed rejection before writes, refresh/error isolation, recurring membership changes, overflow-safe balance formatting, selected-statement export, and both shared Compose flows. The feed UI regression verifies a single dialog error and its removal after a successful follow. Android debug and common Kotlin metadata compilation pass. The package audit passes for 331 Kotlin files, 27 transport models and 346 resources, and now rejects collection preparation, CSV generation and domain permission calls in screens. CI and release verification include the feed tests.

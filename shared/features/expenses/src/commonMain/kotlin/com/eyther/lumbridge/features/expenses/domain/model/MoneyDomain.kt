@@ -15,6 +15,11 @@ data class MoneyDomain(val minorUnits: Long, val currency: String) {
 
     fun formatted(): String {
         val negative = minorUnits < 0
+        return (if (negative) "−" else "") + formattedMagnitude()
+    }
+
+    /** Uses the decimal representation instead of negation, which would overflow for Long.MIN_VALUE. */
+    fun formattedMagnitude(): String {
         val digits = minorUnits.toString().removePrefix("-").padStart(3, '0')
         val symbol =
             when (currency) {
@@ -23,7 +28,7 @@ data class MoneyDomain(val minorUnits: Long, val currency: String) {
                 "USD" -> "$"
                 else -> "$currency "
             }
-        return (if (negative) "−" else "") + symbol + digits.dropLast(2) + "." + digits.takeLast(2)
+        return symbol + digits.dropLast(2) + "." + digits.takeLast(2)
     }
 
     companion object {

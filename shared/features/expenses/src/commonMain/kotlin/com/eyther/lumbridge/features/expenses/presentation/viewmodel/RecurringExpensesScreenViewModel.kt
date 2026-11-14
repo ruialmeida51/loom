@@ -35,7 +35,7 @@ class RecurringExpensesScreenViewModel(
 
     private val refreshRequests = MutableStateFlow(0)
 
-    private val mutableState = MutableStateFlow(RecurringExpensesState())
+    private val mutableState = MutableStateFlow(RecurringExpensesState(userId = context.userId))
         .observeWith(viewModelScope) { state ->
             refreshRequests.flatMapLatest {
                 getRecurringExpensesStreamUseCase()
@@ -45,10 +45,10 @@ class RecurringExpensesScreenViewModel(
                         rules = result.value.sortedWith(
                             compareBy<RecurringExpenseDomain> { it.cancelled }.thenBy { it.nextOn },
                         ),
-                        error = null,
+                        loadError = null,
                     )
 
-                    is AppResult.Failure -> copy(error = result.error.toExpensesTextResource())
+                    is AppResult.Failure -> copy(loadError = result.error.toExpensesTextResource())
                 }
             }
         }
@@ -95,7 +95,7 @@ class RecurringExpensesScreenViewModel(
 
     override fun onDismissError() {
         mutableState.update { oldState ->
-            oldState.copy(error = null)
+            oldState.copy(error = null, loadError = null)
         }
     }
 
