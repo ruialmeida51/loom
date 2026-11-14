@@ -47,6 +47,22 @@ import org.koin.dsl.module
 class AuthenticationUiTest {
 
     @Test
+    fun googleIsAvailableBeforeEnteringEmailOrPassword() {
+        val source = AuthenticationFixtureDataSource()
+        val graph = authenticationGraph(source = source)
+        try {
+            runComposeUiTest {
+                setContent { AuthenticationTestContent(graph = graph) }
+                onNodeWithText("Continue with Google").performClick()
+                waitUntil(timeoutMillis = 5000) { source.googleSignInCount == 1 }
+                assertEquals(0, source.signInCodeCount)
+            }
+        } finally {
+            graph.close()
+        }
+    }
+
+    @Test
     fun registrationVerificationAndPasswordVisibilityWorkAcrossSeparateDestinations() {
         val source = AuthenticationFixtureDataSource()
         val graph = authenticationGraph(source = source)
@@ -101,7 +117,7 @@ class AuthenticationUiTest {
                 setContent { AuthenticationTestContent(graph = graph) }
                 onNodeWithTag("auth_email").performTextInput("member@example.com")
                 onNodeWithTag("login_submit").assertIsNotEnabled()
-                onNodeWithTag("login_email_code").performClick()
+                onNodeWithTag("login_email_code").performScrollTo().performClick()
                 waitUntil(timeoutMillis = 5_000) {
                     onAllNodesWithText("Verification code").fetchSemanticsNodes().isNotEmpty()
                 }

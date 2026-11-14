@@ -4,7 +4,9 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.errors.AuthenticationError
 import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 
 internal class AuthenticationFixtureDataSource : AuthenticationDataSource {
 
@@ -13,11 +15,19 @@ internal class AuthenticationFixtureDataSource : AuthenticationDataSource {
     private val session = MutableStateFlow<AuthSessionDomain?>(null)
 
     var signInCodeCount: Int = 0
+    var googleSignInCount: Int = 0
 
     var resendCount: Int = 0
         private set
 
     override fun stream() = session
+
+    override suspend fun signInWithGoogle(): AppResult<Unit> {
+        googleSignInCount += 1
+        return AppResult.Success(Unit)
+    }
+
+    override fun streamGoogleSignInResults(): Flow<AppResult<Unit>> = emptyFlow()
 
     override suspend fun signIn(email: String, password: String): AppResult<Unit> =
         AppResult.Failure(AuthenticationError.EmailNotConfirmed())

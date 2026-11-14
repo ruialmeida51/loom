@@ -47,7 +47,7 @@ def build(output, allow_draft=False):
             <h2>Who is responsible</h2><p>{provider} We act as the controller of the personal data described here.</p>
             <h2>Information Loom processes</h2>
             <ul>
-              <li><strong>Account information:</strong> your email address, account identifier, display name and authentication/session information. Supabase Auth handles passwords and authentication; Loom stores sessions using the operating system's protected storage.</li>
+              <li><strong>Account information:</strong> your email address, account identifier, display name and authentication/session information. You can use Google sign-in or an email/password account. When you choose Google, Google supplies account identifiers, email and profile information (such as your name or profile image) to Supabase Auth; we do not receive your Google password. Supabase Auth handles authentication; Loom stores sessions using the operating system's protected storage. Choosing Google sign-in does not enable optional analytics.</li>
               <li><strong>Household information:</strong> household names, membership and roles, invitations, chosen currency and timezone.</li>
               <li><strong>Shared content:</strong> shopping lists and items, reminder titles and schedules, expenses, participants and shares, repayment records, recurring schedules and monthly statement snapshots.</li>
               <li><strong>Feed information:</strong> RSS/Atom subscription URLs and your article-read state.</li>

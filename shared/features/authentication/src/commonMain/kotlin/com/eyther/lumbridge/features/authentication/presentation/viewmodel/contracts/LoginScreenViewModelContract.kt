@@ -28,6 +28,8 @@ abstract class LoginScreenViewModelContract : LoomViewModel() {
 
     abstract fun onSubmit()
 
+    abstract fun onGoogleSignIn()
+
     abstract fun onCreateAccount()
 
     abstract fun onRequestEmailCode()

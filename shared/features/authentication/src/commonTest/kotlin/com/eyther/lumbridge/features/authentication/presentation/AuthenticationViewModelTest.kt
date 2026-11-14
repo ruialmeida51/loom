@@ -5,9 +5,11 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.authentication.data.FakeAuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.errors.AuthenticationError
 import com.eyther.lumbridge.features.authentication.domain.model.EmailCodePurposeDomain
+import com.eyther.lumbridge.features.authentication.domain.usecase.GetGoogleSignInResultsStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RegisterUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RequestEmailCodeUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInUseCase
+import com.eyther.lumbridge.features.authentication.domain.usecase.SignInWithGoogleUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.VerifyEmailUseCase
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.EmailVerificationScreenViewModel
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.LoginScreenViewModel
@@ -38,6 +40,35 @@ import kotlinx.coroutines.test.setMain
 class AuthenticationViewModelTest {
 
     @Test
+    fun googleSignInNeedsNoEmailInputAndCallbackFailuresStayTypedInTheViewModel() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source = FakeAuthenticationDataSource()
+        val viewModel = LoginScreenViewModel(
+            signInUseCase = SignInUseCase(authenticationDataSource = source),
+            requestEmailCodeUseCase = RequestEmailCodeUseCase(authenticationDataSource = source),
+            signInWithGoogleUseCase = SignInWithGoogleUseCase(authenticationDataSource = source),
+            getGoogleSignInResultsStreamUseCase = GetGoogleSignInResultsStreamUseCase(authenticationDataSource = source),
+        )
+        try {
+            backgroundScope.launch { viewModel.state.collect() }
+            runCurrent()
+            viewModel.onGoogleSignIn()
+            runCurrent()
+            assertEquals(1, source.googleSignInCount)
+            assertEquals(0, source.signInCodeCount)
+            assertFalse(viewModel.state.value.busy)
+            assertNull(source.stream().value)
+
+            source.googleResults.emit(AppResult.Failure(AuthenticationError.GoogleSignInCancelled()))
+            runCurrent()
+            assertNotNull(viewModel.state.value.displayError)
+        } finally {
+            viewModel.viewModelScope.cancel()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
     fun unconfirmedSignInOpensVerificationAndClearsThePassword() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val source = FakeAuthenticationDataSource().apply {
@@ -45,6 +76,8 @@ class AuthenticationViewModelTest {
         }
         val viewModel = LoginScreenViewModel(
             signInUseCase = SignInUseCase(authenticationDataSource = source),
+            signInWithGoogleUseCase = SignInWithGoogleUseCase(authenticationDataSource = source),
+            getGoogleSignInResultsStreamUseCase = GetGoogleSignInResultsStreamUseCase(authenticationDataSource = source),
             requestEmailCodeUseCase = RequestEmailCodeUseCase(authenticationDataSource = source),
         )
         try {
@@ -73,6 +106,8 @@ class AuthenticationViewModelTest {
         }
         val viewModel = LoginScreenViewModel(
             signInUseCase = SignInUseCase(authenticationDataSource = source),
+            signInWithGoogleUseCase = SignInWithGoogleUseCase(authenticationDataSource = source),
+            getGoogleSignInResultsStreamUseCase = GetGoogleSignInResultsStreamUseCase(authenticationDataSource = source),
             requestEmailCodeUseCase = RequestEmailCodeUseCase(authenticationDataSource = source),
         )
         try {

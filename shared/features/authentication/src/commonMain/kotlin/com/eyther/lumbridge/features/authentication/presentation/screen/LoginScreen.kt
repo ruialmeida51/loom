@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.authentication.presentation.screen
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -15,7 +16,9 @@ import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateO
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.authentication.domain.model.EmailCodePurposeDomain
 import com.eyther.lumbridge.features.authentication.generated.resources.Res
+import com.eyther.lumbridge.features.authentication.generated.resources.google_terms_notice
 import com.eyther.lumbridge.features.authentication.generated.resources.login_description
+import com.eyther.lumbridge.features.authentication.generated.resources.login_email_alternative
 import com.eyther.lumbridge.features.authentication.generated.resources.login_email_code
 import com.eyther.lumbridge.features.authentication.generated.resources.ui_new_here_create_an_account
 import com.eyther.lumbridge.features.authentication.generated.resources.ui_sign_in
@@ -23,6 +26,7 @@ import com.eyther.lumbridge.features.authentication.generated.resources.ui_welco
 import com.eyther.lumbridge.features.authentication.generated.resources.ui_welcome_to_loom
 import com.eyther.lumbridge.features.authentication.presentation.components.AuthenticationLayout
 import com.eyther.lumbridge.features.authentication.presentation.components.EmailInput
+import com.eyther.lumbridge.features.authentication.presentation.components.GoogleSignInButton
 import com.eyther.lumbridge.features.authentication.presentation.components.PasswordInput
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.LoginScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.LoginScreenViewModelContract.RedirectTo
@@ -50,12 +54,14 @@ fun LoginScreen(
         busy = state.busy,
         signingIn = state.signingIn,
         requestingCode = state.requestingCode,
+        startingGoogle = state.startingGoogle,
         canRequestCode = state.canRequestCode,
         canSubmit = state.canSubmit,
-        error = state.error,
+        error = state.displayError,
         onEmailChanged = viewModel::onEmailChanged,
         onPasswordChanged = viewModel::onPasswordChanged,
         onSubmit = viewModel::onSubmit,
+        onGoogleSignIn = viewModel::onGoogleSignIn,
         onRegister = viewModel::onCreateAccount,
         onRequestCode = viewModel::onRequestEmailCode,
         onDismissError = viewModel::onDismissError,
@@ -70,12 +76,14 @@ private fun InnerLoginScreen(
     busy: Boolean,
     signingIn: Boolean,
     requestingCode: Boolean,
+    startingGoogle: Boolean,
     canRequestCode: Boolean,
     canSubmit: Boolean,
     error: TextResource?,
     onEmailChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onSubmit: () -> Unit,
+    onGoogleSignIn: () -> Unit,
     onRegister: () -> Unit,
     onRequestCode: () -> Unit,
     onDismissError: () -> Unit,
@@ -87,24 +95,27 @@ private fun InnerLoginScreen(
             title = stringResource(Res.string.ui_welcome_home),
             subtitle = stringResource(Res.string.login_description),
         )
-        EmailInput(value = email, onValueChanged = onEmailChanged, enabled = !busy)
-        PasswordInput(value = password, onValueChanged = onPasswordChanged, enabled = !busy, onSubmit = onSubmit)
         error?.let { message ->
             ErrorNotice(message = message, onDismiss = onDismissError)
         }
+        GoogleSignInButton(onClick = onGoogleSignIn, loading = startingGoogle, enabled = !signingIn && !requestingCode)
+        Text(stringResource(Res.string.google_terms_notice), style = MaterialTheme.typography.bodySmall)
+        Text(stringResource(Res.string.login_email_alternative), style = MaterialTheme.typography.labelLarge)
+        EmailInput(value = email, onValueChanged = onEmailChanged, enabled = !busy)
+        PasswordInput(value = password, onValueChanged = onPasswordChanged, enabled = !busy, onSubmit = onSubmit)
         LoomButton(
             text = stringResource(Res.string.ui_sign_in),
             onClick = onSubmit,
             modifier = Modifier.fillMaxWidth().testTag("login_submit"),
             loading = signingIn,
-            enabled = canSubmit && !requestingCode,
+            enabled = canSubmit && !requestingCode && !startingGoogle,
         )
         LoomButton(
             text = stringResource(Res.string.login_email_code),
             onClick = onRequestCode,
             modifier = Modifier.fillMaxWidth().testTag("login_email_code"),
             loading = requestingCode,
-            enabled = canRequestCode && !signingIn,
+            enabled = canRequestCode && !signingIn && !startingGoogle,
         )
         TextButton(onClick = onRegister, enabled = !busy) {
             Text(stringResource(Res.string.ui_new_here_create_an_account))

@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import com.eyther.lumbridge.app.LoomApp
 import com.eyther.lumbridge.app.navigation.push.PendingPush
+import com.eyther.lumbridge.app.openAuthenticationCallback
 import com.eyther.lumbridge.core.data.local.PlatformStorage
 import com.eyther.lumbridge.features.settings.data.notifications.PushPlatform
 
@@ -38,6 +39,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         handlePush(intent)
+        intent.dataString?.let { url -> openAuthenticationCallback(url = url) }
         enableEdgeToEdge()
         setContent { LoomApp() }
     }
@@ -46,6 +48,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         handlePush(intent)
+        intent.dataString?.let { url -> openAuthenticationCallback(url = url) }
     }
 
     private fun handlePush(intent: Intent) {

@@ -6,8 +6,10 @@ import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.authentication.domain.errors.AuthenticationError
 import com.eyther.lumbridge.features.authentication.domain.model.EmailCodePurposeDomain
+import com.eyther.lumbridge.features.authentication.domain.usecase.GetGoogleSignInResultsStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RequestEmailCodeUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInUseCase
+import com.eyther.lumbridge.features.authentication.domain.usecase.SignInWithGoogleUseCase
 import com.eyther.lumbridge.features.authentication.presentation.mapper.toAuthenticationTextResource
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.LoginScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.LoginState
@@ -18,6 +20,8 @@ import kotlinx.coroutines.flow.update
 class LoginScreenViewModel(
     private val signInUseCase: SignInUseCase,
     private val requestEmailCodeUseCase: RequestEmailCodeUseCase,
+    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
+    private val getGoogleSignInResultsStreamUseCase: GetGoogleSignInResultsStreamUseCase,
 ) : LoginScreenViewModelContract() {
 
     private data class InnerInputState(
@@ -31,6 +35,14 @@ class LoginScreenViewModel(
         .observeWith(viewModelScope) { state ->
             inputState.updateState(state) { input ->
                 copy(email = input.email, password = input.password)
+            }
+        }
+        .observeWith(viewModelScope) { state ->
+            getGoogleSignInResultsStreamUseCase().updateState(state) { result ->
+                when (result) {
+                    is AppResult.Success -> copy(googleError = null)
+                    is AppResult.Failure -> copy(googleError = result.error.toAuthenticationTextResource())
+                }
             }
         }
 
@@ -52,7 +64,7 @@ class LoginScreenViewModel(
         if (state.value.busy) return
         clearPassword()
         mutableState.update { oldState ->
-            oldState.copy(error = null, redirectTo = RedirectTo.Register)
+            oldState.copy(error = null, googleError = null, redirectTo = RedirectTo.Register)
         }
     }
 
@@ -60,7 +72,7 @@ class LoginScreenViewModel(
         if (state.value.busy) return
         val email = inputState.value.email.trim()
         mutableState.update { oldState ->
-            oldState.copy(requestingCode = true, error = null)
+            oldState.copy(requestingCode = true, error = null, googleError = null)
         }
 
         launch {
@@ -89,7 +101,7 @@ class LoginScreenViewModel(
         if (state.value.busy) return
         val input = inputState.value
         mutableState.update { oldState ->
-            oldState.copy(signingIn = true, error = null)
+            oldState.copy(signingIn = true, error = null, googleError = null)
         }
 
         launch {
@@ -122,9 +134,30 @@ class LoginScreenViewModel(
         }
     }
 
+    override fun onGoogleSignIn() {
+        if (state.value.busy) return
+        clearPassword()
+        mutableState.update { oldState ->
+            oldState.copy(startingGoogle = true, error = null, googleError = null)
+        }
+
+        launch {
+            val result = signInWithGoogleUseCase()
+            mutableState.update { oldState ->
+                when (result) {
+                    is AppResult.Success -> oldState.copy(startingGoogle = false)
+                    is AppResult.Failure -> oldState.copy(
+                        startingGoogle = false,
+                        googleError = result.error.toAuthenticationTextResource(),
+                    )
+                }
+            }
+        }
+    }
+
     override fun onDismissError() {
         mutableState.update { oldState ->
-            oldState.copy(error = null)
+            oldState.copy(error = null, googleError = null)
         }
     }
 

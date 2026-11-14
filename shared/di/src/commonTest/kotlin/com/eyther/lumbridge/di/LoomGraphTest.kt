@@ -18,8 +18,12 @@ import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDoma
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsUseCase
+import com.eyther.lumbridge.features.household.presentation.viewmodel.CreateHouseholdScreenViewModel
 import com.eyther.lumbridge.features.household.presentation.viewmodel.HouseholdScreenViewModel
+import com.eyther.lumbridge.features.household.presentation.viewmodel.JoinHouseholdScreenViewModel
+import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.CreateHouseholdScreenViewModelContract
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
+import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.JoinHouseholdScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
 import kotlin.test.Test
@@ -29,8 +33,10 @@ import kotlin.test.assertSame
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -47,6 +53,10 @@ class LoomGraphTest {
         override val configured: Boolean = true
 
         override fun stream(): StateFlow<AuthSessionDomain?> = MutableStateFlow(null)
+
+        override suspend fun signInWithGoogle(): AppResult<Unit> = AppResult.Success(Unit)
+
+        override fun streamGoogleSignInResults(): Flow<AppResult<Unit>> = emptyFlow()
 
         override suspend fun signIn(email: String, password: String): AppResult<Unit> =
             error("This graph test does not sign in")
@@ -107,17 +117,23 @@ class LoomGraphTest {
                 )
             }
             val household = graph.koin.get<HouseholdScreenViewModelContract>()
+            val createHousehold = graph.koin.get<CreateHouseholdScreenViewModelContract>()
+            val joinHousehold = graph.koin.get<JoinHouseholdScreenViewModelContract>()
             try {
                 assertIs<LoginScreenViewModel>(authentication)
                 assertIs<RegisterScreenViewModel>(registration)
                 assertIs<EmailVerificationScreenViewModel>(verification)
                 assertIs<HouseholdScreenViewModel>(household)
+                assertIs<CreateHouseholdScreenViewModel>(createHousehold)
+                assertIs<JoinHouseholdScreenViewModel>(joinHousehold)
                 assertSame(graph.koin.get<GetHouseholdsUseCase>(), graph.koin.get<GetHouseholdsUseCase>())
             } finally {
                 authentication.viewModelScope.cancel()
                 registration.viewModelScope.cancel()
                 verification.viewModelScope.cancel()
                 household.viewModelScope.cancel()
+                createHousehold.viewModelScope.cancel()
+                joinHousehold.viewModelScope.cancel()
             }
         } finally {
             graph.close()

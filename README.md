@@ -12,7 +12,8 @@ Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [C
 
 ## What’s included
 
-- Separate sign-in, registration and email-code verification screens, password visibility controls, and code resend with a cooldown. Existing accounts can sign in using their password or request an email code.
+- Google sign-in, separate email login/registration/verification screens, password visibility controls, and code resend with a cooldown. Existing accounts can also request an email sign-in code.
+- Separate household selection, creation and invitation-joining screens, each with its own ViewModel.
 - Multiple households, owner invitations, quick switching, and restoring the last accessible household.
 - Named shared shopping lists with editing, undo, favorites, quick entry, moving items, and list rename/archive/restore.
 - Household reminders, daily/weekly repeats, timezone handling, and completion.
@@ -87,6 +88,8 @@ Use JDK 23, Android Studio with AGP 9.4 support, Android SDK 37, and Xcode on a 
 The app uses Loom’s live project through `config/loom-public.properties`, which contains only its public URL and publishable client key. To use a different project, copy `loom.properties.example` to the gitignored `loom.properties`; environment variables override both files. Server secret keys are rejected by the build.
 
 Email-code authentication requires the signup and Magic Link email templates to include a code. Configure delivery and templates as described in [authentication email setup](docs/backend.md#authentication-email-delivery); editing local configuration does not update hosted Auth settings.
+
+Google sign-in uses Supabase OAuth with PKCE and the registered native callback `com.eyther.lumbridge://auth/callback`. See [Google setup](docs/backend.md#google-sign-in).
 
 For iOS, open `iosApp/iosApp.xcodeproj`, select the **Loom** scheme, select your signing team, and run on an iOS 16+ simulator/device. Xcode builds the shared `LoomFoundation` framework through Gradle. A physical device and APNs credentials are needed for push delivery.
 

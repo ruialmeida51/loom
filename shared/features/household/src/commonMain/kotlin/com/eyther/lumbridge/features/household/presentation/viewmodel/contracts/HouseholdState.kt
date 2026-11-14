@@ -5,9 +5,6 @@ import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
 
 data class HouseholdState(
     val items: List<HouseholdDomain> = emptyList(),
-    val name: String = "",
-    val token: String = "",
-    val currency: String = "EUR",
     val busy: Boolean = false,
     val error: TextResource? = null,
 )

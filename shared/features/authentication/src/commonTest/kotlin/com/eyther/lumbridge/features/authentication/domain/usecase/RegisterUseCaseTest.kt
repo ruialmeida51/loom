@@ -8,8 +8,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.runTest
 
 class RegisterUseCaseTest {
@@ -21,6 +23,10 @@ class RegisterUseCaseTest {
         var registeredEmail: String? = null
 
         override fun stream(): StateFlow<AuthSessionDomain?> = MutableStateFlow(null)
+
+        override suspend fun signInWithGoogle(): AppResult<Unit> = AppResult.Success(Unit)
+
+        override fun streamGoogleSignInResults(): Flow<AppResult<Unit>> = emptyFlow()
 
         override suspend fun signIn(email: String, password: String): AppResult<Unit> =
             error("Sign-in is outside this test")

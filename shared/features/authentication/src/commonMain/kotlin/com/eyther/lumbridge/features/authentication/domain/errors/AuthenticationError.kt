@@ -14,9 +14,15 @@ sealed class AuthenticationError(cause: Throwable? = null) : AppError(cause) {
 
     class InvalidEmail(cause: Throwable? = null) : AuthenticationError(cause)
 
+    class GoogleSignInFailed(cause: Throwable? = null) : AuthenticationError(cause)
+
+    class GoogleSignInCancelled : AuthenticationError()
+
     class InvalidVerificationCode(cause: Throwable? = null) : AuthenticationError(cause)
 
     class VerificationCodeExpired(cause: Throwable? = null) : AuthenticationError(cause)
+
+    class VerificationFailed : AuthenticationError()
 
     class EmailDeliveryUnavailable(cause: Throwable? = null) : AuthenticationError(cause)
 

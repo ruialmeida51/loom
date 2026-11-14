@@ -23,6 +23,14 @@ Apply `supabase/schedules.sql` after setting the SQL session variable `loom.proj
 
 The worker creates due recurring expenses, saves closed-month statements, and processes push deliveries. Duplicate runs preserve expense/notification identity. The feed worker processes the oldest subscriptions first, with bounded batches and fetch timeouts.
 
+## Google sign-in
+
+Google is Loom’s primary sign-in option. Supabase is still the account/session authority; the app opens the system browser and exchanges the returned authorization code using PKCE. No Google client secret or server key belongs in the app. The verifier and session use encrypted native storage, and a callback arriving before the application graph starts is queued until its authentication source is ready.
+
+In [Supabase → Authentication → URL Configuration](https://supabase.com/dashboard/project/eeyfhmlyopuobtgdfbql/auth/url-configuration), allow the exact redirect `com.eyther.lumbridge://auth/callback`. Android registers that scheme/host/path and forwards initial/new intents. iOS registers the scheme and forwards SwiftUI `onOpenURL` events. The project’s Google provider was already enabled and its anonymous authorization request redirects to Google using `https://eeyfhmlyopuobtgdfbql.supabase.co/auth/v1/callback`; retain that URL in the Google web OAuth client’s authorized redirects.
+
+The native callback allowlist was added in the dashboard on 2026-11-14. A real-device Google account handoff still needs a final live check; CI and SDK tests do not impersonate a Google account. Neither sign-in nor profile details opt a user into Firebase Analytics.
+
 ## Authentication email delivery
 
 Password sign-in does not send an email. **Email me a sign-in code** explicitly requests a code for an existing account; it sets `createUser = false` so registration and its terms step cannot be bypassed. New accounts must verify their email; the app accepts a code and can resend the signup confirmation. An `email_not_confirmed` password sign-in failure opens that verification screen. Resending preserves the challenge purpose: existing-account sign-in requests another login code, while registration resends the signup confirmation.

@@ -30,13 +30,10 @@ import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSo
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.RememberHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RestoreHouseholdUseCase
-import com.eyther.lumbridge.features.household.presentation.screen.HouseholdScreen
-import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
 import com.eyther.lumbridge.features.legal.domain.usecase.GetLegalDocumentsUseCase
 import kotlinx.coroutines.launch
 import org.koin.compose.KoinIsolatedContext
 import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.koinApplication
 
 @Composable
@@ -96,25 +93,27 @@ fun LauncherHost() {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-        context == null ->
-            HouseholdScreen(
-                koinViewModel<HouseholdScreenViewModelContract>(),
-                onSelect = { household ->
-                    val user = session ?: return@HouseholdScreen
-                    scope.launch {
-                        rememberSelection(user.userId, household.id)
-                        context =
-                            HouseholdContextDomain(
-                                household.id,
-                                user.userId,
-                                household.name,
-                                household.currency,
-                                household.timeZone,
+        context == null -> {
+            val user = session ?: return
+            key(user.userId) {
+                HouseholdSetupHost(
+                    userId = user.userId,
+                    onSelect = { household ->
+                        scope.launch {
+                            rememberSelection(user.userId, household.id)
+                            context = HouseholdContextDomain(
+                                id = household.id,
+                                userId = user.userId,
+                                name = household.name,
+                                currency = household.currency,
+                                timeZone = household.timeZone,
                             )
-                    }
-                },
-                onSignOut = { scope.launch { signOut() } },
-            )
+                        }
+                    },
+                    onSignOut = { scope.launch { signOut() } },
+                )
+            }
+        }
         else -> {
             val selected = context!!
             key(selected.id, selected.userId) {

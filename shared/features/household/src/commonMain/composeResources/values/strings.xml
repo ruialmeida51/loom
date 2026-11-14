@@ -1,4 +1,7 @@
 <resources>
+    <string name="create_household_description">Choose a name and currency for the home you share.</string>
+    <string name="join_household_description">Enter the invitation code shared by someone in your household.</string>
+    <string name="ui_refresh_households">Refresh households</string>
     <string name="error_invalid_invitation">Enter the invitation code you received.</string>
     <string name="error_invalid_name">Give your household a name between 2 and 60 characters.</string>
     <string name="error_unsupported_currency">Choose a supported currency.</string>
