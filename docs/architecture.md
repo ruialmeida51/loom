@@ -54,6 +54,8 @@ For example, expenses depends on household for its context and currency policy; 
 - Plannot’s Navigator, NavigationState, NavDisplay wrappers, and transitions are adapted in core. A modifier is applied once so nested Hosts do not duplicate outer Scaffold padding.
 - A household gets its own isolated Koin graph. Switching households disposes the graph and its navigation entries. Koin factories bind ViewModels to their contracts.
 
+The household Host renders a single compact toolbar adapted from Plannot. The current destination supplies the title; the household name remains visible as a subtitle. Nested destinations expose back navigation, while root tabs use the bottom navigation. Household switching has its own accessible action and Reminders/Settings use the overflow menu. Core owns only the generic `Toolbar`, `ActionMenu` and rendering item; app-specific destination labels and actions stay under `entrypoint/app/navigation/components`.
+
 ## Data and money
 
 DataSource operations return `AppResult.Failure(error: AppError)` at the I/O boundary and preserve coroutine cancellation. Feature-owned sealed error families live in `domain/errors`; `core/domain/errors` contains generic failures such as connection, session, and access errors. Only data adapters inspect SQLSTATE, Supabase SDK error codes, or deployed server messages. They retain the cause for diagnostics and return a typed error before it leaves data. Domain and presentation never parse failure text.

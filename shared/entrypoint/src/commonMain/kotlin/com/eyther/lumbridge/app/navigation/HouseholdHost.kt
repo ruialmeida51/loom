@@ -1,35 +1,25 @@
 package com.eyther.lumbridge.app.navigation
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.app.navigation.components.HouseholdToolbar
 import com.eyther.lumbridge.app.navigation.model.HouseholdDestination
 import com.eyther.lumbridge.app.navigation.push.PendingPush
 import com.eyther.lumbridge.core.navigation.composables.navigation3.HorizontalSlideNavDisplay
@@ -52,7 +42,6 @@ import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedS
 import com.eyther.lumbridge.features.home.presentation.screen.HomeScreen
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
-import com.eyther.lumbridge.features.household.presentation.components.HouseholdBadge
 import com.eyther.lumbridge.features.insights.presentation.screen.InsightsScreen
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsScreenViewModelContract
 import com.eyther.lumbridge.features.legal.domain.usecase.GetLegalDocumentsUseCase
@@ -64,16 +53,11 @@ import com.eyther.lumbridge.features.settings.presentation.viewmodel.contracts.S
 import com.eyther.lumbridge.features.shopping.presentation.screen.ShoppingScreen
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
-import com.eyther.lumbridge.shared.entrypoint.generated.resources.loom_logo
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.token_home
-import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_back
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_feed
-import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_loom
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_money
-import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_our_household
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_shopping
 import kotlinx.serialization.modules.subclass
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -146,62 +130,16 @@ fun HouseholdHost(
         Scaffold(
             topBar = {
                 Column(Modifier.statusBarsPadding()) {
-                    Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Image(
-                            painterResource(Res.drawable.loom_logo),
-                            stringResource(Res.string.ui_loom),
-                            Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)),
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Text(
-                            stringResource(Res.string.ui_loom),
-                            style = MaterialTheme.typography.headlineMedium,
-                        )
-                        Spacer(Modifier.weight(1f))
-                        IconButton(
-                            onClick = { navigator.navigateTo(HouseholdDestination.Reminders) },
-                        ) {
-                            LoomIcon(Glyph.BELL)
-                        }
-                        IconButton(
-                            onClick = { navigator.navigateTo(HouseholdDestination.Settings) },
-                        ) {
-                            LoomIcon(Glyph.SETTINGS)
-                        }
-                    }
+                    HouseholdToolbar(
+                        destination = activeDestination as? HouseholdDestination ?: HouseholdDestination.Home,
+                        context = context,
+                        showBackButton = (state.getActiveBackStack()?.size ?: 0) > 1,
+                        onBack = navigator::goBack,
+                        onSwitchHousehold = onSwitchHousehold,
+                        onOpenReminders = { navigator.navigateTo(HouseholdDestination.Reminders) },
+                        onOpenSettings = { navigator.navigateTo(HouseholdDestination.Settings) },
+                    )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        if (state.getActiveBackStack()?.size ?: 0 > 1) {
-                            TextButton(onClick = navigator::goBack) {
-                                Text(stringResource(Res.string.ui_back))
-                            }
-                            Spacer(Modifier.width(8.dp))
-                        }
-                        TextButton(
-                            onClick = onSwitchHousehold,
-                            modifier = Modifier.testTag("household_switch"),
-                        ) {
-                            HouseholdBadge(context.id, context.name)
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                context.name + " ⌄",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
-                        }
-                        Spacer(Modifier.weight(1f))
-                        Text(
-                            stringResource(Res.string.ui_our_household),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
                 }
             },
             bottomBar = {
@@ -234,6 +172,7 @@ fun HouseholdHost(
                         )
                     tabs.forEach { (destination, label, glyph) ->
                         NavigationBarItem(
+                            modifier = Modifier.testTag("navigation_${glyph.name.lowercase()}"),
                             selected = state.activeRoot == destination,
                             onClick = { navigator.navigateTo(destination) },
                             icon = {
