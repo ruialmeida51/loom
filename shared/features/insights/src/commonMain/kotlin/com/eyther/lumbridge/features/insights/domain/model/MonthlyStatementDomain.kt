@@ -17,6 +17,7 @@ data class MonthlyStatementDomain(
     val expenses: List<ExpenseDomain>,
 ) {
 
+    /** Escapes spreadsheet formulas and preserves caller-provided column labels for localized exports. */
     fun csv(
         currency: String,
         userId: String,

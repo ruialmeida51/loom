@@ -97,8 +97,10 @@ class HouseholdViewModelModule {
     @KoinViewModel(binds = [HomeScreenViewModelContract::class])
     fun provideHomeScreenViewModel(
         getHomeOverviewStreamUseCase: GetHomeOverviewStreamUseCase,
+        context: HouseholdContextDomain,
     ): HomeScreenViewModelContract = HomeScreenViewModel(
         getHomeOverviewStreamUseCase = getHomeOverviewStreamUseCase,
+        context = context,
     )
 
     @KoinViewModel(binds = [InsightsScreenViewModelContract::class])

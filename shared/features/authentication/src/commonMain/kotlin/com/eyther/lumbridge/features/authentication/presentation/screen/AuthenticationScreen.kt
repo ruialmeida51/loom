@@ -103,7 +103,9 @@ private fun InnerAuthenticationScreen(
             else stringResource(Res.string.ui_welcome_home),
             style = MaterialTheme.typography.headlineMedium,
         )
-        ErrorNotice(error, onDismiss)
+        error?.let { message ->
+            ErrorNotice(message = message, onDismiss = onDismiss)
+        }
         message?.let { Text(it.getString(), color = MaterialTheme.colorScheme.secondary) }
         OutlinedTextField(
             email,

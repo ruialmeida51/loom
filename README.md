@@ -98,7 +98,7 @@ For the desktop development preview, `desktopApp` starts the dedicated `LoomDemo
   :shared:features:authentication:jvmTest :shared:features:analytics:jvmTest \
   :shared:features:settings:jvmTest \
   :shared:features:household:jvmTest :shared:features:shopping:jvmTest \
-  :shared:features:expenses:jvmTest \
+  :shared:features:expenses:jvmTest :shared:features:feed:jvmTest \
   :shared:features:insights:jvmTest :shared:features:reminders:jvmTest \
   :shared:entrypoint:jvmTest :androidApp:assembleDebug
 python3 tools/audit_project.py

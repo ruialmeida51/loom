@@ -54,14 +54,15 @@ import org.jetbrains.compose.resources.stringResource
 fun RemindersScreen(viewModel: RemindersScreenViewModelContract, timeZone: String) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerRemindersScreen(
-        items = state.items,
+        items = state.orderedReminders,
         title = state.title,
         date = state.date,
         time = state.time,
         recurrence = state.recurrence,
         showAdd = state.showAdd,
         busy = state.busy,
-        error = state.error,
+        error = state.displayError,
+        formError = state.formError,
         timeZone = timeZone,
         onShowAdd = viewModel::onAddSheetVisibilityChanged,
         onTitle = viewModel::onTitleChanged,
@@ -85,6 +86,7 @@ private fun InnerRemindersScreen(
     showAdd: Boolean,
     busy: Boolean,
     error: TextResource?,
+    formError: TextResource?,
     timeZone: String,
     onShowAdd: (Boolean) -> Unit,
     onTitle: (String) -> Unit,
@@ -108,7 +110,11 @@ private fun InnerRemindersScreen(
                 stringResource(Res.string.ui_the_little_things_remembered_together),
             )
         }
-        item { ErrorNotice(error, onDismiss) }
+        error?.let { message ->
+            item(key = "error") {
+                ErrorNotice(message = message, onDismiss = onDismiss)
+            }
+        }
         item {
             LoomButton(
                 stringResource(Res.string.ui_add_a_reminder),
@@ -124,7 +130,7 @@ private fun InnerRemindersScreen(
                 )
             }
         items(
-            items.sortedWith(compareBy<ReminderDomain> { it.completed }.thenBy { it.dueAt }),
+            items,
             key = { it.id },
         ) { reminder ->
             LoomCard {
@@ -159,7 +165,7 @@ private fun InnerRemindersScreen(
     }
     if (showAdd)
         AlertDialog(
-            onDismissRequest = { if (!busy) onShowAdd(false) },
+            onDismissRequest = { onShowAdd(false) },
             title = { Text(stringResource(Res.string.ui_a_little_reminder)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -198,7 +204,9 @@ private fun InnerRemindersScreen(
                             )
                         }
                     }
-                    ErrorNotice(error, onDismiss)
+                    formError?.let { message ->
+                        ErrorNotice(message = message, onDismiss = onDismiss)
+                    }
                 }
             },
             confirmButton = {

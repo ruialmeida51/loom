@@ -73,7 +73,7 @@ jobs:
         run: >-
           ./gradlew :shared:di:jvmTest :shared:features:analytics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest
           :shared:features:household:jvmTest :shared:features:shopping:jvmTest
-          :shared:features:expenses:jvmTest :shared:features:insights:jvmTest
+          :shared:features:expenses:jvmTest :shared:features:feed:jvmTest :shared:features:insights:jvmTest
           :shared:features:reminders:jvmTest :shared:features:settings:jvmTest
           :shared:entrypoint:jvmTest :androidApp:bundleRelease
           -PloomVersionCode="$LOOM_VERSION_CODE" -PloomVersionName="$LOOM_VERSION_NAME"

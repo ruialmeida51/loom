@@ -70,6 +70,11 @@ for source in (ROOT / 'shared').rglob('*.kt'):
                 issues.append(f'Name the previous ViewModel state oldState: {path}')
             if re.search(r'\.observeWith\([^)]*\)\s*\{[^}]*mutableState\.update', text, re.S):
                 issues.append(f'Use updateState inside observeWith: {path}')
+        if '/presentation/screen/' in str(source):
+            if re.search(r'\.(?:filter|filterNot|groupBy|sortedBy|sortedByDescending|sortedWith|sumOf|count)\s*[({]', text):
+                issues.append(f'Prepare filtered/grouped/ordered collections in presentation state: {path}')
+            if re.search(r'\.(?:csv|canManage)\s*\(', text):
+                issues.append(f'Export generation and domain permissions do not belong in screens: {path}')
         if '@Serializable' in text and not any(imp.endswith('.NavDestination') for imp in imports):
             transport_count += 1
             if not re.search(r'/data/network/model/(?:request|response)/', str(source)):
@@ -138,5 +143,6 @@ print('PASS: production sources contain no demo graph imports or demo feature br
 print('PASS: Gradle uses named project references; features contain no layer modules.')
 print('PASS: DI providers stay in shared/di; feature modules do not depend on composition.')
 print('PASS: typed domain failures, resource-backed UI messages, stream naming and explicit imports.')
+print('PASS: screens receive prepared collections; exports and permission decisions stay outside composables.')
 print(f'PASS: {transport_count} transport models have separate files/packages and explicit wire field names.')
 print(f'PASS: UI copy resource checks; {catalogs} catalogs with {resource_count} string/plural resources.')

@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.captureToImage
@@ -33,6 +34,35 @@ import org.jetbrains.skia.Image
 
 @OptIn(ExperimentalTestApi::class)
 class LoomUiTest {
+
+    @Test
+    fun invalidFeedErrorsStayInsideTheDialogAndClearAfterAFollowSucceeds() = runComposeUiTest {
+        ThemePreferences.set("LIGHT")
+        setContent {
+            Box(Modifier.requiredSize(440.dp, 760.dp).testTag("loom_app")) { LoomDemoApp() }
+        }
+        waitUntil(timeoutMillis = 10_000) {
+            onAllNodesWithText("Home, in harmony.").fetchSemanticsNodes().isNotEmpty()
+        }
+        onNodeWithTag("navigation_feed").performClick()
+        onNodeWithText("Dismiss").assertDoesNotExist()
+        onNodeWithText("+ Follow a feed").performClick()
+        onNodeWithText("https://…").performTextInput("https://")
+        onNodeWithText("Follow feed").performClick()
+
+        val invalidUrlMessage = "Enter a secure RSS or Atom feed URL beginning with https://."
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodesWithText(invalidUrlMessage).fetchSemanticsNodes().isNotEmpty()
+        }
+        onAllNodesWithText(invalidUrlMessage).assertCountEquals(1)
+        onNodeWithText("https://…").performTextReplacement("https://example.com/feed")
+        onNodeWithText("Follow feed").performClick()
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodesWithText("Follow feed").fetchSemanticsNodes().isEmpty()
+        }
+        onNodeWithText(invalidUrlMessage).assertDoesNotExist()
+        onNodeWithText("Dismiss").assertDoesNotExist()
+    }
 
     @Test
     fun householdShoppingRecurringAndThemesWork() = runComposeUiTest {

@@ -111,7 +111,11 @@ private fun InnerSettingsScreen(
                 stringResource(Res.string.ui_your_little_corner),
             )
         }
-        item { ErrorNotice(error, onDismiss) }
+        error?.let { message ->
+            item(key = "error") {
+                ErrorNotice(message = message, onDismiss = onDismiss)
+            }
+        }
         item {
             LoomCard {
                 Text(

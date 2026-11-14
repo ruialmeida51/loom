@@ -8,15 +8,17 @@ import com.eyther.lumbridge.core.presentation.mapper.toTextResource
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeOverviewStreamUseCase
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeState
+import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class HomeScreenViewModel(
     private val getHomeOverviewStreamUseCase: GetHomeOverviewStreamUseCase,
+    context: HouseholdContextDomain,
 ) : HomeScreenViewModelContract() {
 
-    private val mutableState = MutableStateFlow(HomeState())
+    private val mutableState = MutableStateFlow(HomeState(currency = context.currency))
         .observeWith(viewModelScope) { state ->
             getHomeOverviewStreamUseCase().updateState(state) { result ->
                 when (result) {

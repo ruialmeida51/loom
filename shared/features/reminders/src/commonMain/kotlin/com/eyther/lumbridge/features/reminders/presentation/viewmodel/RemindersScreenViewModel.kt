@@ -47,8 +47,8 @@ class RemindersScreenViewModel(
         .observeWith(viewModelScope) { state ->
             getRemindersStreamUseCase().updateState(state) { result ->
                 when (result) {
-                    is AppResult.Success -> copy(items = result.value, error = null)
-                    is AppResult.Failure -> copy(error = result.error.toRemindersTextResource())
+                    is AppResult.Success -> copy(items = result.value, loadError = null)
+                    is AppResult.Failure -> copy(loadError = result.error.toRemindersTextResource())
                 }
             }
         }
@@ -56,10 +56,12 @@ class RemindersScreenViewModel(
     override val state = mutableState.asStateFlow()
 
     override fun onAddSheetVisibilityChanged(value: Boolean) {
+        if (!value && state.value.busy) return
+
         if (value) inputState.value = InnerInputState()
 
         mutableState.update { oldState ->
-            oldState.copy(showAdd = value, error = null)
+            oldState.copy(showAdd = value, formError = null)
         }
     }
 
@@ -89,7 +91,7 @@ class RemindersScreenViewModel(
 
     override fun onDismissError() {
         mutableState.update { oldState ->
-            oldState.copy(error = null)
+            oldState.copy(error = null, loadError = null, formError = null)
         }
     }
 
@@ -98,7 +100,7 @@ class RemindersScreenViewModel(
         val input = inputState.value
 
         mutableState.update { oldState ->
-            oldState.copy(busy = true, error = null)
+            oldState.copy(busy = true, formError = null)
         }
 
         launch {
@@ -119,7 +121,7 @@ class RemindersScreenViewModel(
                 is AppResult.Failure -> mutableState.update { oldState ->
                     oldState.copy(
                         busy = false,
-                        error = result.error.toRemindersTextResource(),
+                        formError = result.error.toRemindersTextResource(),
                     )
                 }
             }

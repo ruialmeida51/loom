@@ -15,5 +15,5 @@ abstract class InsightsScreenViewModelContract : LoomViewModel() {
 
     abstract fun onSaveStatement()
 
-    abstract fun onExportStatement(filename: String, content: String, title: String)
+    abstract fun onExportStatement(summaryHeader: String, expenseHeader: String, title: String)
 }

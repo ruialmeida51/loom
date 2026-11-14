@@ -36,6 +36,7 @@ import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
+import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
 import com.eyther.lumbridge.features.home.domain.model.HomeOverviewDomain
 import com.eyther.lumbridge.features.home.generated.resources.Res
 import com.eyther.lumbridge.features.home.generated.resources.shopping_item_count
@@ -73,6 +74,7 @@ fun HomeScreen(
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerHomeScreen(
         overview = state.overview,
+        balance = state.balance,
         error = state.error,
         context = context,
         onShopping = onShopping,
@@ -86,6 +88,7 @@ fun HomeScreen(
 @Composable
 private fun InnerHomeScreen(
     overview: HomeOverviewDomain?,
+    balance: BalanceSummaryUi,
     error: TextResource?,
     context: HouseholdContextDomain,
     onShopping: () -> Unit,
@@ -107,7 +110,15 @@ private fun InnerHomeScreen(
             )
         }
 
-        item { ErrorNotice(error, onDismiss) }
+        error?.let { message ->
+
+            item(key = "error") {
+
+                ErrorNotice(message = message, onDismiss = onDismiss)
+
+            }
+
+        }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Surface(
@@ -149,15 +160,13 @@ private fun InnerHomeScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         LoomIcon(Glyph.MONEY, tint = MaterialTheme.colorScheme.onSecondaryContainer)
-                        val balance = overview?.balanceMinor ?: 0
                         Text(
-                            MoneyDomain(if (balance < 0) -balance else balance, context.currency)
-                                .formatted(),
+                            balance.amount,
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                         )
                         Text(
-                            if (balance >= 0) stringResource(Res.string.ui_you_re_owed)
+                            if (balance.isOwed) stringResource(Res.string.ui_you_re_owed)
                             else stringResource(Res.string.ui_you_owe),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,

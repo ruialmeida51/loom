@@ -13,4 +13,13 @@ data class RemindersState(
     val showAdd: Boolean = false,
     val busy: Boolean = false,
     val error: TextResource? = null,
-)
+    val loadError: TextResource? = null,
+    val formError: TextResource? = null,
+) {
+
+    val displayError: TextResource? = error ?: loadError
+
+    val orderedReminders: List<ReminderDomain> = items.sortedWith(
+        compareBy<ReminderDomain> { it.completed }.thenBy { it.dueAt },
+    )
+}

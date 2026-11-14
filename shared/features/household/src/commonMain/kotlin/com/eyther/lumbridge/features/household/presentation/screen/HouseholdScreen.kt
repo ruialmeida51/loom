@@ -96,7 +96,9 @@ private fun InnerHouseholdScreen(
             stringResource(Res.string.ui_make_yourself_at_home),
             stringResource(Res.string.ui_choose_a_household_create_a_new_one_or_join),
         )
-        ErrorNotice(error, onDismiss)
+        error?.let { message ->
+            ErrorNotice(message = message, onDismiss = onDismiss)
+        }
         items.forEach { household ->
             LoomCard {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {

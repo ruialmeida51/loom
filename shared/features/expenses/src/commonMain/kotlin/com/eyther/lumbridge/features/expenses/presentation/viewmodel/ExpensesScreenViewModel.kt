@@ -64,7 +64,9 @@ class ExpensesScreenViewModel(
         ),
     )
 
-    private val mutableState = MutableStateFlow(ExpensesState())
+    private val mutableState = MutableStateFlow(
+        ExpensesState(userId = context.userId, currency = context.currency),
+    )
         .observeWith(viewModelScope) { state ->
             inputState.updateState(state) { input ->
                 copy(
@@ -87,13 +89,13 @@ class ExpensesScreenViewModel(
             getExpenseLedgerStreamUseCase().updateState(state) { result ->
                 when (result) {
                     is AppResult.Success -> copy(
-                        expenses = result.value.expenses,
+                        expenses = result.value.expenses.sortedByDescending { it.occurredOn },
                         settlements = result.value.settlements,
                         balances = result.value.balances,
-                        error = null,
+                        loadError = null,
                     )
 
-                    is AppResult.Failure -> copy(error = result.error.toExpensesTextResource())
+                    is AppResult.Failure -> copy(loadError = result.error.toExpensesTextResource())
                 }
             }
         }
@@ -160,6 +162,8 @@ class ExpensesScreenViewModel(
     }
 
     override fun onAddSheetVisibilityChanged(value: Boolean) {
+        if (!value && state.value.busy) return
+
         if (value) {
             expenseId = newId()
             inputState.value = InnerInputState(
@@ -172,11 +176,13 @@ class ExpensesScreenViewModel(
         }
 
         mutableState.update { oldState ->
-            oldState.copy(showAdd = value, error = null)
+            oldState.copy(showAdd = value, formError = null)
         }
     }
 
     override fun onSettlementSheetVisibilityChanged(value: Boolean) {
+        if (!value && state.value.busy) return
+
         if (value) {
             settlementId = newId()
             val recipientId = state.value.members.firstOrNull { it.id != context.userId }?.id.orEmpty()
@@ -191,7 +197,7 @@ class ExpensesScreenViewModel(
         }
 
         mutableState.update { oldState ->
-            oldState.copy(showSettle = value, error = null)
+            oldState.copy(showSettle = value, formError = null)
         }
     }
 
@@ -215,7 +221,7 @@ class ExpensesScreenViewModel(
 
     override fun onDismissError() {
         mutableState.update { oldState ->
-            oldState.copy(error = null)
+            oldState.copy(error = null, loadError = null, formError = null)
         }
     }
 
@@ -225,13 +231,13 @@ class ExpensesScreenViewModel(
             createExpense(inputState.value)
         } catch (error: AppError) {
             mutableState.update { oldState ->
-                oldState.copy(error = error.toExpensesTextResource())
+                oldState.copy(formError = error.toExpensesTextResource())
             }
             return
         }
 
         mutableState.update { oldState ->
-            oldState.copy(busy = true, error = null)
+            oldState.copy(busy = true, formError = null)
         }
 
         launch {
@@ -250,7 +256,7 @@ class ExpensesScreenViewModel(
                         val expenses = oldState.expenses.filterNot { it.id == expense.id } + expense
 
                         oldState.copy(
-                            expenses = expenses,
+                            expenses = expenses.sortedByDescending { it.occurredOn },
                             balances = HouseholdLedgerDomain.balances(expenses, oldState.settlements),
                             showAdd = false,
                             busy = false,
@@ -259,7 +265,7 @@ class ExpensesScreenViewModel(
 
                     is AppResult.Failure -> oldState.copy(
                         busy = false,
-                        error = result.error.toExpensesTextResource(),
+                        formError = result.error.toExpensesTextResource(),
                     )
                 }
             }
@@ -279,13 +285,13 @@ class ExpensesScreenViewModel(
             )
         } catch (error: AppError) {
             mutableState.update { oldState ->
-                oldState.copy(error = error.toExpensesTextResource())
+                oldState.copy(formError = error.toExpensesTextResource())
             }
             return
         }
 
         mutableState.update { oldState ->
-            oldState.copy(busy = true, error = null)
+            oldState.copy(busy = true, formError = null)
         }
 
         launch {
@@ -306,7 +312,7 @@ class ExpensesScreenViewModel(
 
                     is AppResult.Failure -> oldState.copy(
                         busy = false,
-                        error = result.error.toExpensesTextResource(),
+                        formError = result.error.toExpensesTextResource(),
                     )
                 }
             }
