@@ -2,6 +2,8 @@ package com.eyther.lumbridge.app.di
 
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.createLoomSupabaseClient
+import com.eyther.lumbridge.features.analytics.data.local.datasource.CommonAnalyticsDataSource
+import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.authentication.data.local.SecureSessionManager
 import com.eyther.lumbridge.features.authentication.data.network.datasource.CommonAuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
@@ -89,6 +91,8 @@ import org.koin.dsl.module
 
 /** The same explicit DataSource → UseCase → ViewModel contract bindings as Plannot. */
 val applicationModule = module {
+    includes(analyticsUseCasesModule(), legalModule())
+    single<AnalyticsDataSource> { CommonAnalyticsDataSource() }
     single { SupabaseAccess(createLoomSupabaseClient(SecureSessionManager())) }
     single<PushDeviceDataSource> { CommonPushDeviceDataSource(get()) }
     single<AuthenticationDataSource> {
@@ -134,11 +138,13 @@ fun householdModule(
     context: HouseholdContextDomain,
     access: SupabaseAccess,
     householdSource: HouseholdDataSource,
+    analyticsDataSource: AnalyticsDataSource,
 ) = module {
     includes(householdFeaturesModule())
     single { context }
     single { access }
     single<HouseholdDataSource> { householdSource }
+    single<AnalyticsDataSource> { analyticsDataSource }
     single<ShoppingDataSource> {
         CommonShoppingDataSource(
             access = get(),
@@ -186,6 +192,7 @@ fun householdModule(
 
 /** Domain use cases and screens share the same wiring in the app and preview. */
 fun householdFeaturesModule() = module {
+    includes(analyticsUseCasesModule(), legalModule())
     single { GetMembersUseCase(get()) }
     single { CreateInvitationUseCase(get()) }
     single { GetShoppingStreamUseCase(get()) }
@@ -198,6 +205,7 @@ fun householdFeaturesModule() = module {
             addShoppingItemsUseCase = get(),
             saveShoppingItemUseCase = get(),
             saveShoppingListUseCase = get(),
+            trackAnalyticsEventUseCase = get(),
         )
     }
     single { GetRemindersStreamUseCase(get()) }
@@ -225,6 +233,7 @@ fun householdFeaturesModule() = module {
             controlRecurringExpenseUseCase = get(),
             getMembersUseCase = get(),
             context = get(),
+            trackAnalyticsEventUseCase = get(),
         )
     }
 
@@ -257,6 +266,7 @@ fun householdFeaturesModule() = module {
             addExpenseUseCase = get(),
             recordSettlementUseCase = get(),
             context = get(),
+            trackAnalyticsEventUseCase = get(),
         )
     }
     single { GetFeedStreamUseCase(get()) }
@@ -296,6 +306,8 @@ fun householdFeaturesModule() = module {
             getMembersUseCase = get(),
             createInvitationUseCase = get(),
             context = get(),
+            getAnalyticsPreferencesStreamUseCase = get(),
+            setAnalyticsConsentUseCase = get(),
         )
     }
     single {

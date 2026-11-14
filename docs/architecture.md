@@ -37,6 +37,8 @@ Sharing a model does not change which domain owns it. A feature imports another 
 | `authentication/data/local` | Secure authentication session serialization over core's native storage |
 | `settings/data` | Local preferences, notification permission/token adapters, and push-device registration |
 | `insights/data/export` | Native monthly-statement CSV sharing |
+| `analytics` | Typed consent state and event vocabulary, local consent storage, and the Android Firebase adapter |
+| `legal` | Public document destinations, release policy configuration, and localized legal-link components |
 | `entrypoint/app/demo/data` | Preview-only household fixtures and implementations of feature domain ports |
 | `entrypoint/navigation/push` | App-specific push destinations and pending navigation |
 | `core` | Generic results, clock/ID utilities, Supabase transport, native storage, Compose components, theme rendering, flow helpers, and navigation machinery |

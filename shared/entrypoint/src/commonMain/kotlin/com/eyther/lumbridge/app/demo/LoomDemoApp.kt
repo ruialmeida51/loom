@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.app.demo.data.DemoAnalyticsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseDataSource
 import com.eyther.lumbridge.app.demo.data.DemoFeedDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdDataSource
@@ -33,6 +34,7 @@ import com.eyther.lumbridge.app.navigation.HouseholdHost
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
+import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
@@ -84,6 +86,7 @@ fun LoomDemoApp() {
                                             householdFeaturesModule(),
                                             module {
                                                 single { store.context }
+                                                single<AnalyticsDataSource> { DemoAnalyticsDataSource() }
                                                 single<HouseholdDataSource> {
                                                     DemoHouseholdDataSource(store)
                                                 }

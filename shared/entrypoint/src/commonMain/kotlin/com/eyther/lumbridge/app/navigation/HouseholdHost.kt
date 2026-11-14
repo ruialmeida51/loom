@@ -39,6 +39,10 @@ import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
+import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
+import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
+import com.eyther.lumbridge.features.analytics.domain.usecase.GetAnalyticsPreferencesStreamUseCase
+import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpensesScreen
 import com.eyther.lumbridge.features.expenses.presentation.screen.RecurringExpensesScreen
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
@@ -51,6 +55,7 @@ import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDoma
 import com.eyther.lumbridge.features.household.presentation.components.HouseholdBadge
 import com.eyther.lumbridge.features.insights.presentation.screen.InsightsScreen
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsScreenViewModelContract
+import com.eyther.lumbridge.features.legal.domain.usecase.GetLegalDocumentsUseCase
 import com.eyther.lumbridge.features.reminders.presentation.screen.RemindersScreen
 import com.eyther.lumbridge.features.reminders.presentation.viewmodel.contracts.RemindersScreenViewModelContract
 import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
@@ -79,6 +84,7 @@ fun HouseholdHost(
     onSwitchHousehold: () -> Unit,
     onSignOut: () -> Unit,
 ) {
+    val getLegalDocumentsUseCase: GetLegalDocumentsUseCase = koinInject()
     val preferencesUseCase: GetSettingsStreamUseCase = koinInject()
     val preferences by preferencesUseCase().collectAsState()
     val mode = runCatching { ThemeMode.valueOf(preferences.theme) }.getOrDefault(ThemeMode.SYSTEM)
@@ -101,6 +107,26 @@ fun HouseholdHost(
                 subclass(HouseholdDestination.Insights::class)
                 subclass(HouseholdDestination.Settings::class)
             }
+        val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase = koinInject()
+        val getAnalyticsPreferencesStreamUseCase: GetAnalyticsPreferencesStreamUseCase = koinInject()
+        val analyticsPreferences by getAnalyticsPreferencesStreamUseCase().collectAsState()
+        val activeDestination = state.getActiveBackStack()?.lastOrNull()
+        LaunchedEffect(activeDestination, analyticsPreferences.enabled) {
+            val screen = when (activeDestination) {
+                HouseholdDestination.Home -> AnalyticsScreenDomain.HOME
+                HouseholdDestination.Feed -> AnalyticsScreenDomain.FEED
+                HouseholdDestination.Shopping -> AnalyticsScreenDomain.SHOPPING
+                HouseholdDestination.Money -> AnalyticsScreenDomain.EXPENSES
+                HouseholdDestination.Reminders -> AnalyticsScreenDomain.REMINDERS
+                HouseholdDestination.RecurringExpenses -> AnalyticsScreenDomain.RECURRING_EXPENSES
+                HouseholdDestination.Insights -> AnalyticsScreenDomain.INSIGHTS
+                HouseholdDestination.Settings -> AnalyticsScreenDomain.SETTINGS
+                else -> null
+            }
+            if (screen != null) {
+                trackAnalyticsEventUseCase(event = AnalyticsEventDomain.ScreenViewed(screen = screen))
+            }
+        }
         val navigator = remember(state) { Navigator(state) }
         val pendingPush by PendingPush.destination.collectAsState()
         LaunchedEffect(pendingPush, context.id) {
@@ -272,8 +298,11 @@ fun HouseholdHost(
                         SettingsScreen(
                             koinViewModel<SettingsScreenViewModelContract>(),
                             context,
-                            onSwitchHousehold,
-                            onSignOut,
+                            onSwitchHousehold = onSwitchHousehold,
+                            onSignOut = onSignOut,
+                            onOpenLegalDocument = { document ->
+                                uriHandler.openUri(getLegalDocumentsUseCase().url(document = document))
+                            },
                         )
                 }
             }

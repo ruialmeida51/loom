@@ -49,3 +49,15 @@ Production `LoomApp`, authentication, domain models, screens, and Common DataSou
 The database migration is deployed to Loom with RLS enabled on shopping lists. No production test fixtures were created. The existing Auth leaked-password-protection project setting remains documented in [backend setup](backend.md); [Supabase remediation](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
 
 Offline functionality remains deferred. Real device push delivery requires Firebase/APNs credentials.
+
+## Release, legal and analytics audit — 2026-11-14
+
+`features/analytics` owns consent state, typed event enums, its error family, use cases, local storage and platform adapters. Its Common DataSource lives in `data/local/datasource`; the Android Firebase SDK stays in `androidMain/data/platform`. Consent is shared across household graphs through the production composition root. A separate preview implementation stays in `entrypoint/app/demo/data`.
+
+`features/legal` owns document destinations, configured public URLs, its data source and localized link components. Authentication owns Terms validation and its typed failure. Hosts open external documents. Core gained no feature models or dependencies.
+
+The package audit passes for 309 Kotlin files, 27 separate network transport models and 13 catalogs containing 341 string/plural resources. Direct dependencies remain acyclic and use named Gradle project references. Production sources contain no preview branches; SDK failures remain typed above data, and analytics side effects occur outside state reducers.
+
+All 50 JVM tests pass, including seven analytics-consent/schema checks, three registration checks and the shared Compose flow with the consent toggle. Six Python release/publication tests and four Node version-planning/authentication tests pass without live credentials. Common Kotlin metadata compilation and the minified Android release bundle pass. The merged Android manifest starts analytics disabled and contains no advertising/AdServices identifiers permissions.
+
+Signed CI credentials, Play API permissions, public DNS/HTTPS, and the internal draft upload require external verification through their release workflows. The repository's iOS CI remains the macOS/Xcode check. Account deletion currently uses the documented support-assisted process, not an automatic endpoint. Firebase Analytics is integrated for Android only.

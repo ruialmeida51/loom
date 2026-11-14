@@ -8,6 +8,9 @@ import com.eyther.lumbridge.core.domain.errors.AppError
 import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.todayIso
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsActionDomain
+import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
+import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
 import com.eyther.lumbridge.features.expenses.domain.model.HouseholdLedgerDomain
@@ -32,6 +35,7 @@ class ExpensesScreenViewModel(
     private val addExpenseUseCase: AddExpenseUseCase,
     private val recordSettlementUseCase: RecordSettlementUseCase,
     private val context: HouseholdContextDomain,
+    private val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
 ) : ExpensesScreenViewModelContract() {
 
     private data class InnerInputState(
@@ -232,6 +236,13 @@ class ExpensesScreenViewModel(
 
         launch {
             val result = addExpenseUseCase(expense)
+            if (result is AppResult.Success) {
+                trackAnalyticsEventUseCase(
+                    event = AnalyticsEventDomain.ActionCompleted(
+                        action = AnalyticsActionDomain.EXPENSE_RECORDED,
+                    ),
+                )
+            }
 
             mutableState.update { oldState ->
                 when (result) {

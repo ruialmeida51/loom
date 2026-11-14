@@ -10,7 +10,7 @@
   <string name="ui_one_time_invitation_expires_in_48_hours">One-time invitation · expires in 48 hours</string>
   <string name="ui_switch_household">Switch household</string>
   <string name="ui_sign_out">Sign out</string>
-  <string name="ui_loom_0_1_0_nlife_woven_together">Loom · 0.1.0\nLife, woven together.</string>
+  <string name="ui_loom_life_woven_together">Loom\nLife, woven together.</string>
   <string name="error_unsupported_platform">Push notifications are available in the Android and iOS apps.</string>
   <string name="error_provider_unavailable">Notifications aren’t available in this build yet.</string>
   <string name="error_permission_denied">Allow notifications in your phone’s settings to receive reminders.</string>
@@ -21,4 +21,6 @@
   <string name="token_owner">Owner</string>
   <string name="token_member">Member</string>
   <string name="ui_household_details">%1$s · %2$s</string>
+  <string name="analytics_title">Optional usage analytics</string>
+  <string name="analytics_description">Help improve Loom with Google Firebase Analytics. Share screen visits and feature-use counts, with app and device information. We never send your email, household content, or financial amounts. Off by default; change this choice anytime.</string>
 </resources>

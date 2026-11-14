@@ -5,6 +5,9 @@ import com.eyther.lumbridge.core.coroutines.stateflow.launchWith
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsActionDomain
+import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
+import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseActionDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.ControlRecurringExpenseUseCase
@@ -27,6 +30,7 @@ class RecurringExpensesScreenViewModel(
     private val controlRecurringExpenseUseCase: ControlRecurringExpenseUseCase,
     private val getMembersUseCase: GetMembersUseCase,
     private val context: HouseholdContextDomain,
+    private val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
 ) : RecurringExpensesScreenViewModelContract() {
 
     private val refreshRequests = MutableStateFlow(0)
@@ -63,6 +67,13 @@ class RecurringExpensesScreenViewModel(
 
         launch {
             val result = controlRecurringExpenseUseCase(rule = rule, action = action)
+            if (result is AppResult.Success) {
+                trackAnalyticsEventUseCase(
+                    event = AnalyticsEventDomain.ActionCompleted(
+                        action = AnalyticsActionDomain.RECURRING_EXPENSE_UPDATED,
+                    ),
+                )
+            }
 
             mutableState.update { oldState ->
                 when (result) {

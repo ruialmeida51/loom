@@ -13,6 +13,8 @@ abstract class AuthenticationScreenViewModelContract : LoomViewModel() {
 
     abstract fun onToggleRegistration()
 
+    abstract fun onTermsAcceptedChanged(accepted: Boolean)
+
     abstract fun onSubmit()
 
     abstract fun onDismissError()

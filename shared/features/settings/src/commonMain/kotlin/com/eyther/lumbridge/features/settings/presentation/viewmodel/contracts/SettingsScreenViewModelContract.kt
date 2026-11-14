@@ -11,6 +11,8 @@ abstract class SettingsScreenViewModelContract : LoomViewModel() {
 
     abstract fun onNotificationsChanged(enabled: Boolean)
 
+    abstract fun onAnalyticsConsentChanged(enabled: Boolean)
+
     abstract fun onCreateInvitation()
 
     abstract fun onDismissError()

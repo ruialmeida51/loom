@@ -20,6 +20,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(projects.shared.features.legal)
             api(projects.shared.core)
             implementation(projects.shared.features.settings)
             api(libs.compose.runtime)
