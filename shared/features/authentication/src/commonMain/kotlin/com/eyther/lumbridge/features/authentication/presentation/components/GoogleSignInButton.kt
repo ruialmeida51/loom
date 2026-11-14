@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +28,7 @@ internal fun GoogleSignInButton(onClick: () -> Unit, loading: Boolean, enabled: 
         enabled = enabled && !loading,
         modifier = Modifier.fillMaxWidth().heightIn(min = 50.dp),
         shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             if (loading) {
