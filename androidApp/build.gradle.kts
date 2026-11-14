@@ -6,7 +6,7 @@ plugins {
 if (file("google-services.json").exists()) apply(plugin = "com.google.gms.google-services")
 
 val releaseVersionCode = providers.gradleProperty("loomVersionCode").orElse("1").get().toInt()
-val releaseVersionName = providers.gradleProperty("loomVersionName").orElse("0.1.0").get()
+val releaseVersionName = providers.gradleProperty("loomVersionName").get()
 require(releaseVersionCode in 1..2_100_000_000) { "loomVersionCode must be a valid positive Play version code" }
 require(Regex("[0-9][A-Za-z0-9.+_-]{0,49}").matches(releaseVersionName)) { "Invalid loomVersionName" }
 

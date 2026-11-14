@@ -35,16 +35,17 @@ internal fun HouseholdToolbar(
     onOpenReminders: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
-    val title = when (destination) {
-        HouseholdDestination.Home -> Res.string.token_home
-        HouseholdDestination.Feed -> Res.string.ui_feed
-        HouseholdDestination.Shopping -> Res.string.ui_shopping
-        HouseholdDestination.Money -> Res.string.ui_money
-        HouseholdDestination.Reminders -> Res.string.toolbar_reminders
-        HouseholdDestination.RecurringExpenses -> Res.string.toolbar_recurring_expenses
-        HouseholdDestination.Insights -> Res.string.toolbar_insights
-        HouseholdDestination.Settings -> Res.string.toolbar_settings
-    }
+    val title =
+        when (destination) {
+            HouseholdDestination.Home -> Res.string.token_home
+            HouseholdDestination.Feed -> Res.string.ui_feed
+            HouseholdDestination.Shopping -> Res.string.ui_shopping
+            HouseholdDestination.Money -> Res.string.ui_money
+            HouseholdDestination.Reminders -> Res.string.toolbar_reminders
+            HouseholdDestination.RecurringExpenses -> Res.string.toolbar_recurring_expenses
+            HouseholdDestination.Insights -> Res.string.toolbar_insights
+            HouseholdDestination.Settings -> Res.string.toolbar_settings
+        }
     val switchHouseholdLabel = stringResource(Res.string.toolbar_switch_household, context.name)
     val actions = buildList {
         if (destination != HouseholdDestination.Reminders) {
@@ -73,13 +74,14 @@ internal fun HouseholdToolbar(
         actions = {
             IconButton(
                 onClick = onSwitchHousehold,
-                modifier = Modifier
-                    .testTag("household_switch")
-                    .semantics { contentDescription = switchHouseholdLabel },
+                modifier =
+                    Modifier.testTag("household_switch").semantics {
+                        contentDescription = switchHouseholdLabel
+                    },
             ) {
                 HouseholdBadge(id = context.id, name = context.name)
             }
-            ActionMenu(items = actions)
+            ActionMenu(items = actions, modifier = Modifier.testTag("toolbar_actions"))
         },
     )
 }

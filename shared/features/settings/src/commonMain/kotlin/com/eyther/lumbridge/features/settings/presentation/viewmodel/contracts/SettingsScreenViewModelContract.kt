@@ -7,6 +7,14 @@ abstract class SettingsScreenViewModelContract : LoomViewModel() {
 
     abstract val state: StateFlow<SettingsState>
 
+    abstract fun onEditNickname()
+
+    abstract fun onNicknameChanged(value: String)
+
+    abstract fun onSaveNickname()
+
+    abstract fun onCloseNickname()
+
     abstract fun onThemeSelected(value: String)
 
     abstract fun onNotificationsChanged(enabled: Boolean)
@@ -14,6 +22,8 @@ abstract class SettingsScreenViewModelContract : LoomViewModel() {
     abstract fun onAnalyticsConsentChanged(enabled: Boolean)
 
     abstract fun onCreateInvitation()
+
+    abstract fun onCloseInvitation()
 
     abstract fun onDismissError()
 }

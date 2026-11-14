@@ -49,7 +49,6 @@ import com.eyther.lumbridge.features.insights.generated.resources.ui_previous
 import com.eyther.lumbridge.features.insights.generated.resources.ui_save_statement_snapshot
 import com.eyther.lumbridge.features.insights.generated.resources.ui_saving
 import com.eyther.lumbridge.features.insights.generated.resources.ui_see_where_it_went_and_where_things_stand
-import com.eyther.lumbridge.features.insights.generated.resources.ui_the_bigger_picture
 import com.eyther.lumbridge.features.insights.generated.resources.ui_where_it_went
 import com.eyther.lumbridge.features.insights.generated.resources.ui_you_paid
 import com.eyther.lumbridge.features.insights.generated.resources.ui_your_month
@@ -97,20 +96,18 @@ private fun InnerInsightsScreen(
     onSave: () -> Unit,
 ) {
     val exportTitle = stringResource(Res.string.statement_export_title)
-    val summaryHeader =
-        stringResource(Res.string.statement_csv_summary_header)
+    val summaryHeader = stringResource(Res.string.statement_csv_summary_header)
     val expenseHeader =
         stringResource(
             Res.string.statement_csv_expense_header,
         )
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 24.dp),
+        Modifier.fillMaxSize().padding(horizontal = 20.dp),
         contentPadding = PaddingValues(vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
             PageHeading(
-                stringResource(Res.string.ui_the_bigger_picture),
                 stringResource(Res.string.ui_a_little_perspective),
                 stringResource(Res.string.ui_see_where_it_went_and_where_things_stand),
             )
@@ -195,7 +192,11 @@ private fun InnerInsightsScreen(
             categoryRows.forEach { row ->
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        StatementRow(expenseCategoryLabel(row.category), row.amountMinor, context.currency)
+                        StatementRow(
+                            expenseCategoryLabel(row.category),
+                            row.amountMinor,
+                            context.currency,
+                        )
                         Box(
                             Modifier.fillMaxWidth()
                                 .height(7.dp)

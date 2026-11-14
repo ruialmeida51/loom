@@ -30,7 +30,10 @@ import com.eyther.lumbridge.features.authentication.generated.resources.ui_passw
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-/** Plannot's visibility-toggle pattern; visibility is transient and the value stays owned by the form. */
+/**
+ * Plannot's visibility-toggle pattern; visibility is transient and the value stays owned by the
+ * form.
+ */
 @Composable
 internal fun PasswordInput(
     value: String,
@@ -43,21 +46,32 @@ internal fun PasswordInput(
         value = value,
         onValueChange = onValueChanged,
         label = { Text(stringResource(Res.string.ui_password)) },
-        modifier = Modifier.fillMaxWidth().testTag("auth_password").semantics { contentType = ContentType.Password },
+        modifier =
+            Modifier.fillMaxWidth().testTag("auth_password").semantics {
+                contentType = ContentType.Password
+            },
         enabled = enabled,
         singleLine = true,
-        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Password,
-            autoCorrectEnabled = false,
-            imeAction = ImeAction.Done,
-        ),
+        visualTransformation =
+            if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+        keyboardOptions =
+            KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                autoCorrectEnabled = false,
+                imeAction = ImeAction.Done,
+            ),
         keyboardActions = KeyboardActions(onDone = { onSubmit() }),
         trailingIcon = {
             IconButton(onClick = { visible = !visible }, enabled = enabled) {
                 Icon(
-                    painter = painterResource(if (visible) Res.drawable.ic_eye_open else Res.drawable.ic_eye_hidden),
-                    contentDescription = stringResource(if (visible) Res.string.password_hide else Res.string.password_show),
+                    painter =
+                        painterResource(
+                            if (visible) Res.drawable.ic_eye_open else Res.drawable.ic_eye_hidden,
+                        ),
+                    contentDescription =
+                        stringResource(
+                            if (visible) Res.string.password_hide else Res.string.password_show,
+                        ),
                 )
             }
         },

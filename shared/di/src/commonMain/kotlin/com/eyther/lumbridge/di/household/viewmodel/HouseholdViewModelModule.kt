@@ -22,7 +22,8 @@ import com.eyther.lumbridge.features.home.presentation.viewmodel.HomeScreenViewM
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
-import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.UpdateMemberNicknameUseCase
 import com.eyther.lumbridge.features.insights.domain.usecase.ExportStatementUseCase
 import com.eyther.lumbridge.features.insights.domain.usecase.GetMonthlyStatementStreamUseCase
 import com.eyther.lumbridge.features.insights.domain.usecase.SaveStatementUseCase
@@ -54,54 +55,58 @@ class HouseholdViewModelModule {
     @KoinViewModel(binds = [ExpensesScreenViewModelContract::class])
     fun provideExpensesScreenViewModel(
         getExpenseLedgerStreamUseCase: GetExpenseLedgerStreamUseCase,
-        getMembersUseCase: GetMembersUseCase,
+        getMembersStreamUseCase: GetMembersStreamUseCase,
         addExpenseUseCase: AddExpenseUseCase,
         recordSettlementUseCase: RecordSettlementUseCase,
         context: HouseholdContextDomain,
         trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
-    ): ExpensesScreenViewModelContract = ExpensesScreenViewModel(
-        getExpenseLedgerStreamUseCase = getExpenseLedgerStreamUseCase,
-        getMembersUseCase = getMembersUseCase,
-        addExpenseUseCase = addExpenseUseCase,
-        recordSettlementUseCase = recordSettlementUseCase,
-        context = context,
-        trackAnalyticsEventUseCase = trackAnalyticsEventUseCase,
-    )
+    ): ExpensesScreenViewModelContract =
+        ExpensesScreenViewModel(
+            getExpenseLedgerStreamUseCase = getExpenseLedgerStreamUseCase,
+            getMembersStreamUseCase = getMembersStreamUseCase,
+            addExpenseUseCase = addExpenseUseCase,
+            recordSettlementUseCase = recordSettlementUseCase,
+            context = context,
+            trackAnalyticsEventUseCase = trackAnalyticsEventUseCase,
+        )
 
     @KoinViewModel(binds = [RecurringExpensesScreenViewModelContract::class])
     fun provideRecurringExpensesScreenViewModel(
         getRecurringExpensesStreamUseCase: GetRecurringExpensesStreamUseCase,
         controlRecurringExpenseUseCase: ControlRecurringExpenseUseCase,
-        getMembersUseCase: GetMembersUseCase,
+        getMembersStreamUseCase: GetMembersStreamUseCase,
         context: HouseholdContextDomain,
         trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
-    ): RecurringExpensesScreenViewModelContract = RecurringExpensesScreenViewModel(
-        getRecurringExpensesStreamUseCase = getRecurringExpensesStreamUseCase,
-        controlRecurringExpenseUseCase = controlRecurringExpenseUseCase,
-        getMembersUseCase = getMembersUseCase,
-        context = context,
-        trackAnalyticsEventUseCase = trackAnalyticsEventUseCase,
-    )
+    ): RecurringExpensesScreenViewModelContract =
+        RecurringExpensesScreenViewModel(
+            getRecurringExpensesStreamUseCase = getRecurringExpensesStreamUseCase,
+            controlRecurringExpenseUseCase = controlRecurringExpenseUseCase,
+            getMembersStreamUseCase = getMembersStreamUseCase,
+            context = context,
+            trackAnalyticsEventUseCase = trackAnalyticsEventUseCase,
+        )
 
     @KoinViewModel(binds = [FeedScreenViewModelContract::class])
     fun provideFeedScreenViewModel(
         getFeedStreamUseCase: GetFeedStreamUseCase,
         followFeedUseCase: FollowFeedUseCase,
         markArticleReadUseCase: MarkArticleReadUseCase,
-    ): FeedScreenViewModelContract = FeedScreenViewModel(
-        getFeedStreamUseCase = getFeedStreamUseCase,
-        followFeedUseCase = followFeedUseCase,
-        markArticleReadUseCase = markArticleReadUseCase,
-    )
+    ): FeedScreenViewModelContract =
+        FeedScreenViewModel(
+            getFeedStreamUseCase = getFeedStreamUseCase,
+            followFeedUseCase = followFeedUseCase,
+            markArticleReadUseCase = markArticleReadUseCase,
+        )
 
     @KoinViewModel(binds = [HomeScreenViewModelContract::class])
     fun provideHomeScreenViewModel(
         getHomeOverviewStreamUseCase: GetHomeOverviewStreamUseCase,
         context: HouseholdContextDomain,
-    ): HomeScreenViewModelContract = HomeScreenViewModel(
-        getHomeOverviewStreamUseCase = getHomeOverviewStreamUseCase,
-        context = context,
-    )
+    ): HomeScreenViewModelContract =
+        HomeScreenViewModel(
+            getHomeOverviewStreamUseCase = getHomeOverviewStreamUseCase,
+            context = context,
+        )
 
     @KoinViewModel(binds = [InsightsScreenViewModelContract::class])
     fun provideInsightsScreenViewModel(
@@ -109,12 +114,13 @@ class HouseholdViewModelModule {
         saveStatementUseCase: SaveStatementUseCase,
         context: HouseholdContextDomain,
         exportStatementUseCase: ExportStatementUseCase,
-    ): InsightsScreenViewModelContract = InsightsScreenViewModel(
-        getMonthlyStatementStreamUseCase = getMonthlyStatementStreamUseCase,
-        saveStatementUseCase = saveStatementUseCase,
-        context = context,
-        exportStatementUseCase = exportStatementUseCase,
-    )
+    ): InsightsScreenViewModelContract =
+        InsightsScreenViewModel(
+            getMonthlyStatementStreamUseCase = getMonthlyStatementStreamUseCase,
+            saveStatementUseCase = saveStatementUseCase,
+            context = context,
+            exportStatementUseCase = exportStatementUseCase,
+        )
 
     @KoinViewModel(binds = [RemindersScreenViewModelContract::class])
     fun provideRemindersScreenViewModel(
@@ -122,33 +128,37 @@ class HouseholdViewModelModule {
         addReminderUseCase: AddReminderUseCase,
         completeReminderUseCase: CompleteReminderUseCase,
         removeReminderUseCase: RemoveReminderUseCase,
-    ): RemindersScreenViewModelContract = RemindersScreenViewModel(
-        getRemindersStreamUseCase = getRemindersStreamUseCase,
-        addReminderUseCase = addReminderUseCase,
-        completeReminderUseCase = completeReminderUseCase,
-        removeReminderUseCase = removeReminderUseCase,
-    )
+    ): RemindersScreenViewModelContract =
+        RemindersScreenViewModel(
+            getRemindersStreamUseCase = getRemindersStreamUseCase,
+            addReminderUseCase = addReminderUseCase,
+            completeReminderUseCase = completeReminderUseCase,
+            removeReminderUseCase = removeReminderUseCase,
+        )
 
     @KoinViewModel(binds = [SettingsScreenViewModelContract::class])
     fun provideSettingsScreenViewModel(
+        updateMemberNicknameUseCase: UpdateMemberNicknameUseCase,
         getSettingsStreamUseCase: GetSettingsStreamUseCase,
         setThemeUseCase: SetThemeUseCase,
         setNotificationsUseCase: SetNotificationsUseCase,
-        getMembersUseCase: GetMembersUseCase,
+        getMembersStreamUseCase: GetMembersStreamUseCase,
         createInvitationUseCase: CreateInvitationUseCase,
         context: HouseholdContextDomain,
         getAnalyticsPreferencesStreamUseCase: GetAnalyticsPreferencesStreamUseCase,
         setAnalyticsConsentUseCase: SetAnalyticsConsentUseCase,
-    ): SettingsScreenViewModelContract = SettingsScreenViewModel(
-        getSettingsStreamUseCase = getSettingsStreamUseCase,
-        setThemeUseCase = setThemeUseCase,
-        setNotificationsUseCase = setNotificationsUseCase,
-        getMembersUseCase = getMembersUseCase,
-        createInvitationUseCase = createInvitationUseCase,
-        context = context,
-        getAnalyticsPreferencesStreamUseCase = getAnalyticsPreferencesStreamUseCase,
-        setAnalyticsConsentUseCase = setAnalyticsConsentUseCase,
-    )
+    ): SettingsScreenViewModelContract =
+        SettingsScreenViewModel(
+            updateMemberNicknameUseCase = updateMemberNicknameUseCase,
+            getSettingsStreamUseCase = getSettingsStreamUseCase,
+            setThemeUseCase = setThemeUseCase,
+            setNotificationsUseCase = setNotificationsUseCase,
+            getMembersStreamUseCase = getMembersStreamUseCase,
+            createInvitationUseCase = createInvitationUseCase,
+            context = context,
+            getAnalyticsPreferencesStreamUseCase = getAnalyticsPreferencesStreamUseCase,
+            setAnalyticsConsentUseCase = setAnalyticsConsentUseCase,
+        )
 
     @KoinViewModel(binds = [ShoppingScreenViewModelContract::class])
     fun provideShoppingScreenViewModel(
@@ -157,11 +167,12 @@ class HouseholdViewModelModule {
         saveShoppingItemUseCase: SaveShoppingItemUseCase,
         saveShoppingListUseCase: SaveShoppingListUseCase,
         trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
-    ): ShoppingScreenViewModelContract = ShoppingScreenViewModel(
-        getShoppingStreamUseCase = getShoppingStreamUseCase,
-        addShoppingItemsUseCase = addShoppingItemsUseCase,
-        saveShoppingItemUseCase = saveShoppingItemUseCase,
-        saveShoppingListUseCase = saveShoppingListUseCase,
-        trackAnalyticsEventUseCase = trackAnalyticsEventUseCase,
-    )
+    ): ShoppingScreenViewModelContract =
+        ShoppingScreenViewModel(
+            getShoppingStreamUseCase = getShoppingStreamUseCase,
+            addShoppingItemsUseCase = addShoppingItemsUseCase,
+            saveShoppingItemUseCase = saveShoppingItemUseCase,
+            saveShoppingListUseCase = saveShoppingListUseCase,
+            trackAnalyticsEventUseCase = trackAnalyticsEventUseCase,
+        )
 }

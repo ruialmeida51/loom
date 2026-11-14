@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.stateflow.launchWith
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.errors.AppError
@@ -23,7 +22,7 @@ import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesText
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesState
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
-import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
 import com.eyther.lumbridge.features.household.presentation.mapper.toHouseholdTextResource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,7 +30,7 @@ import kotlinx.coroutines.flow.update
 
 class ExpensesScreenViewModel(
     private val getExpenseLedgerStreamUseCase: GetExpenseLedgerStreamUseCase,
-    private val getMembersUseCase: GetMembersUseCase,
+    private val getMembersStreamUseCase: GetMembersStreamUseCase,
     private val addExpenseUseCase: AddExpenseUseCase,
     private val recordSettlementUseCase: RecordSettlementUseCase,
     private val context: HouseholdContextDomain,
@@ -56,52 +55,62 @@ class ExpensesScreenViewModel(
     private var expenseId = newId()
     private var settlementId = newId()
 
-    private val inputState = MutableStateFlow(
-        InnerInputState(
-            paidBy = context.userId,
-            from = context.userId,
-            occurredOn = todayIso(context.timeZone),
-        ),
-    )
+    private val inputState =
+        MutableStateFlow(
+            InnerInputState(
+                paidBy = context.userId,
+                from = context.userId,
+                occurredOn = todayIso(context.timeZone),
+            ),
+        )
 
-    private val mutableState = MutableStateFlow(
-        ExpensesState(userId = context.userId, currency = context.currency),
-    )
-        .observeWith(viewModelScope) { state ->
-            inputState.updateState(state) { input ->
-                copy(
-                    title = input.title,
-                    amount = input.amount,
-                    occurredOn = input.occurredOn,
-                    paidBy = input.paidBy,
-                    category = input.category,
-                    selected = input.selected,
-                    splitMode = input.splitMode,
-                    custom = input.custom,
-                    recurring = input.recurring,
-                    from = input.from,
-                    to = input.to,
-                    settleAmount = input.settleAmount,
-                )
-            }
-        }
-        .observeWith(viewModelScope) { state ->
-            getExpenseLedgerStreamUseCase().updateState(state) { result ->
-                when (result) {
-                    is AppResult.Success -> copy(
-                        expenses = result.value.expenses.sortedByDescending { it.occurredOn },
-                        settlements = result.value.settlements,
-                        balances = result.value.balances,
-                        loadError = null,
+    private val mutableState =
+        MutableStateFlow(
+                ExpensesState(userId = context.userId, currency = context.currency),
+            )
+            .observeWith(viewModelScope) { state ->
+                inputState.updateState(state) { input ->
+                    copy(
+                        title = input.title,
+                        amount = input.amount,
+                        occurredOn = input.occurredOn,
+                        paidBy = input.paidBy,
+                        category = input.category,
+                        selected = input.selected,
+                        splitMode = input.splitMode,
+                        custom = input.custom,
+                        recurring = input.recurring,
+                        from = input.from,
+                        to = input.to,
+                        settleAmount = input.settleAmount,
                     )
-
-                    is AppResult.Failure -> copy(loadError = result.error.toExpensesTextResource())
                 }
             }
-        }
-        .launchWith(viewModelScope) { state ->
-            state.loadMembers()
-        }
+            .observeWith(viewModelScope) { state ->
+                getExpenseLedgerStreamUseCase().updateState(state) { result ->
+                    when (result) {
+                        is AppResult.Success ->
+                            copy(
+                                expenses =
+                                    result.value.expenses.sortedByDescending { it.occurredOn },
+                                settlements = result.value.settlements,
+                                balances = result.value.balances,
+                                loadError = null,
+                            )
+
+                        is AppResult.Failure ->
+                            copy(loadError = result.error.toExpensesTextResource())
+                    }
+                }
+            }
+            .observeWith(viewModelScope) { state ->
+                getMembersStreamUseCase(householdId = context.id).updateState(state) { result ->
+                    when (result) {
+                        is AppResult.Success -> copy(members = result.value)
+                        is AppResult.Failure -> copy(error = result.error.toHouseholdTextResource())
+                    }
+                }
+            }
 
     override val state = mutableState.asStateFlow()
 
@@ -138,7 +147,8 @@ class ExpensesScreenViewModel(
     override fun onParticipantToggled(id: String) {
         inputState.update { oldState ->
             oldState.copy(
-                selected = if (id in oldState.selected) oldState.selected - id else oldState.selected + id,
+                selected =
+                    if (id in oldState.selected) oldState.selected - id else oldState.selected + id,
             )
         }
     }
@@ -162,17 +172,18 @@ class ExpensesScreenViewModel(
     }
 
     override fun onAddSheetVisibilityChanged(value: Boolean) {
-        if (!value && state.value.busy) return
+        if (state.value.busy || value && !state.value.canCreateExpense) return
 
         if (value) {
             expenseId = newId()
-            inputState.value = InnerInputState(
-                paidBy = context.userId,
-                occurredOn = todayIso(context.timeZone),
-                from = context.userId,
-                selected = state.value.members.map { it.id }.toSet(),
-                to = state.value.members.firstOrNull { it.id != context.userId }?.id.orEmpty(),
-            )
+            inputState.value =
+                InnerInputState(
+                    paidBy = context.userId,
+                    occurredOn = todayIso(context.timeZone),
+                    from = context.userId,
+                    selected = state.value.members.map { it.id }.toSet(),
+                    to = state.value.members.firstOrNull { it.id != context.userId }?.id.orEmpty(),
+                )
         }
 
         mutableState.update { oldState ->
@@ -181,11 +192,12 @@ class ExpensesScreenViewModel(
     }
 
     override fun onSettlementSheetVisibilityChanged(value: Boolean) {
-        if (!value && state.value.busy) return
+        if (state.value.busy || value && !state.value.canRecordSettlement) return
 
         if (value) {
             settlementId = newId()
-            val recipientId = state.value.members.firstOrNull { it.id != context.userId }?.id.orEmpty()
+            val recipientId =
+                state.value.members.firstOrNull { it.id != context.userId }?.id.orEmpty()
 
             inputState.update { oldState ->
                 oldState.copy(
@@ -227,14 +239,15 @@ class ExpensesScreenViewModel(
 
     override fun onSaveExpense() {
         if (state.value.busy) return
-        val expense = try {
-            createExpense(inputState.value)
-        } catch (error: AppError) {
-            mutableState.update { oldState ->
-                oldState.copy(formError = error.toExpensesTextResource())
+        val expense =
+            try {
+                createExpense(inputState.value)
+            } catch (error: AppError) {
+                mutableState.update { oldState ->
+                    oldState.copy(formError = error.toExpensesTextResource())
+                }
+                return
             }
-            return
-        }
 
         mutableState.update { oldState ->
             oldState.copy(busy = true, formError = null)
@@ -244,9 +257,10 @@ class ExpensesScreenViewModel(
             val result = addExpenseUseCase(expense)
             if (result is AppResult.Success) {
                 trackAnalyticsEventUseCase(
-                    event = AnalyticsEventDomain.ActionCompleted(
-                        action = AnalyticsActionDomain.EXPENSE_RECORDED,
-                    ),
+                    event =
+                        AnalyticsEventDomain.ActionCompleted(
+                            action = AnalyticsActionDomain.EXPENSE_RECORDED,
+                        ),
                 )
             }
 
@@ -257,16 +271,18 @@ class ExpensesScreenViewModel(
 
                         oldState.copy(
                             expenses = expenses.sortedByDescending { it.occurredOn },
-                            balances = HouseholdLedgerDomain.balances(expenses, oldState.settlements),
+                            balances =
+                                HouseholdLedgerDomain.balances(expenses, oldState.settlements),
                             showAdd = false,
                             busy = false,
                         )
                     }
 
-                    is AppResult.Failure -> oldState.copy(
-                        busy = false,
-                        formError = result.error.toExpensesTextResource(),
-                    )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            busy = false,
+                            formError = result.error.toExpensesTextResource(),
+                        )
                 }
             }
         }
@@ -275,20 +291,22 @@ class ExpensesScreenViewModel(
     override fun onRecordSettlement() {
         if (state.value.busy) return
         val input = inputState.value
-        val settlement = try {
-            SettlementDomain(
-                id = settlementId,
-                from = input.from,
-                to = input.to,
-                amountMinor = MoneyDomain.parse(input.settleAmount, context.currency).minorUnits,
-                occurredOn = todayIso(context.timeZone),
-            )
-        } catch (error: AppError) {
-            mutableState.update { oldState ->
-                oldState.copy(formError = error.toExpensesTextResource())
+        val settlement =
+            try {
+                SettlementDomain(
+                    id = settlementId,
+                    from = input.from,
+                    to = input.to,
+                    amountMinor =
+                        MoneyDomain.parse(input.settleAmount, context.currency).minorUnits,
+                    occurredOn = todayIso(context.timeZone),
+                )
+            } catch (error: AppError) {
+                mutableState.update { oldState ->
+                    oldState.copy(formError = error.toExpensesTextResource())
+                }
+                return
             }
-            return
-        }
 
         mutableState.update { oldState ->
             oldState.copy(busy = true, formError = null)
@@ -300,20 +318,23 @@ class ExpensesScreenViewModel(
             mutableState.update { oldState ->
                 when (result) {
                     is AppResult.Success -> {
-                        val settlements = oldState.settlements.filterNot { it.id == settlement.id } + settlement
+                        val settlements =
+                            oldState.settlements.filterNot { it.id == settlement.id } + settlement
 
                         oldState.copy(
                             settlements = settlements,
-                            balances = HouseholdLedgerDomain.balances(oldState.expenses, settlements),
+                            balances =
+                                HouseholdLedgerDomain.balances(oldState.expenses, settlements),
                             showSettle = false,
                             busy = false,
                         )
                     }
 
-                    is AppResult.Failure -> oldState.copy(
-                        busy = false,
-                        formError = result.error.toExpensesTextResource(),
-                    )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            busy = false,
+                            formError = result.error.toExpensesTextResource(),
+                        )
                 }
             }
         }
@@ -321,18 +342,27 @@ class ExpensesScreenViewModel(
 
     private fun createExpense(input: InnerInputState): ExpenseDomain {
         val amount = MoneyDomain.parse(input.amount, context.currency).minorUnits
-        val shares = when (input.splitMode) {
-            "Amounts" -> input.selected.associateWith { id ->
-                MoneyDomain.parseShare(input.custom[id].orEmpty(), context.currency).minorUnits
+        val shares =
+            when (input.splitMode) {
+                "Amounts" ->
+                    input.selected.associateWith { id ->
+                        MoneyDomain.parseShare(input.custom[id].orEmpty(), context.currency)
+                            .minorUnits
+                    }
+
+                "Percent" ->
+                    ExpenseSplitDomain.percentages(
+                        amountMinor = amount,
+                        percentages =
+                            input.selected.associateWith { input.custom[it]?.toIntOrNull() ?: 0 },
+                    )
+
+                else ->
+                    ExpenseSplitDomain.equal(
+                        amountMinor = amount,
+                        memberIds = input.selected.toList(),
+                    )
             }
-
-            "Percent" -> ExpenseSplitDomain.percentages(
-                amountMinor = amount,
-                percentages = input.selected.associateWith { input.custom[it]?.toIntOrNull() ?: 0 },
-            )
-
-            else -> ExpenseSplitDomain.equal(amountMinor = amount, memberIds = input.selected.toList())
-        }
 
         return ExpenseDomain(
             id = expenseId,
@@ -344,25 +374,5 @@ class ExpensesScreenViewModel(
             shares = shares,
             recurring = input.recurring,
         )
-    }
-
-    private suspend fun MutableStateFlow<ExpensesState>.loadMembers() {
-        when (val result = getMembersUseCase(context.id)) {
-            is AppResult.Success -> {
-                inputState.update { oldState ->
-                    oldState.copy(
-                        selected = result.value.map { it.id }.toSet(),
-                        to = result.value.firstOrNull { it.id != context.userId }?.id.orEmpty(),
-                    )
-                }
-                update { oldState ->
-                    oldState.copy(members = result.value)
-                }
-            }
-
-            is AppResult.Failure -> update { oldState ->
-                oldState.copy(error = result.error.toHouseholdTextResource())
-            }
-        }
     }
 }

@@ -51,6 +51,24 @@ do $$begin
     assert (select checked from public.shopping_items where id='00000000-0000-4000-8000-000000000100');
 end;$$;
 
+-- Nicknames are global to the member profile; membership never grants permission to rename someone else.
+update public.profiles set display_name='Bobby' where id=auth.uid();
+do $$declare changed integer;begin
+    assert (select display_name from public.profiles where id=auth.uid())='Bobby','A member can rename themselves';
+    assert (select display_name from public.household_members_with_names(current_setting('loom.test.home')::uuid) where user_id=auth.uid())='Bobby','Membership reads use the saved nickname';
+    update public.profiles set display_name='Forged name' where id='00000000-0000-4000-8000-000000000001';
+    get diagnostics changed=row_count;
+    assert changed=0,'A member cannot rename a housemate';
+    begin
+        update public.profiles set display_name='' where id=auth.uid();
+        raise exception 'An empty nickname was accepted';
+    exception when check_violation then null;end;
+    begin
+        update public.profiles set display_name=repeat('x',81) where id=auth.uid();
+        raise exception 'An oversized nickname was accepted';
+    exception when check_violation then null;end;
+end;$$;
+
 set request.jwt.claim.sub='00000000-0000-4000-8000-000000000001';
 select public.create_expense('00000000-0000-4000-8000-000000000200',current_setting('loom.test.home')::uuid,'Food',6000,auth.uid(),'Groceries','2026-11-01',false,
     '{"00000000-0000-4000-8000-000000000001":3000,"00000000-0000-4000-8000-000000000002":3000}');

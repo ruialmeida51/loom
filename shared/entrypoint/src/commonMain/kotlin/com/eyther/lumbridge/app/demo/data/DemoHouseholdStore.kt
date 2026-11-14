@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.app.demo.data
 
+import androidx.compose.runtime.getValue
 import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.nowIso
 import com.eyther.lumbridge.core.domain.todayIso
@@ -46,12 +47,14 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
             )
     }
 
-    val members =
+    var members =
         listOf(
             MemberDomain(USER, "You", "owner"),
             MemberDomain(ALEX, "Alex", "member"),
             MemberDomain(SAM, "Sam", "member"),
         )
+    val memberUpdates = MutableStateFlow(members)
+
     private val listId = newId()
     val shopping =
         MutableStateFlow(

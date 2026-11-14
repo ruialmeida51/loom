@@ -4,6 +4,9 @@ import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
+import com.eyther.lumbridge.features.household.domain.model.MemberDomain
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class DemoHouseholdDataSource(private val store: DemoHouseholdStore) : HouseholdDataSource {
 
@@ -19,7 +22,20 @@ class DemoHouseholdDataSource(private val store: DemoHouseholdStore) : Household
 
     override suspend fun joinHousehold(token: String) = AppResult.Success(Unit)
 
+    override fun streamMembers(householdId: String): Flow<AppResult<List<MemberDomain>>> =
+        store.memberUpdates.map { AppResult.Success(it) }
+
     override suspend fun getMembers(householdId: String) = AppResult.Success(store.members)
 
-    override suspend fun createInvitation(householdId: String) = AppResult.Success("PREVIEW-INVITATION")
+    override suspend fun updateNickname(userId: String, nickname: String): AppResult<Unit> {
+        store.members =
+            store.members.map { member ->
+                if (member.id == userId) member.copy(name = nickname) else member
+            }
+        store.memberUpdates.value = store.members
+        return AppResult.Success(Unit)
+    }
+
+    override suspend fun createInvitation(householdId: String) =
+        AppResult.Success("PREVIEW-INVITATION")
 }

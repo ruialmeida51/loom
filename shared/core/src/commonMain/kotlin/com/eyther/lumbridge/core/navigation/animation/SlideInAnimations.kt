@@ -1,62 +1,30 @@
 package com.eyther.lumbridge.core.navigation.animation
 
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.navigation3.ui.NavDisplay
 
-// region Slide In Animations
+/** The pushed destination covers the old one; a pop keeps the departing destination above it. */
+internal fun forwardSlideTransition(direction: Int): ContentTransform =
+    slideInHorizontally(
+        animationSpec = tween(280, easing = FastOutSlowInEasing),
+        initialOffsetX = { it * direction },
+    ) togetherWith
+        slideOutHorizontally(
+            animationSpec = tween(280, easing = FastOutSlowInEasing),
+            targetOffsetX = { -it / 3 * direction },
+        )
 
-val slideInTransitionSpec =
-    slideInHorizontally(initialOffsetX = { it }) togetherWith
-        slideOutHorizontally(targetOffsetX = { -it })
-
-val slidePopInTransitionSpec =
-    slideInHorizontally(initialOffsetX = { -it }) togetherWith
-        slideOutHorizontally(targetOffsetX = { it })
-
-val slidePredictivePopTransitionSpec =
-    slideInHorizontally(initialOffsetX = { -it }) togetherWith
-        slideOutHorizontally(targetOffsetX = { it })
-
-val slideInNavMetadata =
-    NavDisplay.transitionSpec {
-        slideInTransitionSpec
-    } +
-        NavDisplay.popTransitionSpec {
-            slidePopInTransitionSpec
-        } +
-        NavDisplay.predictivePopTransitionSpec {
-            slidePredictivePopTransitionSpec
-        }
-
-// endregion Slide In Animations
-
-// region Slide Up Animations
-val slideUpTransitionSpec =
-    slideInVertically(initialOffsetY = { it }) togetherWith
-        slideOutVertically(targetOffsetY = { -it })
-
-val slidePopUpTransitionSpec =
-    slideInVertically(initialOffsetY = { -it }) togetherWith
-        slideOutVertically(targetOffsetY = { it })
-
-// no anim
-val slidePredictivePopUpTransitionSpec =
-    slideInVertically(initialOffsetY = { -it }) togetherWith
-        slideOutVertically(targetOffsetY = { it })
-
-val slideUpNavMetadata =
-    NavDisplay.transitionSpec {
-        slideUpTransitionSpec
-    } +
-        NavDisplay.popTransitionSpec {
-            slidePopUpTransitionSpec
-        } +
-        NavDisplay.predictivePopTransitionSpec {
-            slidePredictivePopUpTransitionSpec
-        }
-
-// endregion
+internal fun backSlideTransition(direction: Int): ContentTransform =
+    (slideInHorizontally(
+            animationSpec = tween(280, easing = FastOutSlowInEasing),
+            initialOffsetX = { -it / 3 * direction },
+        ) togetherWith
+            slideOutHorizontally(
+                animationSpec = tween(280, easing = FastOutSlowInEasing),
+                targetOffsetX = { it * direction },
+            ))
+        .apply { targetContentZIndex = -1f }

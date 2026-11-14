@@ -20,4 +20,9 @@
     <item quantity="one">%1$d item</item>
     <item quantity="other">%1$d items</item>
   </plurals>
+  <string name="ui_shopping_clear">Nothing to pick up.</string>
+  <string name="ui_shopping_clear_description">Add something when you think of it. Everyone at home will see it.</string>
+  <string name="ui_all_settled">All settled up</string>
+  <string name="ui_home_unavailable">Your home needs a moment.</string>
+  <string name="ui_try_again">Try again</string>
 </resources>

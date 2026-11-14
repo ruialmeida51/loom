@@ -11,28 +11,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+/** A short introduction beneath the toolbar; the destination name already lives in the toolbar. */
 @Composable
 fun PageHeading(
-    eyebrow: String,
     title: String,
     subtitle: String? = null,
     action: (@Composable () -> Unit)? = null,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            eyebrow.uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.secondary,
-        )
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(title, Modifier.weight(1f), style = MaterialTheme.typography.headlineLarge)
+            Text(
+                text = title,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.headlineSmall,
+            )
             action?.invoke()
         }
-        if (subtitle != null)
+        if (subtitle != null) {
             Text(
-                subtitle,
+                text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
     }
 }

@@ -59,32 +59,38 @@ class ShoppingScreenViewModel(
     private var newListId: String = newId()
     private var undoChange: UndoChange? = null
 
-    private val mutableState = MutableStateFlow(ShoppingState())
-        .observeWith(viewModelScope) { state ->
-            inputState.updateState(state) { input ->
-                copy(
-                    name = input.name,
-                    quantity = input.quantity,
-                    category = input.category,
-                    listName = input.listName,
-                )
-            }
-        }
-        .observeWith(viewModelScope) { state ->
-            refreshRequests.flatMapLatest {
-                getShoppingStreamUseCase()
-            }.updateState(state) { result ->
-                when (result) {
-                    is AppResult.Success -> copy(
-                        snapshot = result.value,
-                        selectedListId = result.value.resolveActiveListId(selectedListId),
-                        loadError = null,
+    private val mutableState =
+        MutableStateFlow(ShoppingState())
+            .observeWith(viewModelScope) { state ->
+                inputState.updateState(state) { input ->
+                    copy(
+                        name = input.name,
+                        quantity = input.quantity,
+                        category = input.category,
+                        listName = input.listName,
                     )
-
-                    is AppResult.Failure -> copy(loadError = result.error.toShoppingTextResource())
                 }
             }
-        }
+            .observeWith(viewModelScope) { state ->
+                refreshRequests
+                    .flatMapLatest {
+                        getShoppingStreamUseCase()
+                    }
+                    .updateState(state) { result ->
+                        when (result) {
+                            is AppResult.Success ->
+                                copy(
+                                    snapshot = result.value,
+                                    selectedListId =
+                                        result.value.resolveActiveListId(selectedListId),
+                                    loadError = null,
+                                )
+
+                            is AppResult.Failure ->
+                                copy(loadError = result.error.toShoppingTextResource())
+                        }
+                    }
+            }
 
     override val state = mutableState.asStateFlow()
 
@@ -104,17 +110,22 @@ class ShoppingScreenViewModel(
         }
 
         mutableState.update { oldState ->
-            oldState.copy(showAdd = value, editing = false, formError = null)
+            oldState.copy(
+                showAdd = value,
+                editing = if (value) false else oldState.editing,
+                formError = null,
+            )
         }
     }
 
     override fun onEditItem(item: ShoppingItemDomain) {
         editingItem = item
-        inputState.value = InnerInputState(
-            name = item.name,
-            quantity = item.quantity,
-            category = item.category,
-        )
+        inputState.value =
+            InnerInputState(
+                name = item.name,
+                quantity = item.quantity,
+                category = item.category,
+            )
 
         mutableState.update { oldState ->
             oldState.copy(showAdd = true, editing = true, formError = null)
@@ -165,11 +176,12 @@ class ShoppingScreenViewModel(
 
         if (before != null) {
             saveItem(
-                item = before.copy(
-                    name = input.name,
-                    quantity = input.quantity,
-                    category = input.category,
-                ),
+                item =
+                    before.copy(
+                        name = input.name,
+                        quantity = input.quantity,
+                        category = input.category,
+                    ),
                 message = TextResource.Resource(Res.string.item_updated),
                 closeForm = true,
             )
@@ -197,9 +209,10 @@ class ShoppingScreenViewModel(
             val result = addShoppingItemsUseCase(items)
             if (result is AppResult.Success) {
                 trackAnalyticsEventUseCase(
-                    event = AnalyticsEventDomain.ActionCompleted(
-                        action = AnalyticsActionDomain.SHOPPING_ITEMS_ADDED,
-                    ),
+                    event =
+                        AnalyticsEventDomain.ActionCompleted(
+                            action = AnalyticsActionDomain.SHOPPING_ITEMS_ADDED,
+                        ),
                 )
             }
 
@@ -211,16 +224,20 @@ class ShoppingScreenViewModel(
                         oldState.copy(
                             busy = false,
                             showAdd = false,
-                            snapshot = oldState.snapshot.copy(
-                                items = oldState.snapshot.items.filterNot { it.id in addedIds } + result.value,
-                            ),
+                            snapshot =
+                                oldState.snapshot.copy(
+                                    items =
+                                        oldState.snapshot.items.filterNot { it.id in addedIds } +
+                                            result.value,
+                                ),
                         )
                     }
 
-                    is AppResult.Failure -> oldState.copy(
-                        busy = false,
-                        formError = result.error.toShoppingTextResource(),
-                    )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            busy = false,
+                            formError = result.error.toShoppingTextResource(),
+                        )
                 }
             }
         }
@@ -268,31 +285,36 @@ class ShoppingScreenViewModel(
 
             mutableState.update { oldState ->
                 when (result) {
-                    is AppResult.Success -> oldState.copy(
-                        busy = false,
-                        undoMessage = null,
-                        snapshot = oldState.snapshot.copy(
-                            items = oldState.snapshot.items.map { item ->
-                                if (item.id == result.value.id) result.value else item
-                            },
-                        ),
-                    )
+                    is AppResult.Success ->
+                        oldState.copy(
+                            busy = false,
+                            undoMessage = null,
+                            snapshot =
+                                oldState.snapshot.copy(
+                                    items =
+                                        oldState.snapshot.items.map { item ->
+                                            if (item.id == result.value.id) result.value else item
+                                        },
+                                ),
+                        )
 
-                    is AppResult.Failure -> oldState.copy(
-                        busy = false,
-                        undoMessage = null,
-                        error = result.error.toShoppingTextResource(),
-                    )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            busy = false,
+                            undoMessage = null,
+                            error = result.error.toShoppingTextResource(),
+                        )
                 }
             }
         }
     }
 
     override fun onReuseItem(item: ShoppingItemDomain) {
-        val existing = state.value.snapshot.findReusableItem(
-            listId = state.value.selectedListId,
-            name = item.name,
-        )
+        val existing =
+            state.value.snapshot.findReusableItem(
+                listId = state.value.selectedListId,
+                name = item.name,
+            )
 
         if (existing != null) {
             saveItem(
@@ -301,11 +323,12 @@ class ShoppingScreenViewModel(
             )
         } else {
             onAddSheetVisibilityChanged(true)
-            inputState.value = InnerInputState(
-                name = item.name,
-                quantity = item.quantity,
-                category = item.category,
-            )
+            inputState.value =
+                InnerInputState(
+                    name = item.name,
+                    quantity = item.quantity,
+                    category = item.category,
+                )
         }
     }
 
@@ -375,22 +398,29 @@ class ShoppingScreenViewModel(
                             busy = false,
                             showAdd = if (closeForm) false else oldState.showAdd,
                             undoMessage = message,
-                            snapshot = oldState.snapshot.copy(
-                                items = oldState.snapshot.items.map { existing ->
-                                    if (existing.id == item.id) result.value else existing
-                                },
-                            ),
+                            snapshot =
+                                oldState.snapshot.copy(
+                                    items =
+                                        oldState.snapshot.items.map { existing ->
+                                            if (existing.id == item.id) result.value else existing
+                                        },
+                                ),
                         )
                     }
                 }
 
-                is AppResult.Failure -> mutableState.update { oldState ->
-                    oldState.copy(
-                        busy = false,
-                        error = if (closeForm) oldState.error else result.error.toShoppingTextResource(),
-                        formError = if (closeForm) result.error.toShoppingTextResource() else oldState.formError,
-                    )
-                }
+                is AppResult.Failure ->
+                    mutableState.update { oldState ->
+                        oldState.copy(
+                            busy = false,
+                            error =
+                                if (closeForm) oldState.error
+                                else result.error.toShoppingTextResource(),
+                            formError =
+                                if (closeForm) result.error.toShoppingTextResource()
+                                else oldState.formError,
+                        )
+                    }
             }
         }
     }
@@ -408,22 +438,27 @@ class ShoppingScreenViewModel(
             mutableState.update { oldState ->
                 when (result) {
                     is AppResult.Success -> {
-                        val snapshot = oldState.snapshot.copy(
-                            lists = oldState.snapshot.lists.filterNot { it.id == list.id } + result.value,
-                        )
+                        val snapshot =
+                            oldState.snapshot.copy(
+                                lists =
+                                    oldState.snapshot.lists.filterNot { it.id == list.id } +
+                                        result.value,
+                            )
 
                         oldState.copy(
                             busy = false,
                             showListForm = false,
-                            selectedListId = snapshot.resolveActiveListId(preferredId = result.value.id),
+                            selectedListId =
+                                snapshot.resolveActiveListId(preferredId = result.value.id),
                             snapshot = snapshot,
                         )
                     }
 
-                    is AppResult.Failure -> oldState.copy(
-                        busy = false,
-                        formError = result.error.toShoppingTextResource(),
-                    )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            busy = false,
+                            formError = result.error.toShoppingTextResource(),
+                        )
                 }
             }
         }

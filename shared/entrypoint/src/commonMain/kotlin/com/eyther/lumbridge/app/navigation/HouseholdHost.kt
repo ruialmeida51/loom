@@ -1,9 +1,9 @@
 package com.eyther.lumbridge.app.navigation
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -22,6 +22,11 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.app.navigation.components.HouseholdToolbar
 import com.eyther.lumbridge.app.navigation.model.HouseholdDestination
 import com.eyther.lumbridge.app.navigation.push.PendingPush
+import com.eyther.lumbridge.app.navigation.sheet.ExpensesSheetHost
+import com.eyther.lumbridge.app.navigation.sheet.FeedSheetHost
+import com.eyther.lumbridge.app.navigation.sheet.RemindersSheetHost
+import com.eyther.lumbridge.app.navigation.sheet.SettingsSheetHost
+import com.eyther.lumbridge.app.navigation.sheet.ShoppingSheetHost
 import com.eyther.lumbridge.core.navigation.composables.navigation3.HorizontalSlideNavDisplay
 import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
@@ -92,23 +97,28 @@ fun HouseholdHost(
                 subclass(HouseholdDestination.Settings::class)
             }
         val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase = koinInject()
-        val getAnalyticsPreferencesStreamUseCase: GetAnalyticsPreferencesStreamUseCase = koinInject()
+        val getAnalyticsPreferencesStreamUseCase: GetAnalyticsPreferencesStreamUseCase =
+            koinInject()
         val analyticsPreferences by getAnalyticsPreferencesStreamUseCase().collectAsState()
         val activeDestination = state.getActiveBackStack()?.lastOrNull()
         LaunchedEffect(activeDestination, analyticsPreferences.enabled) {
-            val screen = when (activeDestination) {
-                HouseholdDestination.Home -> AnalyticsScreenDomain.HOME
-                HouseholdDestination.Feed -> AnalyticsScreenDomain.FEED
-                HouseholdDestination.Shopping -> AnalyticsScreenDomain.SHOPPING
-                HouseholdDestination.Money -> AnalyticsScreenDomain.EXPENSES
-                HouseholdDestination.Reminders -> AnalyticsScreenDomain.REMINDERS
-                HouseholdDestination.RecurringExpenses -> AnalyticsScreenDomain.RECURRING_EXPENSES
-                HouseholdDestination.Insights -> AnalyticsScreenDomain.INSIGHTS
-                HouseholdDestination.Settings -> AnalyticsScreenDomain.SETTINGS
-                else -> null
-            }
+            val screen =
+                when (activeDestination) {
+                    HouseholdDestination.Home -> AnalyticsScreenDomain.HOME
+                    HouseholdDestination.Feed -> AnalyticsScreenDomain.FEED
+                    HouseholdDestination.Shopping -> AnalyticsScreenDomain.SHOPPING
+                    HouseholdDestination.Money -> AnalyticsScreenDomain.EXPENSES
+                    HouseholdDestination.Reminders -> AnalyticsScreenDomain.REMINDERS
+                    HouseholdDestination.RecurringExpenses ->
+                        AnalyticsScreenDomain.RECURRING_EXPENSES
+                    HouseholdDestination.Insights -> AnalyticsScreenDomain.INSIGHTS
+                    HouseholdDestination.Settings -> AnalyticsScreenDomain.SETTINGS
+                    else -> null
+                }
             if (screen != null) {
-                trackAnalyticsEventUseCase(event = AnalyticsEventDomain.ScreenViewed(screen = screen))
+                trackAnalyticsEventUseCase(
+                    event = AnalyticsEventDomain.ScreenViewed(screen = screen),
+                )
             }
         }
         val navigator = remember(state) { Navigator(state) }
@@ -129,9 +139,10 @@ fun HouseholdHost(
         val uriHandler = LocalUriHandler.current
         Scaffold(
             topBar = {
-                Column(Modifier.statusBarsPadding()) {
+                Column {
                     HouseholdToolbar(
-                        destination = activeDestination as? HouseholdDestination ?: HouseholdDestination.Home,
+                        destination =
+                            activeDestination as? HouseholdDestination ?: HouseholdDestination.Home,
                         context = context,
                         showBackButton = (state.getActiveBackStack()?.size ?: 0) > 1,
                         onBack = navigator::goBack,
@@ -191,8 +202,11 @@ fun HouseholdHost(
             },
             containerColor = MaterialTheme.colorScheme.background,
         ) { padding ->
-            HorizontalSlideNavDisplay(Modifier.padding(padding).fillMaxSize(), navigator, state) {
-                destination ->
+            HorizontalSlideNavDisplay(
+                Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize(),
+                navigator,
+                state,
+            ) { destination ->
                 when (destination) {
                     HouseholdDestination.Home ->
                         HomeScreen(
@@ -203,26 +217,39 @@ fun HouseholdHost(
                             { navigator.navigateTo(HouseholdDestination.Money) },
                             { navigator.navigateTo(HouseholdDestination.Feed) },
                         )
-                    HouseholdDestination.Feed ->
-                        FeedScreen(koinViewModel<FeedScreenViewModelContract>()) { url ->
-                            if (url.startsWith("https://")) uriHandler.openUri(url)
+                    HouseholdDestination.Feed -> {
+                        val viewModel: FeedScreenViewModelContract = koinViewModel()
+                        FeedSheetHost(viewModel = viewModel) {
+                            FeedScreen(viewModel = viewModel, onOpen = uriHandler::openUri)
                         }
-                    HouseholdDestination.Shopping ->
-                        ShoppingScreen(koinViewModel<ShoppingScreenViewModelContract>())
-                    HouseholdDestination.Money ->
-                        ExpensesScreen(
-                            koinViewModel<ExpensesScreenViewModelContract>(),
-                            context,
-                            onInsights = { navigator.navigateTo(HouseholdDestination.Insights) },
-                            onRecurringExpenses = {
-                                navigator.navigateTo(HouseholdDestination.RecurringExpenses)
-                            },
-                        )
-                    HouseholdDestination.Reminders ->
-                        RemindersScreen(
-                            koinViewModel<RemindersScreenViewModelContract>(),
-                            context.timeZone,
-                        )
+                    }
+                    HouseholdDestination.Shopping -> {
+                        val viewModel: ShoppingScreenViewModelContract = koinViewModel()
+                        ShoppingSheetHost(viewModel = viewModel) {
+                            ShoppingScreen(viewModel = viewModel)
+                        }
+                    }
+                    HouseholdDestination.Money -> {
+                        val viewModel: ExpensesScreenViewModelContract = koinViewModel()
+                        ExpensesSheetHost(viewModel = viewModel, context = context) {
+                            ExpensesScreen(
+                                viewModel = viewModel,
+                                context = context,
+                                onInsights = {
+                                    navigator.navigateTo(HouseholdDestination.Insights)
+                                },
+                                onRecurringExpenses = {
+                                    navigator.navigateTo(HouseholdDestination.RecurringExpenses)
+                                },
+                            )
+                        }
+                    }
+                    HouseholdDestination.Reminders -> {
+                        val viewModel: RemindersScreenViewModelContract = koinViewModel()
+                        RemindersSheetHost(viewModel = viewModel, timeZone = context.timeZone) {
+                            RemindersScreen(viewModel = viewModel, timeZone = context.timeZone)
+                        }
+                    }
                     HouseholdDestination.RecurringExpenses ->
                         RecurringExpensesScreen(
                             koinViewModel<RecurringExpensesScreenViewModelContract>(),
@@ -233,16 +260,22 @@ fun HouseholdHost(
                             viewModel = koinViewModel<InsightsScreenViewModelContract>(),
                             context = context,
                         )
-                    HouseholdDestination.Settings ->
-                        SettingsScreen(
-                            koinViewModel<SettingsScreenViewModelContract>(),
-                            context,
-                            onSwitchHousehold = onSwitchHousehold,
-                            onSignOut = onSignOut,
-                            onOpenLegalDocument = { document ->
-                                uriHandler.openUri(getLegalDocumentsUseCase().url(document = document))
-                            },
-                        )
+                    HouseholdDestination.Settings -> {
+                        val viewModel: SettingsScreenViewModelContract = koinViewModel()
+                        SettingsSheetHost(viewModel = viewModel) {
+                            SettingsScreen(
+                                viewModel = viewModel,
+                                context = context,
+                                onSwitchHousehold = onSwitchHousehold,
+                                onSignOut = onSignOut,
+                                onOpenLegalDocument = { document ->
+                                    uriHandler.openUri(
+                                        getLegalDocumentsUseCase().url(document = document),
+                                    )
+                                },
+                            )
+                        }
+                    }
                 }
             }
         }

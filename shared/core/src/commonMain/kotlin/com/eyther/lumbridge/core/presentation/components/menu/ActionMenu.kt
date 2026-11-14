@@ -24,14 +24,16 @@ import org.jetbrains.compose.resources.stringResource
 fun ActionMenu(
     items: List<ActionMenuItem>,
     modifier: Modifier = Modifier,
+    contentDescription: String? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box(modifier = modifier) {
-        IconButton(onClick = { expanded = true }) {
+    Box {
+        IconButton(onClick = { expanded = true }, modifier = modifier) {
             Icon(
                 painter = painterResource(Res.drawable.ic_more_vertical),
-                contentDescription = stringResource(Res.string.action_menu_more_actions),
+                contentDescription =
+                    contentDescription ?: stringResource(Res.string.action_menu_more_actions),
             )
         }
         DropdownMenu(

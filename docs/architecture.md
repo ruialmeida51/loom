@@ -22,6 +22,7 @@ presentation/
   viewmodel/
     contracts/    Observable state and event contracts
   screen/         Screen + pure InnerScreen
+  components/     Feature-owned rows, forms and bottom-sheet content
 ```
 
 Core and the composition root stay small shared modules. There are no Repository classes and no separate composables modules. Feature UI does not access Supabase or instantiate DataSources.
@@ -88,3 +89,9 @@ The private worker tables deny client access. The worker secret is generated int
 Features own their string/plural catalogs and presentation message mappings. Domain failures use typed errors. Non-Composable presentation mappers produce `TextResource`; ViewModels store those resources in error, info, and undo state, and Compose resolves them for the current locale. App routes and generic components own their respective catalogs. Build dependencies use Gradle-generated references such as `projects.shared.features.household`, with `TYPESAFE_PROJECT_ACCESSORS` enabled.
 
 Run `python3 tools/audit_project.py` to check package paths, feature dependencies, domain imports, demo isolation, typed error boundaries, transport-model files/annotations, stream naming, explicit imports, UI resource use, and named project references.
+
+## Screen and sheet ownership
+
+The [screen language](design-language.md) defines hierarchy, grouping, empty states and motion. Entry-point sheet hosts own per-destination controllers and connect existing ViewModel contracts to pure feature form components. Core supplies the generic sheet layout, scrolling/action footer, grouped rows and transitions. Feature forms never create modal windows themselves.
+
+Household owns global member nicknames because it already owns profiles and membership identities. Updating a nickname writes only `profiles.display_name`; existing RLS permits self updates. Member streams refresh presentation names across settings, money and recurrence without reinitializing form inputs. Request/response transport classes stay in household data. Settings owns the editor and localized copy; DI stays centralized.

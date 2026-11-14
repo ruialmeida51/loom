@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.core.presentation.components
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,7 +19,7 @@ import androidx.compose.ui.unit.dp
 fun LoomButton(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.fillMaxWidth(),
     enabled: Boolean = true,
     loading: Boolean = false,
 ) {

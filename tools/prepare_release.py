@@ -18,10 +18,10 @@ def require(name):
 
 def prepare():
     version_code = os.environ.get('LOOM_VERSION_CODE', '')
-    version_name = require('LOOM_VERSION_NAME')
+    version_name = os.environ.get('LOOM_VERSION_NAME', '')
     if version_code and (not re.fullmatch(r'[0-9]+', version_code) or not 1 <= int(version_code) <= 2_100_000_000):
         raise ValueError('Use a positive Play version code below 2100000001')
-    if not re.fullmatch(r'[0-9][A-Za-z0-9.+_-]{0,49}', version_name):
+    if version_name and not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', version_name):
         raise ValueError('Invalid release version name')
 
     for name in ('LOOM_UPLOAD_STORE_PASSWORD', 'LOOM_UPLOAD_KEY_PASSWORD', 'LOOM_UPLOAD_KEY_ALIAS'):
@@ -38,6 +38,13 @@ def prepare():
     ):
         raise ValueError('Firebase configuration has no matching Loom Android client')
 
+    matching = next(client for client in clients
+                    if client.get('client_info', {}).get('android_client_info', {}).get('package_name') == PACKAGE_NAME)
+    project_number = str(config.get('project_info', {}).get('project_number', ''))
+    app_id = matching.get('client_info', {}).get('mobilesdk_app_id', '')
+    if not re.fullmatch(r'[0-9]+', project_number) or not re.fullmatch(r'1:' + re.escape(project_number) + r':android:[a-f0-9]+', app_id):
+        raise ValueError('Firebase configuration is missing its Android app ID or project number')
+
     temporary = Path(require('RUNNER_TEMP'))
     temporary.mkdir(parents=True, exist_ok=True)
     try:
@@ -53,7 +60,7 @@ def prepare():
     account = json.loads(credential_text)
     if (not isinstance(account, dict) or account.get('type') != 'service_account'
             or not account.get('private_key') or not account.get('client_email')):
-        raise ValueError('Use a Google Play service-account key, with its Play Console app permissions enabled')
+        raise ValueError('Use a Google service-account key, with Play Console and Firebase App Distribution permissions enabled')
     path = temporary / 'loom-play-service-account.json'
     path.write_text(credential_text)
     path.chmod(0o600)
@@ -62,7 +69,8 @@ def prepare():
     path.write_bytes(keystore)
     path.chmod(0o600)
     Path('androidApp/google-services.json').write_text(json.dumps(config))
-    print(f'Prepared signing for {version_name}; Play will validate or choose the version code')
+    (temporary / 'loom-release-config.json').write_text(json.dumps({'firebaseApp': f'projects/{project_number}/apps/{app_id}'}))
+    print('Prepared signing and distribution configuration; release versions will be allocated automatically')
 
 
 if __name__ == '__main__':

@@ -2,12 +2,13 @@ package com.eyther.lumbridge.features.household.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -18,8 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoomButton
-import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
@@ -29,11 +31,8 @@ import com.eyther.lumbridge.features.household.generated.resources.ui_choose_a_h
 import com.eyther.lumbridge.features.household.generated.resources.ui_create_household
 import com.eyther.lumbridge.features.household.generated.resources.ui_join_household
 import com.eyther.lumbridge.features.household.generated.resources.ui_make_yourself_at_home
-import com.eyther.lumbridge.features.household.generated.resources.ui_open_household
 import com.eyther.lumbridge.features.household.generated.resources.ui_refresh_households
 import com.eyther.lumbridge.features.household.generated.resources.ui_sign_out
-import com.eyther.lumbridge.features.household.generated.resources.ui_your_people
-import com.eyther.lumbridge.features.household.presentation.components.HouseholdBadge
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
 import org.jetbrains.compose.resources.stringResource
 
@@ -72,24 +71,31 @@ private fun InnerHouseholdScreen(
     onJoin: () -> Unit,
 ) {
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+        Modifier.fillMaxSize()
+            .safeDrawingPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         PageHeading(
-            stringResource(Res.string.ui_your_people),
             stringResource(Res.string.ui_make_yourself_at_home),
             stringResource(Res.string.ui_choose_a_household_create_a_new_one_or_join),
         )
         error?.let { message ->
             ErrorNotice(message = message, onDismiss = onDismiss)
         }
-        items.forEach { household ->
-            LoomCard {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    HouseholdBadge(household.id, household.name)
-                    Text(household.name, style = MaterialTheme.typography.titleLarge)
+        if (items.isNotEmpty()) {
+            GroupedSurface {
+                items.forEachIndexed { index, household ->
+                    if (index > 0)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    NavigationRow(
+                        title = household.name,
+                        description = household.currency,
+                        onClick = { onSelect(household) },
+                        enabled = !busy,
+                    )
                 }
-                LoomButton(stringResource(Res.string.ui_open_household), { onSelect(household) })
             }
         }
         LoomButton(
@@ -105,11 +111,9 @@ private fun InnerHouseholdScreen(
         ) {
             Text(stringResource(Res.string.ui_join_household))
         }
-        LoomButton(
-            text = stringResource(Res.string.ui_refresh_households),
-            onClick = onRefresh,
-            loading = busy,
-        )
+        TextButton(onClick = onRefresh, enabled = !busy) {
+            Text(stringResource(Res.string.ui_refresh_households))
+        }
         TextButton(onClick = onSignOut) { Text(stringResource(Res.string.ui_sign_out)) }
     }
 }

@@ -16,11 +16,11 @@ import androidx.compose.ui.unit.dp
 fun LoomCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Surface(
         modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
     ) {
         Column(
-            Modifier.padding(20.dp),
+            Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             content = content,
         )

@@ -1,7 +1,7 @@
 package com.eyther.lumbridge.features.household.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
@@ -73,7 +73,7 @@ private fun InnerCreateHouseholdScreen(
             modifier = Modifier.fillMaxWidth(),
         )
         Text(stringResource(Res.string.ui_household_currency))
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             HouseholdCurrencyDomain.supportedCodes.forEach { code ->
                 FilterChip(
                     selected = currency == code,
@@ -106,7 +106,8 @@ private fun HandleRedirects(
         val destination = redirectTo ?: return@LaunchedEffect
         onHandled()
         when (destination) {
-            is CreateHouseholdScreenViewModelContract.RedirectTo.OpenHousehold -> onCreated(destination.household)
+            is CreateHouseholdScreenViewModelContract.RedirectTo.OpenHousehold ->
+                onCreated(destination.household)
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.settings.data.local
 
+import androidx.compose.runtime.getValue
 import com.eyther.lumbridge.core.data.local.PlatformStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
