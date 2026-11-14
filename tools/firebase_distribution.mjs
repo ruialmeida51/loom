@@ -3,6 +3,20 @@ import { authorizeGoogle, CLOUD_SCOPE } from './google_service_account.mjs';
 const API = 'https://firebaseappdistribution.googleapis.com';
 const delay = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
 
+/** Strip comment lines before parsing comma-separated aliases; comments may contain commas. */
+export function parseTesterGroups(configuration) {
+  const groups = configuration.split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line && !line.startsWith('#'))
+    .flatMap(line => line.split(','))
+    .map(group => group.trim())
+    .filter(Boolean);
+  if (groups.some(group => !/^[A-Za-z0-9_-]+$/.test(group))) {
+    throw new Error('Firebase tester group aliases may contain only letters, digits, underscores and hyphens.');
+  }
+  return [...new Set(groups)];
+}
+
 /** Uses the same published REST contract as Firebase's CLI; no CLI token or developer login is needed. */
 export class FirebaseDistribution {
   constructor(app, token, request = fetch) {
