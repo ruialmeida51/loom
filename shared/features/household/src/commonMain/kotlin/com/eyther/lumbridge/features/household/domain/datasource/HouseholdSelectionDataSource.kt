@@ -1,7 +1,10 @@
 package com.eyther.lumbridge.features.household.domain.datasource
 
-interface HouseholdSelectionDataSource {
-    fun lastSelected(userId: String): String?
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
 
-    fun select(userId: String, householdId: String?)
+interface HouseholdSelectionDataSource {
+
+    suspend fun getLastSelected(userId: String): AppResult<String?>
+
+    suspend fun select(userId: String, householdId: String?): AppResult<Unit>
 }

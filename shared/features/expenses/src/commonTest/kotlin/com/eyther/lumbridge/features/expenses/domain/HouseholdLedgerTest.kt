@@ -1,9 +1,18 @@
 package com.eyther.lumbridge.features.expenses.domain
 
-import com.eyther.lumbridge.features.expenses.domain.model.*
-import kotlin.test.*
+import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseError
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
+import com.eyther.lumbridge.features.expenses.domain.model.HouseholdLedgerDomain
+import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
+import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class HouseholdLedgerTest {
+
     private val members = listOf("a", "b", "c")
 
     private fun expense(total: Long = 6000) =
@@ -33,20 +42,20 @@ class HouseholdLedgerTest {
             mapOf("a" to 35L, "b" to 33L, "c" to 33L),
             ExpenseSplitDomain.percentages(101, mapOf("a" to 34, "b" to 33, "c" to 33)),
         )
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<ExpenseError.InvalidPercentages> {
             ExpenseSplitDomain.percentages(100, mapOf("a" to 50, "b" to 49))
         }
     }
 
     @Test
     fun rejectsDuplicateMembersAndIncorrectTotals() {
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<ExpenseError.DuplicateParticipants> {
             ExpenseSplitDomain.equal(100, listOf("a", "a"))
         }
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<ExpenseError.IncorrectSplitTotal> {
             ExpenseSplitDomain.validate(100, mapOf("a" to 99))
         }
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<ExpenseError.InvalidShare> {
             ExpenseSplitDomain.validate(100, mapOf("a" to -1, "b" to 101))
         }
     }

@@ -1,32 +1,23 @@
 package com.eyther.lumbridge.features.household.presentation.viewmodel.contracts
 
-import com.eyther.lumbridge.core.presentation.*
-import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
-import kotlinx.coroutines.flow.*
-
-data class HouseholdState(
-    val items: List<HouseholdDomain> = emptyList(),
-    val name: String = "",
-    val token: String = "",
-    val currency: String = "EUR",
-    val busy: Boolean = false,
-    val error: String? = null,
-)
+import com.eyther.lumbridge.core.viewmodel.LoomViewModel
+import kotlinx.coroutines.flow.StateFlow
 
 abstract class HouseholdScreenViewModelContract : LoomViewModel() {
+
     abstract val state: StateFlow<HouseholdState>
 
-    abstract fun name(value: String)
+    abstract fun onNameChanged(value: String)
 
-    abstract fun token(value: String)
+    abstract fun onInvitationCodeChanged(value: String)
 
-    abstract fun currency(value: String)
+    abstract fun onCurrencyChanged(value: String)
 
-    abstract fun dismiss()
+    abstract fun onDismissError()
 
-    abstract fun refresh()
+    abstract fun onRefresh()
 
-    abstract fun create()
+    abstract fun onCreateHousehold()
 
-    abstract fun join()
+    abstract fun onJoinHousehold()
 }

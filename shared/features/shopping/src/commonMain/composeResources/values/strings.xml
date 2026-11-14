@@ -1,17 +1,17 @@
 <resources>
-  <string name="message_add_between_1_and_50_items_at_once">Add between 1 and 50 items at once.</string>
-  <string name="message_add_new_items_to_the_list">Add new items to the list.</string>
-  <string name="message_refresh_the_item_before_editing_it">Refresh the item before editing it.</string>
-  <string name="message_give_the_item_a_name_up_to_120_characters">Give the item a name, up to 120 characters.</string>
-  <string name="message_keep_the_quantity_under_40_characters">Keep the quantity under 40 characters.</string>
-  <string name="message_choose_a_list_and_category">Choose a list and category.</string>
-  <string name="message_give_the_list_a_name_up_to_60_characters">Give the list a name, up to 60 characters.</string>
+  <string name="error_invalid_batch_size">Add between 1 and 50 items at once.</string>
+  <string name="error_items_already_saved">Add new items to the list.</string>
+  <string name="error_version_required">Refresh the item before editing it.</string>
+  <string name="error_invalid_item_name">Give the item a name, up to 120 characters.</string>
+  <string name="error_invalid_quantity">Keep the quantity under 40 characters.</string>
+  <string name="error_invalid_list_or_category">Choose a list and category.</string>
+  <string name="error_invalid_list_name">Give the list a name, up to 60 characters.</string>
   <string name="message_couldn_t_load_your_shopping_lists">Couldn’t load your shopping lists.</string>
-  <string name="message_item_updated">Item updated</string>
-  <string name="message_item_removed">Item removed</string>
-  <string name="message_favorite_updated">Favorite updated</string>
-  <string name="message_item_moved">Item moved</string>
-  <string name="message_item_restored">Item restored</string>
+  <string name="item_updated">Item updated</string>
+  <string name="item_removed">Item removed</string>
+  <string name="favorite_updated">Favorite updated</string>
+  <string name="item_moved">Item moved</string>
+  <string name="item_restored">Item restored</string>
   <string name="ui_one_less_thing_to_remember">ONE LESS THING TO REMEMBER</string>
   <string name="ui_the_shopping_list">The shopping list</string>
   <string name="ui_1_s_things_left_to_pick_up_everyone_s">%1$s things left to pick up. Everyone’s on the same page.</string>
@@ -45,14 +45,14 @@
   <string name="ui_name_your_list">Name your list</string>
   <string name="ui_list_name">List name</string>
   <string name="ui_save_list">Save list</string>
-  <string name="message_choose_an_active_shopping_list_in_this_household">Choose an active shopping list in this household.</string>
-  <string name="message_household_access_denied">Household access denied.</string>
-  <string name="message_this_list_changed_refresh_and_try_again">This list changed. Refresh and try again.</string>
-  <string name="message_keep_at_least_one_shopping_list_active">Keep at least one shopping list active.</string>
-  <string name="message_this_shopping_list_no_longer_exists">This shopping list no longer exists.</string>
-  <string name="message_check_the_item_name_quantity_and_category">Check the item name, quantity and category.</string>
-  <string name="message_this_item_changed_refresh_before_undoing_or_editing_it">This item changed. Refresh before undoing or editing it.</string>
-  <string name="message_this_shopping_item_no_longer_exists">This shopping item no longer exists.</string>
+  <string name="error_active_list_required">Choose an active shopping list in this household.</string>
+  <string name="error_access_denied">Household access denied.</string>
+  <string name="error_list_changed">This list changed. Refresh and try again.</string>
+  <string name="error_last_active_list">Keep at least one shopping list active.</string>
+  <string name="error_list_not_found">This shopping list no longer exists.</string>
+  <string name="error_invalid_item">Check the item name, quantity and category.</string>
+  <string name="error_item_changed">This item changed. Refresh before undoing or editing it.</string>
+  <string name="error_item_not_found">This shopping item no longer exists.</string>
   <string name="token_produce">Produce</string>
   <string name="token_bakery">Bakery</string>
   <string name="token_dairy_eggs">Dairy &amp; eggs</string>
@@ -64,5 +64,5 @@
   </plurals>
   <string name="ui_favorite_add">Add to favorites</string>
   <string name="ui_favorite_remove">Remove from favorites</string>
-  <string name="message_list_name_exists">A list with this name already exists.</string>
+  <string name="error_list_name_already_exists">A list with this name already exists.</string>
 </resources>

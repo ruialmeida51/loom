@@ -1,9 +1,11 @@
 package com.eyther.lumbridge.features.expenses.domain.usecase
 
-import com.eyther.lumbridge.core.domain.AppResult
-import com.eyther.lumbridge.core.domain.getOrThrow
-import com.eyther.lumbridge.core.domain.safeCall
+import com.eyther.lumbridge.core.domain.errors.requireDomain
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
+import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
+import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseError
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
@@ -11,25 +13,26 @@ import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
 import kotlinx.datetime.LocalDate
 
 class RecordSettlementUseCase(
-    private val source: ExpenseDataSource,
+    private val expenseDataSource: ExpenseDataSource,
     private val members: GetMembersUseCase,
     private val context: HouseholdContextDomain,
 ) {
+
     suspend operator fun invoke(settlement: SettlementDomain): AppResult<Unit> = safeCall {
-        require(
+        requireDomain(
             settlement.amountMinor in 1..MoneyDomain.MAX_MINOR_UNITS &&
                 settlement.from != settlement.to,
         ) {
-            "expenses.message_choose_two_different_people_and_a_positive_amount"
+            ExpenseError.InvalidSettlement()
         }
-        require(context.userId == settlement.from || context.userId == settlement.to) {
-            "expenses.message_you_can_record_repayments_you_send_or_receive"
+        requireDomain(context.userId == settlement.from || context.userId == settlement.to) {
+            ExpenseError.SettlementNotPermitted()
         }
         LocalDate.parse(settlement.occurredOn)
         val memberIds = members(context.id).getOrThrow().map { it.id }
-        require(settlement.from in memberIds && settlement.to in memberIds) {
-            "expenses.message_choose_current_household_members"
+        requireDomain(settlement.from in memberIds && settlement.to in memberIds) {
+            ExpenseError.InvalidSettlementMembers()
         }
-        source.settle(settlement).getOrThrow()
+        expenseDataSource.recordSettlement(settlement).getOrThrow()
     }
 }

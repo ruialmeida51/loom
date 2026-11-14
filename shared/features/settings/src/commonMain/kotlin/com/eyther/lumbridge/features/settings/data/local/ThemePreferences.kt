@@ -1,6 +1,6 @@
 package com.eyther.lumbridge.features.settings.data.local
 
-import com.eyther.lumbridge.core.data.PlatformStorage
+import com.eyther.lumbridge.core.data.local.PlatformStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

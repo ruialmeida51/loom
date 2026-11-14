@@ -1,7 +1,7 @@
 <resources>
-  <string name="message_month_currency_household_total_minor_units_you_paid_minor">Month,Currency,Household total (minor units),You paid (minor units),Your share (minor units),Opening balance (minor units),Closing balance (minor units)</string>
-  <string name="message_date_description_category_amount_minor_units_your_share_minor">Date,Description,Category,Amount (minor units),Your share (minor units)</string>
-  <string name="message_statement_saved_later_changes_create_a_new_revision">Statement saved. Later changes create a new revision.</string>
+  <string name="statement_csv_summary_header">Month,Currency,Household total (minor units),You paid (minor units),Your share (minor units),Opening balance (minor units),Closing balance (minor units)</string>
+  <string name="statement_csv_expense_header">Date,Description,Category,Amount (minor units),Your share (minor units)</string>
+  <string name="statement_saved">Statement saved. Later changes create a new revision.</string>
   <string name="ui_the_bigger_picture">THE BIGGER PICTURE</string>
   <string name="ui_a_little_perspective">A little perspective.</string>
   <string name="ui_see_where_it_went_and_where_things_stand">See where it went, and where things stand.</string>
@@ -23,4 +23,7 @@
     <item quantity="one">%1$d shared expense this month</item>
     <item quantity="other">%1$d shared expenses this month</item>
   </plurals>
+    <string name="error_invalid_month">Choose a valid statement month.</string>
+    <string name="error_export_failed">Could not export the statement. Please try again.</string>
+    <string name="statement_export_title">Monthly statement</string>
 </resources>

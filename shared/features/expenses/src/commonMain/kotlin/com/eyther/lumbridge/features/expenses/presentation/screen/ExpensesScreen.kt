@@ -1,24 +1,87 @@
 package com.eyther.lumbridge.features.expenses.presentation.screen
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.*
-import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.components.EmptyNotice
+import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.PageHeading
+import com.eyther.lumbridge.core.presentation.components.SectionTitle
+import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
-import com.eyther.lumbridge.features.expenses.generated.resources.*
-import com.eyther.lumbridge.features.expenses.presentation.localization.localizedMessage
-import com.eyther.lumbridge.features.expenses.presentation.localization.localizedToken
+import com.eyther.lumbridge.features.expenses.generated.resources.Res
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_1_s_paid_2_s
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_1_s_paid_2_s_3_s
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_across_your_household
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_add_a_shared_expense
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_add_expense
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_add_what_you_paid_then_choose_who_to_split
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_all_square
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_all_square_that_s_a_nice_feeling
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_amount_1_s
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_category
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_fair_square
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_former_member
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_insights
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_money_sent_by
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_money_untangled
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_monthly_bill
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_owed_1_s
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_owes_1_s
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_payment_date
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_received_by
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_recent_expenses
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_record_a_repayment
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_record_repayment
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_recurring_expenses
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_repayments
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_repeat_explanation
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_repeat_this_bill_monthly
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_save_expense
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_settle_up
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_shared_costs_clear_balances_one_less_awkward_conversation
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_split_with
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_start_with_the_next_shared_cost
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_the_household
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_this_records_a_payment_you_ve_already_made_or
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_what_was_it_for
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_who_paid
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_you_owe
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_you_re_owed
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_your_share_1_s
+import com.eyther.lumbridge.features.expenses.presentation.mapper.expenseOptionLabel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
@@ -26,12 +89,12 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ExpensesScreen(
-    vm: ExpensesScreenViewModelContract,
+    viewModel: ExpensesScreenViewModelContract,
     context: HouseholdContextDomain,
     onInsights: () -> Unit,
     onRecurringExpenses: () -> Unit,
 ) {
-    val state by vm.state.platformCollectAsStateOnStart()
+    val state by viewModel.state.platformCollectAsStateOnStart()
     InnerExpensesScreen(
         expenses = state.expenses,
         settlements = state.settlements,
@@ -56,23 +119,23 @@ fun ExpensesScreen(
         context = context,
         onInsights = onInsights,
         onRecurringExpenses = onRecurringExpenses,
-        onTitle = vm::title,
-        onAmount = vm::amount,
-        onOccurredOn = vm::occurredOn,
-        onPayer = vm::payer,
-        onCategory = vm::category,
-        onSelected = vm::selected,
-        onSplitMode = vm::splitMode,
-        onCustom = vm::custom,
-        onRecurring = vm::recurring,
-        onShowAdd = vm::showAdd,
-        onShowSettle = vm::showSettle,
-        onFrom = vm::from,
-        onTo = vm::to,
-        onSettleAmount = vm::settleAmount,
-        onAdd = vm::add,
-        onSettle = vm::settle,
-        onDismiss = vm::dismiss,
+        onTitle = viewModel::onTitleChanged,
+        onAmount = viewModel::onAmountChanged,
+        onOccurredOn = viewModel::onDateChanged,
+        onPayer = viewModel::onPayerChanged,
+        onCategory = viewModel::onCategoryChanged,
+        onSelected = viewModel::onParticipantToggled,
+        onSplitMode = viewModel::onSplitModeChanged,
+        onCustom = viewModel::onCustomShareChanged,
+        onRecurring = viewModel::onRecurringChanged,
+        onShowAdd = viewModel::onAddSheetVisibilityChanged,
+        onShowSettle = viewModel::onSettlementSheetVisibilityChanged,
+        onFrom = viewModel::onFromMemberChanged,
+        onTo = viewModel::onToMemberChanged,
+        onSettleAmount = viewModel::onSettlementAmountChanged,
+        onAdd = viewModel::onSaveExpense,
+        onSettle = viewModel::onRecordSettlement,
+        onDismiss = viewModel::onDismissError,
     )
 }
 
@@ -97,7 +160,7 @@ private fun InnerExpensesScreen(
     to: String,
     settleAmount: String,
     busy: Boolean,
-    error: String?,
+    error: TextResource?,
     context: HouseholdContextDomain,
     onInsights: () -> Unit,
     onRecurringExpenses: () -> Unit,
@@ -141,7 +204,7 @@ private fun InnerExpensesScreen(
                 ),
             )
         }
-        item { ErrorNotice(localizedMessage(error), onDismiss) }
+        item { ErrorNotice(error, onDismiss) }
         item {
             LoomCard {
                 Text(
@@ -319,7 +382,7 @@ private fun InnerExpensesScreen(
                             FilterChip(
                                 splitMode == mode,
                                 { onSplitMode(mode) },
-                                label = { Text(localizedToken(mode)) },
+                                label = { Text(expenseOptionLabel(mode)) },
                             )
                         }
                     }
@@ -347,7 +410,7 @@ private fun InnerExpensesScreen(
                         ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(selectedCategory == category, { onCategory(category) })
-                            Text(localizedToken(category))
+                            Text(expenseOptionLabel(category))
                         }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -363,7 +426,7 @@ private fun InnerExpensesScreen(
                             stringResource(Res.string.ui_repeat_explanation),
                             style = MaterialTheme.typography.bodySmall,
                         )
-                    ErrorNotice(localizedMessage(error), onDismiss)
+                    ErrorNotice(error, onDismiss)
                 }
             },
             confirmButton = {
@@ -416,7 +479,7 @@ private fun InnerExpensesScreen(
                         stringResource(Res.string.ui_this_records_a_payment_you_ve_already_made_or),
                         style = MaterialTheme.typography.bodySmall,
                     )
-                    ErrorNotice(localizedMessage(error), onDismiss)
+                    ErrorNotice(error, onDismiss)
                 }
             },
             confirmButton = {

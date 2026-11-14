@@ -1,38 +1,80 @@
 package com.eyther.lumbridge.features.expenses.presentation.screen
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.*
-import com.eyther.lumbridge.features.expenses.domain.model.*
-import com.eyther.lumbridge.features.expenses.generated.resources.*
-import com.eyther.lumbridge.features.expenses.presentation.localization.localizedMessage
-import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesViewModelContract
+import com.eyther.lumbridge.core.presentation.components.EmptyNotice
+import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.PageHeading
+import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
+import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseActionDomain
+import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseStatusDomain
+import com.eyther.lumbridge.features.expenses.generated.resources.Res
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_1_s_monthly
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_active
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_add_an_expense_in_money_and_choose_monthly_repeat
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel_schedule
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel_this_schedule
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancelled
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_each_active_schedule_records_an_expense_on_its_due
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_every_month_sorted
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_former_member
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_future_entries_will_stop_expenses_already_recorded_stay_in
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_keep_schedule
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_manage_the_fixed_expenses_you_share_at_home
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_monthly_day
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_next_entry_1_s
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_no_recurring_expenses_yet
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_pause
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_paused
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_payer_1_s
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_recurring_expenses
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_refresh_and_retry
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_rent_internet_and_subscriptions_can_live_here
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_resume
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_resuming_schedules_the_next_future_entry_paused_months_are
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun RecurringExpensesScreen(
-    vm: RecurringExpensesViewModelContract,
+    viewModel: RecurringExpensesScreenViewModelContract,
     context: HouseholdContextDomain,
 ) {
-    val state by vm.state.platformCollectAsStateOnStart()
+    val state by viewModel.state.platformCollectAsStateOnStart()
     InnerRecurringExpensesScreen(
-        state.rules,
-        state.payerNames,
-        state.isOwner,
-        state.busy,
-        state.error,
-        context.userId,
-        context.currency,
-        vm::control,
-        vm::retry,
-        vm::dismiss,
+        rules = state.rules,
+        payerNames = state.payerNames,
+        isOwner = state.isOwner,
+        busy = state.busy,
+        error = state.error,
+        userId = context.userId,
+        currency = context.currency,
+        onControl = viewModel::onControlSchedule,
+        onRetry = viewModel::onRetry,
+        onDismiss = viewModel::onDismissError,
     )
 }
 
@@ -42,7 +84,7 @@ private fun InnerRecurringExpensesScreen(
     payerNames: Map<String, String>,
     isOwner: Boolean,
     busy: Boolean,
-    error: String?,
+    error: TextResource?,
     userId: String,
     currency: String,
     onControl: (RecurringExpenseDomain, RecurringExpenseActionDomain) -> Unit,
@@ -74,7 +116,7 @@ private fun InnerRecurringExpensesScreen(
             )
         }
         item {
-            ErrorNotice(localizedMessage(error), onDismiss)
+            ErrorNotice(error, onDismiss)
             if (error != null)
                 TextButton(onClick = onRetry) {
                     Text(stringResource(Res.string.ui_refresh_and_retry))

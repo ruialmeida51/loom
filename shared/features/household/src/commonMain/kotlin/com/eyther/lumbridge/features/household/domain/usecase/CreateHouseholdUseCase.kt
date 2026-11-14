@@ -1,19 +1,23 @@
 package com.eyther.lumbridge.features.household.domain.usecase
 
-import com.eyther.lumbridge.core.domain.AppResult
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
+import com.eyther.lumbridge.features.household.domain.errors.HouseholdError
 import com.eyther.lumbridge.features.household.domain.model.HouseholdCurrencyDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
 import kotlinx.datetime.TimeZone
 
-class CreateHouseholdUseCase(private val source: HouseholdDataSource) {
+class CreateHouseholdUseCase(
+    private val householdDataSource: HouseholdDataSource,
+) {
+
     suspend operator fun invoke(name: String, currency: String): AppResult<HouseholdDomain> {
         if (name.trim().length !in 2..60)
             return AppResult.Failure(
-                "household.message_give_your_household_a_name_between_2_and_60",
+                HouseholdError.InvalidName(),
             )
         if (currency !in HouseholdCurrencyDomain.supportedCodes)
-            return AppResult.Failure("household.message_choose_a_supported_currency")
-        return source.create(name.trim(), currency, TimeZone.currentSystemDefault().id)
+            return AppResult.Failure(HouseholdError.UnsupportedCurrency())
+        return householdDataSource.createHousehold(name.trim(), currency, TimeZone.currentSystemDefault().id)
     }
 }

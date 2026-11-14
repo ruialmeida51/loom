@@ -1,11 +1,20 @@
 package com.eyther.lumbridge.app.demo.data
 
-import com.eyther.lumbridge.core.domain.*
-import com.eyther.lumbridge.features.expenses.domain.model.*
+import com.eyther.lumbridge.core.domain.newId
+import com.eyther.lumbridge.core.domain.nowIso
+import com.eyther.lumbridge.core.domain.todayIso
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
+import com.eyther.lumbridge.features.expenses.domain.model.MonthlyRecurrenceDomain
+import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
-import com.eyther.lumbridge.features.household.domain.model.*
+import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
-import com.eyther.lumbridge.features.shopping.domain.model.*
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingSnapshotDomain
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +22,7 @@ import kotlinx.datetime.LocalDate
 
 /** Preview data is owned by this package and never selected by production data sources. */
 class DemoHouseholdStore(val context: HouseholdContextDomain) {
+
     companion object {
         const val USER = "00000000-0000-4000-8000-000000000001"
         const val ALEX = "00000000-0000-4000-8000-000000000002"

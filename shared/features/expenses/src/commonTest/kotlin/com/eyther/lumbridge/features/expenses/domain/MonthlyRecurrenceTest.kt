@@ -1,10 +1,15 @@
 package com.eyther.lumbridge.features.expenses.domain
 
-import com.eyther.lumbridge.features.expenses.domain.model.*
-import kotlin.test.*
+import com.eyther.lumbridge.features.expenses.domain.model.MonthlyRecurrenceDomain
+import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlinx.datetime.LocalDate
 
 class MonthlyRecurrenceTest {
+
     @Test
     fun monthEndAnchorRecoversAfterShortMonths() {
         val feb = MonthlyRecurrenceDomain.nextAfter(LocalDate.parse("2028-01-31"), 31)

@@ -1,10 +1,14 @@
 package com.eyther.lumbridge.features.expenses.domain.model
 
-import kotlinx.datetime.*
+import com.eyther.lumbridge.features.expenses.domain.errors.RecurringExpenseError
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 
 object MonthlyRecurrenceDomain {
     fun nextAfter(date: LocalDate, anchorDay: Int): LocalDate {
-        require(anchorDay in 1..31)
+        if (anchorDay !in 1..31) throw RecurringExpenseError.InvalidAnchorDay()
         val next = LocalDate(date.year, date.month, 1).plus(DatePeriod(months = 1))
         val last = next.plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
         return LocalDate(next.year, next.month, minOf(anchorDay, last.day))

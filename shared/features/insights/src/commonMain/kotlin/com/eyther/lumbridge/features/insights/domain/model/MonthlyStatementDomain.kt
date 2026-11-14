@@ -3,6 +3,8 @@ package com.eyther.lumbridge.features.insights.domain.model
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.HouseholdLedgerDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
+import com.eyther.lumbridge.features.insights.domain.errors.InsightsError
+import kotlinx.datetime.LocalDate
 
 data class MonthlyStatementDomain(
     val month: String,
@@ -14,6 +16,7 @@ data class MonthlyStatementDomain(
     val categories: Map<String, Long>,
     val expenses: List<ExpenseDomain>,
 ) {
+
     fun csv(
         currency: String,
         userId: String,
@@ -49,24 +52,28 @@ data class MonthlyStatementDomain(
             expenses: List<ExpenseDomain>,
             settlements: List<SettlementDomain>,
         ): MonthlyStatementDomain {
-            require(Regex("[0-9]{4}-[0-9]{2}").matches(month))
-            kotlinx.datetime.LocalDate.parse("$month-01")
+            try {
+                if (!Regex("[0-9]{4}-[0-9]{2}").matches(month)) throw InsightsError.InvalidMonth()
+                LocalDate.parse("$month-01")
+            } catch (error: IllegalArgumentException) {
+                throw InsightsError.InvalidMonth(cause = error)
+            }
             val selected = expenses.filter { it.occurredOn.startsWith(month) }
             val beforeExpenses = expenses.filter { it.occurredOn.take(7) < month }
             val throughExpenses = expenses.filter { it.occurredOn.take(7) <= month }
             val beforeSettlements = settlements.filter { it.occurredOn.take(7) < month }
             val throughSettlements = settlements.filter { it.occurredOn.take(7) <= month }
             return MonthlyStatementDomain(
-                month,
-                selected.sumOf { it.amountMinor },
-                selected.filter { it.paidBy == userId }.sumOf { it.amountMinor },
-                selected.sumOf { it.shares[userId] ?: 0 },
-                HouseholdLedgerDomain.balances(beforeExpenses, beforeSettlements)[userId] ?: 0,
-                HouseholdLedgerDomain.balances(throughExpenses, throughSettlements)[userId] ?: 0,
-                selected
-                    .groupBy { it.category }
-                    .mapValues { (_, values) -> values.sumOf { it.amountMinor } },
-                selected,
+                month = month,
+                totalMinor = selected.sumOf { it.amountMinor },
+                paidMinor = selected.filter { it.paidBy == userId }.sumOf { it.amountMinor },
+                shareMinor = selected.sumOf { it.shares[userId] ?: 0 },
+                openingBalanceMinor = HouseholdLedgerDomain.balances(beforeExpenses, beforeSettlements)[userId] ?: 0,
+                closingBalanceMinor = HouseholdLedgerDomain.balances(throughExpenses, throughSettlements)[userId] ?: 0,
+                categories = selected.groupBy { it.category }.mapValues { (_, values) ->
+                    values.sumOf { it.amountMinor }
+                },
+                expenses = selected,
             )
         }
     }

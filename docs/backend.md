@@ -27,6 +27,7 @@ The worker creates due recurring expenses, saves closed-month statements, and pr
 
 1. Register the Android application **`com.eyther.lumbridge`** in your Firebase project.
 2. Place its `google-services.json` in `androidApp/`. The file is gitignored; the Google Services plugin is enabled when it exists.
+   CI reads the same JSON from the encrypted repository Actions secret `GOOGLE_SERVICES_JSON`.
 3. Store `FCM_PROJECT_ID`, `FCM_CLIENT_EMAIL`, and `FCM_PRIVATE_KEY` as Supabase Edge Function secrets.
 4. Enable notifications in Loom on a physical device. Android 13+ asks for notification permission.
 

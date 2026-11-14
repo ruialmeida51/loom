@@ -1,21 +1,26 @@
 package com.eyther.lumbridge.features.household.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.stateflow.*
-import com.eyther.lumbridge.core.domain.AppResult
-import com.eyther.lumbridge.core.presentation.*
+import com.eyther.lumbridge.core.coroutines.stateflow.launchWith
+import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
+import com.eyther.lumbridge.core.coroutines.stateflow.updateState
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.household.domain.usecase.CreateHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.JoinHouseholdUseCase
+import com.eyther.lumbridge.features.household.presentation.mapper.toHouseholdTextResource
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdState
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class HouseholdScreenViewModel(
-    private val get: GetHouseholdsUseCase,
-    private val create: CreateHouseholdUseCase,
-    private val join: JoinHouseholdUseCase,
+    private val getHouseholdsUseCase: GetHouseholdsUseCase,
+    private val createHouseholdUseCase: CreateHouseholdUseCase,
+    private val joinHouseholdUseCase: JoinHouseholdUseCase,
 ) : HouseholdScreenViewModelContract() {
+
     private data class InnerInputState(
         val name: String = "",
         val token: String = "",
@@ -24,75 +29,121 @@ class HouseholdScreenViewModel(
 
     private val inputState = MutableStateFlow(InnerInputState())
 
-    private val mutableState =
-        MutableStateFlow(HouseholdState()).observeWith(viewModelScope) { state ->
-            inputState.updateState(state) {
-                copy(name = it.name, token = it.token, currency = it.currency)
+    private val mutableState = MutableStateFlow(HouseholdState())
+        .observeWith(viewModelScope) { state ->
+            inputState.updateState(state) { input ->
+                copy(
+                    name = input.name,
+                    token = input.token,
+                    currency = input.currency,
+                )
             }
         }
+        .launchWith(viewModelScope) { state ->
+            state.loadHouseholds()
+        }
+
     override val state = mutableState.asStateFlow()
 
-    init {
-        refresh()
-    }
-
-    override fun name(value: String) {
-        inputState.update { it.copy(name = value) }
-    }
-
-    override fun token(value: String) {
-        inputState.update { it.copy(token = value) }
-    }
-
-    override fun currency(value: String) {
-        inputState.update { it.copy(currency = value) }
-    }
-
-    override fun dismiss() {
-        mutableState.update { it.copy(error = null) }
-    }
-
-    override fun refresh() {
-        launch {
-            when (val result = get()) {
-                is AppResult.Success ->
-                    mutableState.update { it.copy(items = result.value, busy = false) }
-                is AppResult.Failure ->
-                    mutableState.update { it.copy(error = result.message, busy = false) }
-            }
+    override fun onNameChanged(value: String) {
+        inputState.update { oldState ->
+            oldState.copy(name = value)
         }
     }
 
-    override fun create() {
-        if (mutableState.value.busy) return
+    override fun onInvitationCodeChanged(value: String) {
+        inputState.update { oldState ->
+            oldState.copy(token = value)
+        }
+    }
+
+    override fun onCurrencyChanged(value: String) {
+        inputState.update { oldState ->
+            oldState.copy(currency = value)
+        }
+    }
+
+    override fun onDismissError() {
+        mutableState.update { oldState ->
+            oldState.copy(error = null)
+        }
+    }
+
+    override fun onRefresh() {
+        launch {
+            mutableState.loadHouseholds()
+        }
+    }
+
+    override fun onCreateHousehold() {
+        if (state.value.busy) return
         val input = inputState.value
-        mutableState.update { it.copy(busy = true, error = null) }
+
+        mutableState.update { oldState ->
+            oldState.copy(busy = true, error = null)
+        }
+
         launch {
-            when (val result = create(input.name, input.currency)) {
+            when (val result = createHouseholdUseCase(name = input.name, currency = input.currency)) {
                 is AppResult.Success -> {
-                    inputState.update { it.copy(name = "") }
-                    mutableState.update { it.copy(name = "") }
-                    refresh()
+                    inputState.update { oldState ->
+                        oldState.copy(name = "")
+                    }
+                    mutableState.loadHouseholds()
                 }
-                is AppResult.Failure ->
-                    mutableState.update { it.copy(busy = false, error = result.message) }
+
+                is AppResult.Failure -> mutableState.update { oldState ->
+                    oldState.copy(
+                        busy = false,
+                        error = result.error.toHouseholdTextResource(),
+                    )
+                }
             }
         }
     }
 
-    override fun join() {
-        if (mutableState.value.busy) return
+    override fun onJoinHousehold() {
+        if (state.value.busy) return
         val token = inputState.value.token
-        mutableState.update { it.copy(busy = true, error = null) }
+
+        mutableState.update { oldState ->
+            oldState.copy(busy = true, error = null)
+        }
+
         launch {
-            when (val result = join(token)) {
+            when (val result = joinHouseholdUseCase(token)) {
                 is AppResult.Success -> {
-                    inputState.update { it.copy(token = "") }
-                    mutableState.update { it.copy(token = "") }
-                    refresh()
+                    inputState.update { oldState ->
+                        oldState.copy(token = "")
+                    }
+                    mutableState.loadHouseholds()
                 }
-                is AppResult.Failure ->
-                    mutableState.update { it.copy(busy = false, error = result.message) }
+
+                is AppResult.Failure -> mutableState.update { oldState ->
+                    oldState.copy(
+                        busy = false,
+                        error = result.error.toHouseholdTextResource(),
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun MutableStateFlow<HouseholdState>.loadHouseholds() {
+        val result = getHouseholdsUseCase()
+
+        update { oldState ->
+            when (result) {
+                is AppResult.Success -> oldState.copy(
+                    items = result.value,
+                    busy = false,
+                    error = null,
+                )
+
+                is AppResult.Failure -> oldState.copy(
+                    busy = false,
+                    error = result.error.toHouseholdTextResource(),
+                )
             }
         }
     }

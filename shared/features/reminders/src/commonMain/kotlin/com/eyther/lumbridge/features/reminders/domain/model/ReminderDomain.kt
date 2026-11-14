@@ -1,7 +1,12 @@
 package com.eyther.lumbridge.features.reminders.domain.model
 
 import kotlin.time.Instant
-import kotlinx.datetime.*
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 
 data class ReminderDomain(
     val id: String,
@@ -10,6 +15,7 @@ data class ReminderDomain(
     val recurrence: String,
     val completed: Boolean,
 ) {
+
     fun dueLabel(zone: String): String {
         val local = Instant.parse(dueAt).toLocalDateTime(TimeZone.of(zone))
         return "${local.date} · ${local.hour.toString().padStart(2,'0')}:${local.minute.toString().padStart(2,'0')}"

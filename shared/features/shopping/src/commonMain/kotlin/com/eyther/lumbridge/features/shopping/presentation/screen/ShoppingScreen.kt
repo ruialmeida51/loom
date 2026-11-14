@@ -1,13 +1,37 @@
 package com.eyther.lumbridge.features.shopping.presentation.screen
 
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -15,18 +39,59 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.*
-import com.eyther.lumbridge.features.shopping.domain.model.*
-import com.eyther.lumbridge.features.shopping.generated.resources.*
-import com.eyther.lumbridge.features.shopping.presentation.localization.localizedMessage
-import com.eyther.lumbridge.features.shopping.presentation.localization.localizedToken
+import com.eyther.lumbridge.core.presentation.components.EmptyNotice
+import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.PageHeading
+import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
+import com.eyther.lumbridge.features.shopping.generated.resources.Res
+import com.eyther.lumbridge.features.shopping.generated.resources.items_to_pick_up
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_add_an_item
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_add_item
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_add_to_the_list
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_all_items
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_all_picked_up
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_archive
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_buy_again
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_cancel
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_category
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_done
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_edit
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_edit_item
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_favorite_add
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_favorite_remove
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_list_name
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_manage_lists
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_move
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_name_your_list
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_new_list
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_one_item_per_line_for_quick_entry
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_one_less_thing_to_remember
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_quantity_or_note
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_refresh_and_retry
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_remove
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_rename
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_restore
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_save_item
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_save_list
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_shopping_lists
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_the_shopping_list
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_to_pick_up
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_undo
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_what_do_we_need
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_your_list_is_clear_add_something_whenever_you_think
+import com.eyther.lumbridge.features.shopping.presentation.mapper.shoppingCategoryLabel
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun ShoppingScreen(vm: ShoppingScreenViewModelContract) {
-    val state by vm.state.platformCollectAsStateOnStart()
+fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
+    val state by viewModel.state.platformCollectAsStateOnStart()
     InnerShoppingScreen(
         lists = state.snapshot.lists,
         items = state.items,
@@ -45,28 +110,28 @@ fun ShoppingScreen(vm: ShoppingScreenViewModelContract) {
         busy = state.busy,
         error = state.error,
         undoMessage = state.undoMessage,
-        onSelectList = vm::selectList,
-        onShowAdd = vm::showAdd,
-        onName = vm::name,
-        onQuantity = vm::quantity,
-        onCategory = vm::category,
-        onShowChecked = vm::showChecked,
-        onSave = vm::add,
-        onToggle = vm::toggle,
-        onEdit = vm::edit,
-        onRemove = vm::remove,
-        onFavorite = vm::favorite,
-        onMove = vm::move,
-        onUndo = vm::undo,
-        onReuse = vm::reuse,
-        onShowLists = vm::showLists,
-        onListForm = vm::listForm,
-        onCloseListForm = vm::closeListForm,
-        onListName = vm::listName,
-        onSaveList = vm::saveList,
-        onArchive = vm::archive,
-        onDismiss = vm::dismiss,
-        onRetry = vm::retry,
+        onSelectList = viewModel::onListSelected,
+        onShowAdd = viewModel::onAddSheetVisibilityChanged,
+        onName = viewModel::onItemNameChanged,
+        onQuantity = viewModel::onQuantityChanged,
+        onCategory = viewModel::onCategoryChanged,
+        onShowChecked = viewModel::onCheckedItemsVisibilityChanged,
+        onSave = viewModel::onSaveItem,
+        onToggle = viewModel::onToggleItem,
+        onEdit = viewModel::onEditItem,
+        onRemove = viewModel::onRemoveItem,
+        onFavorite = viewModel::onToggleFavorite,
+        onMove = viewModel::onMoveItem,
+        onUndo = viewModel::onUndo,
+        onReuse = viewModel::onReuseItem,
+        onShowLists = viewModel::onListsVisibilityChanged,
+        onListForm = viewModel::onOpenListForm,
+        onCloseListForm = viewModel::onCloseListForm,
+        onListName = viewModel::onListNameChanged,
+        onSaveList = viewModel::onSaveList,
+        onArchive = viewModel::onArchiveList,
+        onDismiss = viewModel::onDismissError,
+        onRetry = viewModel::onRetry,
     )
 }
 
@@ -87,8 +152,8 @@ private fun InnerShoppingScreen(
     showListForm: Boolean,
     listName: String,
     busy: Boolean,
-    error: String?,
-    undoMessage: String?,
+    error: TextResource?,
+    undoMessage: TextResource?,
     onSelectList: (String) -> Unit,
     onShowAdd: (Boolean) -> Unit,
     onName: (String) -> Unit,
@@ -154,7 +219,7 @@ private fun InnerShoppingScreen(
             }
         }
         item {
-            ErrorNotice(localizedMessage(error), onDismiss)
+            ErrorNotice(error, onDismiss)
             if (error != null)
                 TextButton(onClick = onRetry) {
                     Text(stringResource(Res.string.ui_refresh_and_retry))
@@ -166,7 +231,7 @@ private fun InnerShoppingScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        localizedMessage(undoMessage).orEmpty(),
+                        undoMessage.getString(),
                         style = MaterialTheme.typography.bodySmall,
                     )
                     TextButton(onClick = onUndo, enabled = !busy) {
@@ -211,7 +276,7 @@ private fun InnerShoppingScreen(
             .forEach { (section, rows) ->
                 item {
                     Text(
-                        localizedToken(section).uppercase(),
+                        shoppingCategoryLabel(section).uppercase(),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.secondary,
                     )
@@ -360,11 +425,11 @@ private fun InnerShoppingScreen(
                                         { onCategory(option) },
                                         modifier = Modifier.testTag("category_$option"),
                                     )
-                                    Text(localizedToken(option))
+                                    Text(shoppingCategoryLabel(option))
                                 }
                             }
                     }
-                    ErrorNotice(localizedMessage(error), onDismiss)
+                    ErrorNotice(error, onDismiss)
                 }
             },
             confirmButton = {
@@ -411,7 +476,7 @@ private fun InnerShoppingScreen(
                                 }
                             }
                         }
-                    ErrorNotice(localizedMessage(error), onDismiss)
+                    ErrorNotice(error, onDismiss)
                 }
             },
             confirmButton = {
@@ -437,7 +502,7 @@ private fun InnerShoppingScreen(
                         label = { Text(stringResource(Res.string.ui_list_name)) },
                         singleLine = true,
                     )
-                    ErrorNotice(localizedMessage(error), onDismiss)
+                    ErrorNotice(error, onDismiss)
                 }
             },
             confirmButton = {

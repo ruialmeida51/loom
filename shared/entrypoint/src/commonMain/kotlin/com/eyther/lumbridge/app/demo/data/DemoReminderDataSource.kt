@@ -1,19 +1,22 @@
 package com.eyther.lumbridge.app.demo.data
 
-import com.eyther.lumbridge.core.domain.safeCall
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.reminders.domain.datasource.ReminderDataSource
 import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
 class DemoReminderDataSource(private val store: DemoHouseholdStore) : ReminderDataSource {
-    override fun observe() = store.reminders
 
-    override suspend fun add(reminder: ReminderDomain) = safeCall {
+    override fun stream() = store.reminders.map { AppResult.Success(it) }
+
+    override suspend fun addReminder(reminder: ReminderDomain) = safeCall {
         store.reminders.update { it + reminder }
         Unit
     }
 
-    override suspend fun complete(reminder: ReminderDomain) = safeCall {
+    override suspend fun completeReminder(reminder: ReminderDomain) = safeCall {
         store.reminders.update {
             it.map { row ->
                 if (row.id != reminder.id || row.dueAt != reminder.dueAt) row
@@ -25,7 +28,7 @@ class DemoReminderDataSource(private val store: DemoHouseholdStore) : ReminderDa
         Unit
     }
 
-    override suspend fun remove(id: String) = safeCall {
+    override suspend fun removeReminder(id: String) = safeCall {
         store.reminders.update { it.filterNot { row -> row.id == id } }
         Unit
     }

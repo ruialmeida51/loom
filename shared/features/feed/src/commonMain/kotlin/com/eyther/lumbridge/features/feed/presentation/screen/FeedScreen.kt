@@ -1,25 +1,62 @@
 package com.eyther.lumbridge.features.feed.presentation.screen
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.*
-import com.eyther.lumbridge.core.presentation.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.components.EmptyNotice
+import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.PageHeading
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
+import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
-import com.eyther.lumbridge.features.feed.generated.resources.*
-import com.eyther.lumbridge.features.feed.presentation.localization.localizedMessage
+import com.eyther.lumbridge.features.feed.generated.resources.Res
+import com.eyther.lumbridge.features.feed.generated.resources.ui_a_fresh_page
+import com.eyther.lumbridge.features.feed.generated.resources.ui_a_moment_for_you
+import com.eyther.lumbridge.features.feed.generated.resources.ui_cancel
+import com.eyther.lumbridge.features.feed.generated.resources.ui_feed_url_hint
+import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_a_feed
+import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_a_feed_a533eb8
+import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_an_rss_or_atom_feed_to_bring_your
+import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_feed
+import com.eyther.lumbridge.features.feed.generated.resources.ui_mark_as_read
+import com.eyther.lumbridge.features.feed.generated.resources.ui_mark_unread
+import com.eyther.lumbridge.features.feed.generated.resources.ui_paste_an_rss_or_atom_feed_url_articles_will
+import com.eyther.lumbridge.features.feed.generated.resources.ui_read_story
+import com.eyther.lumbridge.features.feed.generated.resources.ui_the_reading_corner
+import com.eyther.lumbridge.features.feed.generated.resources.ui_unread_only
+import com.eyther.lumbridge.features.feed.generated.resources.ui_your_favourite_corners_of_the_internet_in_one_quiet
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.filter
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun FeedScreen(vm: FeedScreenViewModelContract, onOpen: (String) -> Unit) {
-    val state by vm.state.platformCollectAsStateOnStart()
+fun FeedScreen(viewModel: FeedScreenViewModelContract, onOpen: (String) -> Unit) {
+    val state by viewModel.state.platformCollectAsStateOnStart()
     InnerFeedScreen(
         items = state.items,
         url = state.url,
@@ -28,12 +65,12 @@ fun FeedScreen(vm: FeedScreenViewModelContract, onOpen: (String) -> Unit) {
         busy = state.busy,
         error = state.error,
         onOpen = onOpen,
-        onUrl = vm::url,
-        onShowFollow = vm::showFollow,
-        onUnreadOnly = vm::unreadOnly,
-        onDismiss = vm::dismiss,
-        onFollow = vm::follow,
-        onMarkRead = vm::markRead,
+        onUrl = viewModel::onUrlChanged,
+        onShowFollow = viewModel::onFollowSheetVisibilityChanged,
+        onUnreadOnly = viewModel::onUnreadOnlyChanged,
+        onDismiss = viewModel::onDismissError,
+        onFollow = viewModel::onFollowFeed,
+        onMarkRead = viewModel::onMarkRead,
     )
 }
 
@@ -44,7 +81,7 @@ private fun InnerFeedScreen(
     showFollow: Boolean,
     unreadOnly: Boolean,
     busy: Boolean,
-    error: String?,
+    error: TextResource?,
     onOpen: (String) -> Unit,
     onUrl: (String) -> Unit,
     onShowFollow: (Boolean) -> Unit,
@@ -65,7 +102,7 @@ private fun InnerFeedScreen(
                 stringResource(Res.string.ui_your_favourite_corners_of_the_internet_in_one_quiet),
             )
         }
-        item { ErrorNotice(localizedMessage(error), onDismiss) }
+        item { ErrorNotice(error, onDismiss) }
         item {
             Row(
                 Modifier.fillMaxWidth(),
@@ -145,7 +182,7 @@ private fun InnerFeedScreen(
                         label = { Text(stringResource(Res.string.ui_feed_url_hint)) },
                         singleLine = true,
                     )
-                    ErrorNotice(localizedMessage(error), onDismiss)
+                    ErrorNotice(error, onDismiss)
                 }
             },
             confirmButton = {

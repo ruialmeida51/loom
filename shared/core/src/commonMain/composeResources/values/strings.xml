@@ -1,7 +1,4 @@
 <resources>
-    <string name="message_something_went_wrong_please_try_again">Something went wrong. Please try again.</string>
-    <string name="message_sign_in_is_not_available_in_this_preview">Sign-in is not available in this preview.</string>
-    <string name="message_please_sign_in_again">Please sign in again.</string>
     <string name="ui_dismiss">Dismiss</string>
     <string name="ui_something_went_wrong_please_try_again">Something went wrong. Please try again.</string>
     <string name="icon_home">Home</string>
@@ -13,4 +10,9 @@
     <string name="icon_add">Add</string>
     <string name="icon_next">Next</string>
     <string name="icon_done">Done</string>
+    <string name="error_no_connection">Check your connection and try again.</string>
+    <string name="error_not_authenticated">Please sign in again.</string>
+    <string name="error_access_denied">You no longer have access to this household.</string>
+    <string name="error_not_found">This item no longer exists. Refresh and try again.</string>
+    <string name="error_service_unavailable">The service is unavailable. Please try again shortly.</string>
 </resources>

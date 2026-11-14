@@ -1,12 +1,16 @@
 package com.eyther.lumbridge.features.feed.domain.usecase
 
-import com.eyther.lumbridge.core.domain.AppResult
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
+import com.eyther.lumbridge.features.feed.domain.errors.FeedError
 
-class FollowFeedUseCase(private val source: FeedDataSource) {
+class FollowFeedUseCase(
+    private val feedDataSource: FeedDataSource,
+) {
+
     suspend operator fun invoke(url: String): AppResult<Unit> {
         if (!url.trim().startsWith("https://") || url.length > 2048)
-            return AppResult.Failure("feed.message_enter_a_secure_rss_or_atom_feed_url_beginning")
-        return source.follow(url.trim())
+            return AppResult.Failure(FeedError.InvalidUrl())
+        return feedDataSource.followFeed(url.trim())
     }
 }

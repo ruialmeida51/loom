@@ -1,76 +1,116 @@
 package com.eyther.lumbridge.features.settings.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.stateflow.*
-import com.eyther.lumbridge.core.domain.AppResult
-import com.eyther.lumbridge.core.presentation.*
+import com.eyther.lumbridge.core.coroutines.stateflow.launchWith
+import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
+import com.eyther.lumbridge.core.coroutines.stateflow.updateState
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
-import com.eyther.lumbridge.features.settings.domain.usecase.ObserveSettingsUseCase
+import com.eyther.lumbridge.features.household.presentation.mapper.toHouseholdTextResource
+import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetNotificationsUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetThemeUseCase
+import com.eyther.lumbridge.features.settings.presentation.mapper.toSettingsTextResource
 import com.eyther.lumbridge.features.settings.presentation.viewmodel.contracts.SettingsScreenViewModelContract
 import com.eyther.lumbridge.features.settings.presentation.viewmodel.contracts.SettingsState
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class SettingsScreenViewModel(
-    observe: ObserveSettingsUseCase,
+    private val getSettingsStreamUseCase: GetSettingsStreamUseCase,
     private val setThemeUseCase: SetThemeUseCase,
     private val setNotificationsUseCase: SetNotificationsUseCase,
     private val getMembersUseCase: GetMembersUseCase,
     private val createInvitationUseCase: CreateInvitationUseCase,
     private val context: HouseholdContextDomain,
 ) : SettingsScreenViewModelContract() {
+
     private val mutableState = MutableStateFlow(SettingsState())
+        .observeWith(viewModelScope) { state ->
+            getSettingsStreamUseCase().updateState(state) { preferences ->
+                copy(preferences = preferences)
+            }
+        }
+        .launchWith(viewModelScope) { state ->
+            state.loadMembers()
+        }
+
     override val state = mutableState.asStateFlow()
 
-    init {
-        mutableState.observeWith(viewModelScope) {
-            observe().onEach { preferences ->
-                mutableState.update { it.copy(preferences = preferences) }
-            }
-        }
-        launch {
-            when (val result = getMembersUseCase(context.id)) {
-                is AppResult.Success -> mutableState.update { it.copy(members = result.value) }
-                is AppResult.Failure -> mutableState.update { it.copy(error = result.message) }
-            }
-        }
-    }
-
-    override fun theme(value: String) {
+    override fun onThemeSelected(value: String) {
         launch {
             val result = setThemeUseCase(value)
-            if (result is AppResult.Failure) mutableState.update { it.copy(error = result.message) }
+
+            mutableState.update { oldState ->
+                oldState.copy(
+                    error = (result as? AppResult.Failure)?.error?.toSettingsTextResource(),
+                )
+            }
         }
     }
 
-    override fun notifications(enabled: Boolean) {
-        if (mutableState.value.busy) return
-        mutableState.update { it.copy(busy = true, error = null) }
+    override fun onNotificationsChanged(enabled: Boolean) {
+        if (state.value.busy) return
+
+        mutableState.update { oldState ->
+            oldState.copy(busy = true, error = null)
+        }
+
         launch {
             val result = setNotificationsUseCase(enabled)
-            mutableState.update {
-                it.copy(busy = false, error = (result as? AppResult.Failure)?.message)
+
+            mutableState.update { oldState ->
+                oldState.copy(
+                    busy = false,
+                    error = (result as? AppResult.Failure)?.error?.toSettingsTextResource(),
+                )
             }
         }
     }
 
-    override fun invite() {
-        if (mutableState.value.busy) return
-        mutableState.update { it.copy(busy = true, error = null) }
+    override fun onCreateInvitation() {
+        if (state.value.busy) return
+
+        mutableState.update { oldState ->
+            oldState.copy(busy = true, error = null)
+        }
+
         launch {
-            when (val result = createInvitationUseCase(context.id)) {
-                is AppResult.Success ->
-                    mutableState.update { it.copy(busy = false, invitation = result.value) }
-                is AppResult.Failure ->
-                    mutableState.update { it.copy(busy = false, error = result.message) }
+            val result = createInvitationUseCase(context.id)
+
+            mutableState.update { oldState ->
+                when (result) {
+                    is AppResult.Success -> oldState.copy(
+                        busy = false,
+                        invitation = result.value,
+                    )
+
+                    is AppResult.Failure -> oldState.copy(
+                        busy = false,
+                        error = result.error.toHouseholdTextResource(),
+                    )
+                }
             }
         }
     }
 
-    override fun dismiss() {
-        mutableState.update { it.copy(error = null) }
+    override fun onDismissError() {
+        mutableState.update { oldState ->
+            oldState.copy(error = null)
+        }
+    }
+
+    private suspend fun MutableStateFlow<SettingsState>.loadMembers() {
+        val result = getMembersUseCase(context.id)
+
+        update { oldState ->
+            when (result) {
+                is AppResult.Success -> oldState.copy(members = result.value)
+                is AppResult.Failure -> oldState.copy(error = result.error.toHouseholdTextResource())
+            }
+        }
     }
 }

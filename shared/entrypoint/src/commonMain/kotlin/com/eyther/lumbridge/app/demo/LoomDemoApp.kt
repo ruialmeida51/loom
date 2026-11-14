@@ -1,24 +1,54 @@
 package com.eyther.lumbridge.app.demo
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.app.demo.data.*
+import com.eyther.lumbridge.app.demo.data.DemoExpenseDataSource
+import com.eyther.lumbridge.app.demo.data.DemoFeedDataSource
+import com.eyther.lumbridge.app.demo.data.DemoHouseholdDataSource
+import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
+import com.eyther.lumbridge.app.demo.data.DemoRecurringExpenseDataSource
+import com.eyther.lumbridge.app.demo.data.DemoReminderDataSource
+import com.eyther.lumbridge.app.demo.data.DemoSettingsDataSource
+import com.eyther.lumbridge.app.demo.data.DemoShoppingDataSource
+import com.eyther.lumbridge.app.demo.data.DemoStatementDataSource
 import com.eyther.lumbridge.app.di.householdFeaturesModule
 import com.eyther.lumbridge.app.navigation.HouseholdHost
-import com.eyther.lumbridge.core.presentation.*
+import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.theme.LoomTheme
+import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
+import com.eyther.lumbridge.features.insights.data.export.CommonStatementExportDataSource
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
+import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportDataSource
 import com.eyther.lumbridge.features.reminders.domain.datasource.ReminderDataSource
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
-import com.eyther.lumbridge.shared.entrypoint.generated.resources.*
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_choose_a_preview_household
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_done
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_loom_preview_sample_data
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_open_preview
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.KoinIsolatedContext
 import org.koin.dsl.koinApplication
@@ -72,6 +102,9 @@ fun LoomDemoApp() {
                                                 single<FeedDataSource> { DemoFeedDataSource(store) }
                                                 single<SettingsDataSource> {
                                                     DemoSettingsDataSource()
+                                                }
+                                                single<StatementExportDataSource> {
+                                                    CommonStatementExportDataSource()
                                                 }
                                                 single<StatementDataSource> {
                                                     DemoStatementDataSource()

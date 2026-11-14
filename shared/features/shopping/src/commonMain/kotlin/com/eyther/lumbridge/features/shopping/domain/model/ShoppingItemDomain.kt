@@ -1,5 +1,8 @@
 package com.eyther.lumbridge.features.shopping.domain.model
 
+import com.eyther.lumbridge.core.domain.errors.requireDomain
+import com.eyther.lumbridge.features.shopping.domain.errors.ShoppingError
+
 data class ShoppingItemDomain(
     val id: String,
     val name: String,
@@ -11,13 +14,14 @@ data class ShoppingItemDomain(
     val removed: Boolean = false,
     val favorite: Boolean = false,
 ) {
+
     fun validated(): ShoppingItemDomain {
-        require(name.trim().length in 1..120) {
-            "shopping.message_give_the_item_a_name_up_to_120_characters"
+        requireDomain(name.trim().length in 1..120) {
+            ShoppingError.InvalidItemName()
         }
-        require(quantity.length <= 40) { "shopping.message_keep_the_quantity_under_40_characters" }
-        require(category.length in 1..40 && listId.isNotBlank()) {
-            "shopping.message_choose_a_list_and_category"
+        requireDomain(quantity.length <= 40) { ShoppingError.InvalidQuantity() }
+        requireDomain(category.length in 1..40 && listId.isNotBlank()) {
+            ShoppingError.InvalidListOrCategory()
         }
         return copy(name = name.trim(), quantity = quantity.trim())
     }

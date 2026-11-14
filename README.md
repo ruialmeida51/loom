@@ -56,7 +56,7 @@ shared/
 supabase/                    Versioned schema, functions, schedules, database integration tests
 ```
 
-Screens collect lifecycle-aware state and pass individual values/callbacks to `Inner*Screen`. ViewModels use private `InnerInputState` and Plannot’s `observeWith` helpers. DataSource interfaces live in domain; `Common*` implementations own I/O. The composition root uses explicit Koin DSL factories bound to contracts, without annotation/code-generation submodules.
+Screens collect lifecycle-aware state and pass individual values/callbacks to `Inner*Screen`. ViewModels use private `InnerInputState` and Plannot’s `observeWith` helpers. DataSource interfaces live in domain; `Common*` implementations own I/O and translate server failures into typed domain errors. Streams use `stream()` and `Get…StreamUseCase`; request/response DTOs and mappers have separate files. The composition root uses explicit Koin DSL factories bound to contracts, without annotation/code-generation submodules.
 
 Models stay in their owning feature: household owns `HouseholdContextDomain`, expenses owns `MoneyDomain`, and other features depend on those domains directly. Core has no feature dependencies. Sample data, settings preferences, notification registration, statement exports, and app-specific routes also stay with their respective owners. See the ownership table in [architecture details](docs/architecture.md).
 
@@ -108,6 +108,6 @@ The existing Loom Supabase project is `eeyfhmlyopuobtgdfbql`. Its unused prototy
 
 ## Localization
 
-Each feature owns its default English catalog in `src/commonMain/composeResources/values/strings.xml`; core owns generic components and entrypoint owns navigation/preview copy. Add `values-<language>/strings.xml` catalogs for translations. UI text, plurals, accessibility labels, and validation messages resolve resources in presentation. Domain code carries stable error codes and never imports Compose resource classes. Stored category identifiers, currency codes, URLs, and user/RSS content remain data.
+Each feature owns its default English catalog in `src/commonMain/composeResources/values/strings.xml`; core owns generic components and entrypoint owns navigation/preview copy. Add `values-<language>/strings.xml` catalogs for translations. UI text, plurals, accessibility labels, and validation messages resolve resources in presentation. Domain failures carry typed `AppError` subclasses and never import Compose resource classes. Data adapters alone normalize server codes; presentation maps typed failures to `TextResource`. Stored category identifiers, currency codes, URLs, and user/RSS content remain data.
 
 Android app labels and notification fallbacks use native `res/values/strings.xml`. CSV header resources preserve their comma-separated column counts when translated.

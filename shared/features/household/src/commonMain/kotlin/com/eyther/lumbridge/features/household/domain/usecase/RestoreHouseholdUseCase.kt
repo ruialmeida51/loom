@@ -1,18 +1,25 @@
 package com.eyther.lumbridge.features.household.domain.usecase
 
-import com.eyther.lumbridge.core.domain.*
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
+import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdSelectionDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
 
 class RestoreHouseholdUseCase(
-    private val selection: HouseholdSelectionDataSource,
-    private val households: GetHouseholdsUseCase,
+    private val selectionDataSource: HouseholdSelectionDataSource,
+    private val getHouseholdsUseCase: GetHouseholdsUseCase,
 ) {
+
     suspend operator fun invoke(userId: String): AppResult<HouseholdDomain?> = safeCall {
-        val id = selection.lastSelected(userId) ?: return@safeCall null
-        // Restore only a household still visible under the caller's current membership.
-        val household = households().getOrThrow().firstOrNull { it.id == id }
-        if (household == null) selection.select(userId, null)
+        val selectedId = selectionDataSource.getLastSelected(userId).getOrThrow() ?: return@safeCall null
+        val households = getHouseholdsUseCase().getOrThrow()
+        val household = households.firstOrNull { it.id == selectedId }
+
+        if (household == null) {
+            selectionDataSource.select(userId = userId, householdId = null).getOrThrow()
+        }
+
         household
     }
 }

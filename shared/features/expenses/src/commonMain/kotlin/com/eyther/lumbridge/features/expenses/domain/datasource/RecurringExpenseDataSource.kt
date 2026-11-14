@@ -1,13 +1,14 @@
 package com.eyther.lumbridge.features.expenses.domain.datasource
 
-import com.eyther.lumbridge.core.domain.AppResult
-import com.eyther.lumbridge.features.expenses.domain.model.*
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseActionDomain
+import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import kotlinx.coroutines.flow.Flow
 
 interface RecurringExpenseDataSource {
-    fun observe(): Flow<List<RecurringExpenseDomain>>
+    fun stream(): Flow<AppResult<List<RecurringExpenseDomain>>>
 
-    suspend fun control(
+    suspend fun controlSchedule(
         rule: RecurringExpenseDomain,
         action: RecurringExpenseActionDomain,
     ): AppResult<RecurringExpenseDomain>

@@ -11,7 +11,12 @@ Follow the Plannot-derived architecture described in `docs/architecture.md`.
 - Core contains only reusable infrastructure and generic utilities. Keep sample data in its feature's data package, preferences and device registration in settings, exports in insights, and app routes in entrypoint.
 - Feature dependencies are allowed and must remain acyclic. Declare direct dependencies when importing another feature's types.
 - Keep demo fixtures and port implementations in `entrypoint/app/demo`; production screens, domain models, and Common DataSources must not branch on a demo mode.
-- Put UI copy, plurals, accessibility labels, and validation text in owning-module string resources. Keep resource classes out of domain; map stable error codes in presentation.
+- Put UI copy, plurals, accessibility labels, and validation text in owning-module string resources. Keep resource classes out of domain. Presentation maps typed AppError subclasses to TextResource; Compose resolves the resource.
+- Failures cross data/domain boundaries as `AppResult.Failure(error: AppError)`. Feature error families belong in their own `domain/errors`; core owns only generic infrastructure errors. Keep SQLSTATE, HTTP, SDK code and raw-message checks inside data adapters. Never inspect exception text or string error codes in domain or presentation.
+- Put each request/response model in its own matching file under `data/network/model/request` or `response`, with `@SerialName` on every wire field. Keep pure `ResponseToDomain` and `DomainToRequest` mappers separate from models and Common DataSources.
+- Use `stream()` (or `streamExpenses()` when a port has multiple streams) and `Get…StreamUseCase`. Fallible streams return `Flow<AppResult<T>>`; cached session/settings streams return domain state. Keep Plannot's `observeWith` lifecycle helper name.
+- Use descriptive action and dependency names, explicit API return types, named arguments for multi-parameter domain/DTO/DI calls, and explicit imports. ViewModel events use `on…` names; state update lambdas name the previous state `oldState`.
+- Give observable state, contract APIs, navigation models and reusable components focused files and packages. Keep reducers pure and use `updateState` within `observeWith`.
 - Use named Gradle project references such as `projects.shared.features.household`.
 - Run `python3 tools/audit_project.py` before committing changes.
 - Do not add Repository classes or inner layer/composables Gradle modules.

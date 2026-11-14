@@ -1,13 +1,13 @@
 package com.eyther.lumbridge.features.settings.domain.datasource
 
-import com.eyther.lumbridge.core.domain.AppResult
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.settings.domain.model.SettingsDomain
 import kotlinx.coroutines.flow.StateFlow
 
 interface SettingsDataSource {
-    val preferences: StateFlow<SettingsDomain>
+    fun stream(): StateFlow<SettingsDomain>
 
-    suspend fun theme(value: String): AppResult<Unit>
+    suspend fun setTheme(value: String): AppResult<Unit>
 
-    suspend fun notifications(enabled: Boolean): AppResult<Unit>
+    suspend fun setNotifications(enabled: Boolean): AppResult<Unit>
 }

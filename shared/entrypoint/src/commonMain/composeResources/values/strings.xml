@@ -13,5 +13,4 @@
     <string name="token_feed">Feed</string>
     <string name="token_shopping">Shopping</string>
     <string name="token_money">Money</string>
-    <string name="ui_monthly_statement">Monthly statement</string>
 </resources>

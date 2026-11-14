@@ -1,30 +1,22 @@
 package com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts
 
-import com.eyther.lumbridge.core.presentation.*
+import com.eyther.lumbridge.core.viewmodel.LoomViewModel
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
-import kotlinx.coroutines.flow.*
-
-data class FeedState(
-    val items: List<ArticleDomain> = emptyList(),
-    val url: String = "",
-    val showFollow: Boolean = false,
-    val unreadOnly: Boolean = false,
-    val busy: Boolean = false,
-    val error: String? = null,
-)
+import kotlinx.coroutines.flow.StateFlow
 
 abstract class FeedScreenViewModelContract : LoomViewModel() {
+
     abstract val state: StateFlow<FeedState>
 
-    abstract fun url(value: String)
+    abstract fun onUrlChanged(value: String)
 
-    abstract fun showFollow(value: Boolean)
+    abstract fun onFollowSheetVisibilityChanged(value: Boolean)
 
-    abstract fun unreadOnly(value: Boolean)
+    abstract fun onUnreadOnlyChanged(value: Boolean)
 
-    abstract fun dismiss()
+    abstract fun onDismissError()
 
-    abstract fun follow()
+    abstract fun onFollowFeed()
 
-    abstract fun markRead(item: ArticleDomain, read: Boolean)
+    abstract fun onMarkRead(item: ArticleDomain, read: Boolean)
 }
