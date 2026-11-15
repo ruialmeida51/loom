@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.1] - 2026-11-15
+
 - Home now has square shortcuts for expenses and reminders.
 - Find all reminders, Feed and household details under More.
 - Keep everyday spending and trips in separate balance accounts.
