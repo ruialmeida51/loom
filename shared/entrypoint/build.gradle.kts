@@ -33,6 +33,7 @@ kotlin {
             implementation(projects.shared.features.analytics)
             api(projects.shared.core)
             implementation(projects.shared.features.authentication)
+            implementation(projects.shared.features.account)
             implementation(projects.shared.features.household)
             implementation(projects.shared.features.shopping)
             implementation(projects.shared.features.reminders)

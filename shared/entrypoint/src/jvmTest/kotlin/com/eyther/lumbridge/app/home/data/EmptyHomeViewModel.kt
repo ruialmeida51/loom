@@ -13,10 +13,7 @@ internal class EmptyHomeViewModel : HomeScreenViewModelContract() {
                 loading = false,
                 overview =
                     HomeOverviewDomain(
-                        shopping = emptyList(),
                         reminders = emptyList(),
-                        balanceMinor = 0L,
-                        monthSpendingMinor = 0L,
                     ),
             ),
         )

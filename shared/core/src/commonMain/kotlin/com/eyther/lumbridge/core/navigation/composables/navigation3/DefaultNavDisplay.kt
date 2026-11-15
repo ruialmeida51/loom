@@ -8,6 +8,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -43,6 +44,7 @@ fun DefaultNavDisplay(
     metadata: Map<KClass<out NavKey>, Map<String, Any>> = emptyMap(),
     content: @Composable (key: NavKey) -> Unit,
 ) {
+    val currentContent by rememberUpdatedState(content)
     // Decorators outlive root switches so each tab retains its own state and ViewModels.
     val entries = navigationState.toEntries { key ->
         NavEntry(
@@ -53,7 +55,7 @@ fun DefaultNavDisplay(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    content(destination)
+                    currentContent(destination)
                 }
             },
         )

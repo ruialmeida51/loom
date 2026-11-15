@@ -8,6 +8,8 @@ Application ID and iOS bundle ID: **`com.eyther.lumbridge`**.
 
 <img src="docs/screenshots/home-light.png" width="260" alt="Loom household overview in light mode" /> <img src="docs/screenshots/home-dark.png" width="260" alt="Loom household overview in dark mode" />
 
+Flows: [More](docs/screenshots/more-light.png), [All reminders](docs/screenshots/reminders-light.png), [Shopping checklist](docs/screenshots/shopping-light.png), [Trip balances](docs/screenshots/trip-balances-light.png), [Unequal split](docs/screenshots/split-shares-light.png), and [Repayment](docs/screenshots/repayment-light.png).
+
 Editing sheets: [Shopping on a short screen](docs/screenshots/shopping-sheet-narrow.png), [Nickname](docs/screenshots/nickname-sheet-light.png), and [dark mode](docs/screenshots/nickname-sheet-dark.png).
 
 Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [Create account](docs/screenshots/auth-register-light.png), and [Verification](docs/screenshots/auth-verification-light.png).
@@ -16,10 +18,12 @@ Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [C
 
 - Google sign-in, separate email login/registration/verification screens, password visibility controls, and code resend with a cooldown. Existing accounts can also request an email sign-in code.
 - Separate household selection, creation and invitation-joining screens, each with its own ViewModel.
-- Multiple households, owner invitations, quick switching, and restoring the last accessible household.
-- Named shared shopping lists with editing, undo, favorites, quick entry, moving items, and list rename/archive/restore.
+- Home, Shopping, Balances and More tabs, with square Home quick actions and full Reminders/Feed destinations under More. Household selection and global My account follow Plannot’s portal pattern.
+- Multiple households, owner invitations, quick switching, and restoring the last accessible household. My account is available before the first household exists.
+- Named shared shopping lists with inline Enter-to-add, collapsed completed items, optional editing, undo, favorites, moving items, and list rename/archive/restore.
 - Household reminders, daily/weekly repeats, timezone handling, and completion.
-- Shared expenses with equal, exact-amount, and percentage splits; balances and repayments.
+- Independent Everyday and trip/event accounts with one currency each and household-member participants.
+- Dedicated expense entry/detail/editing, equal/weighted-share/exact-amount/percentage splits, who-pays-whom balances and repayments.
 - Monthly recurring expense schedules with payment dates, pause/resume/cancel controls, monthly reports, statistics, CSV export, and immutable statement revisions.
 - RSS/Atom subscriptions with per-user read state and scheduled server refreshes.
 - Light, dark, and system themes using the Loom gold and yarn branding.
@@ -27,7 +31,7 @@ Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [C
 - A dedicated desktop preview with isolated demo data sources and sample households. Production screens and data sources contain no demo branches.
 - Feature-owned string/plural resources, localized validation messages, accessibility labels, and named Gradle project references.
 - Optional Android Firebase Analytics with explicit consent, no household content in events, and advertising identifiers disabled.
-- Public privacy, terms and account-deletion pages linked from authentication and Settings, plus signed Firebase builds and explicit Play internal-draft releases with GitHub release tags.
+- Public privacy, terms and account-deletion pages linked from authentication and My account, plus signed Firebase builds and explicit Play internal-draft releases with GitHub release tags.
 
 Recurring schedules generate monthly expense records; repayments record money you have already sent or received. Pausing skips future entries, resuming skips paused months, and cancellation preserves recorded expense history.
 
@@ -54,6 +58,7 @@ shared/
   di/                        Central annotated application/household providers and graph assembly
   features/
     authentication/          domain/ · data/ · presentation/
+    account/                 domain/ · data/ · presentation/
     household/               domain/ · data/ · presentation/
     home/                    domain/ · presentation/
     shopping/                domain/ · data/ · presentation/
@@ -73,7 +78,7 @@ Models stay in their owning feature: household owns `HouseholdContextDomain`, ex
 
 See [architecture details](docs/architecture.md), [screen and interaction language](docs/design-language.md), and [backend setup](docs/backend.md).
 
-For automatic 4.0.x versions, Firebase distribution, Android signing, required secrets, Play uploads and public policy URLs, follow [Play Store release setup](docs/play-store-release.md). See the [data-safety worksheet](docs/data-safety.md) and [support-assisted account-deletion runbook](docs/account-deletion.md).
+For the [changelog](CHANGELOG.md), automatic versioned release notes and 4.0.x versions, Firebase distribution, Android signing, required secrets, Play uploads and public policy URLs, follow [Play Store release setup](docs/play-store-release.md). See the [data-safety worksheet](docs/data-safety.md) and [support-assisted account-deletion runbook](docs/account-deletion.md).
 
 ## Run
 
@@ -106,6 +111,7 @@ For the desktop development preview, `desktopApp` starts the dedicated `LoomDemo
 ```sh
 ./gradlew :shared:di:jvmTest :shared:core:jvmTest \
   :shared:features:authentication:jvmTest :shared:features:analytics:jvmTest \
+  :shared:features:account:jvmTest :shared:features:home:jvmTest \
   :shared:features:settings:jvmTest \
   :shared:features:household:jvmTest :shared:features:shopping:jvmTest \
   :shared:features:expenses:jvmTest :shared:features:feed:jvmTest \

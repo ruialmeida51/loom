@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class SettlementResponse(
+    @SerialName("account_id") val accountId: String,
     @SerialName("id") val id: String,
     @SerialName("from_user") val from: String,
     @SerialName("to_user") val to: String,

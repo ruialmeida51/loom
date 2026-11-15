@@ -11,8 +11,8 @@ import com.eyther.lumbridge.features.expenses.data.network.model.response.Recurr
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseActionDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
-import com.eyther.lumbridge.features.household.data.network.selectHouseholdRows
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.flow.Flow
@@ -22,10 +22,22 @@ class CommonRecurringExpenseDataSource(
     private val context: HouseholdContextDomain,
 ) : RecurringExpenseDataSource {
 
-    override fun stream(): Flow<AppResult<List<RecurringExpenseDomain>>> {
-        return access.watch("recurring_expenses", context.id) {
-            access.selectHouseholdRows<RecurringExpenseResponse>("recurring_expenses", context.id).map { it.toDomain() }
-        }.asApiResult(mapError = Exception::toExpenseError)
+    override fun stream(accountId: String): Flow<AppResult<List<RecurringExpenseDomain>>> {
+        return access
+            .watch("recurring_expenses", context.id) {
+                access
+                    .requireClient()
+                    .from("recurring_expenses")
+                    .select {
+                        filter {
+                            eq("household_id", context.id)
+                            eq("account_id", accountId.ifBlank { context.id })
+                        }
+                    }
+                    .decodeList<RecurringExpenseResponse>()
+                    .map { it.toDomain() }
+            }
+            .asApiResult(mapError = Exception::toExpenseError)
     }
 
     override suspend fun controlSchedule(
@@ -35,14 +47,18 @@ class CommonRecurringExpenseDataSource(
         return safeApiCall(
             mapError = Exception::toExpenseError,
         ) {
-            val request = ControlRecurringExpenseRequest(
-                householdId = context.id,
-                id = rule.id,
-                action = action.value,
-                version = rule.version,
-            )
+            val request =
+                ControlRecurringExpenseRequest(
+                    householdId = context.id,
+                    id = rule.id,
+                    action = action.value,
+                    version = rule.version,
+                )
 
-            access.requireClient().postgrest.rpc("control_recurring_expense", request)
+            access
+                .requireClient()
+                .postgrest
+                .rpc("control_recurring_expense", request)
                 .decodeAs<RecurringExpenseResponse>()
                 .toDomain()
         }

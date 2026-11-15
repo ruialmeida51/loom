@@ -14,8 +14,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -23,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoomCard
-import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
@@ -33,7 +30,6 @@ import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseStatu
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_1_s_monthly
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_active
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_add_an_expense_in_money_and_choose_monthly_repeat
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel_schedule
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel_this_schedule
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancelled
@@ -41,34 +37,35 @@ import com.eyther.lumbridge.features.expenses.generated.resources.ui_each_active
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_former_member
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_future_entries_will_stop_expenses_already_recorded_stay_in
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_keep_schedule
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_manage_the_fixed_expenses_you_share_at_home
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_monthly_day
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_next_entry_1_s
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_no_recurring_expenses_yet
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_pause
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_paused
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_payer_1_s
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_recurring_expenses
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_refresh_and_retry
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_rent_internet_and_subscriptions_can_live_here
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_resume
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_resuming_schedules_the_next_future_entry_paused_months_are
 import com.eyther.lumbridge.features.expenses.presentation.model.RecurringExpenseUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
-import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun RecurringExpensesScreen(
     viewModel: RecurringExpensesScreenViewModelContract,
-    context: HouseholdContextDomain,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerRecurringExpensesScreen(
         rules = state.rows,
+        showEmpty = state.showEmpty,
         busy = state.busy,
         error = state.displayError,
-        currency = context.currency,
+        currency = state.currency,
+        cancellation = state.cancellation,
+        onCancelRequested = viewModel::onCancelRequested,
+        onCancelDismissed = viewModel::onCancelDismissed,
+        onCancelConfirmed = viewModel::onCancelConfirmed,
         onControl = viewModel::onControlSchedule,
         onRetry = viewModel::onRetry,
         onDismiss = viewModel::onDismissError,
@@ -78,30 +75,24 @@ fun RecurringExpensesScreen(
 @Composable
 private fun InnerRecurringExpensesScreen(
     rules: List<RecurringExpenseUi>,
+    showEmpty: Boolean,
     busy: Boolean,
     error: TextResource?,
     currency: String,
+    cancellation: RecurringExpenseDomain?,
+    onCancelRequested: (RecurringExpenseDomain) -> Unit,
+    onCancelDismissed: () -> Unit,
+    onCancelConfirmed: () -> Unit,
     onControl: (RecurringExpenseDomain, RecurringExpenseActionDomain) -> Unit,
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var cancellation by remember { mutableStateOf<RecurringExpenseDomain?>(null) }
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 20.dp).testTag("recurring_content"),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(vertical = 20.dp),
+        Modifier.fillMaxSize().padding(horizontal = 16.dp).testTag("recurring_content"),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(vertical = 12.dp),
     ) {
         item {
-            PageHeading(
-                stringResource(Res.string.ui_recurring_expenses),
-                stringResource(Res.string.ui_manage_the_fixed_expenses_you_share_at_home),
-            )
-        }
-        item {
-            Text(
-                stringResource(Res.string.ui_add_an_expense_in_money_and_choose_monthly_repeat),
-                style = MaterialTheme.typography.bodyMedium,
-            )
             Text(
                 stringResource(Res.string.ui_each_active_schedule_records_an_expense_on_its_due),
                 style = MaterialTheme.typography.bodySmall,
@@ -116,7 +107,7 @@ private fun InnerRecurringExpensesScreen(
                 }
             }
         }
-        if (rules.isEmpty())
+        if (showEmpty)
             item {
                 EmptyNotice(
                     stringResource(Res.string.ui_no_recurring_expenses_yet),
@@ -170,7 +161,7 @@ private fun InnerRecurringExpensesScreen(
                             )
                         }
                         TextButton(
-                            onClick = { cancellation = rule },
+                            onClick = { onCancelRequested(rule) },
                             enabled = !busy,
                             modifier = Modifier.testTag("cancel_recurring_${rule.title}"),
                         ) {
@@ -190,7 +181,7 @@ private fun InnerRecurringExpensesScreen(
     }
     cancellation?.let { rule ->
         AlertDialog(
-            onDismissRequest = { cancellation = null },
+            onDismissRequest = onCancelDismissed,
             title = { Text(stringResource(Res.string.ui_cancel_this_schedule)) },
             text = {
                 Text(
@@ -201,10 +192,7 @@ private fun InnerRecurringExpensesScreen(
             },
             confirmButton = {
                 TextButton(
-                    onClick = {
-                        cancellation = null
-                        onControl(rule, RecurringExpenseActionDomain.CANCEL)
-                    },
+                    onClick = onCancelConfirmed,
                     enabled = !busy,
                     modifier = Modifier.testTag("confirm_cancel_recurring"),
                 ) {
@@ -212,7 +200,7 @@ private fun InnerRecurringExpensesScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { cancellation = null }) {
+                TextButton(onClick = onCancelDismissed) {
                     Text(stringResource(Res.string.ui_keep_schedule))
                 }
             },

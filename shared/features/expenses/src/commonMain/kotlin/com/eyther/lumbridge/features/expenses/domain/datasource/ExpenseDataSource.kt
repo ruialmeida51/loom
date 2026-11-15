@@ -6,11 +6,15 @@ import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import kotlinx.coroutines.flow.Flow
 
 interface ExpenseDataSource {
-    fun streamExpenses(): Flow<AppResult<List<ExpenseDomain>>>
+    fun streamExpenses(accountId: String = ""): Flow<AppResult<List<ExpenseDomain>>>
 
-    fun streamSettlements(): Flow<AppResult<List<SettlementDomain>>>
+    fun streamSettlements(accountId: String = ""): Flow<AppResult<List<SettlementDomain>>>
 
-    suspend fun addExpense(expense: ExpenseDomain): AppResult<Unit>
+    suspend fun saveExpense(expense: ExpenseDomain): AppResult<Unit>
+
+    suspend fun getExpense(id: String, accountId: String): AppResult<ExpenseDomain>
+
+    suspend fun deleteExpense(expense: ExpenseDomain): AppResult<Unit>
 
     suspend fun recordSettlement(settlement: SettlementDomain): AppResult<Unit>
 }

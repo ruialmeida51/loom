@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
-import com.eyther.lumbridge.di.householdModules
+import com.eyther.lumbridge.features.account.domain.datasource.ProfileDataSource
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
@@ -32,9 +31,7 @@ import com.eyther.lumbridge.features.household.domain.usecase.RememberHouseholdU
 import com.eyther.lumbridge.features.household.domain.usecase.RestoreHouseholdUseCase
 import com.eyther.lumbridge.features.legal.domain.usecase.GetLegalDocumentsUseCase
 import kotlinx.coroutines.launch
-import org.koin.compose.KoinIsolatedContext
 import org.koin.compose.koinInject
-import org.koin.dsl.koinApplication
 
 @Composable
 fun LauncherHost() {
@@ -72,14 +69,16 @@ fun LauncherHost() {
         }
         restoring = false
     }
-    val publicScreen = when {
-        session == null -> AnalyticsScreenDomain.AUTHENTICATION
-        context == null && !restoring -> AnalyticsScreenDomain.HOUSEHOLDS
-        else -> null
-    }
+    val publicScreen =
+        when {
+            session == null -> AnalyticsScreenDomain.AUTHENTICATION
+            else -> null
+        }
     LaunchedEffect(publicScreen, analyticsPreferences.enabled) {
         if (publicScreen != null) {
-            trackAnalyticsEventUseCase(event = AnalyticsEventDomain.ScreenViewed(screen = publicScreen))
+            trackAnalyticsEventUseCase(
+                event = AnalyticsEventDomain.ScreenViewed(screen = publicScreen),
+            )
         }
     }
     when {
@@ -93,51 +92,32 @@ fun LauncherHost() {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-        context == null -> {
+        else -> {
             val user = session ?: return
+            val profileDataSource: ProfileDataSource = koinInject()
             key(user.userId) {
-                HouseholdSetupHost(
+                PortalHost(
                     userId = user.userId,
+                    context = context,
+                    access = access,
+                    householdDataSource = source,
+                    profileDataSource = profileDataSource,
+                    analyticsDataSource = analyticsDataSource,
                     onSelect = { household ->
                         scope.launch {
-                            rememberSelection(user.userId, household.id)
-                            context = HouseholdContextDomain(
-                                id = household.id,
-                                userId = user.userId,
-                                name = household.name,
-                                currency = household.currency,
-                                timeZone = household.timeZone,
-                            )
+                            rememberSelection(userId = user.userId, householdId = household.id)
+                            context =
+                                HouseholdContextDomain(
+                                    id = household.id,
+                                    userId = user.userId,
+                                    name = household.name,
+                                    currency = household.currency,
+                                    timeZone = household.timeZone,
+                                )
                         }
                     },
                     onSignOut = { scope.launch { signOut() } },
                 )
-            }
-        }
-        else -> {
-            val selected = context!!
-            key(selected.id, selected.userId) {
-                val graph =
-                    remember(selected) {
-                        koinApplication {
-                            modules(
-                                householdModules(
-                                    context = selected,
-                                    access = access,
-                                    householdDataSource = source,
-                                    analyticsDataSource = analyticsDataSource,
-                                ),
-                            )
-                        }
-                    }
-                DisposableEffect(graph) { onDispose { graph.close() } }
-                KoinIsolatedContext(context = graph) {
-                    HouseholdHost(
-                        selected,
-                        onSwitchHousehold = { context = null },
-                        onSignOut = { scope.launch { signOut() } },
-                    )
-                }
             }
         }
     }

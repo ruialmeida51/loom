@@ -4,14 +4,13 @@ import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.asApiResult
 import com.eyther.lumbridge.core.data.network.safeApiCall
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.account.domain.datasource.ProfileDataSource
 import com.eyther.lumbridge.features.household.data.network.mapper.toDomain
 import com.eyther.lumbridge.features.household.data.network.mapper.toHouseholdError
 import com.eyther.lumbridge.features.household.data.network.model.request.CreateHouseholdRequest
 import com.eyther.lumbridge.features.household.data.network.model.request.HouseholdRequest
 import com.eyther.lumbridge.features.household.data.network.model.request.JoinHouseholdRequest
-import com.eyther.lumbridge.features.household.data.network.model.request.UpdateNicknameRequest
 import com.eyther.lumbridge.features.household.data.network.model.response.HouseholdResponse
-import com.eyther.lumbridge.features.household.data.network.model.response.MemberProfileResponse
 import com.eyther.lumbridge.features.household.data.network.model.response.MemberResponse
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
@@ -21,16 +20,13 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.update
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CommonHouseholdDataSource(
     private val access: SupabaseAccess,
+    private val profileDataSource: ProfileDataSource,
 ) : HouseholdDataSource {
-
-    private val memberChanges = MutableStateFlow(0L)
 
     override suspend fun getHouseholds(): AppResult<List<HouseholdDomain>> {
         return safeApiCall(
@@ -80,7 +76,8 @@ class CommonHouseholdDataSource(
     }
 
     override fun streamMembers(householdId: String): Flow<AppResult<List<MemberDomain>>> =
-        memberChanges
+        profileDataSource
+            .stream(userId = access.userId())
             .flatMapLatest {
                 access.watch(table = "profiles", scopeId = householdId) {
                     loadMembers(householdId = householdId)
@@ -101,21 +98,6 @@ class CommonHouseholdDataSource(
             .rpc("household_members_with_names", request)
             .decodeList<MemberResponse>()
             .map { it.toDomain() }
-    }
-
-    override suspend fun updateNickname(userId: String, nickname: String): AppResult<Unit> {
-        return safeApiCall(mapError = Exception::toHouseholdError) {
-            access
-                .requireClient()
-                .from("profiles")
-                .update(UpdateNicknameRequest(displayName = nickname)) {
-                    filter { eq("id", userId) }
-                    select()
-                }
-                .decodeSingle<MemberProfileResponse>()
-            memberChanges.update { oldVersion -> oldVersion + 1L }
-            Unit
-        }
     }
 
     override suspend fun createInvitation(householdId: String): AppResult<String> {

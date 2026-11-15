@@ -20,8 +20,5 @@ interface HouseholdDataSource {
 
     suspend fun getMembers(householdId: String): AppResult<List<MemberDomain>>
 
-    /** Nicknames identify the same person in all of their households. RLS limits writes to self. */
-    suspend fun updateNickname(userId: String, nickname: String): AppResult<Unit>
-
     suspend fun createInvitation(householdId: String): AppResult<String>
 }

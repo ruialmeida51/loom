@@ -1,14 +1,25 @@
 package com.eyther.lumbridge.di.household.usecase
 
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
-import com.eyther.lumbridge.features.expenses.domain.usecase.AddExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.ControlRecurringExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpensesStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpensesStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetSelectedExpenseAccountStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplitUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccountUseCase
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
@@ -19,7 +30,6 @@ import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDoma
 import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
-import com.eyther.lumbridge.features.household.domain.usecase.UpdateMemberNicknameUseCase
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportDataSource
 import com.eyther.lumbridge.features.insights.domain.usecase.ExportStatementUseCase
@@ -35,10 +45,13 @@ import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUs
 import com.eyther.lumbridge.features.settings.domain.usecase.SetNotificationsUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetThemeUseCase
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
+import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingSelectionDataSource
 import com.eyther.lumbridge.features.shopping.domain.usecase.AddShoppingItemsUseCase
+import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingItemUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingListUseCase
+import com.eyther.lumbridge.features.shopping.domain.usecase.SelectShoppingListUseCase
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
@@ -49,19 +62,15 @@ class HouseholdUseCaseModule {
         GetMembersUseCase(householdDataSource = householdDataSource)
 
     @Single
-    fun provideUpdateMemberNicknameUseCase(
-        householdDataSource: HouseholdDataSource,
-    ): UpdateMemberNicknameUseCase =
-        UpdateMemberNicknameUseCase(householdDataSource = householdDataSource)
-
-    @Single
-    fun provideAddExpenseUseCase(
+    fun provideSaveExpenseUseCase(
         expenseDataSource: ExpenseDataSource,
+        expenseAccountDataSource: ExpenseAccountDataSource,
         members: GetMembersUseCase,
         context: HouseholdContextDomain,
-    ): AddExpenseUseCase =
-        AddExpenseUseCase(
+    ): SaveExpenseUseCase =
+        SaveExpenseUseCase(
             expenseDataSource = expenseDataSource,
+            expenseAccountDataSource = expenseAccountDataSource,
             members = members,
             context = context,
         )
@@ -76,10 +85,12 @@ class HouseholdUseCaseModule {
 
     @Single
     fun provideGetExpenseLedgerStreamUseCase(
+        getSelectedExpenseAccountStreamUseCase: GetSelectedExpenseAccountStreamUseCase,
         getExpensesStreamUseCase: GetExpensesStreamUseCase,
         getSettlementsStreamUseCase: GetSettlementsStreamUseCase,
     ): GetExpenseLedgerStreamUseCase =
         GetExpenseLedgerStreamUseCase(
+            getSelectedExpenseAccountStreamUseCase = getSelectedExpenseAccountStreamUseCase,
             getExpensesStreamUseCase = getExpensesStreamUseCase,
             getSettlementsStreamUseCase = getSettlementsStreamUseCase,
         )
@@ -95,9 +106,11 @@ class HouseholdUseCaseModule {
     @Single
     fun provideGetRecurringExpensesStreamUseCase(
         recurringExpenseDataSource: RecurringExpenseDataSource,
+        getSelectedExpenseAccountStreamUseCase: GetSelectedExpenseAccountStreamUseCase,
     ): GetRecurringExpensesStreamUseCase =
         GetRecurringExpensesStreamUseCase(
             recurringExpenseDataSource = recurringExpenseDataSource,
+            getSelectedExpenseAccountStreamUseCase = getSelectedExpenseAccountStreamUseCase,
         )
 
     @Single
@@ -111,11 +124,13 @@ class HouseholdUseCaseModule {
     @Single
     fun provideRecordSettlementUseCase(
         expenseDataSource: ExpenseDataSource,
+        expenseAccountDataSource: ExpenseAccountDataSource,
         members: GetMembersUseCase,
         context: HouseholdContextDomain,
     ): RecordSettlementUseCase =
         RecordSettlementUseCase(
             expenseDataSource = expenseDataSource,
+            expenseAccountDataSource = expenseAccountDataSource,
             members = members,
             context = context,
         )
@@ -146,15 +161,11 @@ class HouseholdUseCaseModule {
 
     @Single
     fun provideGetHomeOverviewStreamUseCase(
-        getShoppingStreamUseCase: GetShoppingStreamUseCase,
         getRemindersStreamUseCase: GetRemindersStreamUseCase,
-        getExpenseLedgerStreamUseCase: GetExpenseLedgerStreamUseCase,
         context: HouseholdContextDomain,
     ): GetHomeOverviewStreamUseCase =
         GetHomeOverviewStreamUseCase(
-            getShoppingStreamUseCase = getShoppingStreamUseCase,
             getRemindersStreamUseCase = getRemindersStreamUseCase,
-            getExpenseLedgerStreamUseCase = getExpenseLedgerStreamUseCase,
             context = context,
         )
 
@@ -289,4 +300,90 @@ class HouseholdUseCaseModule {
         SaveShoppingListUseCase(
             shoppingDataSource = shoppingDataSource,
         )
+
+    @Single
+    fun provideGetExpenseAccountsStreamUseCase(
+        expenseAccountDataSource: ExpenseAccountDataSource,
+    ): GetExpenseAccountsStreamUseCase =
+        GetExpenseAccountsStreamUseCase(expenseAccountDataSource = expenseAccountDataSource)
+
+    @Single
+    fun provideGetSelectedExpenseAccountStreamUseCase(
+        expenseAccountDataSource: ExpenseAccountDataSource,
+    ): GetSelectedExpenseAccountStreamUseCase =
+        GetSelectedExpenseAccountStreamUseCase(expenseAccountDataSource = expenseAccountDataSource)
+
+    @Single
+    fun provideSelectExpenseAccountUseCase(
+        expenseAccountDataSource: ExpenseAccountDataSource,
+    ): SelectExpenseAccountUseCase =
+        SelectExpenseAccountUseCase(expenseAccountDataSource = expenseAccountDataSource)
+
+    @Single
+    fun provideSaveExpenseAccountUseCase(
+        expenseAccountDataSource: ExpenseAccountDataSource,
+        getMembersUseCase: GetMembersUseCase,
+        context: HouseholdContextDomain,
+    ): SaveExpenseAccountUseCase =
+        SaveExpenseAccountUseCase(
+            expenseAccountDataSource = expenseAccountDataSource,
+            getMembersUseCase = getMembersUseCase,
+            context = context,
+        )
+
+    @Single
+    fun provideGetExpenseAccountUseCase(
+        expenseAccountDataSource: ExpenseAccountDataSource,
+    ): GetExpenseAccountUseCase =
+        GetExpenseAccountUseCase(expenseAccountDataSource = expenseAccountDataSource)
+
+    @Single
+    fun provideGetExpenseUseCase(expenseDataSource: ExpenseDataSource): GetExpenseUseCase =
+        GetExpenseUseCase(expenseDataSource = expenseDataSource)
+
+    @Single
+    fun provideDeleteExpenseUseCase(expenseDataSource: ExpenseDataSource): DeleteExpenseUseCase =
+        DeleteExpenseUseCase(expenseDataSource = expenseDataSource)
+
+    @Single
+    fun provideGetExpenseFormUseCase(
+        getExpenseAccountUseCase: GetExpenseAccountUseCase,
+        getExpenseUseCase: GetExpenseUseCase,
+        getMembersUseCase: GetMembersUseCase,
+        context: HouseholdContextDomain,
+    ): GetExpenseFormUseCase =
+        GetExpenseFormUseCase(
+            getExpenseAccountUseCase = getExpenseAccountUseCase,
+            getExpenseUseCase = getExpenseUseCase,
+            getMembersUseCase = getMembersUseCase,
+            context = context,
+        )
+
+    @Single
+    fun provideGetExpenseAccountFormUseCase(
+        getExpenseAccountUseCase: GetExpenseAccountUseCase,
+        getMembersUseCase: GetMembersUseCase,
+        context: HouseholdContextDomain,
+    ): GetExpenseAccountFormUseCase =
+        GetExpenseAccountFormUseCase(
+            getExpenseAccountUseCase = getExpenseAccountUseCase,
+            getMembersUseCase = getMembersUseCase,
+            context = context,
+        )
+
+    @Single
+    fun provideResolveExpenseSplitUseCase(): ResolveExpenseSplitUseCase =
+        ResolveExpenseSplitUseCase()
+
+    @Single
+    fun provideGetShoppingSelectionStreamUseCase(
+        shoppingSelectionDataSource: ShoppingSelectionDataSource,
+    ): GetShoppingSelectionStreamUseCase =
+        GetShoppingSelectionStreamUseCase(shoppingSelectionDataSource = shoppingSelectionDataSource)
+
+    @Single
+    fun provideSelectShoppingListUseCase(
+        shoppingSelectionDataSource: ShoppingSelectionDataSource,
+    ): SelectShoppingListUseCase =
+        SelectShoppingListUseCase(shoppingSelectionDataSource = shoppingSelectionDataSource)
 }

@@ -5,6 +5,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class ExpenseResponse(
+    @SerialName("account_id") val accountId: String,
+    @SerialName("version") val version: Long,
+    @SerialName("created_by") val createdBy: String,
+    @SerialName("split_method") val splitMethod: String,
+    @SerialName("split_values") val splitValues: Map<String, Long>,
     @SerialName("id") val id: String,
     @SerialName("title") val title: String,
     @SerialName("amount_minor") val amountMinor: Long,

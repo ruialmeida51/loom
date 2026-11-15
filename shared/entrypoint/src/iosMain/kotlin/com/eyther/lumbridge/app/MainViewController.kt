@@ -10,6 +10,6 @@ fun registerApnsToken(token: String) {
     NativePushBridge.setToken(token, "apns")
 }
 
-fun openPush(householdId: String, route: String) {
-    PendingPush.open(householdId, route)
+fun openPush(householdId: String, route: String, accountId: String?) {
+    PendingPush.open(householdId = householdId, route = route, accountId = accountId)
 }

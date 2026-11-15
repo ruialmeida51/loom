@@ -14,14 +14,16 @@ class CommonStatementDataSource(
     private val context: HouseholdContextDomain,
 ) : StatementDataSource {
 
-    override suspend fun saveStatement(month: String): AppResult<Unit> {
+    override suspend fun saveStatement(month: String, accountId: String): AppResult<Unit> {
         return safeApiCall {
-            val request = SaveStatementRequest(
-                householdId = context.id,
-                month = "$month-01",
-            )
+            val request =
+                SaveStatementRequest(
+                    householdId = context.id,
+                    accountId = accountId,
+                    month = "$month-01",
+                )
 
-            access.requireClient().postgrest.rpc("save_monthly_statement", request)
+            access.requireClient().postgrest.rpc("save_account_statement", request)
             Unit
         }
     }

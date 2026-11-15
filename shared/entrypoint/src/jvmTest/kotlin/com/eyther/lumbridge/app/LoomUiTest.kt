@@ -11,6 +11,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -19,8 +20,8 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
@@ -44,9 +45,10 @@ class LoomUiTest {
                 Box(Modifier.requiredSize(440.dp, 760.dp).testTag("loom_app")) { LoomDemoApp() }
             }
             waitUntil(timeoutMillis = 10_000) {
-                onAllNodesWithText("Home, in harmony.").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
             }
-            onNodeWithTag("navigation_feed").performClick()
+            onNodeWithTag("navigation_more").performClick()
+            onNodeWithText("Feed").performClick()
             onNodeWithText("Dismiss").assertDoesNotExist()
             onNodeWithText("+ Follow a feed").performClick()
             onNodeWithText("https://…").performTextInput("https://")
@@ -67,144 +69,71 @@ class LoomUiTest {
         }
 
     @Test
-    fun householdShoppingRecurringAndThemesWork() =
+    fun inlineShoppingKeepsItsDraftWhenVisitingMyAccount() =
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
             ThemePreferences.set("LIGHT")
             setContent {
                 Box(Modifier.requiredSize(440.dp, 760.dp).testTag("loom_app")) { LoomDemoApp() }
             }
-            waitUntil(timeoutMillis = 10_000) {
-                onAllNodesWithText("Home, in harmony.").fetchSemanticsNodes().isNotEmpty()
+            waitUntil(timeoutMillis = 10000) {
+                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
             }
             capture("home-light")
             onNodeWithTag("navigation_shopping").performClick()
-            onNodeWithText("Add an item").performClick()
-            onNodeWithText("What do we need?").performTextInput("Lemons")
-            onNodeWithText("Quantity or note").performTextInput("4")
-            onNodeWithText("Add item").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Add item").fetchSemanticsNodes().isEmpty()
+            onNodeWithTag("shopping_inline_input")
+                .performScrollTo()
+                .performTextInput("Barista oat drink")
+            onNodeWithTag("shopping_inline_input").performImeAction()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithText("Barista oat drink").fetchSemanticsNodes().isNotEmpty()
             }
-            onNodeWithTag("shopping_content").performScrollToNode(hasText("Lemons"))
-            onNodeWithTag("edit_Lemons").performClick()
-            onNodeWithText("What do we need?").performTextReplacement("Organic lemons")
-            onNodeWithText("Quantity or note").performTextReplacement("6")
-            onNodeWithText("Save item").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Save item").fetchSemanticsNodes().isEmpty()
-            }
-            onNodeWithTag("shopping_content").performScrollToNode(hasText("Organic lemons"))
-            onNodeWithTag("actions_Organic lemons").performClick()
-            onNodeWithText("Remove").performClick()
-            onNodeWithTag("shopping_content").performScrollToIndex(0)
-            onNodeWithText("Undo").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Undo").fetchSemanticsNodes().isEmpty()
-            }
-            onNodeWithTag("shopping_content").performScrollToNode(hasText("Organic lemons"))
-            onNodeWithText("Organic lemons").assertExists()
-            onNodeWithTag("shopping_content").performScrollToIndex(0)
             capture("shopping-light")
-            onNodeWithTag("manage_lists").performClick()
-            onNodeWithText("New list").performClick()
-            onNodeWithText("List name").performTextInput("Groceries")
-            onNodeWithText("Save list").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("A list with this name already exists.")
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
-            }
-            onNodeWithText("List name").performTextReplacement("Pharmacy")
-            onNodeWithText("Save list").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Save list").fetchSemanticsNodes().isEmpty()
-            }
-            onNodeWithText("Add an item").performClick()
-            onNodeWithText("What do we need?").performTextInput("Bandages\nAntiseptic")
-            onNodeWithTag("category_Household").performClick()
-            onNodeWithText("Add item").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Add item").fetchSemanticsNodes().isEmpty()
-            }
-            onNodeWithTag("shopping_content").performScrollToNode(hasText("Bandages"))
-            onNodeWithText("Bandages").assertExists()
-            onNodeWithText("Organic lemons").assertDoesNotExist()
-            onNodeWithTag("shopping_content").performScrollToIndex(0)
-            capture("shopping-lists-light")
-            onNodeWithTag("manage_lists").performClick()
-            onNodeWithTag("rename_Pharmacy").performClick()
-            onNodeWithText("List name").performTextReplacement("First aid")
-            onNodeWithText("Save list").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Save list").fetchSemanticsNodes().isEmpty()
-            }
-            onNodeWithTag("manage_lists").performClick()
-            onNodeWithTag("archive_First aid").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Restore").fetchSemanticsNodes().isNotEmpty()
-            }
-            onNodeWithTag("archive_First aid").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Restore").fetchSemanticsNodes().isEmpty()
-            }
-            onNodeWithText("Done").performClick()
-            onNodeWithTag("navigation_money").performClick()
-            onNodeWithText("Add expense").performClick()
-            onNodeWithText("What was it for?").performTextInput("Streaming service")
-            onNodeWithText("Amount · EUR").performTextInput("15.00")
-            onNodeWithText("Date paid · YYYY-MM-DD").performTextReplacement("2026-11-01")
-            onNodeWithTag("expense_recurring").performScrollTo().performClick()
-            onNodeWithText("Save expense").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Save expense").fetchSemanticsNodes().isEmpty()
-            }
-            onNodeWithText("Recurring expenses").performClick()
-            onNodeWithText("Streaming service").assertExists()
-            onNodeWithTag("recurring_content")
-                .performScrollToNode(hasTestTag("toggle_recurring_Internet"))
-            onNodeWithTag("toggle_recurring_Internet").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Paused").fetchSemanticsNodes().isNotEmpty()
-            }
-            capture("recurring-light")
-            onNodeWithTag("recurring_content")
-                .performScrollToNode(hasTestTag("toggle_recurring_Internet"))
-            onNodeWithTag("toggle_recurring_Internet").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Active").fetchSemanticsNodes().isNotEmpty()
-            }
-            onNodeWithTag("cancel_recurring_Internet").performClick()
-            onNodeWithTag("confirm_cancel_recurring").performClick()
-            waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Cancelled").fetchSemanticsNodes().isNotEmpty()
-            }
+            onNodeWithTag("shopping_inline_input").performTextInput("Keep this draft")
+            onNodeWithTag("open_my_account").performClick()
+            onNodeWithText("My account").assertExists()
             onNodeWithContentDescription("Back").performClick()
-            onNodeWithText("Money, untangled.").assertExists()
+            onNodeWithTag("shopping_inline_input").assertTextContains("Keep this draft")
             onNodeWithContentDescription("Back").assertDoesNotExist()
-            capture("money-toolbar")
-            onNodeWithTag("household_switch").performClick()
-            onNodeWithText("The city flat").performClick()
-            onNodeWithTag("navigation_shopping").performClick()
-            onNodeWithTag("list_First aid").assertDoesNotExist()
-            onNodeWithTag("household_switch").performClick()
-            onNodeWithText("The little nest").performClick()
-            onNodeWithTag("navigation_shopping").performClick()
-            onNodeWithTag("list_First aid").assertExists()
-            onNodeWithTag("toolbar_actions").performClick()
-            onNodeWithText("Settings").performClick()
-            onNodeWithTag("settings_content").performScrollToNode(hasTestTag("analytics_consent"))
+        }
+
+    @Test
+    fun expenseEntryFromHomeReturnsHomeAndAppearsInTheEverydayHistory() =
+        runSkikoComposeUiTest(size = Size(440f, 760f)) {
+            ThemePreferences.set("LIGHT")
+            setContent {
+                Box(Modifier.requiredSize(440.dp, 760.dp).testTag("loom_app")) { LoomDemoApp() }
+            }
+            waitUntil(timeoutMillis = 10000) {
+                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithText("Add expense").performScrollTo().performClick()
+            onNodeWithTag("expense_title").performTextInput("Streaming service")
+            onNodeWithTag("expense_amount").performTextInput("15.00")
+            capture("expense-form-light")
+            onNodeWithText("Save expense").performClick()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithTag("navigation_money").performClick()
+            onNodeWithTag("expenses_content").performScrollToNode(hasText("Streaming service"))
+            onNodeWithText("Streaming service").assertExists()
+            capture("money-light")
+            onNodeWithTag("balances_view_balances").performClick()
+            onNodeWithText("Who pays whom").assertExists()
+            capture("balances-light")
+            onNodeWithContentDescription("Back").assertDoesNotExist()
+            onNodeWithTag("open_my_account").performClick()
+            onNodeWithTag("account_content").performScrollToNode(hasTestTag("analytics_consent"))
             onNodeWithTag("analytics_consent").assertIsOff()
             onNodeWithTag("analytics_consent").performClick().assertIsOn()
             onNodeWithTag("analytics_consent").performClick().assertIsOff()
             capture("settings-privacy")
-            onNodeWithTag("settings_content").performScrollToNode(hasText("Dark"))
+            onNodeWithTag("account_content").performScrollToNode(hasText("Dark"))
             onNodeWithText("Dark", useUnmergedTree = true).performClick()
-            onNodeWithTag("navigation_home").performClick()
-            onNodeWithText("Home, in harmony.").assertExists()
-            capture("home-dark")
-            onNodeWithTag("navigation_money").performClick()
-            onNodeWithText("Money, untangled.").assertExists()
+            onNodeWithContentDescription("Back").performClick()
             capture("money-dark")
+            onNodeWithTag("navigation_home").performClick()
+            capture("home-dark")
         }
 
     private fun ComposeUiTest.capture(name: String) {

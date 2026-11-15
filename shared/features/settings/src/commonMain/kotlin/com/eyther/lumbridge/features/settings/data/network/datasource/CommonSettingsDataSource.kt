@@ -5,7 +5,6 @@ import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.safeApiCall
 import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
-import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import com.eyther.lumbridge.features.settings.data.network.model.request.PushDeviceRequest
 import com.eyther.lumbridge.features.settings.data.network.model.request.RegisterPushDeviceRequest
@@ -21,15 +20,16 @@ import kotlinx.coroutines.flow.update
 
 class CommonSettingsDataSource(
     private val access: SupabaseAccess,
-    private val context: HouseholdContextDomain,
+    private val userId: String,
 ) : SettingsDataSource {
 
-    private val mutablePreferences = MutableStateFlow(
-        SettingsDomain(
-            theme = ThemePreferences.mode.value,
-            notifications = PlatformStorage.get("notifications-${context.userId}") == "true",
-        ),
-    )
+    private val mutablePreferences =
+        MutableStateFlow(
+            SettingsDomain(
+                theme = ThemePreferences.mode.value,
+                notifications = PlatformStorage.get("notifications-${userId}") == "true",
+            ),
+        )
 
     override fun stream(): StateFlow<SettingsDomain> = mutablePreferences.asStateFlow()
 
@@ -48,11 +48,12 @@ class CommonSettingsDataSource(
 
             if (enabled) {
                 val (token, platform) = PushPlatform.requestToken()
-                val request = RegisterPushDeviceRequest(
-                    deviceId = deviceId,
-                    token = token,
-                    platform = platform,
-                )
+                val request =
+                    RegisterPushDeviceRequest(
+                        deviceId = deviceId,
+                        token = token,
+                        platform = platform,
+                    )
 
                 access.requireClient().postgrest.rpc("register_push_device", request)
             } else {
@@ -61,7 +62,7 @@ class CommonSettingsDataSource(
                 access.requireClient().postgrest.rpc("disable_notifications", request)
             }
 
-            PlatformStorage.put("notifications-${context.userId}", enabled.toString())
+            PlatformStorage.put("notifications-${userId}", enabled.toString())
             mutablePreferences.update { oldPreferences ->
                 oldPreferences.copy(notifications = enabled)
             }
@@ -69,7 +70,7 @@ class CommonSettingsDataSource(
     }
 
     private fun getDeviceId(): String {
-        val key = "device-${context.userId}"
+        val key = "device-${userId}"
         val existing = PlatformStorage.get(key)
         if (existing != null) return existing
 

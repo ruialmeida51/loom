@@ -106,3 +106,11 @@ Typical failures:
 | Public policy verification fails | Publish **Legal pages** and wait for the configured URLs to serve the current policy version. |
 
 Reference: [Google Play Developer API setup](https://developers.google.com/android-publisher/getting_started), [Firebase collection controls](https://firebase.google.com/docs/analytics/configure-data-collection), and [Play account-deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111).
+
+## Changelog and release notes
+
+Edit user-facing bullets under `[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md). Use one bullet per line and keep the combined notes within Play’s 500-character limit. The [Loom release skill](../.agents/skills/loom-release/SKILL.md) describes the complete workflow.
+
+The workflow freezes these notes from the release source commit, uses them for Firebase and Play, and saves a versioned Markdown snapshot as an artifact. Successful deployment history also retains the notes. After upload, the bot archives the actual allocated version in CHANGELOG.md through a file-SHA-protected update. New bullets merged while the build ran stay Unreleased. Changelog-only commits do not start another release. Promotions or rebuilds with no new bullets reuse the latest released notes.
+
+Version allocation remains automatic across both destinations. Do not manually bump the bootstrap `loomVersionName` for each patch, duplicate notes in a distribution file, or add a Firebase Git tag. Failed uploads and connection checks do not archive the changelog.

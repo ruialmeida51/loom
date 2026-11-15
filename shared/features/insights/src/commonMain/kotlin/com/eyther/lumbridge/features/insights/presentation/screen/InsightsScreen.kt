@@ -142,7 +142,7 @@ private fun InnerInsightsScreen(
                         color = MaterialTheme.colorScheme.secondary,
                     )
                     Text(
-                        MoneyDomain(statement.totalMinor, context.currency).formatted(),
+                        MoneyDomain(statement.totalMinor, statement.currency).formatted(),
                         style = MaterialTheme.typography.displaySmall,
                     )
                     Text(
@@ -161,23 +161,23 @@ private fun InnerInsightsScreen(
                     StatementRow(
                         stringResource(Res.string.ui_you_paid),
                         statement.paidMinor,
-                        context.currency,
+                        statement.currency,
                     )
                     StatementRow(
                         stringResource(Res.string.ui_your_share),
                         statement.shareMinor,
-                        context.currency,
+                        statement.currency,
                     )
                     HorizontalDivider()
                     StatementRow(
                         stringResource(Res.string.ui_opening_balance),
                         statement.openingBalanceMinor,
-                        context.currency,
+                        statement.currency,
                     )
                     StatementRow(
                         stringResource(Res.string.ui_closing_balance),
                         statement.closingBalanceMinor,
-                        context.currency,
+                        statement.currency,
                     )
                     Text(
                         stringResource(
@@ -195,7 +195,7 @@ private fun InnerInsightsScreen(
                         StatementRow(
                             expenseCategoryLabel(row.category),
                             row.amountMinor,
-                            context.currency,
+                            statement.currency,
                         )
                         Box(
                             Modifier.fillMaxWidth()

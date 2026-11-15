@@ -22,4 +22,11 @@
     <string name="error_household_full">This household is full.</string>
     <string name="error_owner_required">Only the household owner can invite members.</string>
   <string name="error_invalid_nickname">Choose a nickname between 1 and 80 characters, on one line.</string>
+<string name="ui_invite_someone_home">Invite someone home</string>
+<string name="ui_one_time_invitation_expires_in_48_hours">One-time invitation · expires in 48 hours</string>
+<string name="ui_done">Done</string>
+    <string name="details_summary">%1$s · %2$s</string>
+    <string name="details_invite">Invite a household member</string>
+    <string name="details_owner">Owner</string>
+    <string name="details_member">Member</string>
 </resources>

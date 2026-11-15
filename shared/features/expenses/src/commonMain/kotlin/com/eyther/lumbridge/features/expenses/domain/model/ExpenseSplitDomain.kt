@@ -50,6 +50,54 @@ object ExpenseSplitDomain {
         return shares
     }
 
+    /** Largest remainders allocate every minor unit, with stable member IDs breaking ties. */
+    fun weighted(amountMinor: Long, weights: Map<String, Long>): Map<String, Long> {
+        requireDomain(amountMinor in 1..MoneyDomain.MAX_MINOR_UNITS) {
+            ExpenseError.InvalidAmount()
+        }
+        requireDomain(
+            weights.size in 1..100 &&
+                weights.values.all { it in 0..10_000 } &&
+                weights.values.any { it > 0 },
+        ) {
+            ExpenseError.InvalidShare()
+        }
+        val totalWeight = weights.values.sum()
+        val shares =
+            weights.mapValues { (_, weight) -> amountMinor * weight / totalWeight }.toMutableMap()
+        val remainder = amountMinor - shares.values.sum()
+        weights.keys
+            .sortedWith(
+                compareByDescending<String> { amountMinor * weights.getValue(it) % totalWeight }
+                    .thenBy { it },
+            )
+            .take(remainder.toInt())
+            .forEach { id -> shares[id] = shares.getValue(id) + 1 }
+        return shares
+    }
+
+    fun resolve(amountMinor: Long, selection: ExpenseSplitSelectionDomain): Map<String, Long> {
+        requireDomain(selection.participants.isNotEmpty()) { ExpenseError.NoParticipants() }
+        val selectedValues = selection.participants.associateWith { selection.values[it] ?: 0L }
+        return when (selection.method) {
+            ExpenseSplitMethodDomain.EQUAL ->
+                equal(amountMinor = amountMinor, memberIds = selection.participants.toList())
+            ExpenseSplitMethodDomain.SHARES ->
+                weighted(amountMinor = amountMinor, weights = selectedValues)
+            ExpenseSplitMethodDomain.AMOUNTS ->
+                selectedValues.also { validate(amountMinor = amountMinor, shares = it) }
+            ExpenseSplitMethodDomain.PERCENTAGES -> {
+                requireDomain(selectedValues.values.all { it in 0..100 }) {
+                    ExpenseError.InvalidPercentages()
+                }
+                percentages(
+                    amountMinor = amountMinor,
+                    percentages = selectedValues.mapValues { it.value.toInt() },
+                )
+            }
+        }
+    }
+
     fun validate(amountMinor: Long, shares: Map<String, Long>) {
         requireDomain(amountMinor in 1..MoneyDomain.MAX_MINOR_UNITS) {
             ExpenseError.InvalidAmount()

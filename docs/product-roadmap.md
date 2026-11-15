@@ -32,9 +32,15 @@ The hierarchy is household → shopping list → item. Store tags or filters can
 
 Monthly recurring-expense management was delivered alongside shopping: payment dates determine the monthly anchor, schedules can be paused/resumed/cancelled, and existing ledger entries remain intact. Production/demo separation, resource-backed UI text, named Gradle references, and an automated ownership audit are also in place.
 
+## Delivered: focused navigation and spending accounts
+
+Home, Shopping, Balances and More are the root tabs. Home has square Add expense/Add reminder shortcuts and today’s reminders; More opens the full Reminders, Feed and household details pages. Shopping starts with inline checklist entry and collapsed completed items. Plannot-style portal navigation keeps global My account outside households and preserves the underlying flow.
+
+Each household has an Everyday account plus independent trip/event accounts for household members. Accounts use one currency each. Dedicated expense, detail and split screens support equal shares, weighted shares, exact amounts and percentages. Expenses can be edited or deleted with version checks; saved statement revisions remain intact. Repayment suggestions, recurring bills, reports and CSV exports use the selected account.
+
 ## Following delivery: complete money and bill management
 
-- Correct or void expenses and repayments with a visible change history. Keep balances consistent and preserve already-issued statement revisions.
+- Add repayment corrections and a visible expense/repayment change history. Keep balances consistent and preserve already-issued statement revisions.
 - Add transaction search, receipt attachments, and saved split presets such as equal shares or a couple's 60/40 arrangement.
 - Manage recurring bills: review upcoming entries, change schedules, pause/cancel, and support additional recurrence intervals.
 - Distinguish an expected bill from a recorded payment. Variable bills need an amount confirmed before recording what was paid.
@@ -72,6 +78,6 @@ Revisit offline access and editing as a separate future initiative.
 
 ## Architecture boundaries
 
-Shopping lists and items belong to shopping; household selection and membership belong to household; money, splits, and bill policies belong to expenses; reminders and chore policies belong to reminders; RSS remains in feed. Cross-feature use cases may depend on other feature domains. Core stays limited to generic infrastructure and utilities.
+Shopping lists and items belong to shopping; household selection and membership belong to household; global profiles belong to account; spending accounts, money, splits, and bill policies belong to expenses; reminders and chore policies belong to reminders; RSS remains in feed. Cross-feature use cases may depend on other feature domains. Core stays limited to generic infrastructure and utilities.
 
 Backend changes must use new migrations, preserving the existing migration history and financial records.

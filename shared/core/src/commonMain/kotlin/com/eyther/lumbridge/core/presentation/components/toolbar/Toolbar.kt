@@ -36,6 +36,7 @@ fun Toolbar(
     subtitle: String? = null,
     windowInsets: WindowInsets =
         WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+    backEnabled: Boolean = true,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     Row(
@@ -49,7 +50,7 @@ fun Toolbar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (showBackButton) {
-            IconButton(onClick = onBack) {
+            IconButton(onClick = onBack, enabled = backEnabled) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_arrow_back),
                     contentDescription = stringResource(Res.string.toolbar_back),

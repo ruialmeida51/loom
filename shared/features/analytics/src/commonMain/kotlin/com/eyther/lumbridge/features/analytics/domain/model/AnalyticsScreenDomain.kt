@@ -4,6 +4,7 @@ enum class AnalyticsScreenDomain {
     AUTHENTICATION,
     HOUSEHOLDS,
     HOME,
+    MORE,
     FEED,
     SHOPPING,
     EXPENSES,
@@ -11,4 +12,10 @@ enum class AnalyticsScreenDomain {
     RECURRING_EXPENSES,
     INSIGHTS,
     SETTINGS,
+    ACCOUNT,
+    HOUSEHOLD_DETAILS,
+    EXPENSE_FORM,
+    EXPENSE_DETAILS,
+    EXPENSE_SPLIT,
+    EXPENSE_ACCOUNT_FORM,
 }

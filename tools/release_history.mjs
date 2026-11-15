@@ -36,7 +36,7 @@ export class ReleaseHistory {
     return (await Promise.all(Object.keys(environments).map(destination => this.latest(destination)))).filter(Boolean);
   }
 
-  async record({ destination, versionName, versionCode, sha, url }) {
+  async record({ destination, versionName, versionCode, sha, url, notes = [] }) {
     const environment = environments[destination];
     if (!environment || !/^[a-f0-9]{40}$/.test(sha)) throw new Error('Invalid successful-release metadata.');
     const deployment = await this.call('deployments', {
@@ -44,7 +44,7 @@ export class ReleaseHistory {
         ref: sha, auto_merge: false, required_contexts: [], environment,
         production_environment: false, transient_environment: false,
         description: `Loom ${versionName} (${versionCode})`,
-        payload: { loomRelease: { destination, versionName, versionCode } },
+        payload: { loomRelease: { destination, versionName, versionCode, ...(notes.length ? { notes } : {}) } },
       }),
     });
     await this.call(`deployments/${deployment.id}/statuses`, {

@@ -66,6 +66,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           LOOM_REQUESTED_VERSION_CODE: ${{ inputs.version_code }}
         run: node tools/plan_release.mjs "$RUNNER_TEMP/loom-play-service-account.json" "$RUNNER_TEMP/loom-release-config.json"
+      - name: Prepare changelog and release notes
+        if: env.LOOM_DESTINATION != 'check'
+        run: node tools/changelog.mjs prepare
       - uses: actions/setup-java@v4
         if: env.LOOM_DESTINATION != 'check'
         with:
@@ -89,7 +92,7 @@ jobs:
         if: env.LOOM_DESTINATION != 'check'
         run: >-
           ./gradlew :shared:di:jvmTest :shared:features:analytics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest
-          :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest
+          :shared:features:account:jvmTest :shared:features:home:jvmTest :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest
           :shared:features:feed:jvmTest :shared:features:insights:jvmTest :shared:features:reminders:jvmTest
           :shared:features:settings:jvmTest :shared:entrypoint:jvmTest
       - name: Build the signed APK and bundle
@@ -111,7 +114,7 @@ jobs:
         run: >-
           node tools/publish_firebase.mjs "$RUNNER_TEMP/loom-play-service-account.json"
           "$RUNNER_TEMP/loom-release-config.json" androidApp/build/outputs/apk/release/androidApp-release.apk
-          distribution/whatsnew/whatsnew-en-US
+          "$RUNNER_TEMP/whatsnew/whatsnew-en-US"
       - name: Verify public legal pages
         if: env.LOOM_DESTINATION == 'play'
         run: python3 tools/check_legal_site.py --live
@@ -125,7 +128,7 @@ jobs:
           tracks: internal
           status: draft
           releaseName: ${{ steps.plan.outputs.version_name }}
-          whatsNewDirectory: distribution/whatsnew
+          whatsNewDirectory: ${{ runner.temp }}/whatsnew
           mappingFile: androidApp/build/outputs/mapping/release/mapping.txt
       - name: Record the successful release version
         if: env.LOOM_DESTINATION != 'check'
@@ -144,11 +147,27 @@ jobs:
           from pathlib import Path
           version = os.environ['LOOM_VERSION_NAME']
           code = os.environ['LOOM_VERSION_CODE']
-          notes = Path('distribution/whatsnew/whatsnew-en-US').read_text()
-          body = f'Loom {version} ({code})\n\nUploaded to Google Play as an **internal testing draft**.\n\n{notes}\nSource: `{os.environ["GITHUB_SHA"]}`\n'
+          notes = (Path(os.environ['RUNNER_TEMP']) / 'loom-release-changelog.md').read_text()
+          body = f'{notes}\nUploaded to Google Play as an **internal testing draft**.\n'
           (Path(os.environ['RUNNER_TEMP']) / 'loom-github-release.md').write_text(body)
           PY
           gh release create "v$LOOM_VERSION_NAME" --target "$GITHUB_SHA" --title "Loom $LOOM_VERSION_NAME" --notes-file "$RUNNER_TEMP/loom-github-release.md" --prerelease androidApp/build/outputs/bundle/release/*.aab
+      - name: Archive the successful release changelog
+        if: env.LOOM_DESTINATION != 'check'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tools/changelog.mjs record
+      - name: Save versioned release notes
+        if: always() && env.LOOM_DESTINATION != 'check'
+        uses: actions/upload-artifact@v4
+        with:
+          name: loom-changelog-${{ steps.plan.outputs.version_code }}
+          path: |
+            ${{ runner.temp }}/loom-release-changelog.md
+            ${{ runner.temp }}/loom-release-notes.json
+            ${{ runner.temp }}/loom-planned-release.json
+            ${{ runner.temp }}/whatsnew/whatsnew-en-US
+          if-no-files-found: ignore
       - name: Save Play bundle and mapping
         if: env.LOOM_DESTINATION == 'play'
         uses: actions/upload-artifact@v4

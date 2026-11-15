@@ -14,13 +14,36 @@ import kotlinx.datetime.LocalDate
 
 class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseDataSource {
 
-    override fun streamExpenses() = store.expenses.map { AppResult.Success(it) }
+    override fun streamExpenses(accountId: String) =
+        store.expenses.map { expenses ->
+            AppResult.Success(
+                expenses
+                    .filter { it.accountId.ifBlank { store.context.id } == accountId }
+                    .map {
+                        it.copy(
+                            accountId = accountId,
+                            version = maxOf(1, it.version),
+                            createdBy = it.createdBy.ifBlank { store.context.userId },
+                        )
+                    },
+            )
+        }
 
-    override fun streamSettlements() = store.settlements.map { AppResult.Success(it) }
+    override fun streamSettlements(accountId: String) =
+        store.settlements.map { settlements ->
+            AppResult.Success(
+                settlements
+                    .filter { it.accountId.ifBlank { store.context.id } == accountId }
+                    .map { it.copy(accountId = accountId) },
+            )
+        }
 
-    override suspend fun addExpense(expense: ExpenseDomain) = safeCall {
-        if (store.expenses.value.none { it.id == expense.id }) {
-            store.expenses.update { it + expense }
+    override suspend fun saveExpense(expense: ExpenseDomain) = safeCall {
+        val exists = store.expenses.value.any { it.id == expense.id }
+        store.expenses.update { expenses ->
+            expenses.filterNot { it.id == expense.id } + expense.copy(version = expense.version + 1)
+        }
+        if (!exists) {
             if (expense.recurring) {
                 val date = LocalDate.parse(expense.occurredOn)
                 store.recurring.update {
@@ -38,11 +61,28 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
                             store.context.userId,
                             1,
                             expense.shares,
+                            accountId = expense.accountId,
                         )
                 }
             }
         }
         Unit
+    }
+
+    override suspend fun getExpense(id: String, accountId: String) = safeCall {
+        store.expenses.value
+            .first { it.id == id && it.accountId.ifBlank { store.context.id } == accountId }
+            .let {
+                it.copy(
+                    accountId = accountId,
+                    version = maxOf(1, it.version),
+                    createdBy = it.createdBy.ifBlank { store.context.userId },
+                )
+            }
+    }
+
+    override suspend fun deleteExpense(expense: ExpenseDomain): AppResult<Unit> = safeCall {
+        store.expenses.update { expenses -> expenses.filterNot { it.id == expense.id } }
     }
 
     override suspend fun recordSettlement(settlement: SettlementDomain) = safeCall {

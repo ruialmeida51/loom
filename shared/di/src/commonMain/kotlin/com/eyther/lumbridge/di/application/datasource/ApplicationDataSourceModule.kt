@@ -2,6 +2,8 @@ package com.eyther.lumbridge.di.application.datasource
 
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.createLoomSupabaseClient
+import com.eyther.lumbridge.features.account.data.network.datasource.CommonProfileDataSource
+import com.eyther.lumbridge.features.account.domain.datasource.ProfileDataSource
 import com.eyther.lumbridge.features.analytics.data.local.datasource.CommonAnalyticsDataSource
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.authentication.data.local.SecureCodeVerifierCache
@@ -23,44 +25,55 @@ import org.koin.core.annotation.Single
 class ApplicationDataSourceModule {
 
     @Single
-    fun provideSupabaseAccess(): SupabaseAccess = SupabaseAccess(
-        client = createLoomSupabaseClient(
-            configureAuthentication = {
-                configureLoomAuthentication(
-                    sessionStorage = SecureSessionManager(),
-                    verifierCache = SecureCodeVerifierCache(),
-                )
-            },
-        ),
-    )
+    fun provideProfileDataSource(access: SupabaseAccess): ProfileDataSource =
+        CommonProfileDataSource(access = access)
 
     @Single
-    fun provideAnalyticsDataSource(): AnalyticsDataSource = CommonAnalyticsDataSource()
+    fun provideSupabaseAccess(): SupabaseAccess =
+        SupabaseAccess(
+            client =
+                createLoomSupabaseClient(
+                    configureAuthentication = {
+                        configureLoomAuthentication(
+                            sessionStorage = SecureSessionManager(),
+                            verifierCache = SecureCodeVerifierCache(),
+                        )
+                    },
+                ),
+        )
+
+    @Single fun provideAnalyticsDataSource(): AnalyticsDataSource = CommonAnalyticsDataSource()
 
     @Single
     fun providePushDeviceDataSource(
         access: SupabaseAccess,
-    ): PushDeviceDataSource = CommonPushDeviceDataSource(
-        access = access,
-    )
+    ): PushDeviceDataSource =
+        CommonPushDeviceDataSource(
+            access = access,
+        )
 
     @Single
     fun provideAuthenticationDataSource(
         access: SupabaseAccess,
         pushDevices: PushDeviceDataSource,
-    ): AuthenticationDataSource = CommonAuthenticationDataSource(
-        access = access,
-        pushDevices = pushDevices,
-        callbackEvents = NativeAuthenticationBridge.stream(),
-    )
+    ): AuthenticationDataSource =
+        CommonAuthenticationDataSource(
+            access = access,
+            pushDevices = pushDevices,
+            callbackEvents = NativeAuthenticationBridge.stream(),
+        )
 
     @Single
     fun provideHouseholdDataSource(
         access: SupabaseAccess,
-    ): HouseholdDataSource = CommonHouseholdDataSource(
-        access = access,
-    )
+        profileDataSource: ProfileDataSource,
+    ): HouseholdDataSource =
+        CommonHouseholdDataSource(
+            access = access,
+            profileDataSource = profileDataSource,
+        )
 
     @Single
-    fun provideHouseholdSelectionDataSource(): HouseholdSelectionDataSource = CommonHouseholdSelectionDataSource()
+    fun provideHouseholdSelectionDataSource(): HouseholdSelectionDataSource =
+        CommonHouseholdSelectionDataSource()
 }

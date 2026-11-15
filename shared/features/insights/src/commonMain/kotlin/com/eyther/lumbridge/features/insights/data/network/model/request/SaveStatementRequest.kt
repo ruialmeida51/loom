@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class SaveStatementRequest(
+    @SerialName("p_account_id") val accountId: String,
     @SerialName("p_household_id") val householdId: String,
     @SerialName("p_month") val month: String,
 )

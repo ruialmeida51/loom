@@ -9,7 +9,16 @@ abstract class RecurringExpensesScreenViewModelContract : LoomViewModel() {
 
     abstract val state: StateFlow<RecurringExpensesState>
 
-    abstract fun onControlSchedule(rule: RecurringExpenseDomain, action: RecurringExpenseActionDomain)
+    abstract fun onControlSchedule(
+        rule: RecurringExpenseDomain,
+        action: RecurringExpenseActionDomain,
+    )
+
+    abstract fun onCancelRequested(rule: RecurringExpenseDomain)
+
+    abstract fun onCancelDismissed()
+
+    abstract fun onCancelConfirmed()
 
     abstract fun onRetry()
 

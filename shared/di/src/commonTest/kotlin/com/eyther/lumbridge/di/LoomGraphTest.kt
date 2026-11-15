@@ -24,6 +24,8 @@ import com.eyther.lumbridge.features.household.presentation.viewmodel.JoinHouseh
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.CreateHouseholdScreenViewModelContract
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.JoinHouseholdScreenViewModelContract
+import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
+import com.eyther.lumbridge.features.settings.domain.model.SettingsDomain
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
 import kotlin.test.Test
@@ -99,9 +101,6 @@ class LoomGraphTest {
         override suspend fun getMembers(householdId: String): AppResult<List<MemberDomain>> =
             AppResult.Success(emptyList())
 
-        override suspend fun updateNickname(userId: String, nickname: String): AppResult<Unit> =
-            AppResult.Success(Unit)
-
         override suspend fun createInvitation(householdId: String): AppResult<String> =
             error("This graph test does not create invitations")
     }
@@ -172,6 +171,16 @@ class LoomGraphTest {
         val analytics = CommonAnalyticsDataSource()
         val households = HouseholdStub()
         val access = SupabaseAccess(client = null)
+        val settings =
+            object : SettingsDataSource {
+                override fun stream() = MutableStateFlow(SettingsDomain())
+
+                override suspend fun setTheme(value: String): AppResult<Unit> =
+                    AppResult.Success(Unit)
+
+                override suspend fun setNotifications(enabled: Boolean): AppResult<Unit> =
+                    AppResult.Success(Unit)
+            }
         val first = koinApplication {
             modules(
                 householdModules(
@@ -179,6 +188,7 @@ class LoomGraphTest {
                     access = access,
                     householdDataSource = households,
                     analyticsDataSource = analytics,
+                    settingsDataSource = settings,
                 ),
             )
         }
@@ -189,6 +199,7 @@ class LoomGraphTest {
                     access = access,
                     householdDataSource = households,
                     analyticsDataSource = analytics,
+                    settingsDataSource = settings,
                 ),
             )
         }
@@ -196,6 +207,8 @@ class LoomGraphTest {
             assertSame(firstContext, first.koin.get<HouseholdContextDomain>())
             assertSame(secondContext, second.koin.get<HouseholdContextDomain>())
             assertSame(analytics, first.koin.get<AnalyticsDataSource>())
+            assertSame(settings, first.koin.get<SettingsDataSource>())
+            assertSame(settings, second.koin.get<SettingsDataSource>())
             assertSame(analytics, second.koin.get<AnalyticsDataSource>())
             assertSame(households, second.koin.get<HouseholdDataSource>())
             assertNotSame(

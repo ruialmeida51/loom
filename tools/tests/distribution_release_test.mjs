@@ -108,9 +108,9 @@ test('recording Firebase history creates neither a GitHub release nor a Git tag'
     calls.push({ url, body: JSON.parse(options.body) });
     return Response.json({ id: 50 });
   });
-  await history.record({ destination: 'firebase', versionName: '4.0.0', versionCode: 50, sha: 'a'.repeat(40), url: release.firebaseConsoleUri });
+  await history.record({ destination: 'firebase', versionName: '4.0.0', versionCode: 50, sha: 'a'.repeat(40), url: release.firebaseConsoleUri, notes: ['Home quick actions.'] });
   assert.ok(calls.every(call => call.url.includes('/deployments')));
-  assert.deepEqual(calls[0].body.payload.loomRelease, { destination: 'firebase', versionName: '4.0.0', versionCode: 50 });
+  assert.deepEqual(calls[0].body.payload.loomRelease, { destination: 'firebase', versionName: '4.0.0', versionCode: 50, notes: ['Home quick actions.'] });
   assert.equal(calls[0].body.ref, 'a'.repeat(40));
   assert.equal(calls[1].body.state, 'success');
 });

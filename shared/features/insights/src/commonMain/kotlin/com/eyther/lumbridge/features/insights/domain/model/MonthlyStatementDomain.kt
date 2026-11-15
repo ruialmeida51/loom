@@ -8,6 +8,8 @@ import kotlinx.datetime.LocalDate
 
 data class MonthlyStatementDomain(
     val month: String,
+    val accountId: String = "",
+    val currency: String = "EUR",
     val totalMinor: Long,
     val paidMinor: Long,
     val shareMinor: Long,
@@ -17,7 +19,10 @@ data class MonthlyStatementDomain(
     val expenses: List<ExpenseDomain>,
 ) {
 
-    /** Escapes spreadsheet formulas and preserves caller-provided column labels for localized exports. */
+    /**
+     * Escapes spreadsheet formulas and preserves caller-provided column labels for localized
+     * exports.
+     */
     fun csv(
         currency: String,
         userId: String,
@@ -69,11 +74,17 @@ data class MonthlyStatementDomain(
                 totalMinor = selected.sumOf { it.amountMinor },
                 paidMinor = selected.filter { it.paidBy == userId }.sumOf { it.amountMinor },
                 shareMinor = selected.sumOf { it.shares[userId] ?: 0 },
-                openingBalanceMinor = HouseholdLedgerDomain.balances(beforeExpenses, beforeSettlements)[userId] ?: 0,
-                closingBalanceMinor = HouseholdLedgerDomain.balances(throughExpenses, throughSettlements)[userId] ?: 0,
-                categories = selected.groupBy { it.category }.mapValues { (_, values) ->
-                    values.sumOf { it.amountMinor }
-                },
+                openingBalanceMinor =
+                    HouseholdLedgerDomain.balances(beforeExpenses, beforeSettlements)[userId] ?: 0,
+                closingBalanceMinor =
+                    HouseholdLedgerDomain.balances(throughExpenses, throughSettlements)[userId]
+                        ?: 0,
+                categories =
+                    selected
+                        .groupBy { it.category }
+                        .mapValues { (_, values) ->
+                            values.sumOf { it.amountMinor }
+                        },
                 expenses = selected,
             )
         }

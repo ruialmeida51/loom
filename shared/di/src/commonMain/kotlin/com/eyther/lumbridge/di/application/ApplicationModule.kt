@@ -4,14 +4,17 @@ import com.eyther.lumbridge.di.application.datasource.ApplicationDataSourceModul
 import com.eyther.lumbridge.di.application.usecase.ApplicationUseCaseModule
 import com.eyther.lumbridge.di.application.viewmodel.ApplicationViewModelModule
 import com.eyther.lumbridge.di.common.CommonModule
+import com.eyther.lumbridge.di.householdsetup.HouseholdSetupModule
 import org.koin.core.annotation.Module
 
 @Module(
-    includes = [
-        CommonModule::class,
-        ApplicationDataSourceModule::class,
-        ApplicationUseCaseModule::class,
-        ApplicationViewModelModule::class,
-    ],
+    includes =
+        [
+            HouseholdSetupModule::class,
+            CommonModule::class,
+            ApplicationDataSourceModule::class,
+            ApplicationUseCaseModule::class,
+            ApplicationViewModelModule::class,
+        ],
 )
 class ApplicationModule

@@ -34,7 +34,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - run: sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :shared:di:jvmTest :shared:features:analytics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest :shared:features:settings:jvmTest :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest :shared:features:feed:jvmTest :shared:features:insights:jvmTest :shared:features:reminders:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
+      - run: ./gradlew :shared:di:jvmTest :shared:features:analytics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest :shared:features:settings:jvmTest :shared:features:account:jvmTest :shared:features:home:jvmTest :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest :shared:features:feed:jvmTest :shared:features:insights:jvmTest :shared:features:reminders:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
       - run: python3 tools/test_database.py
       - uses: denoland/setup-deno@v2
         with:

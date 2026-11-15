@@ -32,3 +32,5 @@ Follow the Plannot-derived architecture described in `docs/architecture.md` and 
 - Changes to a deployed backend need a new migration. Never rewrite an applied migration’s behaviour.
 
 Useful checks are listed in `README.md`. `tools/test_database.py` uses a disposable local database and never connects to the hosted project.
+
+When preparing releases or changing release automation, use the [Loom release skill](.agents/skills/loom-release/SKILL.md). Keep user-facing changes in CHANGELOG.md; the workflow assigns the version and archives notes after a successful upload.

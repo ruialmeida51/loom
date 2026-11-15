@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal data class RecordSettlementRequest(
     @SerialName("p_household_id") val householdId: String,
+    @SerialName("p_account_id") val accountId: String,
     @SerialName("p_id") val id: String,
     @SerialName("p_from") val from: String,
     @SerialName("p_to") val to: String,

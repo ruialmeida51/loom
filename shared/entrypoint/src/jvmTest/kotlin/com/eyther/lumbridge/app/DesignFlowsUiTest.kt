@@ -14,7 +14,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -22,7 +21,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
-import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.unit.Density
@@ -34,10 +32,10 @@ import com.eyther.lumbridge.core.presentation.components.toolbar.Toolbar
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.home.presentation.screen.HomeScreen
-import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.cancel
 import org.jetbrains.skia.EncodedImageFormat
@@ -56,16 +54,16 @@ class DesignFlowsUiTest {
             setContent { Box(Modifier.fillMaxSize().testTag("loom_app")) { LoomDemoApp() } }
             waitForHome()
             onNodeWithTag("navigation_shopping").performClick()
-            onNodeWithText("Add an item").performScrollTo().performClick()
+            onNodeWithTag("edit_Avocados").performClick()
             onNodeWithTag("form_sheet").assertIsDisplayed()
             onNodeWithText("What do we need?")
                 .performScrollTo()
-                .performTextInput("Barista oat drink")
-            onNodeWithText("Add item").assertIsDisplayed()
+                .performTextReplacement("Barista oat drink")
+            onNodeWithText("Save item").assertIsDisplayed()
             captureNode(tag = "modal_sheet", name = "shopping-sheet-narrow")
-            onNodeWithText("Add item").performClick()
+            onNodeWithText("Save item").performClick()
             waitUntil(timeoutMillis = 5000) {
-                onAllNodesWithText("Add item").fetchSemanticsNodes().isEmpty()
+                onAllNodesWithText("Save item").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithTag("shopping_content").performScrollToNode(hasText("Barista oat drink"))
             onNodeWithText("Barista oat drink").assertExists()
@@ -78,16 +76,14 @@ class DesignFlowsUiTest {
             setContent { Box(Modifier.fillMaxSize().testTag("loom_app")) { LoomDemoApp() } }
             waitForHome()
             onNodeWithTag("navigation_money").performClick()
-            onNodeWithText("Money, untangled.").assertExists()
+            onNodeWithText("Everyday").assertExists()
             onNodeWithTag("navigation_home").performClick()
-            onNodeWithTag("toolbar_actions").performClick()
-            onNodeWithText("Settings").performClick()
+            onNodeWithTag("open_my_account").performClick()
             onNodeWithTag("edit_nickname").performScrollTo().performClick()
             onNodeWithTag("nickname_input").assertTextContains("You")
             onNodeWithTag("nickname_input").performTextReplacement("x".repeat(81))
             onNodeWithText("Save nickname").performClick()
-            onNodeWithText("Choose a nickname between 1 and 80 characters, on one line.")
-                .assertExists()
+            onNodeWithText("Use 1–80 characters for your nickname.").assertExists()
             onNodeWithTag("nickname_input").assertTextContains("x".repeat(81))
             onNodeWithTag("nickname_input").performTextReplacement("Rui")
             captureNode(tag = "modal_sheet", name = "nickname-sheet-light")
@@ -97,49 +93,40 @@ class DesignFlowsUiTest {
             }
             onNodeWithContentDescription("Back").performClick()
             onNodeWithTag("navigation_money").performClick()
+            onNodeWithTag("balances_view_balances").performClick()
             onNodeWithText("Rui").assertExists()
             onNodeWithTag("navigation_home").performClick()
-            onNodeWithTag("toolbar_actions").performClick()
-            onNodeWithText("Settings").performClick()
+            onNodeWithTag("open_my_account").performClick()
             onNodeWithTag("edit_nickname").performScrollTo().performClick()
             onNodeWithTag("nickname_input").assertTextContains("Rui")
             onNodeWithText("Cancel").performClick()
-            onNodeWithTag("settings_content").performScrollToNode(hasText("Dark"))
+            onNodeWithTag("account_content").performScrollToNode(hasText("Dark"))
             onNodeWithText("Dark", useUnmergedTree = true).performClick()
             onNodeWithTag("edit_nickname").performScrollTo().performClick()
             captureNode(tag = "modal_sheet", name = "nickname-sheet-dark")
         }
 
     @Test
-    fun emptyHomeExplainsTheShoppingSectionAndHasNoEmptyPreviewCard() =
+    fun emptyHomeShowsTodaysEmptyStateAndQuickActions() =
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
-            var openedShopping = false
+            var openedExpense = false
             setContent {
                 LoomTheme(mode = ThemeMode.LIGHT) {
                     Box(Modifier.fillMaxSize().testTag("empty_home")) {
                         HomeScreen(
                             viewModel = EmptyHomeViewModel(),
-                            context =
-                                HouseholdContextDomain(
-                                    id = "home",
-                                    userId = "member",
-                                    name = "Our home",
-                                    currency = "EUR",
-                                    timeZone = "UTC",
-                                ),
-                            onShopping = { openedShopping = true },
+                            onAddExpense = { openedExpense = true },
                             onReminders = {},
-                            onMoney = {},
-                            onFeed = {},
+                            onAddReminder = {},
                         )
                     }
                 }
             }
-            onNodeWithTag("home_shopping_empty").assertExists()
+            onNodeWithTag("home_reminders_empty").assertExists()
             onNodeWithTag("home_shopping_preview").assertDoesNotExist()
             captureNode(tag = "empty_home", name = "home-empty-light")
-            onNodeWithText("Open list").performClick()
-            assertTrue(openedShopping)
+            onNodeWithTag("home_add_expense").performClick()
+            assertTrue(openedExpense)
         }
 
     @Test
@@ -152,28 +139,23 @@ class DesignFlowsUiTest {
                     LoomTheme(mode = ThemeMode.LIGHT) {
                         HomeScreen(
                             viewModel = viewModel,
-                            context = fixture.context,
-                            onShopping = {},
+                            onAddExpense = {},
                             onReminders = {},
-                            onMoney = {},
-                            onFeed = {},
+                            onAddReminder = {},
                         )
                     }
                 }
                 waitUntil(timeoutMillis = 5000) {
                     onAllNodesWithText("Try again").fetchSemanticsNodes().isNotEmpty()
                 }
-                onNodeWithText("Your home needs a moment.").assertExists()
                 onNodeWithText("Check your connection and try again.").assertExists()
-                onNodeWithTag("home_shopping_empty").assertDoesNotExist()
+                onNodeWithTag("home_reminders_empty").assertDoesNotExist()
                 onNodeWithTag("home_shopping_preview").assertDoesNotExist()
                 onNodeWithText("All settled up").assertDoesNotExist()
                 onNodeWithText("Try again").performClick()
-                waitUntil(timeoutMillis = 5000) {
-                    onAllNodesWithTag("home_shopping_preview").fetchSemanticsNodes().isNotEmpty()
-                }
-                onNodeWithText("Your home needs a moment.").assertDoesNotExist()
-                kotlin.test.assertEquals(2, fixture.loads)
+                waitUntil(timeoutMillis = 5000) { viewModel.state.value.hasOverview }
+                onNodeWithText("Check your connection and try again.").assertDoesNotExist()
+                assertEquals(2, fixture.loads)
             } finally {
                 viewModel.viewModelScope.cancel()
             }
@@ -203,7 +185,7 @@ class DesignFlowsUiTest {
 
     private fun ComposeUiTest.waitForHome() {
         waitUntil(timeoutMillis = 10_000) {
-            onAllNodesWithText("Home, in harmony.").fetchSemanticsNodes().isNotEmpty()
+            onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
         }
     }
 

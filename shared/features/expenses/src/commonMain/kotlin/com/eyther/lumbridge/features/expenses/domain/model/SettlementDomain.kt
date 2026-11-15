@@ -6,4 +6,5 @@ data class SettlementDomain(
     val to: String,
     val amountMinor: Long,
     val occurredOn: String,
+    val accountId: String = "",
 )

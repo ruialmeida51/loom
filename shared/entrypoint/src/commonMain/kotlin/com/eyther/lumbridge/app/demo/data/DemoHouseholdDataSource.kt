@@ -27,15 +27,6 @@ class DemoHouseholdDataSource(private val store: DemoHouseholdStore) : Household
 
     override suspend fun getMembers(householdId: String) = AppResult.Success(store.members)
 
-    override suspend fun updateNickname(userId: String, nickname: String): AppResult<Unit> {
-        store.members =
-            store.members.map { member ->
-                if (member.id == userId) member.copy(name = nickname) else member
-            }
-        store.memberUpdates.value = store.members
-        return AppResult.Success(Unit)
-    }
-
     override suspend fun createInvitation(householdId: String) =
         AppResult.Success("PREVIEW-INVITATION")
 }

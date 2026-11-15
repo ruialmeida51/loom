@@ -25,7 +25,8 @@ import org.jetbrains.compose.resources.stringResource
 fun ShoppingListsBottomSheet(
     lists: List<ShoppingListDomain>,
     activeLists: List<ShoppingListDomain>,
-    name: String,
+    selectedListId: String,
+    onSelect: (String) -> Unit,
     busy: Boolean,
     formError: TextResource?,
     onShowLists: (Boolean) -> Unit,
@@ -47,7 +48,14 @@ fun ShoppingListsBottomSheet(
         },
     ) {
         lists.forEach { list ->
-            Text(list.name, style = MaterialTheme.typography.titleMedium)
+            TextButton(
+                onClick = { onSelect(list.id) },
+                enabled = !busy && !list.archived,
+                modifier = Modifier.testTag("list_${list.name}"),
+            ) {
+                Text(list.name, style = MaterialTheme.typography.titleMedium)
+                if (list.id == selectedListId) Text(" ✓")
+            }
             Row {
                 TextButton(
                     onClick = { onListForm(list) },
