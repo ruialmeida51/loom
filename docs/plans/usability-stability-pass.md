@@ -1,6 +1,6 @@
 # Loom usability and stability pass
 
-Status: implementation complete; local validation passed. CI device/iOS checks and hosted migration remain before distribution. Reported symptoms are recorded below; underlying causes remain subject to the code and device audit. Current base is Loom 4.0.1. The shared app, 119 JVM tests and native Android test APK compile successfully; final release builds, hosted migration and CI device checks are still pending. The existing release-version/changelog automation remains in use.
+Status: implementation complete; local validation passed. CI device/iOS checks and hosted migration remain before distribution. Reported symptoms are recorded below; underlying causes remain subject to the code and device audit. Current base is Loom 4.0.1. The shared app, 121 JVM tests and native Android test APK compile successfully; final release builds, hosted migration and CI device checks are still pending. The existing release-version/changelog automation remains in use.
 
 ## Complete working checklist
 
@@ -49,10 +49,10 @@ No actual user records are to be deleted as part of implementation/testing; dele
 
 ## Verification and deployment status
 
-- 119 JVM tests pass, including continuous entry, idempotent retry, stale-snapshot protection, independent item rollback, final-list deletion and authentication state transitions.
+- 121 JVM tests pass, including continuous entry, idempotent retry, stale-snapshot protection, independent item rollback, final-list deletion and authentication state transitions.
 - The native Android test APK compiles. New CI instrumentation checks exercise the actual IME, long-list Enter entry, system Back and background/resume. Device execution is pending; local emulator provisioning exceeded the workspace disk limit, and the failed installation caches were removed.
 - Common Kotlin metadata, debug APK, minified release APK and release AAB build successfully. The final visual text adjustment is additionally covered by focused UI/native compilation checks.
-- All 13 migrations and authorization/ledger tests pass in a disposable PostgreSQL container, including a pre-existing archived-list upgrade fixture. No production user records were queried for validation.
+- All 13 migrations and authorization/ledger tests pass in a disposable PostgreSQL container, including a pre-existing archived-list upgrade fixture. No production user records were queried for validation. The UI suite also exercises final-list deletion/recreation and archived-trip deletion through the actual screen actions.
 - 28 Node tests, 7 Python tests, workflow lint and the feature/package/resource audit pass. The audit covers 18 destination screens and their contracts and 34 separate transport models.
 - Hosted schema metadata matches the migration's prerequisites. Supabase's migration confirmation expired twice; a follow-up metadata check confirms the new position column and deletion RPCs have **not** been applied. Do not distribute this client until that connector confirmation succeeds and the hosted schema/grants are verified.
 - Supabase's preflight security advisor reported no table/view/RPC finding. Its existing [leaked-password-protection setting](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) is disabled.
