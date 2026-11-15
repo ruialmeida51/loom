@@ -13,6 +13,16 @@ abstract class ShoppingScreenViewModelContract : LoomViewModel() {
 
     abstract fun onAddInlineItem()
 
+    abstract fun onRetryEntry(id: String)
+
+    abstract fun onDiscardEntry(id: String)
+
+    abstract fun onDeleteListRequested(list: ShoppingListDomain)
+
+    abstract fun onCancelDeleteList()
+
+    abstract fun onConfirmDeleteList()
+
     abstract fun onDismissUndo()
 
     abstract fun onListSelected(id: String)

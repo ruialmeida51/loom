@@ -4,10 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import com.eyther.lumbridge.app.navigation.model.sheet.ExpensesSheets
+import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.BottomSheetLayout
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.rememberBottomSheetController
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.ExpenseAccountsBottomSheet
+import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.ManageExpenseAccountsBottomSheet
 import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.SettlementBottomSheet
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 
@@ -15,6 +18,7 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.E
 internal fun ExpensesSheetHost(
     viewModel: ExpensesScreenViewModelContract,
     onCreateAccount: () -> Unit,
+    onEditAccount: (ExpenseAccountDomain) -> Unit,
     content: @Composable () -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
@@ -23,6 +27,7 @@ internal fun ExpensesSheetHost(
         when {
             state.showSettle -> ExpensesSheets.Settlement
             state.showAccounts -> ExpensesSheets.Accounts
+            state.showManageAccounts -> ExpensesSheets.ManageAccounts
             else -> null
         }
     LaunchedEffect(requested) {
@@ -49,9 +54,9 @@ internal fun ExpensesSheetHost(
     controller.registerBottomSheet<ExpensesSheets.Accounts> {
         ExpenseAccountsBottomSheet(
             active = state.activeAccounts,
-            archived = state.archivedAccounts,
             busy = state.busy,
             onSelect = viewModel::onAccountSelected,
+            onManage = { viewModel.onManageAccountsVisibilityChanged(true) },
             onCreate = {
                 viewModel.onAccountsVisibilityChanged(false)
                 onCreateAccount()
@@ -59,13 +64,41 @@ internal fun ExpensesSheetHost(
             onClose = { viewModel.onAccountsVisibilityChanged(false) },
         )
     }
+    controller.registerBottomSheet<ExpensesSheets.ManageAccounts> {
+        ManageExpenseAccountsBottomSheet(
+            accounts = state.activeAccounts + state.archivedAccounts,
+            userId = state.userId,
+            isOwner = state.isOwner,
+            busy = state.busy,
+            error = state.error,
+            onSelect = viewModel::onAccountSelected,
+            onEdit = { account ->
+                viewModel.onManageAccountsVisibilityChanged(false)
+                onEditAccount(account)
+            },
+            onArchive = viewModel::onArchiveAccount,
+            onDelete = viewModel::onDeleteAccountRequested,
+            onClose = { viewModel.onManageAccountsVisibilityChanged(false) },
+            onDismissError = viewModel::onDismissError,
+        )
+    }
     BottomSheetLayout(
         controller = controller,
         dismissEnabled = !state.busy,
         onDismissed = {
             if (state.showSettle) viewModel.onSettlementSheetVisibilityChanged(false)
+            else if (state.showManageAccounts) viewModel.onManageAccountsVisibilityChanged(false)
             else viewModel.onAccountsVisibilityChanged(false)
         },
         content = content,
     )
+    state.deleteConfirmation?.let { confirmation ->
+        DestructiveConfirmation(
+            confirmation = confirmation,
+            busy = state.busy,
+            confirmationTag = "confirm_delete_account",
+            onConfirm = viewModel::onConfirmDeleteAccount,
+            onDismiss = viewModel::onCancelDeleteAccount,
+        )
+    }
 }

@@ -8,6 +8,7 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toDomain
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toExpenseError
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toRequest
+import com.eyther.lumbridge.features.expenses.data.network.model.request.DeleteExpenseAccountRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.response.ExpenseAccountResponse
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
@@ -83,4 +84,25 @@ class CommonExpenseAccountDataSource(
             }
             .decodeSingle<ExpenseAccountResponse>()
             .toDomain()
+
+    override suspend fun deleteAccount(account: ExpenseAccountDomain): AppResult<Unit> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access
+                .requireClient()
+                .postgrest
+                .rpc(
+                    "delete_expense_account",
+                    DeleteExpenseAccountRequest(
+                        householdId = context.id,
+                        id = account.id,
+                        version = account.version,
+                    ),
+                )
+            if (selectedId.value == account.id) {
+                PlatformStorage.put(selectionKey, context.id)
+                selectedId.value = context.id
+            }
+            changes.update { oldVersion -> oldVersion + 1 }
+            Unit
+        }
 }

@@ -12,6 +12,7 @@ import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEven
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.domain.usecase.AddShoppingItemsUseCase
+import com.eyther.lumbridge.features.shopping.domain.usecase.DeleteShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingItemUseCase
@@ -24,13 +25,17 @@ import com.eyther.lumbridge.features.shopping.generated.resources.item_removed
 import com.eyther.lumbridge.features.shopping.generated.resources.item_restored
 import com.eyther.lumbridge.features.shopping.generated.resources.item_updated
 import com.eyther.lumbridge.features.shopping.presentation.mapper.toShoppingTextResource
+import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingEntryUi
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ShoppingScreenViewModel(
@@ -40,6 +45,7 @@ class ShoppingScreenViewModel(
     private val addShoppingItemsUseCase: AddShoppingItemsUseCase,
     private val saveShoppingItemUseCase: SaveShoppingItemUseCase,
     private val saveShoppingListUseCase: SaveShoppingListUseCase,
+    private val deleteShoppingListUseCase: DeleteShoppingListUseCase,
     private val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
 ) : ShoppingScreenViewModelContract() {
 
@@ -58,7 +64,9 @@ class ShoppingScreenViewModel(
 
     private val inputState = MutableStateFlow(InnerInputState())
     private val refreshRequests = MutableStateFlow(0)
-    private var inlineRequestId: String? = null
+    private val entryRequests = Channel<ShoppingItemDomain>(capacity = Channel.UNLIMITED)
+    private var pendingItemUpdates: Map<String, ShoppingItemDomain> = emptyMap()
+    private var acknowledgedItems: Map<String, ShoppingItemDomain> = emptyMap()
     private var editingItem: ShoppingItemDomain? = null
     private var editingList: ShoppingListDomain? = null
     private var requestIds: List<String> = emptyList()
@@ -92,7 +100,36 @@ class ShoppingScreenViewModel(
             .observeWith(viewModelScope) { state ->
                 refreshRequests
                     .flatMapLatest {
-                        getShoppingStreamUseCase()
+                        getShoppingStreamUseCase().map { result ->
+                            when (result) {
+                                is AppResult.Failure -> result
+                                is AppResult.Success -> {
+                                    val remoteItems = result.value.items.associateBy { it.id }
+                                    acknowledgedItems = acknowledgedItems.filter { (id, item) ->
+                                        result.value.lists.any { it.id == item.listId } &&
+                                            (remoteItems[id]?.version ?: -1) < item.version
+                                    }
+                                    val retainedIds = acknowledgedItems.keys
+                                    val merged =
+                                        result.value.copy(
+                                            items =
+                                                result.value.items.filterNot {
+                                                    it.id in retainedIds
+                                                } + acknowledgedItems.values,
+                                        )
+                                    AppResult.Success(
+                                        merged.copy(
+                                            items =
+                                                merged.items.map { remote ->
+                                                    pendingItemUpdates[remote.id]?.takeIf {
+                                                        it.version >= remote.version
+                                                    } ?: remote
+                                                },
+                                        ),
+                                    )
+                                }
+                            }
+                        }
                     }
                     .updateState(state) { result ->
                         when (result) {
@@ -117,66 +154,100 @@ class ShoppingScreenViewModel(
     override val state = mutableState.asStateFlow()
 
     override fun onInlineNameChanged(value: String) {
-        if (value != inputState.value.inlineName) inlineRequestId = null
         inputState.update { oldState -> oldState.copy(inlineName = value) }
         mutableState.update { oldState -> oldState.copy(inlineError = null) }
     }
 
+    init {
+        viewModelScope.launch {
+            // Preserve Enter order even when a network round trip takes longer than typing.
+            for (item in entryRequests) submitInlineItem(item = item)
+        }
+    }
+
     override fun onAddInlineItem() {
-        if (
-            inputState.value.inlineName.isBlank() ||
-                state.value.selectedList == null ||
-                state.value.busy ||
-                state.value.addingInline
-        )
-            return
-        val submittedName = inputState.value.inlineName
-        val id = inlineRequestId ?: newId().also { inlineRequestId = it }
+        val name = inputState.value.inlineName
+        val listId = state.value.selectedList?.id ?: return
+        if (name.isBlank() || state.value.busy) return
         val item =
             ShoppingItemDomain(
-                id = id,
-                name = submittedName,
+                id = newId(),
+                name = name,
                 quantity = "",
                 category = "Other",
                 checked = false,
-                listId = state.value.selectedListId,
+                listId = listId,
             )
-        mutableState.update { oldState -> oldState.copy(addingInline = true, inlineError = null) }
-        launch {
-            when (val result = addShoppingItemsUseCase(items = listOf(item))) {
-                is AppResult.Success -> {
-                    inputState.update { oldState ->
-                        if (oldState.inlineName == submittedName) oldState.copy(inlineName = "")
-                        else oldState
-                    }
-                    inlineRequestId = null
-                    val savedIds = result.value.map { it.id }.toSet()
-                    mutableState.update { oldState ->
-                        oldState.copy(
-                            addingInline = false,
-                            snapshot =
-                                oldState.snapshot.copy(
-                                    items =
-                                        oldState.snapshot.items.filterNot { it.id in savedIds } +
-                                            result.value,
-                                ),
-                        )
-                    }
-                    trackAnalyticsEventUseCase(
-                        event =
-                            AnalyticsEventDomain.ActionCompleted(
-                                action = AnalyticsActionDomain.SHOPPING_ITEMS_ADDED,
+        inputState.update { oldState -> oldState.copy(inlineName = "") }
+        mutableState.update { oldState ->
+            oldState.copy(
+                inlineName = "",
+                inlineError = null,
+                entryRevision = oldState.entryRevision + 1,
+                pendingEntries = oldState.pendingEntries + ShoppingEntryUi(item = item),
+            )
+        }
+        entryRequests.trySend(item)
+    }
+
+    override fun onRetryEntry(id: String) {
+        val entry =
+            state.value.pendingEntries.firstOrNull { it.item.id == id && !it.saving } ?: return
+        mutableState.update { oldState ->
+            oldState.copy(
+                pendingEntries =
+                    oldState.pendingEntries.map {
+                        if (it.item.id == id) it.copy(error = null) else it
+                    },
+            )
+        }
+        entryRequests.trySend(entry.item)
+    }
+
+    override fun onDiscardEntry(id: String) {
+        mutableState.update { oldState ->
+            oldState.copy(
+                pendingEntries =
+                    oldState.pendingEntries.filterNot { it.item.id == id && !it.saving },
+            )
+        }
+    }
+
+    private suspend fun submitInlineItem(item: ShoppingItemDomain) {
+        when (val result = addShoppingItemsUseCase(items = listOf(item))) {
+            is AppResult.Success -> {
+                acknowledgedItems = acknowledgedItems + result.value.associateBy { it.id }
+                val savedIds = result.value.map { it.id }.toSet()
+                mutableState.update { oldState ->
+                    oldState.copy(
+                        pendingEntries =
+                            oldState.pendingEntries.filterNot { it.item.id == item.id },
+                        snapshot =
+                            oldState.snapshot.copy(
+                                items =
+                                    oldState.snapshot.items.filterNot { it.id in savedIds } +
+                                        result.value,
                             ),
                     )
                 }
-                is AppResult.Failure ->
-                    mutableState.update { oldState ->
-                        oldState.copy(
-                            addingInline = false,
-                            inlineError = result.error.toShoppingTextResource(),
-                        )
-                    }
+                trackAnalyticsEventUseCase(
+                    event =
+                        AnalyticsEventDomain.ActionCompleted(
+                            action = AnalyticsActionDomain.SHOPPING_ITEMS_ADDED,
+                        ),
+                )
             }
+            is AppResult.Failure ->
+                mutableState.update { oldState ->
+                    oldState.copy(
+                        pendingEntries =
+                            oldState.pendingEntries.map {
+                                if (it.item.id == item.id)
+                                    it.copy(error = result.error.toShoppingTextResource())
+                                else it
+                            },
+                    )
+                }
         }
     }
 
@@ -478,49 +549,134 @@ class ShoppingScreenViewModel(
         saveList(list.copy(archived = !list.archived))
     }
 
+    override fun onDeleteListRequested(list: ShoppingListDomain) {
+        if (state.value.busy || state.value.addingInline || state.value.savingItemIds.isNotEmpty())
+            return
+        mutableState.update { oldState -> oldState.copy(deletingList = list, formError = null) }
+    }
+
+    override fun onCancelDeleteList() {
+        if (state.value.busy) return
+        mutableState.update { oldState -> oldState.copy(deletingList = null) }
+    }
+
+    override fun onConfirmDeleteList() {
+        val list = state.value.deletingList ?: return
+        if (state.value.busy) return
+        mutableState.update { oldState -> oldState.copy(busy = true, formError = null) }
+        launch {
+            when (val result = deleteShoppingListUseCase(list = list)) {
+                is AppResult.Success -> {
+                    acknowledgedItems = acknowledgedItems.filterValues { it.listId != list.id }
+                    undoChange = null
+                    mutableState.update { oldState ->
+                        val snapshot =
+                            oldState.snapshot.copy(
+                                lists = oldState.snapshot.lists.filterNot { it.id == list.id },
+                                items = oldState.snapshot.items.filterNot { it.listId == list.id },
+                            )
+                        oldState.copy(
+                            snapshot = snapshot,
+                            selectedListId = snapshot.resolveActiveListId(oldState.selectedListId),
+                            deletingList = null,
+                            pendingEntries =
+                                oldState.pendingEntries.filterNot { it.item.listId == list.id },
+                            busy = false,
+                            showLists = snapshot.activeLists.isNotEmpty(),
+                            undoMessage = null,
+                        )
+                    }
+                    state.value.selectedListId
+                        .takeIf { it.isNotBlank() }
+                        ?.let { selectShoppingListUseCase(id = it) }
+                }
+                is AppResult.Failure ->
+                    mutableState.update { oldState ->
+                        oldState.copy(
+                            busy = false,
+                            deletingList = null,
+                            formError = result.error.toShoppingTextResource(),
+                        )
+                    }
+            }
+        }
+    }
+
     private fun saveItem(
         item: ShoppingItemDomain,
         message: TextResource,
         closeForm: Boolean = false,
     ) {
-        if (state.value.busy) return
+        if (state.value.busy || item.id in state.value.savingItemIds) return
         val before = state.value.snapshot.items.firstOrNull { it.id == item.id } ?: return
-
+        pendingItemUpdates = pendingItemUpdates + (item.id to item)
         mutableState.update { oldState ->
-            oldState.copy(busy = true, error = null, formError = null, undoMessage = null)
+            oldState.copy(
+                busy = closeForm,
+                savingItemIds = oldState.savingItemIds.add(item.id),
+                error = null,
+                formError = null,
+                undoMessage = null,
+                snapshot =
+                    oldState.snapshot.copy(
+                        items =
+                            oldState.snapshot.items.map {
+                                if (it.id == item.id) item else it
+                            },
+                    ),
+            )
         }
-
         launch {
-            when (val result = saveShoppingItemUseCase(item)) {
+            val result = saveShoppingItemUseCase(item = item)
+            pendingItemUpdates = pendingItemUpdates - item.id
+            when (result) {
                 is AppResult.Success -> {
+                    acknowledgedItems = acknowledgedItems + (result.value.id to result.value)
                     undoChange = UndoChange(before = before, afterVersion = result.value.version)
-
                     mutableState.update { oldState ->
                         oldState.copy(
-                            busy = false,
+                            busy = if (closeForm) false else oldState.busy,
+                            savingItemIds = oldState.savingItemIds.remove(item.id),
                             showAdd = if (closeForm) false else oldState.showAdd,
                             undoMessage = message,
                             snapshot =
                                 oldState.snapshot.copy(
                                     items =
                                         oldState.snapshot.items.map { existing ->
-                                            if (existing.id == item.id) result.value else existing
+                                            if (
+                                                existing.id == item.id &&
+                                                    existing.version <= result.value.version
+                                            )
+                                                result.value
+                                            else existing
                                         },
                                 ),
                         )
                     }
                 }
-
                 is AppResult.Failure ->
                     mutableState.update { oldState ->
                         oldState.copy(
-                            busy = false,
+                            busy = if (closeForm) false else oldState.busy,
+                            savingItemIds = oldState.savingItemIds.remove(item.id),
                             error =
                                 if (closeForm) oldState.error
                                 else result.error.toShoppingTextResource(),
                             formError =
                                 if (closeForm) result.error.toShoppingTextResource()
                                 else oldState.formError,
+                            snapshot =
+                                oldState.snapshot.copy(
+                                    items =
+                                        oldState.snapshot.items.map { existing ->
+                                            if (
+                                                existing.id == item.id &&
+                                                    existing.version <= before.version
+                                            )
+                                                before
+                                            else existing
+                                        },
+                                ),
                         )
                     }
             }

@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
+import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
@@ -7,12 +8,21 @@ import com.eyther.lumbridge.features.expenses.domain.model.HouseholdLedgerDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
+import com.eyther.lumbridge.features.expenses.generated.resources.Res
+import com.eyther.lumbridge.features.expenses.generated.resources.account_delete
+import com.eyther.lumbridge.features.expenses.generated.resources.account_delete_message
+import com.eyther.lumbridge.features.expenses.generated.resources.account_delete_title
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistorySectionUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import com.eyther.lumbridge.features.expenses.presentation.model.MemberBalanceUi
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableMap
 
 data class ExpensesState(
     val userId: String = "",
@@ -24,6 +34,8 @@ data class ExpensesState(
     val balances: Map<String, Long> = emptyMap(),
     val selectedView: ExpensesViewUi = ExpensesViewUi.EXPENSES,
     val showAccounts: Boolean = false,
+    val showManageAccounts: Boolean = false,
+    val deletingAccount: ExpenseAccountDomain? = null,
     val showSettle: Boolean = false,
     val from: String = "",
     val to: String = "",
@@ -48,6 +60,18 @@ data class ExpensesState(
     val canRecordSettlement: Boolean =
         userId in account?.memberIds.orEmpty() && accountMembers.size > 1 && !busy && !loading
     val canManageAccount: Boolean = account?.canManage(userId = userId, isOwner = isOwner) == true
+    val deleteConfirmation: DestructiveConfirmationUi? = deletingAccount?.let { target ->
+        DestructiveConfirmationUi(
+            title = TextResource.Resource(Res.string.account_delete_title),
+            message =
+                TextResource.Resource(
+                    Res.string.account_delete_message,
+                    args = listOf(target.name),
+                ),
+            confirmText = TextResource.Resource(Res.string.account_delete),
+            cancelText = TextResource.Resource(Res.string.ui_cancel),
+        )
+    }
     val displayError: TextResource? = error ?: loadError
     val activeAccounts: List<ExpenseAccountDomain> =
         accounts
@@ -58,25 +82,30 @@ data class ExpensesState(
             )
     val archivedAccounts: List<ExpenseAccountDomain> =
         accounts.filter { it.archived }.sortedBy { it.name.lowercase() }
-    val memberNames: Map<String, String> = members.associate { it.id to it.name }
-    val suggestions: List<SuggestedSettlementDomain> = HouseholdLedgerDomain.suggestions(balances)
+    val memberNames: ImmutableMap<String, String> =
+        members.associate { it.id to it.name }.toImmutableMap()
+    val suggestions: ImmutableList<SuggestedSettlementDomain> =
+        HouseholdLedgerDomain.suggestions(balances).toImmutableList()
     val ownBalance: BalanceSummaryUi =
         BalanceSummaryUi(
             money = MoneyDomain(minorUnits = balances[userId] ?: 0L, currency = currency),
         )
-    val memberBalances: List<MemberBalanceUi> =
-        (account?.memberIds.orEmpty() + balances.keys).map { id ->
-            MemberBalanceUi(
-                member =
-                    members.firstOrNull { it.id == id }
-                        ?: MemberDomain(id = id, name = "", role = ""),
-                balance =
-                    BalanceSummaryUi(
-                        money = MoneyDomain(minorUnits = balances[id] ?: 0L, currency = currency),
-                    ),
-            )
-        }
-    val history: List<ExpenseHistorySectionUi> =
+    val memberBalances: ImmutableList<MemberBalanceUi> =
+        (account?.memberIds.orEmpty() + balances.keys)
+            .map { id ->
+                MemberBalanceUi(
+                    member =
+                        members.firstOrNull { it.id == id }
+                            ?: MemberDomain(id = id, name = "", role = ""),
+                    balance =
+                        BalanceSummaryUi(
+                            money =
+                                MoneyDomain(minorUnits = balances[id] ?: 0L, currency = currency),
+                        ),
+                )
+            }
+            .toImmutableList()
+    val history: ImmutableList<ExpenseHistorySectionUi> =
         (expenses.map {
                 ExpenseHistoryItemUi.Purchase(
                     expense = it,
@@ -94,5 +123,8 @@ data class ExpensesState(
                 })
             .sortedWith(compareByDescending<ExpenseHistoryItemUi> { it.date }.thenBy { it.key })
             .groupBy { it.date }
-            .map { (date, items) -> ExpenseHistorySectionUi(date = date, items = items) }
+            .map { (date, items) ->
+                ExpenseHistorySectionUi(date = date, items = items.toImmutableList())
+            }
+            .toImmutableList()
 }

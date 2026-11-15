@@ -5,21 +5,24 @@ import com.eyther.lumbridge.features.shopping.data.network.model.response.Shoppi
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 
-internal fun ShoppingItemResponse.toDomain(): ShoppingItemDomain = ShoppingItemDomain(
-    id = id,
-    name = name,
-    quantity = quantity,
-    category = category,
-    checked = checked,
-    listId = listId,
-    version = version,
-    removed = removed,
-    favorite = favorite,
-)
+internal fun ShoppingItemResponse.toDomain(): ShoppingItemDomain =
+    ShoppingItemDomain(
+        id = id,
+        name = name,
+        quantity = quantity,
+        category = category,
+        checked = checked,
+        listId = listId,
+        version = version,
+        removed = removed,
+        favorite = favorite,
+        position = position,
+    )
 
-internal fun ShoppingListResponse.toDomain(): ShoppingListDomain = ShoppingListDomain(
-    id = id,
-    name = name,
-    archived = archived,
-    version = version,
-)
+internal fun ShoppingListResponse.toDomain(): ShoppingListDomain =
+    ShoppingListDomain(
+        id = id,
+        name = name,
+        archived = archived,
+        version = version,
+    )

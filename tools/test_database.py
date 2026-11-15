@@ -40,7 +40,14 @@ try:
     """)
     migrations = sorted((ROOT / "supabase/migrations").glob("*.sql"))
     for migration in migrations:
+        name = migration.stem.split("_", 1)[1]
+        before = ROOT / "supabase/tests/upgrades" / f"{name}.before.sql"
+        after = ROOT / "supabase/tests/upgrades" / f"{name}.after.sql"
+        if before.exists():
+            sql(before.read_text())
         sql(migration.read_text())
+        if after.exists():
+            sql(after.read_text())
     for test in sorted((ROOT / "supabase/tests").glob("*.sql")):
         sql(test.read_text())
     print(f"PostgreSQL: {len(migrations)} migrations applied; household, ledger, recurrence, statement, and access tests passed.")

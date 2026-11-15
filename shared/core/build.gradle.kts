@@ -26,6 +26,7 @@ kotlin {
             api("androidx.navigation3:navigation3-runtime:1.2.0")
             api("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
             implementation("com.russhwolf:multiplatform-settings:1.3.0")
+            api(libs.collections.immutable)
             api(libs.compose.runtime)
             api(libs.compose.foundation)
             api(libs.compose.ui)

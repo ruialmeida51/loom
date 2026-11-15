@@ -6,4 +6,6 @@ import com.eyther.lumbridge.core.presentation.components.bottomsheet.model.Botto
 @Stable
 internal sealed interface ExpenseFormSheets : BottomSheetType {
     @Stable data object Date : ExpenseFormSheets
+
+    @Stable data class Split(val amountMinor: Long) : ExpenseFormSheets
 }

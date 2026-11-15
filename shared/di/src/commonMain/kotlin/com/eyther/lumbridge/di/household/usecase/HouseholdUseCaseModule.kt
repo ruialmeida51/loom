@@ -4,6 +4,7 @@ import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDa
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.usecase.ControlRecurringExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountUseCase
@@ -47,6 +48,7 @@ import com.eyther.lumbridge.features.settings.domain.usecase.SetThemeUseCase
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingSelectionDataSource
 import com.eyther.lumbridge.features.shopping.domain.usecase.AddShoppingItemsUseCase
+import com.eyther.lumbridge.features.shopping.domain.usecase.DeleteShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingItemUseCase
@@ -386,4 +388,16 @@ class HouseholdUseCaseModule {
         shoppingSelectionDataSource: ShoppingSelectionDataSource,
     ): SelectShoppingListUseCase =
         SelectShoppingListUseCase(shoppingSelectionDataSource = shoppingSelectionDataSource)
+
+    @Single
+    fun provideDeleteShoppingListUseCase(
+        shoppingDataSource: ShoppingDataSource,
+    ): DeleteShoppingListUseCase =
+        DeleteShoppingListUseCase(shoppingDataSource = shoppingDataSource)
+
+    @Single
+    fun provideDeleteExpenseAccountUseCase(
+        expenseAccountDataSource: ExpenseAccountDataSource,
+    ): DeleteExpenseAccountUseCase =
+        DeleteExpenseAccountUseCase(expenseAccountDataSource = expenseAccountDataSource)
 }

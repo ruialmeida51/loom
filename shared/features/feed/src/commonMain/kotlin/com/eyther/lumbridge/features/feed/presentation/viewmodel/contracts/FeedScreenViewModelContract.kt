@@ -8,6 +8,8 @@ abstract class FeedScreenViewModelContract : LoomViewModel() {
 
     abstract val state: StateFlow<FeedState>
 
+    abstract fun onRetry()
+
     abstract fun onUrlChanged(value: String)
 
     abstract fun onFollowSheetVisibilityChanged(value: Boolean)

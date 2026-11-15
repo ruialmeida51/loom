@@ -13,11 +13,12 @@ data class RecurringExpensesState(
     val payerNames: Map<String, String> = emptyMap(),
     val role: String? = null,
     val busy: Boolean = false,
+    val loading: Boolean = true,
     val error: TextResource? = null,
     val loadError: TextResource? = null,
 ) {
 
-    val showEmpty: Boolean = account != null && rules.isEmpty() && loadError == null
+    val showEmpty: Boolean = !loading && account != null && rules.isEmpty() && loadError == null
     val currency: String = account?.currency ?: "EUR"
     val displayError: TextResource? = error ?: loadError
 

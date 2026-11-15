@@ -6,7 +6,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelection
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import kotlinx.coroutines.flow.StateFlow
 
-abstract class SplitScreenViewModelContract : LoomViewModel() {
+abstract class ExpenseSplitViewModelContract : LoomViewModel() {
     data class Params(
         val amountMinor: Long,
         val currency: String,

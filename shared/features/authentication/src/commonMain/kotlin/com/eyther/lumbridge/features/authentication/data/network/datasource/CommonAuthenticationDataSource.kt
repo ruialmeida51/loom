@@ -9,7 +9,7 @@ import com.eyther.lumbridge.features.authentication.data.network.mapper.toDomain
 import com.eyther.lumbridge.features.authentication.data.network.mapper.toGoogleSignInError
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.errors.AuthenticationError
-import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
+import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import com.eyther.lumbridge.features.settings.domain.datasource.PushDeviceDataSource
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.OtpVerifyResult
@@ -20,6 +20,7 @@ import io.github.jan.supabase.auth.providers.builtin.OTP
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,8 +38,13 @@ class CommonAuthenticationDataSource(
     callbackEvents: Flow<AppResult<String>> = emptyFlow(),
 ) : AuthenticationDataSource {
 
-    private val mutableSession = MutableStateFlow<AuthSessionDomain?>(null)
+    private val mutableSession =
+        MutableStateFlow<AuthenticationStateDomain>(
+            if (access.configured) AuthenticationStateDomain.Restoring()
+            else AuthenticationStateDomain.SignedOut,
+        )
     private val googleSignInResult = MutableStateFlow<AppResult<Unit>?>(null)
+    private var pushRegistration: Job? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override val configured: Boolean = access.configured
@@ -49,8 +55,10 @@ class CommonAuthenticationDataSource(
                 client.auth.sessionStatus.collect { status ->
                     mutableSession.value = status.toDomain(previous = mutableSession.value)
 
+                    if (status is SessionStatus.NotAuthenticated) pushRegistration?.cancel()
                     if (status is SessionStatus.Authenticated) {
-                        pushDevices.syncRegistration()
+                        pushRegistration?.cancel()
+                        pushRegistration = scope.launch { pushDevices.syncRegistration() }
                     }
                 }
             }
@@ -71,7 +79,7 @@ class CommonAuthenticationDataSource(
         }
     }
 
-    override fun stream(): StateFlow<AuthSessionDomain?> = mutableSession.asStateFlow()
+    override fun stream(): StateFlow<AuthenticationStateDomain> = mutableSession.asStateFlow()
 
     override fun streamGoogleSignInResults(): Flow<AppResult<Unit>> =
         googleSignInResult.filterNotNull()
@@ -149,7 +157,7 @@ class CommonAuthenticationDataSource(
         ) {
             pushDevices.unregisterCurrentDevice()
             access.requireClient().auth.signOut()
-            mutableSession.value = null
+            mutableSession.value = AuthenticationStateDomain.SignedOut
         }
     }
 }

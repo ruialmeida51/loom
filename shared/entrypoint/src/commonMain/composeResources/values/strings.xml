@@ -28,4 +28,6 @@
     <string name="flow_new_account">New trip or event</string>
     <string name="flow_edit_account">Edit account</string>
   <string name="tab_more">More</string>
+    <string name="startup_restoring">Getting things ready…</string>
+    <string name="startup_reconnecting">Reconnecting. Your account is still saved.</string>
 </resources>

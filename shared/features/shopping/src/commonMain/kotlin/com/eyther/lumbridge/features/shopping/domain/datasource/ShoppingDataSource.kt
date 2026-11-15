@@ -14,4 +14,6 @@ interface ShoppingDataSource {
     suspend fun saveItem(item: ShoppingItemDomain): AppResult<ShoppingItemDomain>
 
     suspend fun saveList(list: ShoppingListDomain): AppResult<ShoppingListDomain>
+
+    suspend fun deleteList(list: ShoppingListDomain): AppResult<Unit>
 }

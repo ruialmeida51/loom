@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import com.eyther.lumbridge.app.navigation.model.sheet.ShoppingSheets
+import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.BottomSheetLayout
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.rememberBottomSheetController
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
@@ -52,11 +53,12 @@ internal fun ShoppingSheetHost(
             activeLists = state.activeLists,
             selectedListId = state.selectedListId,
             onSelect = viewModel::onListSelected,
-            busy = state.busy,
+            busy = state.busy || state.addingInline || state.savingItemIds.isNotEmpty(),
             formError = state.formError,
             onShowLists = viewModel::onListsVisibilityChanged,
             onListForm = viewModel::onOpenListForm,
             onArchive = viewModel::onArchiveList,
+            onDelete = viewModel::onDeleteListRequested,
             onDismiss = viewModel::onDismissError,
         )
     }
@@ -83,4 +85,13 @@ internal fun ShoppingSheetHost(
         },
         content = content,
     )
+    state.deleteConfirmation?.let { confirmation ->
+        DestructiveConfirmation(
+            confirmation = confirmation,
+            busy = state.busy,
+            confirmationTag = "confirm_delete_list",
+            onConfirm = viewModel::onConfirmDeleteList,
+            onDismiss = viewModel::onCancelDeleteList,
+        )
+    }
 }

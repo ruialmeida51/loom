@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.authentication.data.FakeAuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.errors.AuthenticationError
+import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import com.eyther.lumbridge.features.authentication.domain.model.EmailCodePurposeDomain
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetGoogleSignInResultsStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RegisterUseCase
@@ -43,12 +44,16 @@ class AuthenticationViewModelTest {
     fun googleSignInNeedsNoEmailInputAndCallbackFailuresStayTypedInTheViewModel() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val source = FakeAuthenticationDataSource()
-        val viewModel = LoginScreenViewModel(
-            signInUseCase = SignInUseCase(authenticationDataSource = source),
-            requestEmailCodeUseCase = RequestEmailCodeUseCase(authenticationDataSource = source),
-            signInWithGoogleUseCase = SignInWithGoogleUseCase(authenticationDataSource = source),
-            getGoogleSignInResultsStreamUseCase = GetGoogleSignInResultsStreamUseCase(authenticationDataSource = source),
-        )
+        val viewModel =
+            LoginScreenViewModel(
+                signInUseCase = SignInUseCase(authenticationDataSource = source),
+                requestEmailCodeUseCase =
+                    RequestEmailCodeUseCase(authenticationDataSource = source),
+                signInWithGoogleUseCase =
+                    SignInWithGoogleUseCase(authenticationDataSource = source),
+                getGoogleSignInResultsStreamUseCase =
+                    GetGoogleSignInResultsStreamUseCase(authenticationDataSource = source),
+            )
         try {
             backgroundScope.launch { viewModel.state.collect() }
             runCurrent()
@@ -57,9 +62,11 @@ class AuthenticationViewModelTest {
             assertEquals(1, source.googleSignInCount)
             assertEquals(0, source.signInCodeCount)
             assertFalse(viewModel.state.value.busy)
-            assertNull(source.stream().value)
+            assertEquals(AuthenticationStateDomain.SignedOut, source.stream().value)
 
-            source.googleResults.emit(AppResult.Failure(AuthenticationError.GoogleSignInCancelled()))
+            source.googleResults.emit(
+                AppResult.Failure(AuthenticationError.GoogleSignInCancelled()),
+            )
             runCurrent()
             assertNotNull(viewModel.state.value.displayError)
         } finally {
@@ -71,15 +78,20 @@ class AuthenticationViewModelTest {
     @Test
     fun unconfirmedSignInOpensVerificationAndClearsThePassword() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
-        val source = FakeAuthenticationDataSource().apply {
-            signInResult = AppResult.Failure(AuthenticationError.EmailNotConfirmed())
-        }
-        val viewModel = LoginScreenViewModel(
-            signInUseCase = SignInUseCase(authenticationDataSource = source),
-            signInWithGoogleUseCase = SignInWithGoogleUseCase(authenticationDataSource = source),
-            getGoogleSignInResultsStreamUseCase = GetGoogleSignInResultsStreamUseCase(authenticationDataSource = source),
-            requestEmailCodeUseCase = RequestEmailCodeUseCase(authenticationDataSource = source),
-        )
+        val source =
+            FakeAuthenticationDataSource().apply {
+                signInResult = AppResult.Failure(AuthenticationError.EmailNotConfirmed())
+            }
+        val viewModel =
+            LoginScreenViewModel(
+                signInUseCase = SignInUseCase(authenticationDataSource = source),
+                signInWithGoogleUseCase =
+                    SignInWithGoogleUseCase(authenticationDataSource = source),
+                getGoogleSignInResultsStreamUseCase =
+                    GetGoogleSignInResultsStreamUseCase(authenticationDataSource = source),
+                requestEmailCodeUseCase =
+                    RequestEmailCodeUseCase(authenticationDataSource = source),
+            )
         try {
             backgroundScope.launch { viewModel.state.collect() }
             viewModel.onEmailChanged(value = " member@example.com ")
@@ -88,7 +100,10 @@ class AuthenticationViewModelTest {
             viewModel.onSubmit()
             runCurrent()
 
-            val redirect = assertIs<LoginScreenViewModelContract.RedirectTo.VerifyEmail>(viewModel.state.value.redirectTo)
+            val redirect =
+                assertIs<LoginScreenViewModelContract.RedirectTo.VerifyEmail>(
+                    viewModel.state.value.redirectTo,
+                )
             assertEquals("member@example.com", redirect.email)
             assertEquals("", viewModel.state.value.password)
             assertNull(viewModel.state.value.error)
@@ -101,15 +116,20 @@ class AuthenticationViewModelTest {
     @Test
     fun invalidCredentialsStayOnLoginWithoutClaimingAnEmailWasSent() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
-        val source = FakeAuthenticationDataSource().apply {
-            signInResult = AppResult.Failure(AuthenticationError.InvalidCredentials())
-        }
-        val viewModel = LoginScreenViewModel(
-            signInUseCase = SignInUseCase(authenticationDataSource = source),
-            signInWithGoogleUseCase = SignInWithGoogleUseCase(authenticationDataSource = source),
-            getGoogleSignInResultsStreamUseCase = GetGoogleSignInResultsStreamUseCase(authenticationDataSource = source),
-            requestEmailCodeUseCase = RequestEmailCodeUseCase(authenticationDataSource = source),
-        )
+        val source =
+            FakeAuthenticationDataSource().apply {
+                signInResult = AppResult.Failure(AuthenticationError.InvalidCredentials())
+            }
+        val viewModel =
+            LoginScreenViewModel(
+                signInUseCase = SignInUseCase(authenticationDataSource = source),
+                signInWithGoogleUseCase =
+                    SignInWithGoogleUseCase(authenticationDataSource = source),
+                getGoogleSignInResultsStreamUseCase =
+                    GetGoogleSignInResultsStreamUseCase(authenticationDataSource = source),
+                requestEmailCodeUseCase =
+                    RequestEmailCodeUseCase(authenticationDataSource = source),
+            )
         try {
             backgroundScope.launch { viewModel.state.collect() }
             viewModel.onEmailChanged(value = "member@example.com")
@@ -131,9 +151,11 @@ class AuthenticationViewModelTest {
     @Test
     fun registrationOpensVerificationWithOnlyTheEmail() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
-        val viewModel = RegisterScreenViewModel(
-            registerUseCase = RegisterUseCase(authenticationDataSource = FakeAuthenticationDataSource()),
-        )
+        val viewModel =
+            RegisterScreenViewModel(
+                registerUseCase =
+                    RegisterUseCase(authenticationDataSource = FakeAuthenticationDataSource()),
+            )
         try {
             backgroundScope.launch { viewModel.state.collect() }
             viewModel.onEmailChanged(value = " member@example.com ")
@@ -143,7 +165,10 @@ class AuthenticationViewModelTest {
             viewModel.onSubmit()
             runCurrent()
 
-            val redirect = assertIs<RegisterScreenViewModelContract.RedirectTo.VerifyEmail>(viewModel.state.value.redirectTo)
+            val redirect =
+                assertIs<RegisterScreenViewModelContract.RedirectTo.VerifyEmail>(
+                    viewModel.state.value.redirectTo,
+                )
             assertEquals("member@example.com", redirect.email)
             assertEquals("", viewModel.state.value.password)
         } finally {
@@ -156,11 +181,17 @@ class AuthenticationViewModelTest {
     fun resendIsRateLimitedInTheViewModelAndVerificationPublishesASession() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val source = FakeAuthenticationDataSource()
-        val viewModel = EmailVerificationScreenViewModel(
-            params = EmailVerificationScreenViewModelContract.Params(email = "member@example.com", codeRequested = false),
-            verifyEmailUseCase = VerifyEmailUseCase(authenticationDataSource = source),
-            requestEmailCodeUseCase = RequestEmailCodeUseCase(authenticationDataSource = source),
-        )
+        val viewModel =
+            EmailVerificationScreenViewModel(
+                params =
+                    EmailVerificationScreenViewModelContract.Params(
+                        email = "member@example.com",
+                        codeRequested = false,
+                    ),
+                verifyEmailUseCase = VerifyEmailUseCase(authenticationDataSource = source),
+                requestEmailCodeUseCase =
+                    RequestEmailCodeUseCase(authenticationDataSource = source),
+            )
         try {
             backgroundScope.launch { viewModel.state.collect() }
             runCurrent()
@@ -182,7 +213,7 @@ class AuthenticationViewModelTest {
             runCurrent()
             assertEquals("001234", source.verifiedCode)
             assertEquals("member@example.com", source.verifiedEmail)
-            assertNotNull(source.stream().value)
+            assertIs<AuthenticationStateDomain.Authenticated>(source.stream().value)
             assertEquals("", viewModel.state.value.code)
         } finally {
             viewModel.viewModelScope.cancel()
@@ -194,15 +225,18 @@ class AuthenticationViewModelTest {
     fun signInVerificationResendsALoginCodeRatherThanASignupConfirmation() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val source = FakeAuthenticationDataSource()
-        val viewModel = EmailVerificationScreenViewModel(
-            params = EmailVerificationScreenViewModelContract.Params(
-                email = "member@example.com",
-                codeRequested = false,
-                purpose = EmailCodePurposeDomain.SIGN_IN,
-            ),
-            verifyEmailUseCase = VerifyEmailUseCase(authenticationDataSource = source),
-            requestEmailCodeUseCase = RequestEmailCodeUseCase(authenticationDataSource = source),
-        )
+        val viewModel =
+            EmailVerificationScreenViewModel(
+                params =
+                    EmailVerificationScreenViewModelContract.Params(
+                        email = "member@example.com",
+                        codeRequested = false,
+                        purpose = EmailCodePurposeDomain.SIGN_IN,
+                    ),
+                verifyEmailUseCase = VerifyEmailUseCase(authenticationDataSource = source),
+                requestEmailCodeUseCase =
+                    RequestEmailCodeUseCase(authenticationDataSource = source),
+            )
         try {
             viewModel.onResendCode()
             runCurrent()
@@ -217,14 +251,21 @@ class AuthenticationViewModelTest {
     @Test
     fun resendFailureDoesNotShowASuccessMessage() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
-        val source = FakeAuthenticationDataSource().apply {
-            resendResult = AppResult.Failure(AuthenticationError.EmailDeliveryUnavailable())
-        }
-        val viewModel = EmailVerificationScreenViewModel(
-            params = EmailVerificationScreenViewModelContract.Params(email = "member@example.com", codeRequested = false),
-            verifyEmailUseCase = VerifyEmailUseCase(authenticationDataSource = source),
-            requestEmailCodeUseCase = RequestEmailCodeUseCase(authenticationDataSource = source),
-        )
+        val source =
+            FakeAuthenticationDataSource().apply {
+                resendResult = AppResult.Failure(AuthenticationError.EmailDeliveryUnavailable())
+            }
+        val viewModel =
+            EmailVerificationScreenViewModel(
+                params =
+                    EmailVerificationScreenViewModelContract.Params(
+                        email = "member@example.com",
+                        codeRequested = false,
+                    ),
+                verifyEmailUseCase = VerifyEmailUseCase(authenticationDataSource = source),
+                requestEmailCodeUseCase =
+                    RequestEmailCodeUseCase(authenticationDataSource = source),
+            )
         try {
             viewModel.onResendCode()
             runCurrent()

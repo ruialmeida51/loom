@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Keep typing shopping items with Enter, stable ordering and keyboard clearance.
+- Delete shopping lists and trip accounts; manage archived trips separately.
+- Edit expense splits in a sheet without losing your draft.
+- Smoother startup, Back navigation, selectors and loading states.
+- Correct adaptive and themed icons; Firebase builds reach internal testers.
+
 ## [4.0.1] - 2026-11-15
 
 - Home now has square shortcuts for expenses and reminders.

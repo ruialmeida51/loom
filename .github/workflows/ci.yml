@@ -52,6 +52,47 @@ jobs:
           path: |
             shared/**/build/reports/tests/
             build/screenshots/
+  android-device-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '23'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - run: sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable emulator acceleration
+        run: sudo chmod 666 /dev/kvm
+      - name: Check Android keyboard, system Back and resume
+        uses: reactivecircus/android-emulator-runner@4c44018e59b437e86cdfc41da381398f93ed8808 # v2
+        with:
+          api-level: 35
+          target: default
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048
+          script: ./gradlew :androidApp:connectedDebugAndroidTest --no-parallel --max-workers=1 '-Dorg.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8'
+      - name: Collect Android captures and logs
+        if: always()
+        run: |
+          mkdir -p build/device-captures
+          adb pull /sdcard/Android/data/com.eyther.lumbridge/files/usability build/device-captures || true
+          adb logcat -d > build/device-captures/logcat.txt || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loom-android-usability
+          path: |
+            androidApp/build/reports/androidTests/
+            androidApp/build/outputs/androidTest-results/
+            build/device-captures/
   ios:
     runs-on: macos-26-intel
     steps:

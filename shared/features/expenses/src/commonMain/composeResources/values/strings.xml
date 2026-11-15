@@ -101,7 +101,7 @@
     <string name="account_new">New trip or event</string>
     <string name="account_archived">Archived</string>
     <string name="account_archive">Archive account</string>
-    <string name="account_restore">Restore account</string>
+    <string name="account_restore">Reopen account</string>
     <string name="account_rename">Edit account</string>
     <string name="history_expenses">Expenses</string>
     <string name="history_balances">Balances</string>
@@ -147,4 +147,12 @@
     <string name="account_save">Save account</string>
     <string name="balance_gets_back">Gets back</string>
     <string name="balance_owes">Owes</string>
+    <string name="account_manage">Manage accounts</string>
+    <string name="account_manage_hint">Archive finished trips to keep their history. Reopening does not restart paused bills.</string>
+    <string name="account_delete">Delete account</string>
+    <string name="account_delete_title">Permanently delete this account?</string>
+    <string name="account_delete_message">“%1$s” and all its expenses, repayments, recurring bills and saved statements will be deleted for everyone. This cannot be undone.</string>
+    <string name="split_input_shares">Shares</string>
+    <string name="split_input_amount">Amount</string>
+    <string name="split_input_percent">Percent</string>
 </resources>

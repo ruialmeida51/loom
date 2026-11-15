@@ -2,6 +2,7 @@ package com.eyther.lumbridge.di.household.viewmodel
 
 import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.ControlRecurringExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
@@ -16,15 +17,15 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccoun
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseAccountFormScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseDetailsScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseFormScreenViewModel
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseSplitViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpensesScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.RecurringExpensesScreenViewModel
-import com.eyther.lumbridge.features.expenses.presentation.viewmodel.SplitScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseAccountFormScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseDetailsScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseSplitViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
-import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.SplitScreenViewModelContract
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
@@ -50,6 +51,7 @@ import com.eyther.lumbridge.features.reminders.domain.usecase.RemoveReminderUseC
 import com.eyther.lumbridge.features.reminders.presentation.viewmodel.RemindersScreenViewModel
 import com.eyther.lumbridge.features.reminders.presentation.viewmodel.contracts.RemindersScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.domain.usecase.AddShoppingItemsUseCase
+import com.eyther.lumbridge.features.shopping.domain.usecase.DeleteShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingItemUseCase
@@ -70,6 +72,7 @@ class HouseholdViewModelModule {
         getExpenseAccountsStreamUseCase: GetExpenseAccountsStreamUseCase,
         selectExpenseAccountUseCase: SelectExpenseAccountUseCase,
         saveExpenseAccountUseCase: SaveExpenseAccountUseCase,
+        deleteExpenseAccountUseCase: DeleteExpenseAccountUseCase,
         recordSettlementUseCase: RecordSettlementUseCase,
         getMembersStreamUseCase: GetMembersStreamUseCase,
         context: HouseholdContextDomain,
@@ -79,6 +82,7 @@ class HouseholdViewModelModule {
             getExpenseAccountsStreamUseCase = getExpenseAccountsStreamUseCase,
             selectExpenseAccountUseCase = selectExpenseAccountUseCase,
             saveExpenseAccountUseCase = saveExpenseAccountUseCase,
+            deleteExpenseAccountUseCase = deleteExpenseAccountUseCase,
             recordSettlementUseCase = recordSettlementUseCase,
             getMembersStreamUseCase = getMembersStreamUseCase,
             context = context,
@@ -170,6 +174,7 @@ class HouseholdViewModelModule {
         addShoppingItemsUseCase: AddShoppingItemsUseCase,
         saveShoppingItemUseCase: SaveShoppingItemUseCase,
         saveShoppingListUseCase: SaveShoppingListUseCase,
+        deleteShoppingListUseCase: DeleteShoppingListUseCase,
         trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
     ): ShoppingScreenViewModelContract =
         ShoppingScreenViewModel(
@@ -179,6 +184,7 @@ class HouseholdViewModelModule {
             addShoppingItemsUseCase = addShoppingItemsUseCase,
             saveShoppingItemUseCase = saveShoppingItemUseCase,
             saveShoppingListUseCase = saveShoppingListUseCase,
+            deleteShoppingListUseCase = deleteShoppingListUseCase,
             trackAnalyticsEventUseCase = trackAnalyticsEventUseCase,
         )
 
@@ -230,12 +236,12 @@ class HouseholdViewModelModule {
             context = context,
         )
 
-    @KoinViewModel(binds = [SplitScreenViewModelContract::class])
-    fun provideSplitScreenViewModel(
-        @InjectedParam params: SplitScreenViewModelContract.Params,
+    @KoinViewModel(binds = [ExpenseSplitViewModelContract::class])
+    fun provideExpenseSplitViewModel(
+        @InjectedParam params: ExpenseSplitViewModelContract.Params,
         resolveExpenseSplitUseCase: ResolveExpenseSplitUseCase,
-    ): SplitScreenViewModelContract =
-        SplitScreenViewModel(
+    ): ExpenseSplitViewModelContract =
+        ExpenseSplitViewModel(
             params = params,
             resolveExpenseSplitUseCase = resolveExpenseSplitUseCase,
         )

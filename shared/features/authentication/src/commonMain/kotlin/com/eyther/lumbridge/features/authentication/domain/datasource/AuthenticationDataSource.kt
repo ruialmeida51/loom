@@ -1,12 +1,13 @@
 package com.eyther.lumbridge.features.authentication.domain.datasource
 
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
-import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
+import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface AuthenticationDataSource {
-    fun stream(): StateFlow<AuthSessionDomain?>
+    fun stream(): StateFlow<AuthenticationStateDomain>
+
     val configured: Boolean
 
     suspend fun signIn(email: String, password: String): AppResult<Unit>

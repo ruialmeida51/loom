@@ -3,7 +3,7 @@ package com.eyther.lumbridge.features.authentication.domain.usecase
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.errors.AuthenticationError
-import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
+import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -22,7 +22,8 @@ class RegisterUseCaseTest {
 
         var registeredEmail: String? = null
 
-        override fun stream(): StateFlow<AuthSessionDomain?> = MutableStateFlow(null)
+        override fun stream(): StateFlow<AuthenticationStateDomain> =
+            MutableStateFlow(AuthenticationStateDomain.SignedOut)
 
         override suspend fun signInWithGoogle(): AppResult<Unit> = AppResult.Success(Unit)
 
@@ -42,7 +43,8 @@ class RegisterUseCaseTest {
         override suspend fun resendVerificationEmail(email: String): AppResult<Unit> =
             AppResult.Success(Unit)
 
-        override suspend fun sendSignInCode(email: String): AppResult<Unit> = AppResult.Success(Unit)
+        override suspend fun sendSignInCode(email: String): AppResult<Unit> =
+            AppResult.Success(Unit)
 
         override suspend fun signOut(): AppResult<Unit> = error("Sign-out is outside this test")
     }
@@ -52,11 +54,12 @@ class RegisterUseCaseTest {
         val dataSource = RegistrationDataSource()
         val register = RegisterUseCase(authenticationDataSource = dataSource)
 
-        val result = register(
-            email = "roommate@example.test",
-            password = "test-password-long-enough",
-            acceptedTerms = false,
-        )
+        val result =
+            register(
+                email = "roommate@example.test",
+                password = "test-password-long-enough",
+                acceptedTerms = false,
+            )
 
         assertIs<AuthenticationError.TermsNotAccepted>(assertIs<AppResult.Failure>(result).error)
         assertNull(dataSource.registeredEmail)
@@ -78,11 +81,12 @@ class RegisterUseCaseTest {
         val dataSource = RegistrationDataSource()
         val register = RegisterUseCase(authenticationDataSource = dataSource)
 
-        val result = register(
-            email = " roommate@example.test ",
-            password = "test-password-long-enough",
-            acceptedTerms = true,
-        )
+        val result =
+            register(
+                email = " roommate@example.test ",
+                password = "test-password-long-enough",
+                acceptedTerms = true,
+            )
 
         assertIs<AppResult.Success<Unit>>(result)
         assertEquals("roommate@example.test", dataSource.registeredEmail)

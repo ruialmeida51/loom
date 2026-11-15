@@ -1,18 +1,24 @@
 package com.eyther.lumbridge.features.shopping.presentation.components.bottomsheet
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
+import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
+import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
+import com.eyther.lumbridge.features.shopping.generated.resources.list_delete
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_archive
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_done
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_new_list
@@ -32,14 +38,17 @@ fun ShoppingListsBottomSheet(
     onShowLists: (Boolean) -> Unit,
     onListForm: (ShoppingListDomain?) -> Unit,
     onArchive: (ShoppingListDomain) -> Unit,
+    onDelete: (ShoppingListDomain) -> Unit,
     onDismiss: () -> Unit,
 ) {
     FormBottomSheet(
         title = stringResource(Res.string.ui_shopping_lists),
         action = {
-            TextButton(onClick = { onListForm(null) }, enabled = !busy) {
-                Text(stringResource(Res.string.ui_new_list))
-            }
+            LoomButton(
+                text = stringResource(Res.string.ui_new_list),
+                onClick = { onListForm(null) },
+                enabled = !busy,
+            )
         },
         dismissAction = {
             TextButton(onClick = { onShowLists(false) }, enabled = !busy) {
@@ -48,32 +57,44 @@ fun ShoppingListsBottomSheet(
         },
     ) {
         lists.forEach { list ->
-            TextButton(
-                onClick = { onSelect(list.id) },
-                enabled = !busy && !list.archived,
-                modifier = Modifier.testTag("list_${list.name}"),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(list.name, style = MaterialTheme.typography.titleMedium)
-                if (list.id == selectedListId) Text(" ✓")
-            }
-            Row {
-                TextButton(
-                    onClick = { onListForm(list) },
-                    enabled = !busy,
-                    modifier = Modifier.testTag("rename_${list.name}"),
-                ) {
-                    Text(stringResource(Res.string.ui_rename))
-                }
-                TextButton(
-                    onClick = { onArchive(list) },
-                    enabled = !busy && (list.archived || activeLists.size > 1),
-                    modifier = Modifier.testTag("archive_${list.name}"),
-                ) {
-                    Text(
-                        if (list.archived) stringResource(Res.string.ui_restore)
-                        else stringResource(Res.string.ui_archive),
-                    )
-                }
+                NavigationRow(
+                    title = list.name,
+                    description =
+                        if (list.archived) stringResource(Res.string.ui_archive) else null,
+                    onClick = { onSelect(list.id) },
+                    enabled = !busy && !list.archived,
+                    modifier = Modifier.weight(1f).testTag("list_${list.name}"),
+                )
+                ActionMenu(
+                    modifier = Modifier.testTag("list_actions_${list.name}"),
+                    items =
+                        listOf(
+                            ActionMenuItem(
+                                text = TextResource.Resource(Res.string.ui_rename),
+                                onClick = { onListForm(list) },
+                                enabled = !busy,
+                            ),
+                            ActionMenuItem(
+                                text =
+                                    TextResource.Resource(
+                                        if (list.archived) Res.string.ui_restore
+                                        else Res.string.ui_archive,
+                                    ),
+                                onClick = { onArchive(list) },
+                                enabled = !busy && (list.archived || activeLists.size > 1),
+                            ),
+                            ActionMenuItem(
+                                text = TextResource.Resource(Res.string.list_delete),
+                                onClick = { onDelete(list) },
+                                enabled = !busy,
+                                destructive = true,
+                            ),
+                        ),
+                )
             }
         }
         formError?.let { message ->

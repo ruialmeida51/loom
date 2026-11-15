@@ -6,4 +6,5 @@ data class ActionMenuItem(
     val text: TextResource,
     val onClick: () -> Unit,
     val enabled: Boolean = true,
+    val destructive: Boolean = false,
 )

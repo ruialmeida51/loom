@@ -25,7 +25,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
-import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.LoadingForm
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
@@ -142,7 +142,7 @@ private fun InnerExpenseFormScreen(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (loading) LoadingRows()
+            if (loading) LoadingForm()
             error?.let { message ->
                 ErrorNotice(message = message, onDismiss = onDismiss)
                 if (account == null)

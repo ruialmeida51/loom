@@ -1,8 +1,5 @@
 package com.eyther.lumbridge.app.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -12,9 +9,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import com.eyther.lumbridge.app.navigation.components.SessionStartup
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.account.domain.datasource.ProfileDataSource
@@ -23,6 +19,7 @@ import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
 import com.eyther.lumbridge.features.analytics.domain.usecase.GetAnalyticsPreferencesStreamUseCase
 import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
+import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
@@ -38,7 +35,8 @@ fun LauncherHost() {
     val getLegalDocumentsUseCase: GetLegalDocumentsUseCase = koinInject()
     val uriHandler = LocalUriHandler.current
     val getSessionStreamUseCase: GetSessionStreamUseCase = koinInject()
-    val session by getSessionStreamUseCase().collectAsState()
+    val authentication by getSessionStreamUseCase().collectAsState()
+    val session = (authentication as? AuthenticationStateDomain.Authenticated)?.session
     val analyticsDataSource: AnalyticsDataSource = koinInject()
     val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase = koinInject()
     val getAnalyticsPreferencesStreamUseCase: GetAnalyticsPreferencesStreamUseCase = koinInject()
@@ -71,7 +69,8 @@ fun LauncherHost() {
     }
     val publicScreen =
         when {
-            session == null -> AnalyticsScreenDomain.AUTHENTICATION
+            authentication == AuthenticationStateDomain.SignedOut ->
+                AnalyticsScreenDomain.AUTHENTICATION
             else -> null
         }
     LaunchedEffect(publicScreen, analyticsPreferences.enabled) {
@@ -82,16 +81,17 @@ fun LauncherHost() {
         }
     }
     when {
-        session == null ->
+        authentication is AuthenticationStateDomain.Restoring ->
+            SessionStartup(
+                reconnecting = (authentication as AuthenticationStateDomain.Restoring).reconnecting,
+            )
+        authentication == AuthenticationStateDomain.SignedOut ->
             AuthenticationHost(
                 onOpenLegalDocument = { document ->
                     uriHandler.openUri(getLegalDocumentsUseCase().url(document = document))
                 },
             )
-        restoring ->
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+        restoring -> SessionStartup(reconnecting = false)
         else -> {
             val user = session ?: return
             val profileDataSource: ProfileDataSource = koinInject()

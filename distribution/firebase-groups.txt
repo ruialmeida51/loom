@@ -1,1 +1,2 @@
-# Existing Firebase tester group aliases, one per line. Empty means upload only.
+# Firebase tester group aliases used by default for each release.
+internal-testers
