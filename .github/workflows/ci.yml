@@ -78,13 +78,7 @@ jobs:
           profile: pixel_6
           disable-animations: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048
-          script: ./gradlew :androidApp:connectedDebugAndroidTest --no-parallel --max-workers=1 '-Dorg.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8'
-      - name: Collect Android captures and logs
-        if: always()
-        run: |
-          mkdir -p build/device-captures
-          adb pull /sdcard/Android/data/com.eyther.lumbridge/files/usability build/device-captures || true
-          adb logcat -d > build/device-captures/logcat.txt || true
+          script: ./tools/check_android_usability.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
