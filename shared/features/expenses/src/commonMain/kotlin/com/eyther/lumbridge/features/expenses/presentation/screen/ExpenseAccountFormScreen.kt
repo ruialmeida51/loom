@@ -93,40 +93,42 @@ private fun InnerExpenseAccountFormScreen(
                 ErrorNotice(message = it, onDismiss = onDismiss)
                 TextButton(onClick = onRetry) { Text(stringResource(Res.string.balance_retry)) }
             }
-            OutlinedTextField(
-                value = name,
-                onValueChange = onName,
-                singleLine = true,
-                enabled = !busy,
-                label = { Text(stringResource(Res.string.account_name)) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                stringResource(Res.string.account_currency),
-                style = MaterialTheme.typography.titleSmall,
-            )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                HouseholdCurrencyDomain.entries.forEach { choice ->
-                    FilterChip(
-                        selected = currency == choice.name,
-                        onClick = { onCurrency(choice.name) },
-                        enabled = !editing && !busy,
-                        label = { Text(choice.name) },
-                    )
+            if (members.isNotEmpty()) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = onName,
+                    singleLine = true,
+                    enabled = !busy,
+                    label = { Text(stringResource(Res.string.account_name)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    stringResource(Res.string.account_currency),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    HouseholdCurrencyDomain.entries.forEach { choice ->
+                        FilterChip(
+                            selected = currency == choice.name,
+                            onClick = { onCurrency(choice.name) },
+                            enabled = !editing && !busy,
+                            label = { Text(choice.name) },
+                        )
+                    }
                 }
-            }
-            Text(
-                stringResource(Res.string.account_participants),
-                style = MaterialTheme.typography.titleSmall,
-            )
-            members.forEach { member ->
-                Row {
-                    Checkbox(
-                        checked = member.id in selected,
-                        onCheckedChange = { onParticipant(member.id) },
-                        enabled = !editing && !busy && member.id != userId,
-                    )
-                    Text(member.name, modifier = Modifier.padding(top = 12.dp))
+                Text(
+                    stringResource(Res.string.account_participants),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                members.forEach { member ->
+                    Row {
+                        Checkbox(
+                            checked = member.id in selected,
+                            onCheckedChange = { onParticipant(member.id) },
+                            enabled = !editing && !busy && member.id != userId,
+                        )
+                        Text(member.name, modifier = Modifier.padding(top = 12.dp))
+                    }
                 }
             }
         }

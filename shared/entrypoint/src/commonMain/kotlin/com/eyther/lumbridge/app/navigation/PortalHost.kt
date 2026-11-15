@@ -2,12 +2,14 @@ package com.eyther.lumbridge.app.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import com.eyther.lumbridge.app.navigation.components.PortalToolbar
 import com.eyther.lumbridge.app.navigation.model.PortalDestination
+import com.eyther.lumbridge.app.navigation.push.PendingPush
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.navigation.composables.navigation3.DefaultNavDisplay
 import com.eyther.lumbridge.core.navigation.model.Navigator
@@ -85,6 +87,12 @@ internal fun PortalHost(
                 subclass(PortalDestination.Account::class)
             }
         val navigator = remember(state) { Navigator(state = state) }
+        val pendingPush by PendingPush.destination.collectAsState()
+        LaunchedEffect(pendingPush, context?.id) {
+            if (pendingPush != null && pendingPush?.householdId == context?.id) {
+                navigator.navigateAndPopTo(PortalDestination.Household)
+            }
+        }
         val portalToolbar: @Composable () -> Unit = {
             val accountState by accountViewModel.state.collectAsState()
             PortalToolbar(

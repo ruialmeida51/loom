@@ -123,11 +123,19 @@ class ExpensesScreenViewModel(
             )
         }
         launch {
-            val result = selectExpenseAccountUseCase(id = id)
-            if (result is AppResult.Failure)
-                mutableState.update { oldState ->
-                    oldState.copy(loading = false, error = result.error.toExpensesTextResource())
+            when (val result = selectExpenseAccountUseCase(id = id)) {
+                is AppResult.Success -> {
+                    // Selecting the cached ID must also restart a stream that previously failed.
+                    onRefresh()
                 }
+                is AppResult.Failure ->
+                    mutableState.update { oldState ->
+                        oldState.copy(
+                            loading = false,
+                            error = result.error.toExpensesTextResource(),
+                        )
+                    }
+            }
         }
     }
 

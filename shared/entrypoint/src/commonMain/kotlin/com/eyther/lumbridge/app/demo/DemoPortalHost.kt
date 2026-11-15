@@ -5,6 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -27,6 +28,7 @@ import com.eyther.lumbridge.app.navigation.HouseholdHost
 import com.eyther.lumbridge.app.navigation.components.FlowScaffold
 import com.eyther.lumbridge.app.navigation.components.PortalToolbar
 import com.eyther.lumbridge.app.navigation.model.PortalDestination
+import com.eyther.lumbridge.app.navigation.push.PendingPush
 import com.eyther.lumbridge.core.navigation.composables.navigation3.DefaultNavDisplay
 import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
@@ -107,6 +109,12 @@ internal fun DemoPortalHost(
                 subclass(PortalDestination.Account::class)
             }
         val navigator = remember(navigationState) { Navigator(state = navigationState) }
+        val pendingPush by PendingPush.destination.collectAsState()
+        LaunchedEffect(pendingPush, store.context.id) {
+            if (pendingPush != null && pendingPush?.householdId == store.context.id) {
+                navigator.navigateAndPopTo(PortalDestination.Household)
+            }
+        }
         val portalToolbar: @Composable () -> Unit = {
             val accountState by accountViewModel.state.collectAsState()
             PortalToolbar(
