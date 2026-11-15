@@ -1,6 +1,6 @@
 # Loom usability and stability pass
 
-Status: implementation complete; local validation passed. CI device/iOS checks and hosted migration remain before distribution. Reported symptoms are recorded below; underlying causes remain subject to the code and device audit. Current base is Loom 4.0.1. The shared app, 121 JVM tests and native Android test APK compile successfully; final release builds, hosted migration and CI device checks are still pending. The existing release-version/changelog automation remains in use.
+Status: implementation complete; local checks, Android device checks and the iOS app build pass. Hosted migration confirmation and Firebase distribution remain. Reported symptoms are recorded below; underlying causes remain subject to the code and device audit. Current base is Loom 4.0.1. The shared app, 121 JVM tests and native Android tests pass; release artifacts build successfully. The hosted migration and Firebase distribution remain pending. The existing release-version/changelog automation remains in use.
 
 ## Complete working checklist
 
@@ -16,7 +16,7 @@ Status: implementation complete; local validation passed. CI device/iOS checks a
 - [x] SHOP-02: Stop groceries jumping/reordering after additions or realtime refreshes. Define insertion order, stable identities/keys and preservation of scroll, checked state and current input.
 - [x] STATE-01: Audit immutable/stable UI collections and state, derived-list recomputation, stream emissions and ViewModel lifetimes. Remove visible flashes and unnecessary content replacement.
 - [x] IME-01: Keep shopping item entry and its action reachable on a long list while the keyboard opens, stays open and closes. Use continuous Keep-style in-list entry.
-- [ ] INSETS-01: Audit safe areas, status/navigation bars, IME padding, scrolling and inset consumption across screens and sheets; avoid missing or double-applied padding.
+- [x] INSETS-01: Audit safe areas, status/navigation bars, IME padding, scrolling and inset consumption across screens and sheets; avoid missing or double-applied padding.
 - [x] LOAD-01: Add consistent, layout-matched skeleton loading and correct initial/loading/content/empty/error states. Retain loaded content during refreshes where appropriate.
 - [x] LOAD-02: Adapt Plannot's delayAtLeast helper and its usage for deliberate minimum loading durations, preserving cancellation and avoiding repeated flashes.
 - [x] ACTION-01: Establish primary, secondary and destructive action hierarchy using buttons/icon buttons, with less reliance on text buttons.
@@ -50,8 +50,9 @@ No actual user records are to be deleted as part of implementation/testing; dele
 ## Verification and deployment status
 
 - 121 JVM tests pass, including continuous entry, idempotent retry, stale-snapshot protection, independent item rollback, final-list deletion and authentication state transitions.
-- The native Android test APK compiles. New CI instrumentation checks exercise the actual IME, long-list Enter entry, system Back and background/resume. Device execution is pending; local emulator provisioning exceeded the workspace disk limit, and the failed installation caches were removed.
-- Common Kotlin metadata, debug APK, minified release APK and release AAB build successfully. The final visual text adjustment is additionally covered by focused UI/native compilation checks.
+- Both native Android instrumented tests pass on API 35 in [CI run 43774157880](https://github.com/ruialmeida51/loom/actions/runs/43774157880). They exercise 30 continuous entries using keyboard Next/hardware Enter, focus retention, actual IME clearance, system Back, split cancellation and background/resume. Phone screenshots were reviewed and are in the [device artifact](https://github.com/ruialmeida51/loom/actions/runs/43774157880/artifacts/14185614101). Local emulator provisioning exceeded the workspace disk limit; its failed installation caches were removed.
+- iOS shared compilation and the Xcode simulator app build pass in CI for the app implementation. iOS gestures/IME still require device review.
+- Common Kotlin metadata, debug APK, minified release APK and release AAB build successfully. The final visual text adjustment is covered by focused UI/native compilation and device checks.
 - All 13 migrations and authorization/ledger tests pass in a disposable PostgreSQL container, including a pre-existing archived-list upgrade fixture. No production user records were queried for validation. The UI suite also exercises final-list deletion/recreation and archived-trip deletion through the actual screen actions.
 - 28 Node tests, 7 Python tests, workflow lint and the feature/package/resource audit pass. The audit covers 18 destination screens and their contracts and 34 separate transport models.
 - Hosted schema metadata matches the migration's prerequisites. Supabase's migration confirmation expired twice; a follow-up metadata check confirms the new position column and deletion RPCs have **not** been applied. Do not distribute this client until that connector confirmation succeeds and the hosted schema/grants are verified.
