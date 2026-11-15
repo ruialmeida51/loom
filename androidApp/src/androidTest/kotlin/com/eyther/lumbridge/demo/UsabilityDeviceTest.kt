@@ -1,9 +1,15 @@
 package com.eyther.lumbridge.demo
 
+import android.content.ContentValues
+import android.os.Environment
+import android.provider.MediaStore
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextContains
-import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -12,7 +18,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.text.AnnotatedString
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.test.platform.app.InstrumentationRegistry
@@ -45,7 +53,12 @@ class UsabilityDeviceTest {
             compose.waitForIdle()
         }
         val input = compose.onNodeWithTag("shopping_inline_input")
-        input.assertIsFocused().assertIsDisplayed().assertTextEquals("")
+        input
+            .assertIsFocused()
+            .assertIsDisplayed()
+            .assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.EditableText, AnnotatedString("")),
+            )
         compose.runOnUiThread {
             val decor = compose.activity.window.decorView
             val insets = requireNotNull(ViewCompat.getRootWindowInsets(decor))
@@ -54,6 +67,7 @@ class UsabilityDeviceTest {
                 insets.isVisible(WindowInsetsCompat.Type.ime()),
             )
         }
+        compose.onNodeWithText("Checklist item 29").assertIsDisplayed()
         capture(name = "shopping-keyboard")
         val inputBottom = input.fetchSemanticsNode().boundsInWindow.bottom
         compose.runOnUiThread {
@@ -68,9 +82,11 @@ class UsabilityDeviceTest {
             )
         }
         device.pressBack() // The keyboard consumes the first Back.
-        compose.onNodeWithTag("shopping_content").assertIsDisplayed()
+        compose.waitUntil(timeoutMillis = 5_000) { !keyboardVisible() }
+        device.waitForIdle()
+        awaitDestination(tag = "shopping_content")
         device.pressBack() // Then the peer tab returns Home.
-        compose.onNodeWithTag("home_content").assertIsDisplayed()
+        awaitDestination(tag = "home_content")
     }
 
     @Test
@@ -90,26 +106,64 @@ class UsabilityDeviceTest {
         compose.onNodeWithTag("expense_amount").assertTextContains("30.00")
         hideKeyboard()
         device.pressBack()
-        compose.onNodeWithTag("expenses_content").assertIsDisplayed()
+        awaitDestination(tag = "expenses_content")
+        compose.onNodeWithTag("expense_title").assertDoesNotExist()
         device.pressBack()
-        compose.onNodeWithTag("home_content").assertIsDisplayed()
+        awaitDestination(tag = "home_content")
     }
 
     private fun capture(name: String) {
         compose.waitForIdle()
-        val directory =
-            File(compose.activity.getExternalFilesDir(null), "usability").apply { mkdirs() }
-        device.takeScreenshot(File(directory, "$name.png"))
+        val file = File(compose.activity.cacheDir, "$name.png")
+        check(device.takeScreenshot(file)) { "The device could not capture the current screen" }
+        // Gradle uninstalls the test app after a run. Shared test media survives until collection.
+        val resolver = compose.activity.contentResolver
+        val values =
+            ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, "$name.png")
+                put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+                put(
+                    MediaStore.Images.Media.RELATIVE_PATH,
+                    "${Environment.DIRECTORY_PICTURES}/Loom-usability",
+                )
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+        val uri =
+            requireNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values))
+        resolver.openOutputStream(uri).use { output ->
+            file.inputStream().use { input -> input.copyTo(requireNotNull(output)) }
+        }
+        values.clear()
+        values.put(MediaStore.Images.Media.IS_PENDING, 0)
+        resolver.update(uri, values, null, null)
+        file.delete()
     }
 
-    private fun hideKeyboard() {
+    private fun awaitDestination(tag: String) {
+        compose.waitUntil(timeoutMillis = 5_000) { compose.onNodeWithTag(tag).isDisplayed() }
+        compose.waitForIdle()
+    }
+
+    private fun keyboardVisible(): Boolean {
         var visible = false
         compose.runOnUiThread {
             visible =
                 ViewCompat.getRootWindowInsets(compose.activity.window.decorView)
                     ?.isVisible(WindowInsetsCompat.Type.ime()) == true
         }
-        if (visible) device.pressBack()
+        return visible
+    }
+
+    private fun hideKeyboard() {
+        // Android's IME can restore after resume, independently of Compose's idle clock.
+        device.waitForIdle()
+        compose.runOnUiThread {
+            val window = compose.activity.window
+            WindowCompat.getInsetsController(window, window.decorView)
+                .hide(WindowInsetsCompat.Type.ime())
+        }
+        compose.waitUntil(timeoutMillis = 5_000) { !keyboardVisible() }
+        device.waitForIdle()
         compose.waitForIdle()
     }
 }
