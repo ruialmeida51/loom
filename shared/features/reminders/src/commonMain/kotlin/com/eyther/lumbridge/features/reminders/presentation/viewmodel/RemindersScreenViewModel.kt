@@ -33,25 +33,31 @@ class RemindersScreenViewModel(
 
     private val inputState = MutableStateFlow(InnerInputState())
 
-    private val mutableState = MutableStateFlow(RemindersState())
-        .observeWith(viewModelScope) { state ->
-            inputState.updateState(state) { input ->
-                copy(
-                    title = input.title,
-                    date = input.date,
-                    time = input.time,
-                    recurrence = input.recurrence,
-                )
-            }
-        }
-        .observeWith(viewModelScope) { state ->
-            getRemindersStreamUseCase().updateState(state) { result ->
-                when (result) {
-                    is AppResult.Success -> copy(items = result.value, loadError = null)
-                    is AppResult.Failure -> copy(loadError = result.error.toRemindersTextResource())
+    private val mutableState =
+        MutableStateFlow(RemindersState())
+            .observeWith(viewModelScope) { state ->
+                inputState.updateState(state) { input ->
+                    copy(
+                        title = input.title,
+                        date = input.date,
+                        time = input.time,
+                        recurrence = input.recurrence,
+                    )
                 }
             }
-        }
+            .observeWith(viewModelScope) { state ->
+                getRemindersStreamUseCase().updateState(state) { result ->
+                    when (result) {
+                        is AppResult.Success ->
+                            copy(items = result.value, loading = false, loadError = null)
+                        is AppResult.Failure ->
+                            copy(
+                                loading = false,
+                                loadError = result.error.toRemindersTextResource(),
+                            )
+                    }
+                }
+            }
 
     override val state = mutableState.asStateFlow()
 
@@ -104,26 +110,33 @@ class RemindersScreenViewModel(
         }
 
         launch {
-            when (val result = addReminderUseCase(
-                title = input.title,
-                date = input.date,
-                time = input.time,
-                recurrence = input.recurrence,
-            )) {
-                is AppResult.Success -> mutableState.update { oldState ->
-                    oldState.copy(
-                        items = oldState.items.filterNot { it.id == result.value.id } + result.value,
-                        showAdd = false,
-                        busy = false,
+            when (
+                val result =
+                    addReminderUseCase(
+                        title = input.title,
+                        date = input.date,
+                        time = input.time,
+                        recurrence = input.recurrence,
                     )
-                }
+            ) {
+                is AppResult.Success ->
+                    mutableState.update { oldState ->
+                        oldState.copy(
+                            items =
+                                oldState.items.filterNot { it.id == result.value.id } +
+                                    result.value,
+                            showAdd = false,
+                            busy = false,
+                        )
+                    }
 
-                is AppResult.Failure -> mutableState.update { oldState ->
-                    oldState.copy(
-                        busy = false,
-                        formError = result.error.toRemindersTextResource(),
-                    )
-                }
+                is AppResult.Failure ->
+                    mutableState.update { oldState ->
+                        oldState.copy(
+                            busy = false,
+                            formError = result.error.toRemindersTextResource(),
+                        )
+                    }
             }
         }
     }
@@ -134,19 +147,22 @@ class RemindersScreenViewModel(
 
             mutableState.update { oldState ->
                 when (result) {
-                    is AppResult.Success -> oldState.copy(
-                        items = oldState.items.map { reminder ->
-                            if (reminder.id == item.id && reminder.recurrence == "none") {
-                                reminder.copy(completed = !reminder.completed)
-                            } else {
-                                reminder
-                            }
-                        },
-                    )
+                    is AppResult.Success ->
+                        oldState.copy(
+                            items =
+                                oldState.items.map { reminder ->
+                                    if (reminder.id == item.id && reminder.recurrence == "none") {
+                                        reminder.copy(completed = !reminder.completed)
+                                    } else {
+                                        reminder
+                                    }
+                                },
+                        )
 
-                    is AppResult.Failure -> oldState.copy(
-                        error = result.error.toRemindersTextResource(),
-                    )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            error = result.error.toRemindersTextResource(),
+                        )
                 }
             }
         }
@@ -158,13 +174,15 @@ class RemindersScreenViewModel(
 
             mutableState.update { oldState ->
                 when (result) {
-                    is AppResult.Success -> oldState.copy(
-                        items = oldState.items.filterNot { it.id == id },
-                    )
+                    is AppResult.Success ->
+                        oldState.copy(
+                            items = oldState.items.filterNot { it.id == id },
+                        )
 
-                    is AppResult.Failure -> oldState.copy(
-                        error = result.error.toRemindersTextResource(),
-                    )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            error = result.error.toRemindersTextResource(),
+                        )
                 }
             }
         }

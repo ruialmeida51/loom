@@ -18,12 +18,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.ListRow
+import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
-import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
@@ -34,7 +35,6 @@ import com.eyther.lumbridge.features.reminders.generated.resources.ui_nothing_on
 import com.eyther.lumbridge.features.reminders.generated.resources.ui_remove
 import com.eyther.lumbridge.features.reminders.generated.resources.ui_repeats_1_s
 import com.eyther.lumbridge.features.reminders.generated.resources.ui_room_in_your_head
-import com.eyther.lumbridge.features.reminders.generated.resources.ui_the_little_things_remembered_together
 import com.eyther.lumbridge.features.reminders.presentation.mapper.reminderRecurrenceLabel
 import com.eyther.lumbridge.features.reminders.presentation.viewmodel.contracts.RemindersScreenViewModelContract
 import org.jetbrains.compose.resources.stringResource
@@ -44,6 +44,8 @@ fun RemindersScreen(viewModel: RemindersScreenViewModelContract, timeZone: Strin
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerRemindersScreen(
         items = state.orderedReminders,
+        loading = state.loading,
+        showEmpty = state.showEmpty,
         error = state.displayError,
         timeZone = timeZone,
         onShowAdd = viewModel::onAddSheetVisibilityChanged,
@@ -56,6 +58,8 @@ fun RemindersScreen(viewModel: RemindersScreenViewModelContract, timeZone: Strin
 @Composable
 private fun InnerRemindersScreen(
     items: List<ReminderDomain>,
+    loading: Boolean,
+    showEmpty: Boolean,
     error: TextResource?,
     timeZone: String,
     onShowAdd: (Boolean) -> Unit,
@@ -64,14 +68,15 @@ private fun InnerRemindersScreen(
     onRemove: (String) -> Unit,
 ) {
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 20.dp),
-        contentPadding = PaddingValues(vertical = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        Modifier.fillMaxSize().padding(horizontal = 16.dp).testTag("reminders_content"),
+        contentPadding = PaddingValues(vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
-            PageHeading(
+            Text(
                 stringResource(Res.string.ui_room_in_your_head),
-                stringResource(Res.string.ui_the_little_things_remembered_together),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         error?.let { message ->
@@ -86,7 +91,8 @@ private fun InnerRemindersScreen(
                 Modifier.fillMaxWidth(),
             )
         }
-        if (items.isEmpty())
+        if (loading) item { LoadingRows() }
+        if (showEmpty)
             item {
                 EmptyNotice(
                     stringResource(Res.string.ui_nothing_on_your_mind),

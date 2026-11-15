@@ -1,0 +1,55 @@
+package com.eyther.lumbridge.app.navigation.components
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.NavigationRow
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.household_details
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.tab_more
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.toolbar_reminders
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_feed
+import org.jetbrains.compose.resources.stringResource
+
+/** This is a navigation menu. Feature state and behavior stay in the destination's own feature. */
+@Composable
+internal fun MoreOverviewContent(
+    onReminders: () -> Unit,
+    onFeed: () -> Unit,
+    onHouseholdDetails: () -> Unit,
+) {
+    Column(
+        modifier =
+            Modifier.fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+                .testTag("more_content"),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(stringResource(Res.string.tab_more), style = MaterialTheme.typography.titleLarge)
+        GroupedSurface {
+            NavigationRow(
+                title = stringResource(Res.string.toolbar_reminders),
+                onClick = onReminders,
+            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            NavigationRow(title = stringResource(Res.string.ui_feed), onClick = onFeed)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            NavigationRow(
+                title = stringResource(Res.string.household_details),
+                onClick = onHouseholdDetails,
+            )
+        }
+    }
+}

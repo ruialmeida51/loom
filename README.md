@@ -8,7 +8,7 @@ Application ID and iOS bundle ID: **`com.eyther.lumbridge`**.
 
 <img src="docs/screenshots/home-light.png" width="260" alt="Loom household overview in light mode" /> <img src="docs/screenshots/home-dark.png" width="260" alt="Loom household overview in dark mode" />
 
-Flows: [Shopping checklist](docs/screenshots/shopping-light.png), [Trip balances](docs/screenshots/trip-balances-light.png), [Unequal split](docs/screenshots/split-shares-light.png), and [Repayment](docs/screenshots/repayment-light.png).
+Flows: [More](docs/screenshots/more-light.png), [All reminders](docs/screenshots/reminders-light.png), [Shopping checklist](docs/screenshots/shopping-light.png), [Trip balances](docs/screenshots/trip-balances-light.png), [Unequal split](docs/screenshots/split-shares-light.png), and [Repayment](docs/screenshots/repayment-light.png).
 
 Editing sheets: [Shopping on a short screen](docs/screenshots/shopping-sheet-narrow.png), [Nickname](docs/screenshots/nickname-sheet-light.png), and [dark mode](docs/screenshots/nickname-sheet-dark.png).
 
@@ -18,7 +18,7 @@ Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [C
 
 - Google sign-in, separate email login/registration/verification screens, password visibility controls, and code resend with a cooldown. Existing accounts can also request an email sign-in code.
 - Separate household selection, creation and invitation-joining screens, each with its own ViewModel.
-- Home, Shopping and Balances tabs, with Feed under Home. Household selection and global My account follow Plannot’s portal pattern.
+- Home, Shopping, Balances and More tabs, with square Home quick actions and full Reminders/Feed destinations under More. Household selection and global My account follow Plannot’s portal pattern.
 - Multiple households, owner invitations, quick switching, and restoring the last accessible household. My account is available before the first household exists.
 - Named shared shopping lists with inline Enter-to-add, collapsed completed items, optional editing, undo, favorites, moving items, and list rename/archive/restore.
 - Household reminders, daily/weekly repeats, timezone handling, and completion.
@@ -78,7 +78,7 @@ Models stay in their owning feature: household owns `HouseholdContextDomain`, ex
 
 See [architecture details](docs/architecture.md), [screen and interaction language](docs/design-language.md), and [backend setup](docs/backend.md).
 
-For automatic 4.0.x versions, Firebase distribution, Android signing, required secrets, Play uploads and public policy URLs, follow [Play Store release setup](docs/play-store-release.md). See the [data-safety worksheet](docs/data-safety.md) and [support-assisted account-deletion runbook](docs/account-deletion.md).
+For the [changelog](CHANGELOG.md), automatic versioned release notes and 4.0.x versions, Firebase distribution, Android signing, required secrets, Play uploads and public policy URLs, follow [Play Store release setup](docs/play-store-release.md). See the [data-safety worksheet](docs/data-safety.md) and [support-assisted account-deletion runbook](docs/account-deletion.md).
 
 ## Run
 

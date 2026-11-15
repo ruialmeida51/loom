@@ -22,6 +22,7 @@ import com.eyther.lumbridge.core.generated.resources.icon_done
 import com.eyther.lumbridge.core.generated.resources.icon_feed
 import com.eyther.lumbridge.core.generated.resources.icon_home
 import com.eyther.lumbridge.core.generated.resources.icon_money
+import com.eyther.lumbridge.core.generated.resources.icon_more
 import com.eyther.lumbridge.core.generated.resources.icon_next
 import com.eyther.lumbridge.core.generated.resources.icon_settings
 import com.eyther.lumbridge.core.generated.resources.icon_shopping
@@ -36,6 +37,7 @@ fun LoomIcon(
     val iconLabel =
         stringResource(
             when (glyph) {
+                Glyph.MORE -> Res.string.icon_more
                 Glyph.HOME -> Res.string.icon_home
                 Glyph.FEED -> Res.string.icon_feed
                 Glyph.SHOPPING -> Res.string.icon_shopping
@@ -62,6 +64,10 @@ fun LoomIcon(
                 StrokeCap.Round,
             )
         when (glyph) {
+            Glyph.MORE ->
+                listOf(5f, 12f, 19f).forEach { x ->
+                    drawCircle(tint, 1.5f * s, Offset(x * s, 12f * s))
+                }
             Glyph.HOME -> {
                 line(3f, 11f, 12f, 3f)
                 line(12f, 3f, 21f, 11f)

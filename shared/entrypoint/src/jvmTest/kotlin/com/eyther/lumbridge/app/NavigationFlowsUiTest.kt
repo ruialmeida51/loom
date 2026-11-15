@@ -10,7 +10,6 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.navigationevent.NavigationEventDispatcher
@@ -68,7 +67,10 @@ class NavigationFlowsUiTest {
             runOnIdle { input.back() }
             onNodeWithText("Today").assertIsDisplayed()
             assertEquals(0, exits)
-            onNodeWithText("Feed").performScrollTo().performClick()
+            onNodeWithTag("navigation_more").performClick()
+            onNodeWithText("Feed").performClick()
+            runOnIdle { input.back() }
+            onNodeWithTag("more_content").assertIsDisplayed()
             runOnIdle { input.back() }
             onNodeWithText("Today").assertIsDisplayed()
             runOnIdle { input.back() }

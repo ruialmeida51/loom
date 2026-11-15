@@ -4,6 +4,7 @@ enum class AnalyticsScreenDomain {
     AUTHENTICATION,
     HOUSEHOLDS,
     HOME,
+    MORE,
     FEED,
     SHOPPING,
     EXPENSES,

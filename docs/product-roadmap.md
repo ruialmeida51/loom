@@ -34,7 +34,7 @@ Monthly recurring-expense management was delivered alongside shopping: payment d
 
 ## Delivered: focused navigation and spending accounts
 
-Home, Shopping and Balances are the three root tabs. Home prioritises today's reminders and shortcuts, with Feed behind a card. Shopping starts with inline checklist entry and collapsed completed items. Plannot-style portal navigation keeps global My account outside households and preserves the underlying flow.
+Home, Shopping, Balances and More are the root tabs. Home has square Add expense/Add reminder shortcuts and today’s reminders; More opens the full Reminders, Feed and household details pages. Shopping starts with inline checklist entry and collapsed completed items. Plannot-style portal navigation keeps global My account outside households and preserves the underlying flow.
 
 Each household has an Everyday account plus independent trip/event accounts for household members. Accounts use one currency each. Dedicated expense, detail and split screens support equal shares, weighted shares, exact amounts and percentages. Expenses can be edited or deleted with version checks; saved statement revisions remain intact. Repayment suggestions, recurring bills, reports and CSV exports use the selected account.
 

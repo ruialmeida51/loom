@@ -13,12 +13,14 @@ Loom helps two or more people run a home. The current feature set is enough; thi
 
 ## Navigation and editing
 
-- Home, Shopping and Balances are peer tabs. Switching tabs preserves each stack and does not play a push/pop slide. Android Back from Shopping/Balances root returns Home; only Home root exits. Feed opens from the Home card.
+- Home, Shopping, Balances and More are peer tabs. Switching tabs preserves each stack and does not play a push/pop slide. Android Back from Shopping/Balances/More root returns Home; only Home root exits. More opens the full Reminders, Feed and household details destinations.
 - A forward destination enters from the trailing edge. Returning reverses it, with the departing destination above the returning one. Both destinations have opaque backgrounds. Use a short tween, not a bouncing spring.
 - Authentication, household selection, creation and joining remain separate destinations with separate ViewModels. Initialization and retrying a session refresh preserve identity and the current draft. Only an actual unauthenticated session leaves the flow.
 - Short contextual tasks open a bottom sheet: shopping item/list edits, reminder creation, feed subscription, repayments and nickname editing. Forms share a scrollable field area and a fixed action footer. Each destination owns one sheet controller; switching a form replaces it rather than stacking windows.
 - Expense entry is a dedicated screen: description and amount first, then payer and a split summary. A separate split destination supports equal shares, weighted shares, exact amounts and percentages. Date, category and monthly recurrence sit under More details. Account creation and expense details also have distinct destinations.
 - Keep dialogs for brief confirmations such as cancelling a recurring expense. Disable competing dismissal/actions while a save is in flight. Sheet insets belong to the shared layout, not individual form content.
+
+Home starts with two square quick actions for adding an expense or reminder, followed by Today and coming-up reminders. All reminders opens its own full page; Home remains a preview. Quick actions use the compact icon/card pattern from Plannot’s My account screen.
 
 Shopping opens on the selected checklist with one inline item field. Enter submits the item and keeps the keyboard available for the next one. Completed items remain collapsed below. List selection and optional editing use sheets; errors stay beside the failed input.
 

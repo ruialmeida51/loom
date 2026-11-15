@@ -32,7 +32,6 @@ import com.eyther.lumbridge.core.presentation.components.toolbar.Toolbar
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.home.presentation.screen.HomeScreen
-import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import java.io.File
 import kotlin.test.Test
@@ -108,26 +107,17 @@ class DesignFlowsUiTest {
         }
 
     @Test
-    fun emptyHomeShowsTodaysEmptyStateAndAShoppingShortcut() =
+    fun emptyHomeShowsTodaysEmptyStateAndQuickActions() =
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
-            var openedShopping = false
+            var openedExpense = false
             setContent {
                 LoomTheme(mode = ThemeMode.LIGHT) {
                     Box(Modifier.fillMaxSize().testTag("empty_home")) {
                         HomeScreen(
                             viewModel = EmptyHomeViewModel(),
-                            context =
-                                HouseholdContextDomain(
-                                    id = "home",
-                                    userId = "member",
-                                    name = "Our home",
-                                    currency = "EUR",
-                                    timeZone = "UTC",
-                                ),
-                            onShopping = { openedShopping = true },
+                            onAddExpense = { openedExpense = true },
                             onReminders = {},
-                            onMoney = {},
-                            onFeed = {},
+                            onAddReminder = {},
                         )
                     }
                 }
@@ -135,8 +125,8 @@ class DesignFlowsUiTest {
             onNodeWithTag("home_reminders_empty").assertExists()
             onNodeWithTag("home_shopping_preview").assertDoesNotExist()
             captureNode(tag = "empty_home", name = "home-empty-light")
-            onNodeWithText("Shopping").performClick()
-            assertTrue(openedShopping)
+            onNodeWithTag("home_add_expense").performClick()
+            assertTrue(openedExpense)
         }
 
     @Test
@@ -149,11 +139,9 @@ class DesignFlowsUiTest {
                     LoomTheme(mode = ThemeMode.LIGHT) {
                         HomeScreen(
                             viewModel = viewModel,
-                            context = fixture.context,
-                            onShopping = {},
+                            onAddExpense = {},
                             onReminders = {},
-                            onMoney = {},
-                            onFeed = {},
+                            onAddReminder = {},
                         )
                     }
                 }

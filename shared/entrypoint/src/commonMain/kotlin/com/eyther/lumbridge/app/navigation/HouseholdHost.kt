@@ -31,6 +31,7 @@ import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.tab_balances
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.tab_more
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.token_home
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_shopping
 import kotlinx.serialization.modules.subclass
@@ -46,12 +47,14 @@ fun HouseholdHost(
             HouseholdDestination.Home,
             HouseholdDestination.Shopping,
             HouseholdDestination.Balances,
+            HouseholdDestination.More,
         )
     val state =
         rememberNavigationState(startRoot = HouseholdDestination.Home, roots = roots) {
             subclass(HouseholdDestination.Home::class)
             subclass(HouseholdDestination.Shopping::class)
             subclass(HouseholdDestination.Balances::class)
+            subclass(HouseholdDestination.More::class)
         }
     val navigator = remember(state) { Navigator(state = state) }
     var showTabs by remember { mutableStateOf(true) }
@@ -93,6 +96,11 @@ fun HouseholdHost(
                                 stringResource(Res.string.tab_balances),
                                 Glyph.MONEY,
                             ),
+                            Triple(
+                                HouseholdDestination.More,
+                                stringResource(Res.string.tab_more),
+                                Glyph.MORE,
+                            ),
                         )
                         .forEach { (destination, label, glyph) ->
                             NavigationBarItem(
@@ -117,7 +125,6 @@ fun HouseholdHost(
                         context = context,
                         portalToolbar = portalToolbar,
                         onRootChanged = { showTabs = it },
-                        onShopping = { navigator.navigateTo(HouseholdDestination.Shopping) },
                     )
                 HouseholdDestination.Shopping ->
                     ShoppingHost(
@@ -130,7 +137,12 @@ fun HouseholdHost(
                         portalToolbar = portalToolbar,
                         onRootChanged = { showTabs = it },
                     )
-                else -> Unit
+                HouseholdDestination.More ->
+                    MoreHost(
+                        context = context,
+                        portalToolbar = portalToolbar,
+                        onRootChanged = { showTabs = it },
+                    )
             }
         }
     }

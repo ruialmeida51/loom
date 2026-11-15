@@ -6,6 +6,7 @@ import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
 
 data class RemindersState(
     val items: List<ReminderDomain> = emptyList(),
+    val loading: Boolean = true,
     val title: String = "",
     val date: String = todayIso(),
     val time: String = "18:00",
@@ -18,8 +19,10 @@ data class RemindersState(
 ) {
 
     val displayError: TextResource? = error ?: loadError
+    val showEmpty: Boolean = !loading && items.isEmpty() && displayError == null
 
-    val orderedReminders: List<ReminderDomain> = items.sortedWith(
-        compareBy<ReminderDomain> { it.completed }.thenBy { it.dueAt },
-    )
+    val orderedReminders: List<ReminderDomain> =
+        items.sortedWith(
+            compareBy<ReminderDomain> { it.completed }.thenBy { it.dueAt },
+        )
 }

@@ -27,4 +27,5 @@
     <string name="flow_split">Split expense</string>
     <string name="flow_new_account">New trip or event</string>
     <string name="flow_edit_account">Edit account</string>
+  <string name="tab_more">More</string>
 </resources>

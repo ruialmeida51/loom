@@ -1,11 +1,11 @@
 # Household navigation and balances proposal
 
-Status: implemented on `feature/household-portal-and-balances`; local verification passes; PR CI and production deployment are pending. The decisions below define the implemented scope.
+Status: implemented on `feature/household-portal-and-balances`; the account migrations are deployed, with the approved Home/More follow-up undergoing final release checks. The decisions below define the implemented scope.
 
 ## Agreed scope
 
-- Three household tabs: Home, Shopping and Balances.
-- Home prioritises today's reminders and a few useful shortcuts. RSS opens from a compact Home card.
+- Four household tabs: Home, Shopping, Balances and More.
+- Home has square Add expense/Add reminder actions and today's reminders. More opens full Reminders, Feed and household details pages.
 - Shopping behaves like a shared Google Keep checklist: inline entry, Enter to add the next item, tap to check off, completed items collapsed, optional details.
 - Balances follows Tricount's familiar expense, balance and repayment flows. Priorities are who owes whom, unequal splits and recurring bills.
 - Each household has an Everyday account and separate trip/event accounts. Balances and repayments are independent per account.
@@ -21,7 +21,7 @@ An authenticated PortalHost owns household selection and global account navigati
 
 The compact portal bar shows the household selector at the start and the user's avatar at the end on household tab roots. It collapses for detail/edit flows, the household chooser and My account. Those Hosts provide their own back/close, title and relevant actions; never stack the portal bar above another full toolbar.
 
-HomeHost, ShoppingHost and BalancesHost own their navigation, route-specific toolbars, screen ViewModels and sheets. The app shell owns the three-tab bar. It does not select every feature toolbar's title/actions through a global route switch.
+HomeHost, ShoppingHost, BalancesHost and MoreHost own their navigation, route-specific toolbars, screen ViewModels and sheets. The app shell owns the four-tab bar. It does not select every feature toolbar's title/actions through a global route switch.
 
 My account contains profile/nickname, theme, notification preferences, analytics consent, privacy/terms, account deletion and sign-out. Household members, invitations, household configuration and account management remain household-scoped. A dedicated account feature owns global profile models and operations; household membership models remain in household. Settings owns preferences. Neither core nor shared navigation becomes a feature-model container.
 
@@ -29,9 +29,9 @@ My account contains profile/nickname, theme, notification preferences, analytics
 
 - A small Today heading followed by due/overdue reminders in simple rows.
 - Upcoming reminders appear below when useful; avoid filling the page with empty sections.
-- A compact Add reminder action and shortcuts to Shopping and Add expense. Add expense opens the appropriate Balances flow with an explicit return to Home.
-- One Feed navigation card. Do not render article previews, subscription controls or another dashboard here.
-- Household management is reached through the selector/household menu; personal settings through the avatar.
+- Square Add reminder and Add expense quick actions following Plannot’s My account cards. Add expense opens the appropriate Balances flow with an explicit return to Home.
+- Feed and household details are reached under More, keeping Home focused.
+- Household management is reached through More and household selection through the selector; personal settings through the avatar.
 - Preserve the friendly tone through short labels and occasional empty-state copy, without an introduction paragraph above every list.
 
 ## Shopping
@@ -72,7 +72,7 @@ Use one clear title per destination, shorter labels, fewer permanent controls an
 
 ## Delivery sequence
 
-1. Portal/account structure, host-owned toolbars and predictable Back behavior. Move Feed under Home and reduce tabs to three.
+1. Portal/account structure, host-owned toolbars and predictable Back behavior. Move Feed under More and provide four compact tabs.
 2. Compact Today Home and the checklist-first Shopping flow.
 3. Expense-account support, preserving existing household expenses, recurring schedules and repayments in Everyday. Accounts and participants belong to the expenses feature. Account isolation and financial invariants must be enforced in the backend, not only by UI filters.
 4. Tricount-style expense/history, balance/repayment and unequal-split flows. Add weighted-share calculation using deterministic minor-unit rounding.
@@ -82,7 +82,7 @@ The account change is domain/backend work as well as presentation work. Before i
 
 ## Acceptance checks
 
-- Home → Feed → Back returns Home. Home → Add expense → Save/Close returns Home.
+- More → Feed/Reminders → Back returns More. More root → system Back returns Home. Home → Add expense → Save/Close returns Home.
 - Shopping/Balances root → Android Back returns Home; root tabs have no toolbar Back arrow.
 - Expense detail → split editor → Back returns through the same account; drafts survive resume and account-page visits.
 - Global account works with zero households. Back/Close returns to the exact previous flow. Household chooser cancellation keeps selection.

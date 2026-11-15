@@ -9,11 +9,7 @@ import kotlinx.serialization.Serializable
 internal sealed interface HomeDestination : NavDestination {
     @Stable @Serializable data object Home : HomeDestination
 
-    @Stable @Serializable data object Feed : HomeDestination
-
     @Stable @Serializable data class Reminders(val compose: Boolean = false) : HomeDestination
-
-    @Stable @Serializable data object Details : HomeDestination
 
     @Stable @Serializable data class ExpenseForm(val accountId: String) : HomeDestination
 }

@@ -17,4 +17,5 @@
     <string name="error_access_denied">You no longer have access to this household.</string>
     <string name="error_not_found">This item no longer exists. Refresh and try again.</string>
     <string name="error_service_unavailable">The service is unavailable. Please try again shortly.</string>
+  <string name="icon_more">More</string>
 </resources>

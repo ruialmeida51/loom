@@ -47,7 +47,7 @@ class LoomUiTest {
             waitUntil(timeoutMillis = 10_000) {
                 onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
             }
-            onNodeWithTag("home_content").performScrollToNode(hasText("Feed"))
+            onNodeWithTag("navigation_more").performClick()
             onNodeWithText("Feed").performClick()
             onNodeWithText("Dismiss").assertDoesNotExist()
             onNodeWithText("+ Follow a feed").performClick()

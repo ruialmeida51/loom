@@ -17,4 +17,6 @@ internal sealed interface HouseholdDestination : NavDestination {
     @Serializable
     @SerialName("com.eyther.lumbridge.app.navigation.HouseholdDestination.Money")
     data object Balances : HouseholdDestination
+
+    @Serializable data object More : HouseholdDestination
 }

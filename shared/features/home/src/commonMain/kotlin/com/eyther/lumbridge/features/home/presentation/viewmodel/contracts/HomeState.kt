@@ -20,6 +20,4 @@ data class HomeState(
         overview?.upcomingReminders.orEmpty().take(2).map {
             it.toHomeUi(today = overview?.today.orEmpty(), timeZone = timeZone)
         }
-    val hasMoreReminders: Boolean =
-        overview?.let { it.reminders.size > 3 || it.upcomingReminders.size > 2 } == true
 }
