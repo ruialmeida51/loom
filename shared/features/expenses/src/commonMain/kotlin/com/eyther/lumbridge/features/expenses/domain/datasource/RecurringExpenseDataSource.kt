@@ -6,7 +6,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomai
 import kotlinx.coroutines.flow.Flow
 
 interface RecurringExpenseDataSource {
-    fun stream(): Flow<AppResult<List<RecurringExpenseDomain>>>
+    fun stream(accountId: String = ""): Flow<AppResult<List<RecurringExpenseDomain>>>
 
     suspend fun controlSchedule(
         rule: RecurringExpenseDomain,

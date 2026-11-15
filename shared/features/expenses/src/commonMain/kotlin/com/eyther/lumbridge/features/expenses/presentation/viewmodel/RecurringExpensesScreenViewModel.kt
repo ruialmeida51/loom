@@ -45,8 +45,9 @@ class RecurringExpensesScreenViewModel(
                         when (result) {
                             is AppResult.Success ->
                                 copy(
+                                    account = result.value.account,
                                     rules =
-                                        result.value.sortedWith(
+                                        result.value.rules.sortedWith(
                                             compareBy<RecurringExpenseDomain> { it.cancelled }
                                                 .thenBy { it.nextOn },
                                         ),
@@ -113,6 +114,26 @@ class RecurringExpensesScreenViewModel(
                 }
             }
         }
+    }
+
+    override fun onCancelRequested(rule: RecurringExpenseDomain) {
+        if (
+            state.value.busy ||
+                !rule.canManage(userId = context.userId, isOwner = state.value.isOwner)
+        )
+            return
+        mutableState.update { oldState -> oldState.copy(cancellation = rule) }
+    }
+
+    override fun onCancelDismissed() {
+        if (!state.value.busy)
+            mutableState.update { oldState -> oldState.copy(cancellation = null) }
+    }
+
+    override fun onCancelConfirmed() {
+        val rule = state.value.cancellation ?: return
+        mutableState.update { oldState -> oldState.copy(cancellation = null) }
+        onControlSchedule(rule = rule, action = RecurringExpenseActionDomain.CANCEL)
     }
 
     override fun onDismissError() {

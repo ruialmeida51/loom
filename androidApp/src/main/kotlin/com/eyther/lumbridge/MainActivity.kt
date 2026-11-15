@@ -53,8 +53,9 @@ class MainActivity : ComponentActivity() {
 
     private fun handlePush(intent: Intent) {
         PendingPush.open(
-            intent.getStringExtra("household_id").orEmpty(),
-            intent.getStringExtra("route").orEmpty(),
+            householdId = intent.getStringExtra("household_id").orEmpty(),
+            route = intent.getStringExtra("route").orEmpty(),
+            accountId = intent.getStringExtra("account_id"),
         )
     }
 

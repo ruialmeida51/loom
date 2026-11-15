@@ -24,27 +24,27 @@ class HomeScreenViewModel(
     private val refreshRequests = MutableStateFlow(0)
 
     private val mutableState =
-        MutableStateFlow(HomeState(currency = context.currency, timeZone = context.timeZone))
-            .observeWith(viewModelScope) { state ->
-                refreshRequests
-                    .flatMapLatest { getHomeOverviewStreamUseCase() }
-                    .updateState(state) { result ->
-                        when (result) {
-                            is AppResult.Success ->
-                                copy(
-                                    overview = result.value,
-                                    loading = false,
-                                    error = null,
-                                )
+        MutableStateFlow(HomeState(timeZone = context.timeZone)).observeWith(viewModelScope) { state
+            ->
+            refreshRequests
+                .flatMapLatest { getHomeOverviewStreamUseCase() }
+                .updateState(state) { result ->
+                    when (result) {
+                        is AppResult.Success ->
+                            copy(
+                                overview = result.value,
+                                loading = false,
+                                error = null,
+                            )
 
-                            is AppResult.Failure ->
-                                copy(
-                                    loading = false,
-                                    error = result.error.toTextResource(),
-                                )
-                        }
+                        is AppResult.Failure ->
+                            copy(
+                                loading = false,
+                                error = result.error.toTextResource(),
+                            )
                     }
-            }
+                }
+        }
 
     override val state = mutableState.asStateFlow()
 

@@ -50,7 +50,8 @@ internal fun ShoppingSheetHost(
         ShoppingListsBottomSheet(
             lists = state.orderedLists,
             activeLists = state.activeLists,
-            name = state.name,
+            selectedListId = state.selectedListId,
+            onSelect = viewModel::onListSelected,
             busy = state.busy,
             formError = state.formError,
             onShowLists = viewModel::onListsVisibilityChanged,

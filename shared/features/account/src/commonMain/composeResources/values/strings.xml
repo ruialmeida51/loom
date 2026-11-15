@@ -1,0 +1,22 @@
+<resources>
+    <string name="account_title">My account</string>
+    <string name="profile_title">Profile</string>
+    <string name="nickname_description">Your name across all households</string>
+    <string name="preferences_title">Preferences</string>
+    <string name="appearance_title">Appearance</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_description">Reminders and shared expenses</string>
+    <string name="analytics_title">Help improve Loom</string>
+    <string name="analytics_description">Share anonymous usage analytics. Household content stays private.</string>
+    <string name="sign_out">Sign out</string>
+    <string name="retry">Try again</string>
+    <string name="invalid_nickname">Use 1–80 characters for your nickname.</string>
+    <string name="ui_cancel">Cancel</string>
+    <string name="ui_edit_nickname">Edit nickname</string>
+    <string name="ui_nickname_help">This is how you appear in all your households.</string>
+    <string name="ui_nickname_title">Nickname</string>
+    <string name="ui_save_nickname">Save nickname</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+</resources>

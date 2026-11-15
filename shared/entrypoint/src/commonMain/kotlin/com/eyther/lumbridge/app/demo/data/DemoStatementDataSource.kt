@@ -5,5 +5,5 @@ import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSou
 
 class DemoStatementDataSource : StatementDataSource {
 
-    override suspend fun saveStatement(month: String) = AppResult.Success(Unit)
+    override suspend fun saveStatement(month: String, accountId: String) = AppResult.Success(Unit)
 }

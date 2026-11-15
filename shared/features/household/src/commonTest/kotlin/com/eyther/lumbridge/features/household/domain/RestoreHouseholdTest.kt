@@ -14,6 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.runTest
 
 class RestoreHouseholdTest {
 
@@ -46,41 +47,36 @@ class RestoreHouseholdTest {
         override suspend fun getMembers(householdId: String) =
             AppResult.Success(emptyList<MemberDomain>())
 
-        override suspend fun updateNickname(userId: String, nickname: String): AppResult<Unit> =
-            AppResult.Success(Unit)
-
         override suspend fun createInvitation(householdId: String) =
             AppResult.Failure(CommonError.Unknown())
     }
 
     @Test
-    fun removedMembershipClearsTheLastSelection() =
-        kotlinx.coroutines.test.runTest {
-            val selection = Selection().apply { select("alice", "old-home") }
-            val result =
-                RestoreHouseholdUseCase(selection, GetHouseholdsUseCase(Households(emptyList())))(
-                        "alice",
-                    )
-                    .getOrThrow()
-            assertNull(result)
-            assertNull(selection.getLastSelected("alice").getOrThrow())
-        }
+    fun removedMembershipClearsTheLastSelection() = runTest {
+        val selection = Selection().apply { select("alice", "old-home") }
+        val result =
+            RestoreHouseholdUseCase(selection, GetHouseholdsUseCase(Households(emptyList())))(
+                    "alice",
+                )
+                .getOrThrow()
+        assertNull(result)
+        assertNull(selection.getLastSelected("alice").getOrThrow())
+    }
 
     @Test
-    fun selectionsArePerAccountAndRestoredFromCurrentData() =
-        kotlinx.coroutines.test.runTest {
-            val selection =
-                Selection().apply {
-                    select("alice", "home")
-                    select("bob", "other")
-                }
-            val household = HouseholdDomain("home", "Renamed household", "EUR", "UTC")
-            val restore =
-                RestoreHouseholdUseCase(
-                    selection,
-                    GetHouseholdsUseCase(Households(listOf(household))),
-                )
-            assertEquals(household, restore("alice").getOrThrow())
-            assertEquals("other", selection.getLastSelected("bob").getOrThrow())
-        }
+    fun selectionsArePerAccountAndRestoredFromCurrentData() = runTest {
+        val selection =
+            Selection().apply {
+                select("alice", "home")
+                select("bob", "other")
+            }
+        val household = HouseholdDomain("home", "Renamed household", "EUR", "UTC")
+        val restore =
+            RestoreHouseholdUseCase(
+                selection,
+                GetHouseholdsUseCase(Households(listOf(household))),
+            )
+        assertEquals(household, restore("alice").getOrThrow())
+        assertEquals("other", selection.getLastSelected("bob").getOrThrow())
+    }
 }

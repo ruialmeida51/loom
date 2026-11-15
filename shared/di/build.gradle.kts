@@ -20,6 +20,7 @@ kotlin {
             implementation(projects.shared.core)
             implementation(projects.shared.features.analytics)
             implementation(projects.shared.features.authentication)
+            implementation(projects.shared.features.account)
             implementation(projects.shared.features.expenses)
             implementation(projects.shared.features.feed)
             implementation(projects.shared.features.home)

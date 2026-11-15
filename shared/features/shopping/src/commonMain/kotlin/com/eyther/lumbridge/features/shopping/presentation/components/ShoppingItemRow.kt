@@ -3,6 +3,8 @@ package com.eyther.lumbridge.features.shopping.presentation.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -11,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextDecoration
-import com.eyther.lumbridge.core.presentation.components.ListRow
+import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.resources.TextResource
@@ -37,8 +39,11 @@ fun ShoppingItemRow(
     onFavorite: (ShoppingItemDomain) -> Unit,
     onMove: (ShoppingItemDomain, String) -> Unit,
 ) {
-    ListRow {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Checkbox(
                 checked = item.checked,
                 onCheckedChange = { onToggle(item) },
@@ -53,7 +58,7 @@ fun ShoppingItemRow(
             ) {
                 Text(
                     text = item.name,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     textDecoration =
                         if (item.checked) TextDecoration.LineThrough else TextDecoration.None,
                 )

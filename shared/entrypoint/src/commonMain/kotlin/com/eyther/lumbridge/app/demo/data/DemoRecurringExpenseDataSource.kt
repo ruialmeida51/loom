@@ -14,13 +14,22 @@ import kotlinx.datetime.LocalDate
 
 class DemoRecurringExpenseDataSource(private val store: DemoHouseholdStore) :
     RecurringExpenseDataSource {
-    override fun stream() = store.recurring.map { AppResult.Success(it) }
+    override fun stream(accountId: String) =
+        store.recurring.map { rules ->
+            AppResult.Success(
+                rules
+                    .filter { it.accountId.ifBlank { store.context.id } == accountId }
+                    .map { it.copy(accountId = accountId) },
+            )
+        }
 
     override suspend fun controlSchedule(
         rule: RecurringExpenseDomain,
         action: RecurringExpenseActionDomain,
     ) = safeCall {
-        val current = store.recurring.value.firstOrNull { it.id == rule.id } ?: throw RecurringExpenseError.NotFound()
+        val current =
+            store.recurring.value.firstOrNull { it.id == rule.id }
+                ?: throw RecurringExpenseError.NotFound()
         if (current.cancelled) throw RecurringExpenseError.Cancelled()
         if (current.version != rule.version) throw RecurringExpenseError.Changed()
         val saved =

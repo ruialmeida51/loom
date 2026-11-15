@@ -7,13 +7,14 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toDomain
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toExpenseError
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toRequest
+import com.eyther.lumbridge.features.expenses.data.network.model.request.DeleteExpenseRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.response.ExpenseResponse
 import com.eyther.lumbridge.features.expenses.data.network.model.response.SettlementResponse
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
-import com.eyther.lumbridge.features.household.data.network.selectHouseholdRows
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.flow.Flow
@@ -22,38 +23,84 @@ class CommonExpenseDataSource(
     private val access: SupabaseAccess,
     private val context: HouseholdContextDomain,
 ) : ExpenseDataSource {
+    override fun streamExpenses(accountId: String): Flow<AppResult<List<ExpenseDomain>>> =
+        access
+            .watch(table = "expenses", scopeId = context.id) {
+                access
+                    .requireClient()
+                    .from("account_expenses_with_shares")
+                    .select {
+                        filter {
+                            eq("household_id", context.id)
+                            eq("account_id", accountId.ifBlank { context.id })
+                        }
+                    }
+                    .decodeList<ExpenseResponse>()
+                    .map { it.toDomain() }
+            }
+            .asApiResult(mapError = Exception::toExpenseError)
 
-    override fun streamExpenses(): Flow<AppResult<List<ExpenseDomain>>> {
-        return access.watch("expenses", context.id) {
-            access.selectHouseholdRows<ExpenseResponse>("expenses_with_shares", context.id).map { it.toDomain() }
-        }.asApiResult(mapError = Exception::toExpenseError)
-    }
+    override fun streamSettlements(accountId: String): Flow<AppResult<List<SettlementDomain>>> =
+        access
+            .watch(table = "settlements", scopeId = context.id) {
+                access
+                    .requireClient()
+                    .from("settlements")
+                    .select {
+                        filter {
+                            eq("household_id", context.id)
+                            eq("account_id", accountId.ifBlank { context.id })
+                        }
+                    }
+                    .decodeList<SettlementResponse>()
+                    .map { it.toDomain() }
+            }
+            .asApiResult(mapError = Exception::toExpenseError)
 
-    override fun streamSettlements(): Flow<AppResult<List<SettlementDomain>>> {
-        return access.watch("settlements", context.id) {
-            access.selectHouseholdRows<SettlementResponse>("settlements", context.id).map { it.toDomain() }
-        }.asApiResult(mapError = Exception::toExpenseError)
-    }
+    override suspend fun getExpense(id: String, accountId: String): AppResult<ExpenseDomain> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access
+                .requireClient()
+                .from("account_expenses_with_shares")
+                .select {
+                    filter {
+                        eq("household_id", context.id)
+                        eq("account_id", accountId)
+                        eq("id", id)
+                    }
+                }
+                .decodeSingle<ExpenseResponse>()
+                .toDomain()
+        }
 
-    override suspend fun addExpense(expense: ExpenseDomain): AppResult<Unit> {
-        return safeApiCall(
-            mapError = Exception::toExpenseError,
-        ) {
-            val request = expense.toRequest(householdId = context.id)
-
-            access.requireClient().postgrest.rpc("create_expense", request)
+    override suspend fun saveExpense(expense: ExpenseDomain): AppResult<Unit> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access
+                .requireClient()
+                .postgrest
+                .rpc("save_account_expense", expense.toRequest(householdId = context.id))
             Unit
         }
-    }
 
-    override suspend fun recordSettlement(settlement: SettlementDomain): AppResult<Unit> {
-        return safeApiCall(
-            mapError = Exception::toExpenseError,
-        ) {
-            val request = settlement.toRequest(householdId = context.id)
-
-            access.requireClient().postgrest.rpc("record_settlement", request)
+    override suspend fun deleteExpense(expense: ExpenseDomain): AppResult<Unit> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            val request =
+                DeleteExpenseRequest(
+                    householdId = context.id,
+                    accountId = expense.accountId,
+                    id = expense.id,
+                    version = expense.version,
+                )
+            access.requireClient().postgrest.rpc("delete_account_expense", request)
             Unit
         }
-    }
+
+    override suspend fun recordSettlement(settlement: SettlementDomain): AppResult<Unit> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access
+                .requireClient()
+                .postgrest
+                .rpc("record_account_settlement", settlement.toRequest(householdId = context.id))
+            Unit
+        }
 }

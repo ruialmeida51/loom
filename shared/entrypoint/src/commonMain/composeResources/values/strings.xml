@@ -16,4 +16,15 @@
     <string name="token_feed">Feed</string>
     <string name="token_shopping">Shopping</string>
     <string name="token_money">Money</string>
+    <string name="portal_households">Households</string>
+    <string name="portal_my_account">My account</string>
+    <string name="tab_balances">Balances</string>
+    <string name="household_details">Household details</string>
+    <string name="action_undo">Undo</string>
+    <string name="flow_add_expense">Add expense</string>
+    <string name="flow_edit_expense">Edit expense</string>
+    <string name="flow_expense_details">Expense details</string>
+    <string name="flow_split">Split expense</string>
+    <string name="flow_new_account">New trip or event</string>
+    <string name="flow_edit_account">Edit account</string>
 </resources>

@@ -1,12 +1,11 @@
 package com.eyther.lumbridge.features.home.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -15,43 +14,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
-import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
-import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
 import com.eyther.lumbridge.features.home.generated.resources.Res
-import com.eyther.lumbridge.features.home.generated.resources.shopping_item_count
-import com.eyther.lumbridge.features.home.generated.resources.ui_a_clear_calendar
-import com.eyther.lumbridge.features.home.generated.resources.ui_a_gentle_reminder
-import com.eyther.lumbridge.features.home.generated.resources.ui_a_moment_for_yourself
-import com.eyther.lumbridge.features.home.generated.resources.ui_all_settled
-import com.eyther.lumbridge.features.home.generated.resources.ui_enjoy_a_little_breathing_room
-import com.eyther.lumbridge.features.home.generated.resources.ui_fresh_reads_from_the_places_you_love_put_the
-import com.eyther.lumbridge.features.home.generated.resources.ui_home_in_harmony
-import com.eyther.lumbridge.features.home.generated.resources.ui_home_unavailable
-import com.eyther.lumbridge.features.home.generated.resources.ui_less_to_keep_in_your_head_more_space_for
-import com.eyther.lumbridge.features.home.generated.resources.ui_on_the_shopping_list
-import com.eyther.lumbridge.features.home.generated.resources.ui_open_list
-import com.eyther.lumbridge.features.home.generated.resources.ui_pick_up_a_few_things
-import com.eyther.lumbridge.features.home.generated.resources.ui_see_all
-import com.eyther.lumbridge.features.home.generated.resources.ui_shopping_clear
-import com.eyther.lumbridge.features.home.generated.resources.ui_shopping_clear_description
+import com.eyther.lumbridge.features.home.generated.resources.home_add_expense
+import com.eyther.lumbridge.features.home.generated.resources.home_add_reminder
+import com.eyther.lumbridge.features.home.generated.resources.home_all_reminders
+import com.eyther.lumbridge.features.home.generated.resources.home_feed
+import com.eyther.lumbridge.features.home.generated.resources.home_manage_household
+import com.eyther.lumbridge.features.home.generated.resources.home_nothing_due
+import com.eyther.lumbridge.features.home.generated.resources.home_shopping
+import com.eyther.lumbridge.features.home.generated.resources.home_today
+import com.eyther.lumbridge.features.home.generated.resources.home_upcoming
 import com.eyther.lumbridge.features.home.generated.resources.ui_try_again
-import com.eyther.lumbridge.features.home.generated.resources.ui_visit_the_reading_corner
-import com.eyther.lumbridge.features.home.generated.resources.ui_you_owe
-import com.eyther.lumbridge.features.home.generated.resources.ui_you_re_owed
+import com.eyther.lumbridge.features.home.presentation.components.HomeReminderRow
 import com.eyther.lumbridge.features.home.presentation.model.HomeReminderUi
-import com.eyther.lumbridge.features.home.presentation.model.HomeShoppingUi
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
-import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -62,22 +47,25 @@ fun HomeScreen(
     onReminders: () -> Unit,
     onMoney: () -> Unit,
     onFeed: () -> Unit,
+    onHousehold: () -> Unit = {},
+    onAddReminder: () -> Unit = onReminders,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerHomeScreen(
         loading = state.loading,
         hasOverview = state.hasOverview,
-        onRetry = viewModel::onRetry,
-        shoppingCount = state.shoppingCount,
-        shopping = state.shopping,
         reminders = state.reminders,
-        balance = state.balance,
+        hasMoreReminders = state.hasMoreReminders,
+        upcomingReminders = state.upcomingReminders,
         error = state.error,
+        onRetry = viewModel::onRetry,
+        onDismiss = viewModel::onDismissError,
         onShopping = onShopping,
         onReminders = onReminders,
-        onMoney = onMoney,
+        onAddExpense = onMoney,
         onFeed = onFeed,
-        onDismiss = viewModel::onDismissError,
+        onHousehold = onHousehold,
+        onAddReminder = onAddReminder,
     )
 }
 
@@ -85,143 +73,89 @@ fun HomeScreen(
 private fun InnerHomeScreen(
     loading: Boolean,
     hasOverview: Boolean,
-    onRetry: () -> Unit,
-    shoppingCount: Int,
-    shopping: List<HomeShoppingUi>,
     reminders: List<HomeReminderUi>,
-    balance: BalanceSummaryUi,
+    hasMoreReminders: Boolean,
+    upcomingReminders: List<HomeReminderUi>,
     error: TextResource?,
+    onRetry: () -> Unit,
+    onDismiss: () -> Unit,
     onShopping: () -> Unit,
     onReminders: () -> Unit,
-    onMoney: () -> Unit,
+    onAddExpense: () -> Unit,
     onFeed: () -> Unit,
-    onDismiss: () -> Unit,
+    onHousehold: () -> Unit,
+    onAddReminder: () -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp).testTag("home_content"),
-        contentPadding = PaddingValues(vertical = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).testTag("home_content"),
+        contentPadding = PaddingValues(vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            PageHeading(
-                title = stringResource(Res.string.ui_home_in_harmony),
-                subtitle = stringResource(Res.string.ui_less_to_keep_in_your_head_more_space_for),
+            SectionTitle(
+                title = stringResource(Res.string.home_today),
+                action = stringResource(Res.string.home_add_reminder),
+                onAction = onAddReminder,
             )
         }
-        if (hasOverview && error != null) {
-            item(key = "error") {
-                ErrorNotice(message = error, onDismiss = onDismiss)
+        if (loading) item { LoadingRows() }
+        error?.let { message ->
+            item {
+                ErrorNotice(message = message, onDismiss = onDismiss)
                 TextButton(onClick = onRetry) { Text(stringResource(Res.string.ui_try_again)) }
             }
         }
-        if (loading) {
-            item { LoadingRows() }
-        } else if (hasOverview) {
-            item {
-                GroupedSurface {
-                    NavigationRow(
-                        title =
-                            pluralStringResource(
-                                Res.plurals.shopping_item_count,
-                                shoppingCount,
-                                shoppingCount,
-                            ),
-                        description = stringResource(Res.string.ui_on_the_shopping_list),
-                        onClick = onShopping,
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    NavigationRow(
-                        title = balance.amount,
-                        description =
-                            when {
-                                balance.money.minorUnits == 0L ->
-                                    stringResource(Res.string.ui_all_settled)
-                                balance.isOwed -> stringResource(Res.string.ui_you_re_owed)
-                                else -> stringResource(Res.string.ui_you_owe)
-                            },
-                        onClick = onMoney,
-                    )
-                }
-            }
-            item {
-                SectionTitle(
-                    title = stringResource(Res.string.ui_a_gentle_reminder),
-                    action = stringResource(Res.string.ui_see_all),
-                    onAction = onReminders,
-                )
-                if (reminders.isEmpty()) {
-                    EmptyNotice(
-                        title = stringResource(Res.string.ui_a_clear_calendar),
-                        description = stringResource(Res.string.ui_enjoy_a_little_breathing_room),
-                    )
-                } else {
-                    GroupedSurface {
-                        reminders.forEachIndexed { index, reminder ->
-                            if (index > 0)
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            NavigationRow(
-                                title = reminder.title,
-                                description = reminder.due,
-                                onClick = onReminders,
-                            )
-                        }
-                    }
-                }
-            }
-            item {
-                SectionTitle(
-                    title = stringResource(Res.string.ui_pick_up_a_few_things),
-                    action = stringResource(Res.string.ui_open_list),
-                    onAction = onShopping,
-                )
-                if (shopping.isEmpty()) {
-                    EmptyNotice(
-                        title = stringResource(Res.string.ui_shopping_clear),
-                        description = stringResource(Res.string.ui_shopping_clear_description),
-                        modifier = Modifier.testTag("home_shopping_empty"),
-                    )
-                } else {
-                    GroupedSurface(modifier = Modifier.testTag("home_shopping_preview")) {
-                        shopping.forEachIndexed { index, item ->
-                            if (index > 0)
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            NavigationRow(
-                                title = item.name,
-                                description = item.quantity.takeIf { it.isNotBlank() },
-                                onClick = onShopping,
-                            )
-                        }
-                    }
-                }
-            }
-            item {
-                SectionTitle(title = stringResource(Res.string.ui_a_moment_for_yourself))
-                GroupedSurface {
-                    NavigationRow(
-                        title = stringResource(Res.string.ui_visit_the_reading_corner),
-                        description =
-                            stringResource(
-                                Res.string.ui_fresh_reads_from_the_places_you_love_put_the,
-                            ),
-                        onClick = onFeed,
-                    )
-                }
-            }
-        } else {
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (hasOverview && !loading) {
+            if (reminders.isEmpty())
+                item {
                     Text(
-                        text = stringResource(Res.string.ui_home_unavailable),
-                        style = MaterialTheme.typography.titleLarge,
+                        stringResource(Res.string.home_nothing_due),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.testTag("home_reminders_empty"),
                     )
-                    error?.let { message ->
-                        Text(
-                            text = message.getString(),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    LoomButton(text = stringResource(Res.string.ui_try_again), onClick = onRetry)
                 }
+            else
+                items(count = reminders.size, key = { reminders[it].id }) { index ->
+                    val reminder = reminders[index]
+                    HomeReminderRow(reminder = reminder, onClick = onReminders)
+                }
+            if (upcomingReminders.isNotEmpty()) {
+                item {
+                    Text(
+                        stringResource(Res.string.home_upcoming),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                }
+                items(count = upcomingReminders.size, key = { upcomingReminders[it].id }) { index ->
+                    val reminder = upcomingReminders[index]
+                    HomeReminderRow(reminder = reminder, onClick = onReminders)
+                }
+            }
+        }
+        if (hasMoreReminders)
+            item {
+                TextButton(onClick = onReminders) {
+                    Text(stringResource(Res.string.home_all_reminders))
+                }
+            }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = onShopping) { Text(stringResource(Res.string.home_shopping)) }
+                LoomButton(
+                    text = stringResource(Res.string.home_add_expense),
+                    onClick = onAddExpense,
+                    modifier = Modifier,
+                )
+            }
+        }
+        item {
+            GroupedSurface {
+                NavigationRow(title = stringResource(Res.string.home_feed), onClick = onFeed)
+            }
+        }
+        item {
+            TextButton(onClick = onHousehold) {
+                Text(stringResource(Res.string.home_manage_household))
             }
         }
     }

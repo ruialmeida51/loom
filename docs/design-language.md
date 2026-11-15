@@ -4,21 +4,25 @@ Loom helps two or more people run a home. The current feature set is enough; thi
 
 ## Information hierarchy
 
-- The toolbar identifies the destination and household; a back arrow means return within that flow. It owns the top and horizontal safe-area insets. The outer scaffold consumes its padding once.
+- Root toolbars show the household selector and global profile avatar. A child Host replaces that toolbar with Back, title and contextual actions. A back arrow returns within the flow. The owning scaffold applies and consumes safe-area padding once.
 - A page may have one short, friendly introduction beneath the toolbar. Do not repeat the destination name as an eyebrow, another large title and a paragraph.
 - Use an open, divider-separated list for repeated items. A surface groups related settings or navigation rows; a card is for a distinct summary, never an empty wrapper.
 - A section heading sits outside its group. Show a few useful previews on Home and provide a clear route to the whole feature.
 - Empty sections explain what happens next. Loading placeholders occupy the space of the content being loaded. An error appears where the failed action happened and keeps the input available for retry.
-- Use 20dp screen gutters, 16dp internal padding, 20dp container corners, 12–16dp between related elements and 20–24dp between sections. Text and controls can grow; avoid fixed heights for copy.
+- Use 16dp screen gutters on working lists, 16dp internal grouped-surface padding and 20dp container corners. Repeated rows use compact spacing while retaining touch targets; separate sections by 16–24dp. Text and controls can grow; avoid fixed heights for copy.
 
 ## Navigation and editing
 
-- Bottom tabs are peer destinations. Switching tabs preserves each stack and does not play a push/pop slide.
+- Home, Shopping and Balances are peer tabs. Switching tabs preserves each stack and does not play a push/pop slide. Android Back from Shopping/Balances root returns Home; only Home root exits. Feed opens from the Home card.
 - A forward destination enters from the trailing edge. Returning reverses it, with the departing destination above the returning one. Both destinations have opaque backgrounds. Use a short tween, not a bouncing spring.
 - Authentication, household selection, creation and joining remain separate destinations with separate ViewModels. Initialization and retrying a session refresh preserve identity and the current draft. Only an actual unauthenticated session leaves the flow.
 - Short contextual tasks open a bottom sheet: shopping item/list edits, reminder creation, feed subscription, repayments and nickname editing. Forms share a scrollable field area and a fixed action footer. Each destination owns one sheet controller; switching a form replaces it rather than stacking windows.
-- The expense sheet puts description and amount first, then payer and split controls. Equal splitting is the default; custom share fields appear only for an explicitly chosen split method. Categories and recurrence are secondary details.
+- Expense entry is a dedicated screen: description and amount first, then payer and a split summary. A separate split destination supports equal shares, weighted shares, exact amounts and percentages. Date, category and monthly recurrence sit under More details. Account creation and expense details also have distinct destinations.
 - Keep dialogs for brief confirmations such as cancelling a recurring expense. Disable competing dismissal/actions while a save is in flight. Sheet insets belong to the shared layout, not individual form content.
+
+Shopping opens on the selected checklist with one inline item field. Enter submits the item and keeps the keyboard available for the next one. Completed items remain collapsed below. List selection and optional editing use sheets; errors stay beside the failed input.
+
+Balances shows the selected Everyday/trip/event account above expense history and the Balances view. The latter leads with who pays whom and prefilled repayment actions. Accounts never combine currencies or debts. Recurring bills and statements sit behind contextual actions, keeping routine expense entry clear.
 
 ## References and what we adopt
 

@@ -34,7 +34,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     }
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         let data = response.notification.request.content.userInfo
-        MainViewControllerKt.openPush(householdId: data["household_id"] as? String ?? "", route: data["route"] as? String ?? "")
+        MainViewControllerKt.openPush(householdId: data["household_id"] as? String ?? "", route: data["route"] as? String ?? "", accountId: data["account_id"] as? String)
         completionHandler()
     }
 }

@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class RecurringExpenseResponse(
+    @SerialName("account_id") val accountId: String,
     @SerialName("id") val id: String,
     @SerialName("title") val title: String,
     @SerialName("amount_minor") val amountMinor: Long,

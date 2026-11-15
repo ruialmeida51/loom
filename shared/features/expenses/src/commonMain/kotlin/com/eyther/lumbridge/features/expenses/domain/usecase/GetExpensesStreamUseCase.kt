@@ -9,5 +9,6 @@ class GetExpensesStreamUseCase(
     private val expenseDataSource: ExpenseDataSource,
 ) {
 
-    operator fun invoke(): Flow<AppResult<List<ExpenseDomain>>> = expenseDataSource.streamExpenses()
+    operator fun invoke(accountId: String = ""): Flow<AppResult<List<ExpenseDomain>>> =
+        expenseDataSource.streamExpenses(accountId = accountId)
 }

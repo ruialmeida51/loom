@@ -14,19 +14,21 @@ class GetMonthlyStatementStreamUseCase(
     private val context: HouseholdContextDomain,
 ) {
 
-    operator fun invoke(month: Flow<String>): Flow<AppResult<MonthlyStatementDomain>> = combine(
-        getExpenseLedgerStreamUseCase(),
-        month,
-    ) { ledgerResult, selectedMonth ->
-        safeCall {
-            val ledger = ledgerResult.getOrThrow()
+    operator fun invoke(month: Flow<String>): Flow<AppResult<MonthlyStatementDomain>> =
+        combine(
+            getExpenseLedgerStreamUseCase(),
+            month,
+        ) { ledgerResult, selectedMonth ->
+            safeCall {
+                val ledger = ledgerResult.getOrThrow()
 
-            MonthlyStatementDomain.build(
-                month = selectedMonth,
-                userId = context.userId,
-                expenses = ledger.expenses,
-                settlements = ledger.settlements,
-            )
+                MonthlyStatementDomain.build(
+                        month = selectedMonth,
+                        userId = context.userId,
+                        expenses = ledger.expenses,
+                        settlements = ledger.settlements,
+                    )
+                    .copy(accountId = ledger.account.id, currency = ledger.account.currency)
+            }
         }
-    }
 }

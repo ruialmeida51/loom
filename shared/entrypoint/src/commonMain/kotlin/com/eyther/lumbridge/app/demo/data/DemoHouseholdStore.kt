@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.nowIso
 import com.eyther.lumbridge.core.domain.todayIso
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MonthlyRecurrenceDomain
@@ -54,6 +55,22 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
             MemberDomain(SAM, "Sam", "member"),
         )
     val memberUpdates = MutableStateFlow(members)
+    val selectedExpenseAccount = MutableStateFlow(context.id)
+    val selectedShoppingList = MutableStateFlow<String?>(null)
+    val expenseAccounts =
+        MutableStateFlow(
+            listOf(
+                ExpenseAccountDomain(
+                    id = context.id,
+                    name = "Everyday",
+                    currency = context.currency,
+                    memberIds = members.map { it.id }.toSet(),
+                    isDefault = true,
+                    version = 1,
+                    createdBy = context.userId,
+                ),
+            ),
+        )
 
     private val listId = newId()
     val shopping =

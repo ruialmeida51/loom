@@ -31,15 +31,16 @@ class InsightsScreenViewModel(
 
     private val selectedMonth = MutableStateFlow(todayIso(context.timeZone).take(7))
 
-    private val mutableState = MutableStateFlow(InsightsState())
-        .observeWith(viewModelScope) { state ->
+    private val mutableState =
+        MutableStateFlow(InsightsState()).observeWith(viewModelScope) { state ->
             getMonthlyStatementStreamUseCase(selectedMonth).updateState(state) { result ->
                 when (result) {
-                    is AppResult.Success -> copy(
-                        statement = result.value,
-                        month = result.value.month,
-                        loadError = null,
-                    )
+                    is AppResult.Success ->
+                        copy(
+                            statement = result.value,
+                            month = result.value.month,
+                            loadError = null,
+                        )
 
                     is AppResult.Failure -> copy(loadError = result.error.toInsightsTextResource())
                 }
@@ -64,52 +65,59 @@ class InsightsScreenViewModel(
 
     override fun onSaveStatement() {
         if (state.value.busy) return
-        val month = state.value.month
+        val statement = state.value.statement ?: return
+        val month = statement.month
 
         mutableState.update { oldState ->
             oldState.copy(busy = true, error = null)
         }
 
         launch {
-            val result = saveStatementUseCase(month)
+            val result = saveStatementUseCase(month = month, accountId = statement.accountId)
 
             mutableState.update { oldState ->
                 when (result) {
-                    is AppResult.Success -> oldState.copy(
-                        busy = false,
-                        message = TextResource.Resource(Res.string.statement_saved),
-                    )
+                    is AppResult.Success ->
+                        oldState.copy(
+                            busy = false,
+                            message = TextResource.Resource(Res.string.statement_saved),
+                        )
 
-                    is AppResult.Failure -> oldState.copy(
-                        busy = false,
-                        error = result.error.toInsightsTextResource(),
-                    )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            busy = false,
+                            error = result.error.toInsightsTextResource(),
+                        )
                 }
             }
         }
     }
 
-    /** Snapshots the displayed month before launching export; the UI supplies only localized labels. */
+    /**
+     * Snapshots the displayed month before launching export; the UI supplies only localized labels.
+     */
     override fun onExportStatement(summaryHeader: String, expenseHeader: String, title: String) {
         if (state.value.busy) return
         val statement = state.value.statement ?: return
-        val content = statement.csv(
-            currency = context.currency,
-            userId = context.userId,
-            summaryHeader = summaryHeader,
-            expenseHeader = expenseHeader,
-        )
+        val content =
+            statement.csv(
+                currency = statement.currency,
+                userId = context.userId,
+                summaryHeader = summaryHeader,
+                expenseHeader = expenseHeader,
+            )
 
         mutableState.update { oldState ->
             oldState.copy(busy = true, error = null)
         }
 
         launch {
-            val result = exportStatementUseCase(
-                filename = "loom-${statement.month}.csv",
-                content = content,
-                title = title,
-            )
+            val result =
+                exportStatementUseCase(
+                    filename = "loom-${statement.month}.csv",
+                    content = content,
+                    title = title,
+                )
 
             mutableState.update { oldState ->
                 oldState.copy(

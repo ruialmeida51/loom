@@ -34,7 +34,8 @@ Sharing a model does not change which domain owns it. A feature imports another 
 | Owner | Responsibility |
 | --- | --- |
 | `household/domain/model` | Household, member, selected household context, and supported household currency policy |
-| `expenses/domain/model` | Money amounts, splitting, repayments, and ledger rules |
+| `account/domain/model` | Global profile and nickname, independent of household membership |
+| `expenses/domain/model` | Spending accounts, participants, integer money, split methods, repayments, and ledger rules |
 | `authentication/data/local` | Secure authentication session serialization over core's native storage |
 | `settings/data` | Local preferences, notification permission/token adapters, and push-device registration |
 | `insights/data/export` | Native monthly-statement CSV sharing |
@@ -56,9 +57,13 @@ For example, expenses depends on household for its context and currency policy; 
 - Plannot’s Navigator, NavigationState, NavDisplay wrappers, and transitions are adapted in core. A modifier is applied once so nested Hosts do not duplicate outer Scaffold padding.
 - A household gets its own isolated Koin graph. Switching households disposes the graph and its navigation entries. Annotated Koin providers in the dedicated `shared/di` module bind ViewModels to their contracts; entrypoint only opens/closes those graphs.
 
-All provider declarations live in `shared/di`, organized by application/household graph and datasource/usecase/viewmodel responsibility. `@Single` factories return domain ports without redundant `binds`; `@KoinViewModel(binds = [Contract::class])` factories return ViewModel contracts. Feature modules have no DI registration or annotation-processor configuration. Koin 4.2's compiler plugin processes the central providers on Kotlin 2.4 without KSP. Production graphs construct production adapters there; the preview supplies its port implementations to the same central household bindings without a demo dependency in production DI.
+All provider declarations live in `shared/di`, organized by application/account/household-setup/household graph and datasource/usecase/viewmodel responsibility. `@Single` factories return domain ports without redundant `binds`; `@KoinViewModel(binds = [Contract::class])` factories return ViewModel contracts. Feature modules have no DI registration or annotation-processor configuration. Koin 4.2's compiler plugin processes the central providers on Kotlin 2.4 without KSP. Production graphs construct production adapters there; the preview supplies its port implementations to the same central household bindings without a demo dependency in production DI.
 
-The household Host renders a single compact toolbar adapted from Plannot. The current destination supplies the title; the household name remains visible as a subtitle. Nested destinations expose back navigation, while root tabs use the bottom navigation. Household switching has its own accessible action and Reminders/Settings use the overflow menu. Core owns only the generic `Toolbar`, `ActionMenu` and rendering item; app-specific destination labels and actions stay under `entrypoint/app/navigation/components`.
+`PortalHost` retains the selected household graph while My account or the household chooser is open. Its user graph provides profile, preferences and notification registration even before the first household exists. A Host-owned ViewModel store scopes the account ViewModel to that authenticated user. The nickname editor belongs to account; membership and invitations belong to household.
+
+`HouseholdHost` owns exactly three peer tabs: Home, Shopping and Balances. Each has a feature Host that owns its toolbar and child stack. Tab roots render a compact portal toolbar with household selector and profile avatar; child destinations replace it with Back/title/actions. Home opens Feed, reminders and its expense shortcut within its own stack. Balances owns account management, expense details/editing, recurrence and insights. `ExpenseFormHost` owns the nested split editor and date sheet. Core owns only generic toolbar, sheet and navigation infrastructure.
+
+Android Back pops a child first, then returns Shopping/Balances roots to Home. Only Home root leaves the app. Tab transitions fade; child transitions slide in the appropriate forward/back direction. Navigation decorators retain per-tab stores, and the household graph stays alive through account/chooser visits. Safe-area padding is applied and consumed once by the owning scaffold.
 
 ## Data and money
 
@@ -94,4 +99,8 @@ Run `python3 tools/audit_project.py` to check package paths, feature dependencie
 
 The [screen language](design-language.md) defines hierarchy, grouping, empty states and motion. Entry-point sheet hosts own per-destination controllers and connect existing ViewModel contracts to pure feature form components. Core supplies the generic sheet layout, scrolling/action footer, grouped rows and transitions. Feature forms never create modal windows themselves.
 
-Household owns global member nicknames because it already owns profiles and membership identities. Updating a nickname writes only `profiles.display_name`; existing RLS permits self updates. Member streams refresh presentation names across settings, money and recurrence without reinitializing form inputs. Request/response transport classes stay in household data. Settings owns the editor and localized copy; DI stays centralized.
+Account owns global profiles and nickname editing. Updating a nickname writes only the caller's `profiles.display_name` through self-update RLS. Household consumes the account domain port to refresh membership display names without resetting drafts. Profile transport and resources belong to account; member/invitation transport and resources belong to household. Settings remains responsible for local preferences and device registration.
+
+Expense accounts, participants and split metadata belong to expenses. Each household's Everyday account uses the household ID so existing clients and records keep their original scope. New trip/event accounts have independent currencies, expenses, recurring schedules, repayments and statement revisions. Server transactions enforce current membership, account participation, permissions, integer allocations, optimistic versions and retry idempotency. Weighted splits use deterministic largest-remainder rounding; the server verifies both the allocations and their declared split method. Soft deletion changes live ledgers without rewriting saved statements.
+
+Selected shopping lists and spending accounts are stored by both user and household. Profile/preferences stay global. Pending financial notifications carry an account ID, and Hosts select that account before opening its destination. Analytics remains opt-in and accepts only typed screen/action names, never household, profile or transaction content.

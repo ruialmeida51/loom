@@ -9,6 +9,10 @@ data class ShoppingState(
     val snapshot: ShoppingSnapshotDomain = ShoppingSnapshotDomain(),
     val selectedListId: String = "",
     val name: String = "",
+    val inlineName: String = "",
+    val addingInline: Boolean = false,
+    val inlineError: TextResource? = null,
+    val loading: Boolean = true,
     val quantity: String = "",
     val category: String = "Produce",
     val showAdd: Boolean = false,
@@ -29,7 +33,12 @@ data class ShoppingState(
     val activeLists: List<ShoppingListDomain> = snapshot.activeLists
     val orderedLists: List<ShoppingListDomain> = snapshot.lists.sortedBy { it.name.lowercase() }
     val selectedList: ShoppingListDomain? = activeLists.firstOrNull { it.id == selectedListId }
-    val items: List<ShoppingItemDomain> = snapshot.activeItems.filter { it.listId == selectedListId }
+    val items: List<ShoppingItemDomain> =
+        snapshot.activeItems.filter { it.listId == selectedListId }
+    val uncheckedItems: List<ShoppingItemDomain> = items.filterNot { it.checked }
+    val completedItems: List<ShoppingItemDomain> = items.filter { it.checked }
+    val canAddInline: Boolean =
+        inlineName.isNotBlank() && selectedList != null && !busy && !addingInline
     val remainingCount: Int = items.count { !it.checked }
     val visibleItems: List<ShoppingItemDomain> = items.filter { showChecked || !it.checked }
     val sections: Map<String, List<ShoppingItemDomain>> = visibleItems.groupBy { it.category }

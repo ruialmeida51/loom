@@ -7,5 +7,6 @@ class SaveStatementUseCase(
     private val statementDataSource: StatementDataSource,
 ) {
 
-    suspend operator fun invoke(month: String): AppResult<Unit> = statementDataSource.saveStatement(month)
+    suspend operator fun invoke(month: String, accountId: String): AppResult<Unit> =
+        statementDataSource.saveStatement(month = month, accountId = accountId)
 }

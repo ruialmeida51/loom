@@ -9,11 +9,8 @@ import com.eyther.lumbridge.features.authentication.domain.usecase.SignInUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInWithGoogleUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.VerifyEmailUseCase
-import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdSelectionDataSource
-import com.eyther.lumbridge.features.household.domain.usecase.CreateHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsUseCase
-import com.eyther.lumbridge.features.household.domain.usecase.JoinHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RememberHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RestoreHouseholdUseCase
 import org.koin.core.annotation.Module
@@ -25,93 +22,82 @@ class ApplicationUseCaseModule {
     @Single
     fun provideSignInWithGoogleUseCase(
         authenticationDataSource: AuthenticationDataSource,
-    ): SignInWithGoogleUseCase = SignInWithGoogleUseCase(
-        authenticationDataSource = authenticationDataSource,
-    )
+    ): SignInWithGoogleUseCase =
+        SignInWithGoogleUseCase(
+            authenticationDataSource = authenticationDataSource,
+        )
 
     @Single
     fun provideGetGoogleSignInResultsStreamUseCase(
         authenticationDataSource: AuthenticationDataSource,
-    ): GetGoogleSignInResultsStreamUseCase = GetGoogleSignInResultsStreamUseCase(
-        authenticationDataSource = authenticationDataSource,
-    )
+    ): GetGoogleSignInResultsStreamUseCase =
+        GetGoogleSignInResultsStreamUseCase(
+            authenticationDataSource = authenticationDataSource,
+        )
 
     @Single
     fun provideGetSessionStreamUseCase(
         dataSource: AuthenticationDataSource,
-    ): GetSessionStreamUseCase = GetSessionStreamUseCase(
-        dataSource = dataSource,
-    )
+    ): GetSessionStreamUseCase =
+        GetSessionStreamUseCase(
+            dataSource = dataSource,
+        )
 
     @Single
     fun provideRegisterUseCase(
         authenticationDataSource: AuthenticationDataSource,
-    ): RegisterUseCase = RegisterUseCase(
-        authenticationDataSource = authenticationDataSource,
-    )
+    ): RegisterUseCase =
+        RegisterUseCase(
+            authenticationDataSource = authenticationDataSource,
+        )
 
     @Single
     fun provideVerifyEmailUseCase(
         authenticationDataSource: AuthenticationDataSource,
-    ): VerifyEmailUseCase = VerifyEmailUseCase(
-        authenticationDataSource = authenticationDataSource,
-    )
+    ): VerifyEmailUseCase =
+        VerifyEmailUseCase(
+            authenticationDataSource = authenticationDataSource,
+        )
 
     @Single
     fun provideRequestEmailCodeUseCase(
         authenticationDataSource: AuthenticationDataSource,
-    ): RequestEmailCodeUseCase = RequestEmailCodeUseCase(
-        authenticationDataSource = authenticationDataSource,
-    )
+    ): RequestEmailCodeUseCase =
+        RequestEmailCodeUseCase(
+            authenticationDataSource = authenticationDataSource,
+        )
 
     @Single
     fun provideSignInUseCase(
         authenticationDataSource: AuthenticationDataSource,
-    ): SignInUseCase = SignInUseCase(
-        authenticationDataSource = authenticationDataSource,
-    )
+    ): SignInUseCase =
+        SignInUseCase(
+            authenticationDataSource = authenticationDataSource,
+        )
 
     @Single
     fun provideSignOutUseCase(
         source: AuthenticationDataSource,
-    ): SignOutUseCase = SignOutUseCase(
-        source = source,
-    )
-
-    @Single
-    fun provideCreateHouseholdUseCase(
-        householdDataSource: HouseholdDataSource,
-    ): CreateHouseholdUseCase = CreateHouseholdUseCase(
-        householdDataSource = householdDataSource,
-    )
-
-    @Single
-    fun provideGetHouseholdsUseCase(
-        householdDataSource: HouseholdDataSource,
-    ): GetHouseholdsUseCase = GetHouseholdsUseCase(
-        householdDataSource = householdDataSource,
-    )
-
-    @Single
-    fun provideJoinHouseholdUseCase(
-        householdDataSource: HouseholdDataSource,
-    ): JoinHouseholdUseCase = JoinHouseholdUseCase(
-        householdDataSource = householdDataSource,
-    )
+    ): SignOutUseCase =
+        SignOutUseCase(
+            source = source,
+        )
 
     @Single
     fun provideRememberHouseholdUseCase(
         selectionDataSource: HouseholdSelectionDataSource,
-    ): RememberHouseholdUseCase = RememberHouseholdUseCase(
-        selectionDataSource = selectionDataSource,
-    )
+    ): RememberHouseholdUseCase =
+        RememberHouseholdUseCase(
+            selectionDataSource = selectionDataSource,
+        )
 
     @Single
     fun provideRestoreHouseholdUseCase(
         selectionDataSource: HouseholdSelectionDataSource,
         getHouseholdsUseCase: GetHouseholdsUseCase,
-    ): RestoreHouseholdUseCase = RestoreHouseholdUseCase(
-        selectionDataSource = selectionDataSource,
-        getHouseholdsUseCase = getHouseholdsUseCase,
-    )
+    ): RestoreHouseholdUseCase =
+        RestoreHouseholdUseCase(
+            selectionDataSource = selectionDataSource,
+            getHouseholdsUseCase = getHouseholdsUseCase,
+        )
 }

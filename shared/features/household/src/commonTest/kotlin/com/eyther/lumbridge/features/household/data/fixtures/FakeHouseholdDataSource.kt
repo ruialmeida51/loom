@@ -9,14 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 internal class FakeHouseholdDataSource : HouseholdDataSource {
-    var savedNickname: Pair<String, String>? = null
-    var saveResult: AppResult<Unit> = AppResult.Success(Unit)
-
-    override suspend fun updateNickname(userId: String, nickname: String): AppResult<Unit> {
-        savedNickname = userId to nickname
-        return saveResult
-    }
-
     override suspend fun getHouseholds(): AppResult<List<HouseholdDomain>> =
         AppResult.Success(emptyList())
 

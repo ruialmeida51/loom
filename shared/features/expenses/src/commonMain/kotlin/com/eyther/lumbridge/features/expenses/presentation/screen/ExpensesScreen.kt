@@ -1,268 +1,315 @@
 package com.eyther.lumbridge.features.expenses.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
-import com.eyther.lumbridge.core.presentation.components.GroupedSurface
-import com.eyther.lumbridge.core.presentation.components.ListRow
-import com.eyther.lumbridge.core.presentation.components.LoomButton
-import com.eyther.lumbridge.core.presentation.components.LoomCard
-import com.eyther.lumbridge.core.presentation.components.NavigationRow
-import com.eyther.lumbridge.core.presentation.components.PageHeading
-import com.eyther.lumbridge.core.presentation.components.SectionTitle
+import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
+import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
+import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
-import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
+import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_1_s_paid_2_s
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_1_s_paid_2_s_3_s
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_across_your_household
+import com.eyther.lumbridge.features.expenses.generated.resources.account_accounts
+import com.eyther.lumbridge.features.expenses.generated.resources.account_archive
+import com.eyther.lumbridge.features.expenses.generated.resources.account_archived
+import com.eyther.lumbridge.features.expenses.generated.resources.account_rename
+import com.eyther.lumbridge.features.expenses.generated.resources.account_restore
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_all_settled
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_gets_back
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_owes
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_person_owes
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_retry
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_statements
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_who_pays
+import com.eyther.lumbridge.features.expenses.generated.resources.former_member
+import com.eyther.lumbridge.features.expenses.generated.resources.history_balances
+import com.eyther.lumbridge.features.expenses.generated.resources.history_empty
+import com.eyther.lumbridge.features.expenses.generated.resources.history_expenses
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_add_expense
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_add_what_you_paid_then_choose_who_to_split
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_all_square
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_all_square_that_s_a_nice_feeling
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_former_member
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_insights
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_money_untangled
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_monthly_bill
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_owed_1_s
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_owes_1_s
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_recent_expenses
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_record_repayment
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_recurring_expenses
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_repayments
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_settle_up
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_shared_costs_clear_balances_one_less_awkward_conversation
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_start_with_the_next_shared_cost
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_the_household
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_you_owe
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_you_re_owed
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_your_share_1_s
-import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
+import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseHistoryRow
+import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
+import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistorySectionUi
+import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import com.eyther.lumbridge.features.expenses.presentation.model.MemberBalanceUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
-import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ExpensesScreen(
     viewModel: ExpensesScreenViewModelContract,
-    context: HouseholdContextDomain,
+    onAddExpense: () -> Unit,
+    onOpenExpense: (ExpenseDomain) -> Unit,
+    onCreateAccount: () -> Unit,
+    onEditAccount: (ExpenseAccountDomain) -> Unit,
     onInsights: () -> Unit,
     onRecurringExpenses: () -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerExpensesScreen(
-        expenses = state.expenses,
-        settlements = state.settlements,
-        balance = state.ownBalance,
+        account = state.account,
+        history = state.history,
+        selectedView = state.selectedView,
         memberBalances = state.memberBalances,
+        suggestions = state.suggestions,
         memberNames = state.memberNames,
+        userId = state.userId,
+        currency = state.currency,
+        loading = state.loading,
+        canCreate = state.canCreateExpense,
+        canManageAccount = state.canManageAccount,
         error = state.displayError,
-        canCreateExpense = state.canCreateExpense,
-        canRecordSettlement = state.canRecordSettlement,
-        context = context,
+        onAccounts = { viewModel.onAccountsVisibilityChanged(true) },
+        onAddExpense = onAddExpense,
+        onOpenExpense = onOpenExpense,
+        onEditAccount = onEditAccount,
+        onArchive = viewModel::onArchiveAccount,
+        onView = viewModel::onViewChanged,
+        onRepayment = viewModel::onSuggestedRepayment,
         onInsights = onInsights,
         onRecurringExpenses = onRecurringExpenses,
-        onShowAdd = viewModel::onAddSheetVisibilityChanged,
-        onShowSettle = viewModel::onSettlementSheetVisibilityChanged,
         onDismiss = viewModel::onDismissError,
+        onRetry = viewModel::onRefresh,
     )
 }
 
 @Composable
 private fun InnerExpensesScreen(
-    expenses: List<ExpenseDomain>,
-    settlements: List<SettlementDomain>,
-    balance: BalanceSummaryUi,
+    account: ExpenseAccountDomain?,
+    history: List<ExpenseHistorySectionUi>,
+    selectedView: ExpensesViewUi,
     memberBalances: List<MemberBalanceUi>,
+    suggestions: List<SuggestedSettlementDomain>,
     memberNames: Map<String, String>,
+    userId: String,
+    currency: String,
+    loading: Boolean,
+    canCreate: Boolean,
+    canManageAccount: Boolean,
     error: TextResource?,
-    canCreateExpense: Boolean,
-    canRecordSettlement: Boolean,
-    context: HouseholdContextDomain,
+    onAccounts: () -> Unit,
+    onAddExpense: () -> Unit,
+    onOpenExpense: (ExpenseDomain) -> Unit,
+    onEditAccount: (ExpenseAccountDomain) -> Unit,
+    onArchive: (ExpenseAccountDomain) -> Unit,
+    onView: (ExpensesViewUi) -> Unit,
+    onRepayment: (SuggestedSettlementDomain) -> Unit,
     onInsights: () -> Unit,
     onRecurringExpenses: () -> Unit,
-    onShowAdd: (Boolean) -> Unit,
-    onShowSettle: (Boolean) -> Unit,
     onDismiss: () -> Unit,
+    onRetry: () -> Unit,
 ) {
-    val formerMemberLabel = stringResource(Res.string.ui_former_member)
-    fun name(id: String) = memberNames[id] ?: formerMemberLabel
-    LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 20.dp),
-        contentPadding = PaddingValues(vertical = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item {
-            PageHeading(
-                stringResource(Res.string.ui_money_untangled),
-                stringResource(
-                    Res.string.ui_shared_costs_clear_balances_one_less_awkward_conversation,
-                ),
-            )
-        }
-        error?.let { message ->
-            item(key = "error") {
-                ErrorNotice(message = message, onDismiss = onDismiss)
-            }
-        }
-        item {
-            LoomCard {
-                Text(
-                    if (balance.isOwed) stringResource(Res.string.ui_you_re_owed)
-                    else stringResource(Res.string.ui_you_owe),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-                Text(
-                    balance.amount,
-                    style = MaterialTheme.typography.displaySmall,
-                )
-                Text(
-                    if (balance.isSettled)
-                        stringResource(Res.string.ui_all_square_that_s_a_nice_feeling)
-                    else stringResource(Res.string.ui_across_your_household),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    LoomButton(
-                        stringResource(Res.string.ui_add_expense),
-                        { onShowAdd(true) },
-                        Modifier.weight(1f),
-                        enabled = canCreateExpense,
-                    )
-                    OutlinedButton(
-                        onClick = { onShowSettle(true) },
-                        enabled = canRecordSettlement,
-                        modifier = Modifier.heightIn(min = 50.dp),
-                    ) {
-                        Text(stringResource(Res.string.ui_settle_up))
-                    }
-                }
-            }
-        }
-        item {
-            GroupedSurface {
-                NavigationRow(
-                    title = stringResource(Res.string.ui_recurring_expenses),
-                    onClick = onRecurringExpenses,
-                )
-            }
-        }
-        item { SectionTitle(stringResource(Res.string.ui_the_household)) }
-        items(memberBalances, key = { it.member.id }) { row ->
-            val member = row.member
-            val memberBalance = row.balance
-            Row(
-                Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(member.name)
-                Text(
-                    when {
-                        !memberBalance.isSettled && memberBalance.isOwed ->
-                            stringResource(
-                                Res.string.ui_owed_1_s,
-                                memberBalance.amount,
-                            )
-                        !memberBalance.isOwed ->
-                            stringResource(
-                                Res.string.ui_owes_1_s,
-                                memberBalance.amount,
-                            )
-                        else -> stringResource(Res.string.ui_all_square)
-                    },
-                    color =
-                        if (memberBalance.isOwed) MaterialTheme.colorScheme.secondary
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-        item {
-            SectionTitle(
-                stringResource(Res.string.ui_recent_expenses),
-                stringResource(Res.string.ui_insights),
-                onInsights,
-            )
-        }
-        if (expenses.isEmpty())
+    Box(Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier =
+                Modifier.fillMaxSize().padding(horizontal = 16.dp).testTag("expenses_content"),
+            contentPadding = PaddingValues(top = 8.dp, bottom = 88.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             item {
-                EmptyNotice(
-                    stringResource(Res.string.ui_start_with_the_next_shared_cost),
-                    stringResource(Res.string.ui_add_what_you_paid_then_choose_who_to_split),
-                )
-            }
-        items(expenses, key = { it.id }) { expense ->
-            ListRow {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(expense.title, style = MaterialTheme.typography.titleMedium)
+                    TextButton(
+                        onClick = onAccounts,
+                        modifier = Modifier.weight(1f).testTag("expense_accounts"),
+                    ) {
                         Text(
-                            stringResource(
-                                Res.string.ui_1_s_paid_2_s,
-                                name(expense.paidBy),
-                                expense.category,
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            text =
+                                if (account == null) stringResource(Res.string.account_accounts)
+                                else accountLabel(account),
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.weight(1f),
                         )
-                        if (expense.recurring)
-                            Text(
-                                stringResource(Res.string.ui_monthly_bill),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
+                        Text(" ⌄")
                     }
-                    Column(horizontalAlignment = Alignment.End) {
+                    ActionMenu(
+                        modifier = Modifier.testTag("balances_actions"),
+                        items =
+                            buildList {
+                                add(
+                                    ActionMenuItem(
+                                        text =
+                                            TextResource.Resource(Res.string.ui_recurring_expenses),
+                                        onClick = onRecurringExpenses,
+                                    ),
+                                )
+                                add(
+                                    ActionMenuItem(
+                                        text = TextResource.Resource(Res.string.balance_statements),
+                                        onClick = onInsights,
+                                    ),
+                                )
+                                if (account != null && canManageAccount) {
+                                    add(
+                                        ActionMenuItem(
+                                            text = TextResource.Resource(Res.string.account_rename),
+                                            onClick = { onEditAccount(account) },
+                                        ),
+                                    )
+                                    add(
+                                        ActionMenuItem(
+                                            text =
+                                                TextResource.Resource(
+                                                    if (account.archived) Res.string.account_restore
+                                                    else Res.string.account_archive,
+                                                ),
+                                            onClick = { onArchive(account) },
+                                        ),
+                                    )
+                                }
+                            },
+                    )
+                }
+                if (account?.archived == true)
+                    Text(
+                        stringResource(Res.string.account_archived),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+            }
+            item {
+                TabRow(selectedTabIndex = selectedView.ordinal) {
+                    Tab(
+                        modifier = Modifier.testTag("balances_view_expenses"),
+                        selected = selectedView == ExpensesViewUi.EXPENSES,
+                        onClick = { onView(ExpensesViewUi.EXPENSES) },
+                        text = { Text(stringResource(Res.string.history_expenses)) },
+                    )
+                    Tab(
+                        modifier = Modifier.testTag("balances_view_balances"),
+                        selected = selectedView == ExpensesViewUi.BALANCES,
+                        onClick = { onView(ExpensesViewUi.BALANCES) },
+                        text = { Text(stringResource(Res.string.history_balances)) },
+                    )
+                }
+            }
+            error?.let { message ->
+                item {
+                    ErrorNotice(message = message, onDismiss = onDismiss)
+                    TextButton(onClick = onRetry) { Text(stringResource(Res.string.balance_retry)) }
+                }
+            }
+            if (loading) item { LoadingRows() }
+            else if (account != null && selectedView == ExpensesViewUi.EXPENSES) {
+                if (history.isEmpty())
+                    item {
                         Text(
-                            MoneyDomain(expense.amountMinor, context.currency).formatted(),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        Text(
-                            stringResource(
-                                Res.string.ui_your_share_1_s,
-                                MoneyDomain(expense.shares[context.userId] ?: 0, context.currency)
-                                    .formatted(),
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
+                            stringResource(Res.string.history_empty),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                    }
+                history.forEach { section ->
+                    item(key = section.date) {
+                        Text(
+                            section.date,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    items(section.items, key = { it.key }) { item ->
+                        ExpenseHistoryRow(item = item, onOpen = onOpenExpense)
+                    }
+                }
+            } else if (account != null) {
+                item {
+                    Text(
+                        stringResource(Res.string.balance_who_pays),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+                if (suggestions.isEmpty())
+                    item {
+                        Text(
+                            stringResource(Res.string.balance_all_settled),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                items(suggestions, key = { "${it.from}-${it.to}" }) { suggestion ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            stringResource(
+                                Res.string.balance_person_owes,
+                                memberNames[suggestion.from]
+                                    ?: stringResource(Res.string.former_member),
+                                memberNames[suggestion.to]
+                                    ?: stringResource(Res.string.former_member),
+                            ),
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            MoneyDomain(suggestion.amountMinor, currency).formatted(),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                    }
+                    if (userId == suggestion.from || userId == suggestion.to)
+                        TextButton(onClick = { onRepayment(suggestion) }) {
+                            Text(stringResource(Res.string.ui_record_repayment))
+                        }
+                }
+                items(memberBalances, key = { it.member.id }) { member ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(vertical = 8.dp),
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                member.member.name.ifBlank {
+                                    stringResource(Res.string.former_member)
+                                },
+                            )
+                            if (!member.balance.isSettled)
+                                Text(
+                                    stringResource(
+                                        if (member.balance.isOwed) Res.string.balance_gets_back
+                                        else Res.string.balance_owes,
+                                    ),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                        }
+                        Text(member.balance.amount, style = MaterialTheme.typography.titleSmall)
                     }
                 }
             }
         }
-        if (settlements.isNotEmpty())
-            item { SectionTitle(stringResource(Res.string.ui_repayments)) }
-        items(settlements, key = { it.id }) { settlement ->
-            Text(
-                stringResource(
-                    Res.string.ui_1_s_paid_2_s_3_s,
-                    name(settlement.from),
-                    name(settlement.to),
-                    MoneyDomain(settlement.amountMinor, context.currency).formatted(),
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
+        if (canCreate)
+            FloatingActionButton(
+                onClick = onAddExpense,
+                modifier =
+                    Modifier.align(Alignment.BottomEnd).padding(16.dp).testTag("add_expense"),
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    LoomIcon(glyph = Glyph.PLUS)
+                    Text(stringResource(Res.string.ui_add_expense))
+                }
+            }
     }
 }

@@ -25,4 +25,14 @@
   <string name="ui_all_settled">All settled up</string>
   <string name="ui_home_unavailable">Your home needs a moment.</string>
   <string name="ui_try_again">Try again</string>
+    <string name="home_today">Today</string>
+    <string name="home_upcoming">Coming up</string>
+    <string name="home_add_reminder">Add reminder</string>
+    <string name="home_shopping">Shopping</string>
+    <string name="home_add_expense">Add expense</string>
+    <string name="home_feed">Feed</string>
+    <string name="home_nothing_due">Nothing due today. A little breathing room.</string>
+    <string name="home_manage_household">Household details</string>
+    <string name="home_overdue">Overdue · %1$s</string>
+    <string name="home_all_reminders">All reminders</string>
 </resources>

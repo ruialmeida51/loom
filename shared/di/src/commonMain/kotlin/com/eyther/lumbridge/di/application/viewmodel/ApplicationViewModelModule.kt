@@ -12,15 +12,6 @@ import com.eyther.lumbridge.features.authentication.presentation.viewmodel.Regis
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.EmailVerificationScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.LoginScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.RegisterScreenViewModelContract
-import com.eyther.lumbridge.features.household.domain.usecase.CreateHouseholdUseCase
-import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsUseCase
-import com.eyther.lumbridge.features.household.domain.usecase.JoinHouseholdUseCase
-import com.eyther.lumbridge.features.household.presentation.viewmodel.CreateHouseholdScreenViewModel
-import com.eyther.lumbridge.features.household.presentation.viewmodel.HouseholdScreenViewModel
-import com.eyther.lumbridge.features.household.presentation.viewmodel.JoinHouseholdScreenViewModel
-import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.CreateHouseholdScreenViewModelContract
-import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
-import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.JoinHouseholdScreenViewModelContract
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 import org.koin.core.annotation.Module
@@ -34,49 +25,31 @@ class ApplicationViewModelModule {
         requestEmailCodeUseCase: RequestEmailCodeUseCase,
         signInWithGoogleUseCase: SignInWithGoogleUseCase,
         getGoogleSignInResultsStreamUseCase: GetGoogleSignInResultsStreamUseCase,
-    ): LoginScreenViewModelContract = LoginScreenViewModel(
-        signInUseCase = signInUseCase,
-        requestEmailCodeUseCase = requestEmailCodeUseCase,
-        signInWithGoogleUseCase = signInWithGoogleUseCase,
-        getGoogleSignInResultsStreamUseCase = getGoogleSignInResultsStreamUseCase,
-    )
+    ): LoginScreenViewModelContract =
+        LoginScreenViewModel(
+            signInUseCase = signInUseCase,
+            requestEmailCodeUseCase = requestEmailCodeUseCase,
+            signInWithGoogleUseCase = signInWithGoogleUseCase,
+            getGoogleSignInResultsStreamUseCase = getGoogleSignInResultsStreamUseCase,
+        )
 
     @KoinViewModel(binds = [RegisterScreenViewModelContract::class])
     fun provideRegisterScreenViewModel(
         registerUseCase: RegisterUseCase,
-    ): RegisterScreenViewModelContract = RegisterScreenViewModel(
-        registerUseCase = registerUseCase,
-    )
+    ): RegisterScreenViewModelContract =
+        RegisterScreenViewModel(
+            registerUseCase = registerUseCase,
+        )
 
     @KoinViewModel(binds = [EmailVerificationScreenViewModelContract::class])
     fun provideEmailVerificationScreenViewModel(
         @InjectedParam params: EmailVerificationScreenViewModelContract.Params,
         verifyEmailUseCase: VerifyEmailUseCase,
         requestEmailCodeUseCase: RequestEmailCodeUseCase,
-    ): EmailVerificationScreenViewModelContract = EmailVerificationScreenViewModel(
-        params = params,
-        verifyEmailUseCase = verifyEmailUseCase,
-        requestEmailCodeUseCase = requestEmailCodeUseCase,
-    )
-
-    @KoinViewModel(binds = [HouseholdScreenViewModelContract::class])
-    fun provideHouseholdScreenViewModel(
-        getHouseholdsUseCase: GetHouseholdsUseCase,
-    ): HouseholdScreenViewModelContract = HouseholdScreenViewModel(
-        getHouseholdsUseCase = getHouseholdsUseCase,
-    )
-
-    @KoinViewModel(binds = [CreateHouseholdScreenViewModelContract::class])
-    fun provideCreateHouseholdScreenViewModel(
-        createHouseholdUseCase: CreateHouseholdUseCase,
-    ): CreateHouseholdScreenViewModelContract = CreateHouseholdScreenViewModel(
-        createHouseholdUseCase = createHouseholdUseCase,
-    )
-
-    @KoinViewModel(binds = [JoinHouseholdScreenViewModelContract::class])
-    fun provideJoinHouseholdScreenViewModel(
-        joinHouseholdUseCase: JoinHouseholdUseCase,
-    ): JoinHouseholdScreenViewModelContract = JoinHouseholdScreenViewModel(
-        joinHouseholdUseCase = joinHouseholdUseCase,
-    )
+    ): EmailVerificationScreenViewModelContract =
+        EmailVerificationScreenViewModel(
+            params = params,
+            verifyEmailUseCase = verifyEmailUseCase,
+            requestEmailCodeUseCase = requestEmailCodeUseCase,
+        )
 }

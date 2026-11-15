@@ -13,13 +13,15 @@ data class RecurringExpenseDomain(
     val createdBy: String,
     val version: Long,
     val shares: Map<String, Long>,
+    val accountId: String = "",
 ) {
 
-    val status: RecurringExpenseStatusDomain = when {
-        cancelled -> RecurringExpenseStatusDomain.CANCELLED
-        active -> RecurringExpenseStatusDomain.ACTIVE
-        else -> RecurringExpenseStatusDomain.PAUSED
-    }
+    val status: RecurringExpenseStatusDomain =
+        when {
+            cancelled -> RecurringExpenseStatusDomain.CANCELLED
+            active -> RecurringExpenseStatusDomain.ACTIVE
+            else -> RecurringExpenseStatusDomain.PAUSED
+        }
 
     fun canManage(userId: String, isOwner: Boolean): Boolean =
         !cancelled && (isOwner || userId == paidBy || userId == createdBy)

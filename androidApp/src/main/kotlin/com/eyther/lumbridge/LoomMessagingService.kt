@@ -31,6 +31,7 @@ class LoomMessagingService : FirebaseMessagingService() {
                 flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 putExtra("household_id", message.data["household_id"])
                 putExtra("route", message.data["route"])
+                putExtra("account_id", message.data["account_id"])
             }
         val pending =
             PendingIntent.getActivity(

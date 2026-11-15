@@ -67,4 +67,10 @@
   <string name="error_list_name_already_exists">A list with this name already exists.</string>
   <string name="ui_move_to">Move to %1$s</string>
   <string name="ui_item_options">Options for %1$s</string>
+    <string name="checklist_add_item">Add an item</string>
+    <string name="checklist_add">Add</string>
+    <plurals name="checklist_completed">
+        <item quantity="one">Completed (%1$d)</item>
+        <item quantity="other">Completed (%1$d)</item>
+    </plurals>
 </resources>

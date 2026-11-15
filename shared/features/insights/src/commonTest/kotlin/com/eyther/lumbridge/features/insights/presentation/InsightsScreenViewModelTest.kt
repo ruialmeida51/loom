@@ -2,11 +2,14 @@ package com.eyther.lumbridge.features.insights.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpensesStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetSelectedExpenseAccountStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementsStreamUseCase
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
@@ -40,70 +43,126 @@ class InsightsScreenViewModelTest {
     @Test
     fun exportKeepsTheDisplayedStatementWhenTheMonthOrLedgerChangesBeforeSharing() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
-        val context = HouseholdContextDomain(
-            id = "household",
-            userId = "member",
-            name = "Home",
-            currency = "EUR",
-            timeZone = "UTC",
-        )
-        val expenses = MutableStateFlow<AppResult<List<ExpenseDomain>>>(AppResult.Success(emptyList()))
-        val expenseSource = object : ExpenseDataSource {
-            override fun streamExpenses() = expenses
+        val context =
+            HouseholdContextDomain(
+                id = "household",
+                userId = "member",
+                name = "Home",
+                currency = "EUR",
+                timeZone = "UTC",
+            )
+        val expenses =
+            MutableStateFlow<AppResult<List<ExpenseDomain>>>(AppResult.Success(emptyList()))
+        val expenseSource =
+            object : ExpenseDataSource {
+                override fun streamExpenses(accountId: String) = expenses
 
-            override fun streamSettlements() = flowOf(AppResult.Success(emptyList<SettlementDomain>()))
+                override fun streamSettlements(accountId: String) =
+                    flowOf(AppResult.Success(emptyList<SettlementDomain>()))
 
-            override suspend fun addExpense(expense: ExpenseDomain): AppResult<Unit> = AppResult.Success(Unit)
+                override suspend fun saveExpense(expense: ExpenseDomain): AppResult<Unit> =
+                    AppResult.Success(Unit)
 
-            override suspend fun recordSettlement(settlement: SettlementDomain): AppResult<Unit> =
-                AppResult.Success(Unit)
-        }
-        val statementSource = object : StatementDataSource {
-            override suspend fun saveStatement(month: String): AppResult<Unit> = AppResult.Success(Unit)
-        }
+                override suspend fun getExpense(
+                    id: String,
+                    accountId: String,
+                ): AppResult<ExpenseDomain> = error("Not used by statement reads")
+
+                override suspend fun deleteExpense(expense: ExpenseDomain): AppResult<Unit> =
+                    error("Not used by statement reads")
+
+                override suspend fun recordSettlement(
+                    settlement: SettlementDomain,
+                ): AppResult<Unit> = AppResult.Success(Unit)
+            }
+        val account =
+            ExpenseAccountDomain(
+                id = context.id,
+                name = "Everyday",
+                currency = "EUR",
+                memberIds = setOf(context.userId),
+                isDefault = true,
+            )
+        val accounts =
+            object : ExpenseAccountDataSource {
+                override fun stream() = flowOf(AppResult.Success(listOf(account)))
+
+                override fun streamSelection() = MutableStateFlow(context.id)
+
+                override suspend fun getAccount(id: String) = AppResult.Success(account)
+
+                override suspend fun selectAccount(id: String): AppResult<Unit> =
+                    AppResult.Success(Unit)
+
+                override suspend fun saveAccount(account: ExpenseAccountDomain) =
+                    AppResult.Success(account)
+            }
+        val statementSource =
+            object : StatementDataSource {
+                override suspend fun saveStatement(
+                    month: String,
+                    accountId: String,
+                ): AppResult<Unit> = AppResult.Success(Unit)
+            }
         val finishSharing = CompletableDeferred<Unit>()
         var exportedFilename: String? = null
         var exportedContent: String? = null
         var exportedTitle: String? = null
-        val exportSource = object : StatementExportDataSource {
-            override suspend fun export(filename: String, content: String, title: String): AppResult<Unit> {
-                exportedFilename = filename
-                exportedContent = content
-                exportedTitle = title
-                finishSharing.await()
-                return AppResult.Success(Unit)
+        val exportSource =
+            object : StatementExportDataSource {
+                override suspend fun export(
+                    filename: String,
+                    content: String,
+                    title: String,
+                ): AppResult<Unit> {
+                    exportedFilename = filename
+                    exportedContent = content
+                    exportedTitle = title
+                    finishSharing.await()
+                    return AppResult.Success(Unit)
+                }
             }
-        }
-        val viewModel = InsightsScreenViewModel(
-            getMonthlyStatementStreamUseCase = GetMonthlyStatementStreamUseCase(
-                getExpenseLedgerStreamUseCase = GetExpenseLedgerStreamUseCase(
-                    getExpensesStreamUseCase = GetExpensesStreamUseCase(expenseDataSource = expenseSource),
-                    getSettlementsStreamUseCase = GetSettlementsStreamUseCase(expenseDataSource = expenseSource),
-                ),
+        val viewModel =
+            InsightsScreenViewModel(
+                getMonthlyStatementStreamUseCase =
+                    GetMonthlyStatementStreamUseCase(
+                        getExpenseLedgerStreamUseCase =
+                            GetExpenseLedgerStreamUseCase(
+                                getSelectedExpenseAccountStreamUseCase =
+                                    GetSelectedExpenseAccountStreamUseCase(
+                                        expenseAccountDataSource = accounts,
+                                    ),
+                                getExpensesStreamUseCase =
+                                    GetExpensesStreamUseCase(expenseDataSource = expenseSource),
+                                getSettlementsStreamUseCase =
+                                    GetSettlementsStreamUseCase(expenseDataSource = expenseSource),
+                            ),
+                        context = context,
+                    ),
+                saveStatementUseCase = SaveStatementUseCase(statementDataSource = statementSource),
                 context = context,
-            ),
-            saveStatementUseCase = SaveStatementUseCase(statementDataSource = statementSource),
-            context = context,
-            exportStatementUseCase = ExportStatementUseCase(statementExportDataSource = exportSource),
-        )
+                exportStatementUseCase =
+                    ExportStatementUseCase(statementExportDataSource = exportSource),
+            )
 
         try {
             backgroundScope.launch { viewModel.state.collect() }
             runCurrent()
             val displayedMonth = viewModel.state.value.month
-            expenses.value = AppResult.Success(
-                listOf(
-                    ExpenseDomain(
-                        id = "rent",
-                        title = "Rent",
-                        amountMinor = 10000,
-                        paidBy = context.userId,
-                        category = "housing",
-                        occurredOn = "$displayedMonth-01",
-                        shares = mapOf(context.userId to 10000L),
+            expenses.value =
+                AppResult.Success(
+                    listOf(
+                        ExpenseDomain(
+                            id = "rent",
+                            title = "Rent",
+                            amountMinor = 10000,
+                            paidBy = context.userId,
+                            category = "housing",
+                            occurredOn = "$displayedMonth-01",
+                            shares = mapOf(context.userId to 10000L),
+                        ),
                     ),
-                ),
-            )
+                )
             runCurrent()
 
             viewModel.onExportStatement(

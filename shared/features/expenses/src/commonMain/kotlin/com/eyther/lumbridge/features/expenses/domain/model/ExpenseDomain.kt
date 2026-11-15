@@ -9,4 +9,12 @@ data class ExpenseDomain(
     val occurredOn: String,
     val shares: Map<String, Long>,
     val recurring: Boolean = false,
-)
+    val accountId: String = "",
+    val version: Long = 0,
+    val createdBy: String = "",
+    val splitMethod: ExpenseSplitMethodDomain = ExpenseSplitMethodDomain.AMOUNTS,
+    val splitValues: Map<String, Long> = emptyMap(),
+) {
+    fun canManage(userId: String, isOwner: Boolean): Boolean =
+        userId == createdBy || userId == paidBy || isOwner
+}

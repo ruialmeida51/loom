@@ -9,5 +9,6 @@ class GetSettlementsStreamUseCase(
     private val expenseDataSource: ExpenseDataSource,
 ) {
 
-    operator fun invoke(): Flow<AppResult<List<SettlementDomain>>> = expenseDataSource.streamSettlements()
+    operator fun invoke(accountId: String = ""): Flow<AppResult<List<SettlementDomain>>> =
+        expenseDataSource.streamSettlements(accountId = accountId)
 }
