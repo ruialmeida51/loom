@@ -12,6 +12,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
+import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
@@ -36,6 +37,7 @@ class ExpensesScreenViewModel(
     private val getExpenseAccountsStreamUseCase: GetExpenseAccountsStreamUseCase,
     private val selectExpenseAccountUseCase: SelectExpenseAccountUseCase,
     private val saveExpenseAccountUseCase: SaveExpenseAccountUseCase,
+    private val deleteExpenseAccountUseCase: DeleteExpenseAccountUseCase,
     private val recordSettlementUseCase: RecordSettlementUseCase,
     private val getMembersStreamUseCase: GetMembersStreamUseCase,
     private val context: HouseholdContextDomain,
@@ -102,7 +104,9 @@ class ExpensesScreenViewModel(
 
     override fun onAccountsVisibilityChanged(value: Boolean) {
         if (state.value.busy) return
-        mutableState.update { oldState -> oldState.copy(showAccounts = value) }
+        mutableState.update { oldState ->
+            oldState.copy(showAccounts = value, showManageAccounts = false)
+        }
     }
 
     override fun onAccountSelected(id: String) {
@@ -113,12 +117,13 @@ class ExpensesScreenViewModel(
         }
         mutableState.update { oldState ->
             oldState.copy(
-                account = null,
+                account = oldState.accounts.firstOrNull { it.id == id },
                 expenses = emptyList(),
                 settlements = emptyList(),
                 balances = emptyMap(),
                 loading = true,
                 showAccounts = false,
+                showManageAccounts = false,
                 error = null,
             )
         }
@@ -132,6 +137,55 @@ class ExpensesScreenViewModel(
                     mutableState.update { oldState ->
                         oldState.copy(
                             loading = false,
+                            error = result.error.toExpensesTextResource(),
+                        )
+                    }
+            }
+        }
+    }
+
+    override fun onManageAccountsVisibilityChanged(value: Boolean) {
+        if (state.value.busy) return
+        mutableState.update { oldState ->
+            oldState.copy(showManageAccounts = value, showAccounts = false)
+        }
+    }
+
+    override fun onDeleteAccountRequested(account: ExpenseAccountDomain) {
+        if (
+            state.value.busy ||
+                !account.canManage(userId = context.userId, isOwner = state.value.isOwner)
+        )
+            return
+        mutableState.update { oldState -> oldState.copy(deletingAccount = account, error = null) }
+    }
+
+    override fun onCancelDeleteAccount() {
+        if (state.value.busy) return
+        mutableState.update { oldState -> oldState.copy(deletingAccount = null) }
+    }
+
+    override fun onConfirmDeleteAccount() {
+        val account = state.value.deletingAccount ?: return
+        if (state.value.busy) return
+        mutableState.update { oldState -> oldState.copy(busy = true, error = null) }
+        launch {
+            when (val result = deleteExpenseAccountUseCase(account = account)) {
+                is AppResult.Success -> {
+                    mutableState.update { oldState ->
+                        oldState.copy(
+                            busy = false,
+                            deletingAccount = null,
+                            accounts = oldState.accounts.filterNot { it.id == account.id },
+                        )
+                    }
+                    onRefresh()
+                }
+                is AppResult.Failure ->
+                    mutableState.update { oldState ->
+                        oldState.copy(
+                            busy = false,
+                            deletingAccount = null,
                             error = result.error.toExpensesTextResource(),
                         )
                     }

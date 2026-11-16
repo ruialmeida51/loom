@@ -5,7 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.navigation3.runtime.NavKey
-import androidx.navigationevent.NavigationEvent
 import com.eyther.lumbridge.core.navigation.animation.backSlideTransition
 import com.eyther.lumbridge.core.navigation.animation.forwardSlideTransition
 import com.eyther.lumbridge.core.navigation.model.NavigationState
@@ -27,9 +26,7 @@ fun HorizontalSlideNavDisplay(
         navigationState = navigationState,
         transitionSpec = { forwardSlideTransition(direction = direction) },
         popTransitionSpec = { backSlideTransition(direction = direction) },
-        predictivePopTransitionSpec = { edge ->
-            backSlideTransition(direction = if (edge == NavigationEvent.EDGE_RIGHT) -1 else 1)
-        },
+        predictivePopTransitionSpec = { backSlideTransition(direction = direction) },
         metadata = metadata,
         content = content,
     )

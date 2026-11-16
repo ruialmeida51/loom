@@ -13,6 +13,7 @@ data class ShoppingItemDomain(
     val version: Long = 0,
     val removed: Boolean = false,
     val favorite: Boolean = false,
+    val position: Long = 0,
 ) {
 
     fun validated(): ShoppingItemDomain {

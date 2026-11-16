@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
@@ -35,10 +36,8 @@ import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_accounts
-import com.eyther.lumbridge.features.expenses.generated.resources.account_archive
 import com.eyther.lumbridge.features.expenses.generated.resources.account_archived
-import com.eyther.lumbridge.features.expenses.generated.resources.account_rename
-import com.eyther.lumbridge.features.expenses.generated.resources.account_restore
+import com.eyther.lumbridge.features.expenses.generated.resources.account_manage
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_all_settled
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_gets_back
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_owes
@@ -59,6 +58,8 @@ import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryS
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import com.eyther.lumbridge.features.expenses.presentation.model.MemberBalanceUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -66,8 +67,6 @@ fun ExpensesScreen(
     viewModel: ExpensesScreenViewModelContract,
     onAddExpense: () -> Unit,
     onOpenExpense: (ExpenseDomain) -> Unit,
-    onCreateAccount: () -> Unit,
-    onEditAccount: (ExpenseAccountDomain) -> Unit,
     onInsights: () -> Unit,
     onRecurringExpenses: () -> Unit,
 ) {
@@ -83,13 +82,11 @@ fun ExpensesScreen(
         currency = state.currency,
         loading = state.loading,
         canCreate = state.canCreateExpense,
-        canManageAccount = state.canManageAccount,
         error = state.displayError,
         onAccounts = { viewModel.onAccountsVisibilityChanged(true) },
         onAddExpense = onAddExpense,
         onOpenExpense = onOpenExpense,
-        onEditAccount = onEditAccount,
-        onArchive = viewModel::onArchiveAccount,
+        onManage = { viewModel.onManageAccountsVisibilityChanged(true) },
         onView = viewModel::onViewChanged,
         onRepayment = viewModel::onSuggestedRepayment,
         onInsights = onInsights,
@@ -102,22 +99,20 @@ fun ExpensesScreen(
 @Composable
 private fun InnerExpensesScreen(
     account: ExpenseAccountDomain?,
-    history: List<ExpenseHistorySectionUi>,
+    history: ImmutableList<ExpenseHistorySectionUi>,
     selectedView: ExpensesViewUi,
-    memberBalances: List<MemberBalanceUi>,
-    suggestions: List<SuggestedSettlementDomain>,
-    memberNames: Map<String, String>,
+    memberBalances: ImmutableList<MemberBalanceUi>,
+    suggestions: ImmutableList<SuggestedSettlementDomain>,
+    memberNames: ImmutableMap<String, String>,
     userId: String,
     currency: String,
     loading: Boolean,
     canCreate: Boolean,
-    canManageAccount: Boolean,
     error: TextResource?,
     onAccounts: () -> Unit,
     onAddExpense: () -> Unit,
     onOpenExpense: (ExpenseDomain) -> Unit,
-    onEditAccount: (ExpenseAccountDomain) -> Unit,
-    onArchive: (ExpenseAccountDomain) -> Unit,
+    onManage: () -> Unit,
     onView: (ExpensesViewUi) -> Unit,
     onRepayment: (SuggestedSettlementDomain) -> Unit,
     onInsights: () -> Unit,
@@ -134,19 +129,13 @@ private fun InnerExpensesScreen(
         ) {
             item {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(
+                    SelectorButton(
+                        text =
+                            if (account == null) stringResource(Res.string.account_accounts)
+                            else accountLabel(account),
                         onClick = onAccounts,
                         modifier = Modifier.weight(1f).testTag("expense_accounts"),
-                    ) {
-                        Text(
-                            text =
-                                if (account == null) stringResource(Res.string.account_accounts)
-                                else accountLabel(account),
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.weight(1f),
-                        )
-                        Text(" ⌄")
-                    }
+                    )
                     ActionMenu(
                         modifier = Modifier.testTag("balances_actions"),
                         items =
@@ -164,24 +153,12 @@ private fun InnerExpensesScreen(
                                         onClick = onInsights,
                                     ),
                                 )
-                                if (account != null && canManageAccount) {
-                                    add(
-                                        ActionMenuItem(
-                                            text = TextResource.Resource(Res.string.account_rename),
-                                            onClick = { onEditAccount(account) },
-                                        ),
-                                    )
-                                    add(
-                                        ActionMenuItem(
-                                            text =
-                                                TextResource.Resource(
-                                                    if (account.archived) Res.string.account_restore
-                                                    else Res.string.account_archive,
-                                                ),
-                                            onClick = { onArchive(account) },
-                                        ),
-                                    )
-                                }
+                                add(
+                                    ActionMenuItem(
+                                        text = TextResource.Resource(Res.string.account_manage),
+                                        onClick = onManage,
+                                    ),
+                                )
                             },
                     )
                 }

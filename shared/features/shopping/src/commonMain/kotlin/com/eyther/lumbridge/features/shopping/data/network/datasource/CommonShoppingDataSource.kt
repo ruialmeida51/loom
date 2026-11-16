@@ -11,6 +11,7 @@ import com.eyther.lumbridge.features.shopping.data.network.mapper.toDomain
 import com.eyther.lumbridge.features.shopping.data.network.mapper.toRequest
 import com.eyther.lumbridge.features.shopping.data.network.mapper.toShoppingError
 import com.eyther.lumbridge.features.shopping.data.network.model.request.AddShoppingItemsRequest
+import com.eyther.lumbridge.features.shopping.data.network.model.request.DeleteShoppingListRequest
 import com.eyther.lumbridge.features.shopping.data.network.model.response.ShoppingItemResponse
 import com.eyther.lumbridge.features.shopping.data.network.model.response.ShoppingListResponse
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
@@ -29,27 +30,38 @@ class CommonShoppingDataSource(
 
     override fun stream(): Flow<AppResult<ShoppingSnapshotDomain>> {
         return combine(
-            access.watch("shopping_lists", context.id) {
-                access.selectHouseholdRows<ShoppingListResponse>("shopping_lists", context.id).map { it.toDomain() }
-            },
-            access.watch("shopping_items", context.id) {
-                access.selectHouseholdRows<ShoppingItemResponse>("shopping_items", context.id).map { it.toDomain() }
-            },
-        ) { lists, items ->
-            ShoppingSnapshotDomain(lists = lists, items = items)
-        }.asApiResult(mapError = Exception::toShoppingError)
+                access.watch("shopping_lists", context.id) {
+                    access
+                        .selectHouseholdRows<ShoppingListResponse>("shopping_lists", context.id)
+                        .map { it.toDomain() }
+                },
+                access.watch("shopping_items", context.id) {
+                    access
+                        .selectHouseholdRows<ShoppingItemResponse>("shopping_items", context.id)
+                        .map { it.toDomain() }
+                },
+            ) { lists, items ->
+                ShoppingSnapshotDomain(lists = lists, items = items)
+            }
+            .asApiResult(mapError = Exception::toShoppingError)
     }
 
-    override suspend fun addItems(items: List<ShoppingItemDomain>): AppResult<List<ShoppingItemDomain>> {
+    override suspend fun addItems(
+        items: List<ShoppingItemDomain>,
+    ): AppResult<List<ShoppingItemDomain>> {
         return safeApiCall(
             mapError = Exception::toShoppingError,
         ) {
-            val request = AddShoppingItemsRequest(
-                householdId = context.id,
-                items = items.map { it.toAddRequest() },
-            )
+            val request =
+                AddShoppingItemsRequest(
+                    householdId = context.id,
+                    items = items.map { it.toAddRequest() },
+                )
 
-            access.requireClient().postgrest.rpc("add_shopping_items", request)
+            access
+                .requireClient()
+                .postgrest
+                .rpc("add_shopping_items", request)
                 .decodeList<ShoppingItemResponse>()
                 .map { it.toDomain() }
         }
@@ -61,7 +73,10 @@ class CommonShoppingDataSource(
         ) {
             val request = item.toRequest(householdId = context.id)
 
-            access.requireClient().postgrest.rpc("save_shopping_item", request)
+            access
+                .requireClient()
+                .postgrest
+                .rpc("save_shopping_item", request)
                 .decodeAs<ShoppingItemResponse>()
                 .toDomain()
         }
@@ -73,9 +88,28 @@ class CommonShoppingDataSource(
         ) {
             val request = list.toRequest(householdId = context.id)
 
-            access.requireClient().postgrest.rpc("save_shopping_list", request)
+            access
+                .requireClient()
+                .postgrest
+                .rpc("save_shopping_list", request)
                 .decodeAs<ShoppingListResponse>()
                 .toDomain()
         }
     }
+
+    override suspend fun deleteList(list: ShoppingListDomain): AppResult<Unit> =
+        safeApiCall(mapError = Exception::toShoppingError) {
+            access
+                .requireClient()
+                .postgrest
+                .rpc(
+                    "delete_shopping_list",
+                    DeleteShoppingListRequest(
+                        householdId = context.id,
+                        id = list.id,
+                        version = list.version,
+                    ),
+                )
+            Unit
+        }
 }

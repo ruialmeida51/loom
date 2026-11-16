@@ -46,6 +46,7 @@ class RecurringExpensesScreenViewModel(
                             is AppResult.Success ->
                                 copy(
                                     account = result.value.account,
+                                    loading = false,
                                     rules =
                                         result.value.rules.sortedWith(
                                             compareBy<RecurringExpenseDomain> { it.cancelled }
@@ -55,7 +56,10 @@ class RecurringExpensesScreenViewModel(
                                 )
 
                             is AppResult.Failure ->
-                                copy(loadError = result.error.toExpensesTextResource())
+                                copy(
+                                    loadError = result.error.toExpensesTextResource(),
+                                    loading = false,
+                                )
                         }
                     }
             }

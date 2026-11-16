@@ -6,7 +6,7 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.analytics.data.local.datasource.CommonAnalyticsDataSource
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
-import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
+import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.EmailVerificationScreenViewModel
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.LoginScreenViewModel
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.RegisterScreenViewModel
@@ -55,7 +55,8 @@ class LoomGraphTest {
 
         override val configured: Boolean = true
 
-        override fun stream(): StateFlow<AuthSessionDomain?> = MutableStateFlow(null)
+        override fun stream(): StateFlow<AuthenticationStateDomain> =
+            MutableStateFlow(AuthenticationStateDomain.SignedOut)
 
         override suspend fun signInWithGoogle(): AppResult<Unit> = AppResult.Success(Unit)
 

@@ -97,6 +97,11 @@ internal fun BalancesHost(
                             onCreateAccount = {
                                 navigator.navigateTo(BalancesDestination.AccountForm())
                             },
+                            onEditAccount = { account ->
+                                navigator.navigateTo(
+                                    BalancesDestination.AccountForm(accountId = account.id),
+                                )
+                            },
                         ) {
                             ExpensesScreen(
                                 viewModel = overviewViewModel,
@@ -113,14 +118,6 @@ internal fun BalancesHost(
                                             accountId = expense.accountId,
                                             expenseId = expense.id,
                                         ),
-                                    )
-                                },
-                                onCreateAccount = {
-                                    navigator.navigateTo(BalancesDestination.AccountForm())
-                                },
-                                onEditAccount = { account ->
-                                    navigator.navigateTo(
-                                        BalancesDestination.AccountForm(accountId = account.id),
                                     )
                                 },
                                 onInsights = { navigator.navigateTo(BalancesDestination.Insights) },

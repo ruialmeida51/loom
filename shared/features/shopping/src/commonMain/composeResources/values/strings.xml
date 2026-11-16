@@ -73,4 +73,11 @@
         <item quantity="one">Completed (%1$d)</item>
         <item quantity="other">Completed (%1$d)</item>
     </plurals>
+    <string name="entry_retry">Retry</string>
+    <string name="lists_empty">Make room for your next list</string>
+    <string name="lists_empty_description">Create a checklist everyone in this household can use.</string>
+    <string name="lists_create">Create list</string>
+    <string name="list_delete">Delete list</string>
+    <string name="list_delete_title">Delete this list?</string>
+    <string name="list_delete_message">“%1$s” and all its items will be permanently deleted for everyone in this household.</string>
 </resources>

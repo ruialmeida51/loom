@@ -6,6 +6,7 @@ import com.eyther.lumbridge.features.authentication.data.fixtures.sessionRespons
 import com.eyther.lumbridge.features.authentication.data.network.config.configureLoomAuthentication
 import com.eyther.lumbridge.features.authentication.data.network.datasource.CommonAuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.errors.AuthenticationError
+import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import com.eyther.lumbridge.features.settings.domain.datasource.PushDeviceDataSource
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.MemoryCodeVerifierCache
@@ -21,7 +22,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -32,71 +33,110 @@ import kotlinx.serialization.json.jsonPrimitive
 
 class EmailVerificationDataSourceTest {
 
-    private val pushDevices = object : PushDeviceDataSource {
-        override suspend fun syncRegistration(): AppResult<Unit> = AppResult.Success(Unit)
+    private val pushDevices =
+        object : PushDeviceDataSource {
+            override suspend fun syncRegistration(): AppResult<Unit> = AppResult.Success(Unit)
 
-        override suspend fun unregisterCurrentDevice(): AppResult<Unit> = AppResult.Success(Unit)
-    }
+            override suspend fun unregisterCurrentDevice(): AppResult<Unit> =
+                AppResult.Success(Unit)
+        }
 
     @Test
     fun expiredCodesAndResendsUseTheExpectedAuthEndpointsAndKeepTypedFailures() = runTest {
         val paths = mutableListOf<String>()
-        val client = createSupabaseClient(supabaseUrl = "https://loom.test", supabaseKey = "test-key") {
-            install(Auth) {
-                autoLoadFromStorage = false
-                alwaysAutoRefresh = false
-            }
-            httpEngine = MockEngine { request ->
-                paths += request.url.encodedPath
-                val body = Json.parseToJsonElement((request.body as TextContent).text).jsonObject
-                assertEquals("member@example.com", body.getValue("email").jsonPrimitive.content)
-                if (request.url.encodedPath.endsWith("/verify")) {
-                    assertEquals("email", body.getValue("type").jsonPrimitive.content)
-                    assertEquals("001234", body.getValue("token").jsonPrimitive.content)
-                    respond(
-                        content = """{"code":403,"error_code":"otp_expired","msg":"opaque server text"}""",
-                        status = HttpStatusCode.Forbidden,
-                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                    )
-                } else if (request.url.encodedPath.endsWith("/resend")) {
-                    assertEquals("signup", body.getValue("type").jsonPrimitive.content)
-                    respond(content = "{}", headers = headersOf(HttpHeaders.ContentType, "application/json"))
-                } else {
-                    assertEquals("false", body.getValue("create_user").jsonPrimitive.content)
-                    respond(content = "{}", headers = headersOf(HttpHeaders.ContentType, "application/json"))
+        val client =
+            createSupabaseClient(supabaseUrl = "https://loom.test", supabaseKey = "test-key") {
+                install(Auth) {
+                    autoLoadFromStorage = false
+                    alwaysAutoRefresh = false
+                }
+                httpEngine = MockEngine { request ->
+                    paths += request.url.encodedPath
+                    val body =
+                        Json.parseToJsonElement((request.body as TextContent).text).jsonObject
+                    assertEquals("member@example.com", body.getValue("email").jsonPrimitive.content)
+                    if (request.url.encodedPath.endsWith("/verify")) {
+                        assertEquals("email", body.getValue("type").jsonPrimitive.content)
+                        assertEquals("001234", body.getValue("token").jsonPrimitive.content)
+                        respond(
+                            content =
+                                """{"code":403,"error_code":"otp_expired","msg":"opaque server text"}""",
+                            status = HttpStatusCode.Forbidden,
+                            headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                        )
+                    } else if (request.url.encodedPath.endsWith("/resend")) {
+                        assertEquals("signup", body.getValue("type").jsonPrimitive.content)
+                        respond(
+                            content = "{}",
+                            headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                        )
+                    } else {
+                        assertEquals("false", body.getValue("create_user").jsonPrimitive.content)
+                        respond(
+                            content = "{}",
+                            headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                        )
+                    }
                 }
             }
-        }
         try {
-            val source = CommonAuthenticationDataSource(access = SupabaseAccess(client = client), pushDevices = pushDevices)
+            val source =
+                CommonAuthenticationDataSource(
+                    access = SupabaseAccess(client = client),
+                    pushDevices = pushDevices,
+                )
             val result = source.verifyEmail(email = "member@example.com", code = "001234")
-            assertIs<AuthenticationError.VerificationCodeExpired>(assertIs<AppResult.Failure>(result).error)
-            assertIs<AppResult.Success<Unit>>(source.resendVerificationEmail(email = "member@example.com"))
+            assertIs<AuthenticationError.VerificationCodeExpired>(
+                assertIs<AppResult.Failure>(result).error,
+            )
+            assertIs<AppResult.Success<Unit>>(
+                source.resendVerificationEmail(email = "member@example.com"),
+            )
             assertIs<AppResult.Success<Unit>>(source.sendSignInCode(email = "member@example.com"))
             assertEquals(listOf("/auth/v1/verify", "/auth/v1/resend", "/auth/v1/otp"), paths)
         } finally {
             client.close()
         }
     }
+
     @Test
     fun emailCodesStillPublishASessionWithTheProductionPkceConfiguration() = runTest {
-        val client = createSupabaseClient(supabaseUrl = "https://loom.test", supabaseKey = "test-key") {
-            install(Auth) {
-                configureLoomAuthentication(sessionStorage = MemorySessionManager(), verifierCache = MemoryCodeVerifierCache())
-                autoLoadFromStorage = false
-                alwaysAutoRefresh = false
+        val client =
+            createSupabaseClient(supabaseUrl = "https://loom.test", supabaseKey = "test-key") {
+                install(Auth) {
+                    configureLoomAuthentication(
+                        sessionStorage = MemorySessionManager(),
+                        verifierCache = MemoryCodeVerifierCache(),
+                    )
+                    autoLoadFromStorage = false
+                    alwaysAutoRefresh = false
+                }
+                httpEngine = MockEngine {
+                    respond(
+                        content = sessionResponseFixture(),
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
             }
-            httpEngine = MockEngine {
-                respond(content = sessionResponseFixture(), headers = headersOf(HttpHeaders.ContentType, "application/json"))
-            }
-        }
         try {
-            val source = CommonAuthenticationDataSource(access = SupabaseAccess(client = client), pushDevices = pushDevices)
-            assertIs<AppResult.Success<Unit>>(source.verifyEmail(email = "member@example.com", code = "123456"))
-            val session = withContext(Dispatchers.Default) {
-                withTimeout(3000) { source.stream().filterNotNull().first() }
-            }
-            assertEquals("member@example.com", session.email)
+            val source =
+                CommonAuthenticationDataSource(
+                    access = SupabaseAccess(client = client),
+                    pushDevices = pushDevices,
+                )
+            assertIs<AppResult.Success<Unit>>(
+                source.verifyEmail(email = "member@example.com", code = "123456"),
+            )
+            val session =
+                withContext(Dispatchers.Default) {
+                    withTimeout(3000) {
+                        source
+                            .stream()
+                            .filterIsInstance<AuthenticationStateDomain.Authenticated>()
+                            .first()
+                    }
+                }
+            assertEquals("member@example.com", session.session.email)
         } finally {
             client.close()
         }
@@ -104,22 +144,31 @@ class EmailVerificationDataSourceTest {
 
     @Test
     fun aResponseWithoutASessionCannotClaimVerificationSucceeded() = runTest {
-        val client = createSupabaseClient(supabaseUrl = "https://loom.test", supabaseKey = "test-key") {
-            install(Auth) {
-                autoLoadFromStorage = false
-                alwaysAutoRefresh = false
+        val client =
+            createSupabaseClient(supabaseUrl = "https://loom.test", supabaseKey = "test-key") {
+                install(Auth) {
+                    autoLoadFromStorage = false
+                    alwaysAutoRefresh = false
+                }
+                httpEngine = MockEngine {
+                    respond(
+                        content = "{}",
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
             }
-            httpEngine = MockEngine {
-                respond(content = "{}", headers = headersOf(HttpHeaders.ContentType, "application/json"))
-            }
-        }
         try {
-            val source = CommonAuthenticationDataSource(access = SupabaseAccess(client = client), pushDevices = pushDevices)
+            val source =
+                CommonAuthenticationDataSource(
+                    access = SupabaseAccess(client = client),
+                    pushDevices = pushDevices,
+                )
             val result = source.verifyEmail(email = "member@example.com", code = "123456")
-            assertIs<AuthenticationError.VerificationFailed>(assertIs<AppResult.Failure>(result).error)
+            assertIs<AuthenticationError.VerificationFailed>(
+                assertIs<AppResult.Failure>(result).error,
+            )
         } finally {
             client.close()
         }
     }
-
 }

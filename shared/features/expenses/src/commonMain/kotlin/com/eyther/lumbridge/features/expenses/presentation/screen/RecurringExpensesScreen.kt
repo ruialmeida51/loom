@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomCard
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
@@ -59,6 +60,7 @@ fun RecurringExpensesScreen(
     InnerRecurringExpensesScreen(
         rules = state.rows,
         showEmpty = state.showEmpty,
+        loading = state.loading,
         busy = state.busy,
         error = state.displayError,
         currency = state.currency,
@@ -76,6 +78,7 @@ fun RecurringExpensesScreen(
 private fun InnerRecurringExpensesScreen(
     rules: List<RecurringExpenseUi>,
     showEmpty: Boolean,
+    loading: Boolean,
     busy: Boolean,
     error: TextResource?,
     currency: String,
@@ -107,6 +110,7 @@ private fun InnerRecurringExpensesScreen(
                 }
             }
         }
+        if (loading) item { LoadingRows() }
         if (showEmpty)
             item {
                 EmptyNotice(

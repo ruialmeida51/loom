@@ -4,6 +4,7 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.errors.AuthenticationError
 import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
+import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -12,7 +13,8 @@ internal class AuthenticationFixtureDataSource : AuthenticationDataSource {
 
     override val configured: Boolean = true
 
-    private val session = MutableStateFlow<AuthSessionDomain?>(null)
+    private val session =
+        MutableStateFlow<AuthenticationStateDomain>(AuthenticationStateDomain.SignedOut)
 
     var signInCodeCount: Int = 0
     var googleSignInCount: Int = 0
@@ -32,14 +34,18 @@ internal class AuthenticationFixtureDataSource : AuthenticationDataSource {
     override suspend fun signIn(email: String, password: String): AppResult<Unit> =
         AppResult.Failure(AuthenticationError.EmailNotConfirmed())
 
-    override suspend fun register(email: String, password: String): AppResult<Unit> = AppResult.Success(Unit)
+    override suspend fun register(email: String, password: String): AppResult<Unit> =
+        AppResult.Success(Unit)
 
     override suspend fun verifyEmail(email: String, code: String): AppResult<Unit> {
         if (code != "123456") {
             return AppResult.Failure(AuthenticationError.VerificationCodeExpired())
         }
 
-        session.value = AuthSessionDomain(userId = "test-member", email = email)
+        session.value =
+            AuthenticationStateDomain.Authenticated(
+                AuthSessionDomain(userId = "test-member", email = email),
+            )
         return AppResult.Success(Unit)
     }
 
@@ -54,7 +60,7 @@ internal class AuthenticationFixtureDataSource : AuthenticationDataSource {
     }
 
     override suspend fun signOut(): AppResult<Unit> {
-        session.value = null
+        session.value = AuthenticationStateDomain.SignedOut
         return AppResult.Success(Unit)
     }
 }

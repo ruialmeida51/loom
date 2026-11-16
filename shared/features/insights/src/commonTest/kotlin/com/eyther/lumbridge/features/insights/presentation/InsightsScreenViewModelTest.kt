@@ -94,6 +94,9 @@ class InsightsScreenViewModelTest {
                 override suspend fun selectAccount(id: String): AppResult<Unit> =
                     AppResult.Success(Unit)
 
+                override suspend fun deleteAccount(account: ExpenseAccountDomain): AppResult<Unit> =
+                    AppResult.Success(Unit)
+
                 override suspend fun saveAccount(account: ExpenseAccountDomain) =
                     AppResult.Success(account)
             }

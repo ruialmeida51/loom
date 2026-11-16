@@ -17,6 +17,14 @@ abstract class ExpensesScreenViewModelContract : LoomViewModel() {
 
     abstract fun onArchiveAccount(account: ExpenseAccountDomain)
 
+    abstract fun onManageAccountsVisibilityChanged(value: Boolean)
+
+    abstract fun onDeleteAccountRequested(account: ExpenseAccountDomain)
+
+    abstract fun onCancelDeleteAccount()
+
+    abstract fun onConfirmDeleteAccount()
+
     abstract fun onSuggestedRepayment(suggestion: SuggestedSettlementDomain)
 
     abstract fun onSettlementSheetVisibilityChanged(value: Boolean)

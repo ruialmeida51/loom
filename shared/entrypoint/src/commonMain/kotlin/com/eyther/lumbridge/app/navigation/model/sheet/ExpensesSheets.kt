@@ -7,5 +7,7 @@ import com.eyther.lumbridge.core.presentation.components.bottomsheet.model.Botto
 internal sealed interface ExpensesSheets : BottomSheetType {
     @Stable data object Accounts : ExpensesSheets
 
+    @Stable data object ManageAccounts : ExpensesSheets
+
     @Stable data object Settlement : ExpensesSheets
 }

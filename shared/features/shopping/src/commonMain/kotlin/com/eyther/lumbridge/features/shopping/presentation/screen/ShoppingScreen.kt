@@ -1,40 +1,56 @@
 package com.eyther.lumbridge.features.shopping.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
-import com.eyther.lumbridge.features.shopping.generated.resources.checklist_add
-import com.eyther.lumbridge.features.shopping.generated.resources.checklist_add_item
 import com.eyther.lumbridge.features.shopping.generated.resources.checklist_completed
+import com.eyther.lumbridge.features.shopping.generated.resources.lists_create
+import com.eyther.lumbridge.features.shopping.generated.resources.lists_empty
+import com.eyther.lumbridge.features.shopping.generated.resources.lists_empty_description
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_refresh_and_retry
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_shopping_lists
+import com.eyther.lumbridge.features.shopping.presentation.components.PendingShoppingItemRow
+import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingEntryRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingItemRow
+import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingEntryUi
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -49,13 +65,19 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
         showCompleted = state.showChecked,
         loading = state.loading,
         busy = state.busy,
+        savingItemIds = state.savingItemIds,
         inlineName = state.inlineName,
-        addingInline = state.addingInline,
+        pendingEntries = state.visiblePendingEntries,
+        entryRevision = state.entryRevision,
+        hasList = state.selectedList != null,
         canAddInline = state.canAddInline,
         inlineError = state.inlineError,
         error = state.displayError,
         onName = viewModel::onInlineNameChanged,
         onAdd = viewModel::onAddInlineItem,
+        onRetryEntry = viewModel::onRetryEntry,
+        onDiscardEntry = viewModel::onDiscardEntry,
+        onCreateList = { viewModel.onOpenListForm(null) },
         onShowLists = { viewModel.onListsVisibilityChanged(true) },
         onShowCompleted = viewModel::onCheckedItemsVisibilityChanged,
         onToggle = viewModel::onToggleItem,
@@ -71,19 +93,25 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
 @Composable
 private fun InnerShoppingScreen(
     selectedListName: String,
-    uncheckedItems: List<ShoppingItemDomain>,
-    completedItems: List<ShoppingItemDomain>,
-    moveTargets: List<ShoppingListDomain>,
+    uncheckedItems: ImmutableList<ShoppingItemDomain>,
+    completedItems: ImmutableList<ShoppingItemDomain>,
+    moveTargets: ImmutableList<ShoppingListDomain>,
     showCompleted: Boolean,
     loading: Boolean,
     busy: Boolean,
+    savingItemIds: ImmutableSet<String>,
     inlineName: String,
-    addingInline: Boolean,
+    pendingEntries: ImmutableList<ShoppingEntryUi>,
+    entryRevision: Long,
+    hasList: Boolean,
     canAddInline: Boolean,
     inlineError: TextResource?,
     error: TextResource?,
     onName: (String) -> Unit,
     onAdd: () -> Unit,
+    onRetryEntry: (String) -> Unit,
+    onDiscardEntry: (String) -> Unit,
+    onCreateList: () -> Unit,
     onShowLists: () -> Unit,
     onShowCompleted: (Boolean) -> Unit,
     onToggle: (ShoppingItemDomain) -> Unit,
@@ -94,20 +122,34 @@ private fun InnerShoppingScreen(
     onDismiss: () -> Unit,
     onRetry: () -> Unit,
 ) {
+    val listState = rememberLazyListState()
+    val entryVisibility = remember { BringIntoViewRequester() }
+    var entryFocused by remember { mutableStateOf(false) }
+    val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
+    val entryIndex = 1 + (if (error != null) 1 else 0) + uncheckedItems.size + pendingEntries.size
+    LaunchedEffect(entryRevision, keyboardHeight, entryFocused) {
+        if (entryFocused && !loading && hasList) {
+            listState.animateScrollToItem(entryIndex)
+            withFrameNanos {}
+            entryVisibility.bringIntoView()
+        }
+    }
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).testTag("shopping_content"),
+        state = listState,
+        modifier =
+            Modifier.fillMaxSize()
+                .imePadding()
+                .padding(horizontal = 16.dp)
+                .testTag("shopping_content"),
         contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        item {
-            TextButton(onClick = onShowLists, modifier = Modifier.testTag("manage_lists")) {
-                Text(
-                    text =
-                        selectedListName.ifBlank { stringResource(Res.string.ui_shopping_lists) },
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Text(" ⌄")
-            }
+        item(key = "list_selector") {
+            SelectorButton(
+                text = selectedListName.ifBlank { stringResource(Res.string.ui_shopping_lists) },
+                onClick = onShowLists,
+                modifier = Modifier.fillMaxWidth().testTag("manage_lists"),
+            )
         }
         error?.let { message ->
             item {
@@ -117,42 +159,63 @@ private fun InnerShoppingScreen(
                 }
             }
         }
-        if (loading) item { LoadingRows() }
-        items(uncheckedItems, key = { it.id }) { item ->
-            ShoppingItemRow(
-                item = item,
-                moveTargets = moveTargets,
-                busy = busy,
-                onToggle = onToggle,
-                onEdit = onEdit,
-                onRemove = onRemove,
-                onFavorite = onFavorite,
-                onMove = onMove,
-            )
-        }
-        item(key = "inline_entry") {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                OutlinedTextField(
-                    value = inlineName,
-                    onValueChange = onName,
-                    modifier = Modifier.weight(1f).testTag("shopping_inline_input"),
-                    placeholder = { Text(stringResource(Res.string.checklist_add_item)) },
-                    singleLine = true,
-                    isError = inlineError != null,
-                    supportingText = inlineError?.let { message -> { Text(message.getString()) } },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { onAdd() }),
-                )
-                TextButton(onClick = onAdd, enabled = canAddInline) {
-                    if (addingInline) CircularProgressIndicator()
-                    else Text(stringResource(Res.string.checklist_add))
+        if (loading) item(key = "loading") { LoadingRows() }
+        else if (!hasList && error == null)
+            item(key = "empty_lists") {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        stringResource(Res.string.lists_empty),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        stringResource(Res.string.lists_empty_description),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    LoomButton(
+                        text = stringResource(Res.string.lists_create),
+                        onClick = onCreateList,
+                    )
                 }
             }
-        }
-        if (completedItems.isNotEmpty()) {
+        if (!loading)
+            items(uncheckedItems, key = { it.id }, contentType = { "checklist_item" }) { item ->
+                ShoppingItemRow(
+                    item = item,
+                    moveTargets = moveTargets,
+                    busy = busy || item.id in savingItemIds,
+                    onToggle = onToggle,
+                    onEdit = onEdit,
+                    onRemove = onRemove,
+                    onFavorite = onFavorite,
+                    onMove = onMove,
+                )
+            }
+        if (!loading)
+            items(pendingEntries, key = { it.item.id }, contentType = { "checklist_item" }) { entry
+                ->
+                PendingShoppingItemRow(
+                    name = entry.item.name,
+                    error = entry.error,
+                    onRetry = { onRetryEntry(entry.item.id) },
+                    onDiscard = { onDiscardEntry(entry.item.id) },
+                )
+            }
+        if (!loading && hasList)
+            item(key = "inline_entry") {
+                ShoppingEntryRow(
+                    value = inlineName,
+                    enabled = !busy,
+                    canSubmit = canAddInline,
+                    onValue = onName,
+                    onSubmit = onAdd,
+                    modifier =
+                        Modifier.bringIntoViewRequester(entryVisibility).onFocusChanged {
+                            entryFocused = it.hasFocus
+                        },
+                )
+                inlineError?.let { Text(it.getString(), color = MaterialTheme.colorScheme.error) }
+            }
+        if (!loading && completedItems.isNotEmpty()) {
             item {
                 TextButton(
                     onClick = { onShowCompleted(!showCompleted) },
@@ -173,7 +236,7 @@ private fun InnerShoppingScreen(
                     ShoppingItemRow(
                         item = item,
                         moveTargets = moveTargets,
-                        busy = busy,
+                        busy = busy || item.id in savingItemIds,
                         onToggle = onToggle,
                         onEdit = onEdit,
                         onRemove = onRemove,

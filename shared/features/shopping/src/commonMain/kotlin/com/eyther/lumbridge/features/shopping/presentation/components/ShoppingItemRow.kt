@@ -26,12 +26,13 @@ import com.eyther.lumbridge.features.shopping.generated.resources.ui_favorite_re
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_item_options
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_move_to
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_remove
+import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ShoppingItemRow(
     item: ShoppingItemDomain,
-    moveTargets: List<ShoppingListDomain>,
+    moveTargets: ImmutableList<ShoppingListDomain>,
     busy: Boolean,
     onToggle: (ShoppingItemDomain) -> Unit,
     onEdit: (ShoppingItemDomain) -> Unit,

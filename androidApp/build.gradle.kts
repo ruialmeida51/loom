@@ -21,6 +21,7 @@ android {
         targetSdk = 37
         versionCode = releaseVersionCode
         versionName = releaseVersionName
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
         if (uploadStorePath != null) {
@@ -57,4 +58,8 @@ dependencies {
     implementation(projects.shared.core)
     implementation(projects.shared.features.settings)
     implementation(libs.activity.compose)
+    androidTestImplementation("org.jetbrains.compose.ui:ui-test-junit4:1.12.1")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
 }

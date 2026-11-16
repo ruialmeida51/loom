@@ -21,7 +21,10 @@ class DemoShoppingDataSource(private val store: DemoHouseholdStore) : ShoppingDa
             }
             item.validated()
         }
-        val saved = items.map { it.copy(version = 1) }
+        val nextPosition = (store.shopping.value.items.maxOfOrNull { it.position } ?: 0L) + 1
+        val saved = items.mapIndexed { index, item ->
+            item.copy(version = 1, position = nextPosition + index)
+        }
         store.shopping.update {
             it.copy(
                 items =
@@ -32,13 +35,15 @@ class DemoShoppingDataSource(private val store: DemoHouseholdStore) : ShoppingDa
     }
 
     override suspend fun saveItem(item: ShoppingItemDomain) = safeCall {
-        val before = store.shopping.value.items.firstOrNull { it.id == item.id } ?: throw ShoppingError.ItemNotFound()
+        val before =
+            store.shopping.value.items.firstOrNull { it.id == item.id }
+                ?: throw ShoppingError.ItemNotFound()
         requireDomain(before.version == item.version) {
             ShoppingError.ItemChanged()
         }
         requireDomain(store.shopping.value.activeLists.any { it.id == item.listId }) {
-                ShoppingError.ActiveListRequired()
-            }
+            ShoppingError.ActiveListRequired()
+        }
         val saved = item.validated().copy(version = item.version + 1)
         store.shopping.update {
             it.copy(items = it.items.map { old -> if (old.id == item.id) saved else old })
@@ -67,5 +72,18 @@ class DemoShoppingDataSource(private val store: DemoHouseholdStore) : ShoppingDa
         val saved = list.validated().copy(version = list.version + 1)
         store.shopping.update { it.copy(lists = it.lists.filterNot { it.id == list.id } + saved) }
         saved
+    }
+
+    override suspend fun deleteList(list: ShoppingListDomain): AppResult<Unit> = safeCall {
+        val existing = store.shopping.value.lists.firstOrNull { it.id == list.id }
+        requireDomain(existing == null || existing.version == list.version) {
+            ShoppingError.ListChanged()
+        }
+        store.shopping.update { snapshot ->
+            snapshot.copy(
+                lists = snapshot.lists.filterNot { it.id == list.id },
+                items = snapshot.items.filterNot { it.listId == list.id },
+            )
+        }
     }
 }

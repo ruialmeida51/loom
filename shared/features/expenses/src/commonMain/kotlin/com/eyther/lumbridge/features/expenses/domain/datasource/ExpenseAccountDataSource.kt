@@ -15,4 +15,6 @@ interface ExpenseAccountDataSource {
     suspend fun selectAccount(id: String): AppResult<Unit>
 
     suspend fun saveAccount(account: ExpenseAccountDomain): AppResult<ExpenseAccountDomain>
+
+    suspend fun deleteAccount(account: ExpenseAccountDomain): AppResult<Unit>
 }

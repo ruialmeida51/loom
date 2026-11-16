@@ -5,14 +5,17 @@ import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSour
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingSnapshotDomain
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class ShoppingEntryFixtureDataSource : ShoppingDataSource {
+    var deferItemWrites: Boolean = false
+    val itemWrites = mutableMapOf<String, CompletableDeferred<AppResult<ShoppingItemDomain>>>()
     val requests = mutableListOf<List<ShoppingItemDomain>>()
     val responses = Channel<AppResult<List<ShoppingItemDomain>>>(Channel.UNLIMITED)
-    private val snapshot =
+    val snapshot =
         MutableStateFlow<AppResult<ShoppingSnapshotDomain>>(
             AppResult.Success(
                 ShoppingSnapshotDomain(
@@ -35,8 +38,24 @@ class ShoppingEntryFixtureDataSource : ShoppingDataSource {
     }
 
     override suspend fun saveItem(item: ShoppingItemDomain): AppResult<ShoppingItemDomain> =
-        AppResult.Success(item)
+        if (deferItemWrites) {
+            CompletableDeferred<AppResult<ShoppingItemDomain>>()
+                .also { itemWrites[item.id] = it }
+                .await()
+        } else AppResult.Success(item)
 
     override suspend fun saveList(list: ShoppingListDomain): AppResult<ShoppingListDomain> =
         AppResult.Success(list)
+
+    override suspend fun deleteList(list: ShoppingListDomain): AppResult<Unit> {
+        val current = (snapshot.value as AppResult.Success).value
+        snapshot.value =
+            AppResult.Success(
+                current.copy(
+                    lists = current.lists.filterNot { it.id == list.id },
+                    items = current.items.filterNot { it.listId == list.id },
+                ),
+            )
+        return AppResult.Success(Unit)
+    }
 }

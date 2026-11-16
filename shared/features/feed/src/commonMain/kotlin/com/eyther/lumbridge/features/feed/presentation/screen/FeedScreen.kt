@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.ListRow
+import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
@@ -31,6 +33,7 @@ import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateO
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
 import com.eyther.lumbridge.features.feed.generated.resources.Res
+import com.eyther.lumbridge.features.feed.generated.resources.feed_retry
 import com.eyther.lumbridge.features.feed.generated.resources.ui_a_fresh_page
 import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_a_feed
 import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_an_rss_or_atom_feed_to_bring_your
@@ -49,11 +52,14 @@ fun FeedScreen(viewModel: FeedScreenViewModelContract, onOpen: (String) -> Unit)
     InnerFeedScreen(
         items = state.visibleArticles,
         unreadOnly = state.unreadOnly,
+        loading = state.loading,
+        hasLoaded = state.hasLoaded,
         error = state.displayError,
         onOpen = onOpen,
         onShowFollow = viewModel::onFollowSheetVisibilityChanged,
         onUnreadOnly = viewModel::onUnreadOnlyChanged,
         onDismiss = viewModel::onDismissError,
+        onRetry = viewModel::onRetry,
         onMarkRead = viewModel::onMarkRead,
     )
 }
@@ -62,11 +68,14 @@ fun FeedScreen(viewModel: FeedScreenViewModelContract, onOpen: (String) -> Unit)
 private fun InnerFeedScreen(
     items: List<ArticleDomain>,
     unreadOnly: Boolean,
+    loading: Boolean,
+    hasLoaded: Boolean,
     error: TextResource?,
     onOpen: (String) -> Unit,
     onShowFollow: (Boolean) -> Unit,
     onUnreadOnly: (Boolean) -> Unit,
     onDismiss: () -> Unit,
+    onRetry: () -> Unit,
     onMarkRead: (ArticleDomain, Boolean) -> Unit,
 ) {
     LazyColumn(
@@ -83,6 +92,7 @@ private fun InnerFeedScreen(
         error?.let { message ->
             item(key = "error") {
                 ErrorNotice(message = message, onDismiss = onDismiss)
+                FilledTonalButton(onClick = onRetry) { Text(stringResource(Res.string.feed_retry)) }
             }
         }
         item {
@@ -96,12 +106,13 @@ private fun InnerFeedScreen(
                     { onUnreadOnly(!unreadOnly) },
                     label = { Text(stringResource(Res.string.ui_unread_only)) },
                 )
-                TextButton(onClick = { onShowFollow(true) }) {
+                FilledTonalButton(onClick = { onShowFollow(true) }) {
                     Text(stringResource(Res.string.ui_follow_a_feed))
                 }
             }
         }
-        if (items.isEmpty())
+        if (loading) item { LoadingRows() }
+        if (hasLoaded && !loading && error == null && items.isEmpty())
             item {
                 EmptyNotice(
                     stringResource(Res.string.ui_a_fresh_page),

@@ -5,17 +5,20 @@ data class ShoppingSnapshotDomain(
     val items: List<ShoppingItemDomain> = emptyList(),
 ) {
 
-    val activeLists: List<ShoppingListDomain> = lists.filterNot { it.archived }.sortedBy { it.name.lowercase() }
+    val activeLists: List<ShoppingListDomain> =
+        lists.filterNot { it.archived }.sortedBy { it.name.lowercase() }
     private val activeListIds: Set<String> = activeLists.map { it.id }.toSet()
-    val activeItems: List<ShoppingItemDomain> = items.filter { !it.removed && it.listId in activeListIds }
+    val activeItems: List<ShoppingItemDomain> =
+        items.filter { !it.removed && it.listId in activeListIds }.sortedBy { it.position }
 
     fun resolveActiveListId(preferredId: String): String =
         activeLists.firstOrNull { it.id == preferredId }?.id
             ?: activeLists.firstOrNull { it.name == "Groceries" }?.id
             ?: activeLists.firstOrNull()?.id.orEmpty()
 
-    fun findReusableItem(listId: String, name: String): ShoppingItemDomain? =
-        items.firstOrNull { it.listId == listId && it.name.equals(name, ignoreCase = true) }
+    fun findReusableItem(listId: String, name: String): ShoppingItemDomain? = items.firstOrNull {
+        it.listId == listId && it.name.equals(name, ignoreCase = true)
+    }
 
     fun suggestions(listId: String): List<ShoppingItemDomain> =
         items

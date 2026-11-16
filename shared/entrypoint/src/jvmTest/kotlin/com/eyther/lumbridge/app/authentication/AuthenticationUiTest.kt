@@ -32,6 +32,7 @@ import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.di.applicationModules
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
+import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -74,12 +75,14 @@ class AuthenticationUiTest {
                 }
                 capture(name = "auth-login-light")
                 onNodeWithTag("auth_password").performTextInput("private password")
-                onNodeWithTag("auth_password").assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Password))
+                onNodeWithTag("auth_password")
+                    .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Password))
                 onNodeWithContentDescription("Show password").performClick()
                 assertPasswordDisplay(expected = "private password")
                 onNodeWithContentDescription("Hide password").performClick()
                 assertPasswordDisplay(expected = "•".repeat("private password".length))
-                onNodeWithTag("auth_password").assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Password))
+                onNodeWithTag("auth_password")
+                    .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Password))
                 onNodeWithText("New here? Create an account").performScrollTo().performClick()
                 onNodeWithText("Make yourself at home").assertExists()
                 capture(name = "auth-register-light")
@@ -96,12 +99,17 @@ class AuthenticationUiTest {
                 onNodeWithTag("verification_code").performTextInput("000000")
                 onNodeWithTag("verification_submit").performClick()
                 waitUntil(timeoutMillis = 5_000) {
-                    onAllNodesWithText("That code is invalid or has expired. Request a new code and try again.")
-                        .fetchSemanticsNodes().isNotEmpty()
+                    onAllNodesWithText(
+                            "That code is invalid or has expired. Request a new code and try again.",
+                        )
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
                 }
                 onNodeWithTag("verification_code").performTextReplacement("123456")
                 onNodeWithTag("verification_submit").performClick()
-                waitUntil(timeoutMillis = 5_000) { source.stream().value != null }
+                waitUntil(timeoutMillis = 5_000) {
+                    source.stream().value is AuthenticationStateDomain.Authenticated
+                }
             }
         } finally {
             graph.close()
@@ -125,7 +133,9 @@ class AuthenticationUiTest {
                 assertEquals(0, source.resendCount)
                 onNodeWithTag("verification_code").performTextInput("123456")
                 onNodeWithTag("verification_submit").performClick()
-                waitUntil(timeoutMillis = 5_000) { source.stream().value != null }
+                waitUntil(timeoutMillis = 5_000) {
+                    source.stream().value is AuthenticationStateDomain.Authenticated
+                }
             }
         } finally {
             graph.close()
@@ -154,13 +164,16 @@ class AuthenticationUiTest {
         }
     }
 
-    private fun authenticationGraph(source: AuthenticationDataSource): KoinApplication = koinApplication {
-        modules(applicationModules())
-        modules(module { single<AuthenticationDataSource> { source } })
-    }
+    private fun authenticationGraph(source: AuthenticationDataSource): KoinApplication =
+        koinApplication {
+            modules(applicationModules())
+            modules(module { single<AuthenticationDataSource> { source } })
+        }
 
     private fun ComposeUiTest.assertPasswordDisplay(expected: String) {
-        onNodeWithTag("auth_password").performSemanticsAction(SemanticsActions.GetTextLayoutResult) { getResults ->
+        onNodeWithTag("auth_password").performSemanticsAction(
+            SemanticsActions.GetTextLayoutResult,
+        ) { getResults ->
             val results = mutableListOf<TextLayoutResult>()
             assertTrue(getResults(results))
             assertEquals(expected, results.single().layoutInput.text.text)
@@ -181,9 +194,13 @@ class AuthenticationUiTest {
     private fun ComposeUiTest.capture(name: String) {
         waitForIdle()
         val bitmap = onNodeWithTag("auth_app").captureToImage()
-        val directory = File(System.getProperty("loom.screenshots.dir", "build/screenshots")).apply { mkdirs() }
-        File(directory, "$name.png").writeBytes(
-            Image.makeFromBitmap(bitmap.asSkiaBitmap()).encodeToData(EncodedImageFormat.PNG)!!.bytes,
-        )
+        val directory =
+            File(System.getProperty("loom.screenshots.dir", "build/screenshots")).apply { mkdirs() }
+        File(directory, "$name.png")
+            .writeBytes(
+                Image.makeFromBitmap(bitmap.asSkiaBitmap())
+                    .encodeToData(EncodedImageFormat.PNG)!!
+                    .bytes,
+            )
     }
 }

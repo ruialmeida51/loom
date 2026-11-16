@@ -9,16 +9,16 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDom
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplitUseCase
 import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesTextResource
-import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.SplitScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseSplitViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.SplitState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class SplitScreenViewModel(
-    private val params: SplitScreenViewModelContract.Params,
+class ExpenseSplitViewModel(
+    private val params: ExpenseSplitViewModelContract.Params,
     private val resolveExpenseSplitUseCase: ResolveExpenseSplitUseCase,
-) : SplitScreenViewModelContract() {
+) : ExpenseSplitViewModelContract() {
     private data class InnerInputState(
         val method: ExpenseSplitMethodDomain,
         val selected: Set<String>,
