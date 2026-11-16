@@ -1,6 +1,6 @@
 # Loom usability and stability pass
 
-Status: implementation complete; local checks, Android device checks and the iOS app build pass. Hosted migration confirmation and Firebase distribution remain. Reported symptoms are recorded below; underlying causes remain subject to the code and device audit. Current base is Loom 4.0.1. The shared app, 121 JVM tests and native Android tests pass; release artifacts build successfully. The hosted migration and Firebase distribution remain pending. The existing release-version/changelog automation remains in use.
+Status: implementation complete; local checks, Android device checks and the iOS app build pass. The hosted migration is applied and verified; Firebase distribution remains. Reported symptoms are recorded below; underlying causes remain subject to the code and device audit. Current base is Loom 4.0.1. The shared app, 121 JVM tests and native Android tests pass; release artifacts build successfully. The hosted migration is applied; Firebase distribution remains pending. The existing release-version/changelog automation remains in use.
 
 ## Complete working checklist
 
@@ -23,9 +23,9 @@ Status: implementation complete; local checks, Android device checks and the iOS
 - [x] COMPONENT-01: Reuse focused toolbar, selector, button, row, form/sheet and loading components. Preserve feature/domain ownership, typed errors, resources and dedicated demo code.
 - [x] DESIGN-01: Research Plannot, Google Keep, Tricount and suitable reminder/list references. Document the chosen interaction patterns and apply them consistently within Loom's brand.
 - [x] AUDIT-01: Record and address other confirmed usability/stability defects found during this pass. Keep added findings visible in this checklist.
-- [ ] RELEASE-01: Automatically distribute Firebase releases to the explicitly configured internal-testers group. The default aliases file is edited locally; this change is not released yet.
+- [x] RELEASE-01: Automatically distribute Firebase releases to the explicitly configured internal-testers group. The committed default aliases file contains internal-testers; the release workflow distributes to that group after each Firebase upload.
 - [x] ICON-01: Replace the single Android launcher PNG setup with proper adaptive, legacy density, round and themed-icon assets. Preserve the supplied logo and verify launcher masks/safe zones. Check Image Asset Studio availability and document the actual generation method.
-- [ ] VERIFY-01: Add meaningful regression coverage for the reported flows, including mobile keyboard and Back behavior where the environment supports it. Record verification limits; run the final ownership/package audit and relevant platform/release checks before distributing the update.
+- [x] VERIFY-01: Add meaningful regression coverage for the reported flows, including mobile keyboard and Back behavior where the environment supports it. Record verification limits; run the final ownership/package audit and relevant platform/release checks before distributing the update.
 
 ## Confirmed decisions
 
@@ -55,8 +55,8 @@ No actual user records are to be deleted as part of implementation/testing; dele
 - Common Kotlin metadata, debug APK, minified release APK and release AAB build successfully. The final visual text adjustment is covered by focused UI/native compilation and device checks.
 - All 13 migrations and authorization/ledger tests pass in a disposable PostgreSQL container, including a pre-existing archived-list upgrade fixture. No production user records were queried for validation. The UI suite also exercises final-list deletion/recreation and archived-trip deletion through the actual screen actions.
 - 28 Node tests, 7 Python tests, workflow lint and the feature/package/resource audit pass. The audit covers 18 destination screens and their contracts and 34 separate transport models.
-- Hosted schema metadata matches the migration's prerequisites. Supabase's migration confirmation expired twice; a follow-up metadata check confirms the new position column and deletion RPCs have **not** been applied. Do not distribute this client until that connector confirmation succeeds and the hosted schema/grants are verified.
+- Hosted migration `20261116001444_checklist_order_and_group_deletion` applied successfully after the fresh connector confirmation. Verified the non-null bigint ordering column, enabled metadata/position triggers, invoker public deletion wrappers, member-only execution, private definer checks, RLS, denied direct financial/list deletion and denied client sequence access. The local filename matches hosted history.
 - Supabase's preflight security advisor reported no table/view/RPC finding. Its existing [leaked-password-protection setting](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) is disabled.
-- Firebase's internal-testers default is configured in source. Upload/distribution and version allocation are pending the hosted migration and CI checks. No Play upload or GitHub release/tag is part of this Firebase update.
+- Firebase's internal-testers default is configured in source. Upload/distribution and version allocation are pending merge and the release workflow; all PR CI jobs pass. No Play upload or GitHub release/tag is part of this Firebase update.
 
 Android launcher source, generation method and review images are documented in [branding/android](../../branding/android/README.md). Plannot adaptations and external UX references are recorded in [the design language](../design-language.md).
