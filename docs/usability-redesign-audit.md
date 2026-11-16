@@ -50,7 +50,7 @@
 
 ## Verification
 
-- **144 shared JVM tests pass**, including **35 Compose UI tests**. New coverage checks independent
+- **144 shared JVM tests pass**, including **34 Compose UI tests** and a navigation-serialization test. New coverage checks independent
   reference reads, early typing, fresh retry, failed-save draft retention, snapshot expiry/scope,
   Home loading isolation, editable suggestions and Feed Back/scroll behavior.
 - Android debug and instrumentation APKs build. Shared screenshots cover light/dark, narrow layouts,
