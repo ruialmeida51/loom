@@ -7,7 +7,6 @@ import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -32,7 +31,8 @@ class HomeMoreUiTest {
             ThemePreferences.set("LIGHT")
             setContent { LoomDemoApp() }
             waitUntil(timeoutMillis = 10000) {
-                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                    onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
             for (tag in listOf("home_add_expense", "home_add_reminder")) {
                 val bounds = onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot

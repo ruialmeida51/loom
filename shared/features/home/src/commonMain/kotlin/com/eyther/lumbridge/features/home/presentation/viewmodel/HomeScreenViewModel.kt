@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.home.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
@@ -27,19 +28,21 @@ class HomeScreenViewModel(
         MutableStateFlow(HomeState(timeZone = context.timeZone)).observeWith(viewModelScope) { state
             ->
             refreshRequests
-                .flatMapLatest { getHomeOverviewStreamUseCase() }
+                .flatMapLatest { getHomeOverviewStreamUseCase().delayFirstAtLeast() }
                 .updateState(state) { result ->
                     when (result) {
                         is AppResult.Success ->
                             copy(
                                 overview = result.value,
                                 loading = false,
+                                refreshing = false,
                                 error = null,
                             )
 
                         is AppResult.Failure ->
                             copy(
                                 loading = false,
+                                refreshing = false,
                                 error = result.error.toTextResource(),
                             )
                     }
@@ -49,16 +52,16 @@ class HomeScreenViewModel(
     override val state = mutableState.asStateFlow()
 
     override fun onRetry() {
-        if (state.value.loading) return
+        if (state.value.refreshing) return
         mutableState.update { oldState ->
-            oldState.copy(loading = !oldState.hasOverview, error = null)
+            oldState.copy(refreshing = true, loading = !oldState.hasOverview, error = null)
         }
         refreshRequests.update { oldState -> oldState + 1 }
     }
 
     override fun onDismissError() {
         mutableState.update { oldState ->
-            oldState.copy(error = null)
+            oldState.copy(error = null, overview = oldState.overview?.copy(shoppingError = null))
         }
     }
 }

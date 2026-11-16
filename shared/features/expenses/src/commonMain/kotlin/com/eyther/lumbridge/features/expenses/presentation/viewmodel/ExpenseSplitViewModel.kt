@@ -13,6 +13,7 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.E
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.SplitState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
 class ExpenseSplitViewModel(
@@ -43,40 +44,44 @@ class ExpenseSplitViewModel(
                 SplitState(
                     total = MoneyDomain(params.amountMinor, params.currency).formatted(),
                     members = params.members,
+                    currency = params.currency,
                 ),
             )
             .observeWith(viewModelScope) { state ->
-                inputState.updateState(state) { input ->
-                    val result =
-                        resolveExpenseSplitUseCase(
-                            amountMinor = params.amountMinor,
-                            currency = params.currency,
+                inputState
+                    .map { input ->
+                        input to
+                            resolveExpenseSplitUseCase(
+                                amountMinor = params.amountMinor,
+                                currency = params.currency,
+                                method = input.method,
+                                participants = input.selected,
+                                custom = input.custom,
+                            )
+                    }
+                    .updateState(state) { (input, result) ->
+                        val selection = (result as? AppResult.Success)?.value
+                        val amounts =
+                            selection
+                                ?.let {
+                                    ExpenseSplitDomain.resolve(
+                                        amountMinor = params.amountMinor,
+                                        selection = it,
+                                    )
+                                }
+                                .orEmpty()
+                        copy(
                             method = input.method,
-                            participants = input.selected,
+                            selected = input.selected,
                             custom = input.custom,
+                            selection = selection,
+                            amounts =
+                                amounts.mapValues {
+                                    MoneyDomain(it.value, params.currency).formatted()
+                                },
+                            error = (result as? AppResult.Failure)?.error?.toExpensesTextResource(),
                         )
-                    val selection = (result as? AppResult.Success)?.value
-                    val amounts =
-                        selection
-                            ?.let {
-                                ExpenseSplitDomain.resolve(
-                                    amountMinor = params.amountMinor,
-                                    selection = it,
-                                )
-                            }
-                            .orEmpty()
-                    copy(
-                        method = input.method,
-                        selected = input.selected,
-                        custom = input.custom,
-                        selection = selection,
-                        amounts =
-                            amounts.mapValues {
-                                MoneyDomain(it.value, params.currency).formatted()
-                            },
-                        error = (result as? AppResult.Failure)?.error?.toExpensesTextResource(),
-                    )
-                }
+                    }
             }
     override val state = mutableState.asStateFlow()
 
@@ -128,6 +133,21 @@ class ExpenseSplitViewModel(
 
     override fun onCustomChanged(id: String, value: String) {
         inputState.update { oldState -> oldState.copy(custom = oldState.custom + (id to value)) }
+    }
+
+    override fun onCustomStepped(id: String, increase: Boolean) {
+        inputState.update { oldState ->
+            oldState.copy(
+                custom =
+                    oldState.custom +
+                        (id to
+                            oldState.method.steppedInput(
+                                value = oldState.custom[id].orEmpty(),
+                                currency = params.currency,
+                                increase = increase,
+                            )),
+            )
+        }
     }
 
     override fun onConfirm() {

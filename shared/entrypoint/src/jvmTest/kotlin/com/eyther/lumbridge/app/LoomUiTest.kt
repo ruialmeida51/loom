@@ -15,6 +15,7 @@ import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -28,6 +29,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.app.demo.LoomDemoApp
+import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import java.io.File
 import kotlin.test.Test
@@ -45,7 +47,8 @@ class LoomUiTest {
                 Box(Modifier.requiredSize(440.dp, 760.dp).testTag("loom_app")) { LoomDemoApp() }
             }
             waitUntil(timeoutMillis = 10_000) {
-                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                    onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithTag("navigation_more").performClick()
             onNodeWithText("Feed").performClick()
@@ -76,10 +79,12 @@ class LoomUiTest {
                 Box(Modifier.requiredSize(440.dp, 760.dp).testTag("loom_app")) { LoomDemoApp() }
             }
             waitUntil(timeoutMillis = 10000) {
-                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                    onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
             capture("home-light")
             onNodeWithTag("navigation_shopping").performClick()
+            awaitLoadedDestination(tag = "shopping_content")
             onNodeWithTag("shopping_inline_input")
                 .performScrollTo()
                 .performTextInput("Barista oat drink")
@@ -104,7 +109,8 @@ class LoomUiTest {
                 Box(Modifier.requiredSize(440.dp, 760.dp).testTag("loom_app")) { LoomDemoApp() }
             }
             waitUntil(timeoutMillis = 10000) {
-                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                    onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithText("Add expense").performScrollTo().performClick()
             onNodeWithTag("expense_title").performTextInput("Streaming service")
@@ -112,9 +118,11 @@ class LoomUiTest {
             capture("expense-form-light")
             onNodeWithText("Save expense").performClick()
             waitUntil(timeoutMillis = 5000) {
-                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                    onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithTag("navigation_money").performClick()
+            awaitLoadedDestination(tag = "expenses_content")
             onNodeWithTag("expenses_content").performScrollToNode(hasText("Streaming service"))
             onNodeWithText("Streaming service").assertExists()
             capture("money-light")

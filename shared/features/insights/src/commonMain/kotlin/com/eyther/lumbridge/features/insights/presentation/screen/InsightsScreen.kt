@@ -23,10 +23,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.LoomCard
 import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
+import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
@@ -64,25 +66,32 @@ fun InsightsScreen(
     context: HouseholdContextDomain,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    InnerInsightsScreen(
-        month = state.month,
-        statement = state.statement,
-        categoryRows = state.categoryRows,
-        busy = state.busy,
-        message = state.message,
-        error = state.displayError,
-        context = context,
-        onExport = viewModel::onExportStatement,
-        onPrevious = viewModel::onPreviousMonth,
-        onNext = viewModel::onNextMonth,
-        onDismiss = viewModel::onDismissMessage,
-        onSave = viewModel::onSaveStatement,
-    )
+    PullToRefreshContentContainer(
+        isRefreshing = state.refreshing,
+        onRefresh = viewModel::onRefresh,
+    ) {
+        InnerInsightsScreen(
+            month = state.month,
+            loading = state.loading || state.refreshing,
+            statement = state.statement,
+            categoryRows = state.categoryRows,
+            busy = state.busy,
+            message = state.message,
+            error = state.displayError,
+            context = context,
+            onExport = viewModel::onExportStatement,
+            onPrevious = viewModel::onPreviousMonth,
+            onNext = viewModel::onNextMonth,
+            onDismiss = viewModel::onDismissMessage,
+            onSave = viewModel::onSaveStatement,
+        )
+    }
 }
 
 @Composable
 private fun InnerInsightsScreen(
     month: String,
+    loading: Boolean,
     statement: MonthlyStatementDomain?,
     categoryRows: List<SpendingCategoryUi>,
     busy: Boolean,
@@ -133,117 +142,119 @@ private fun InnerInsightsScreen(
         message?.let { message ->
             item { Text(message.getString(), color = MaterialTheme.colorScheme.secondary) }
         }
-        statement?.let { statement ->
-            item {
-                LoomCard {
-                    Text(
-                        stringResource(Res.string.ui_household_spending),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                    Text(
-                        MoneyDomain(statement.totalMinor, statement.currency).formatted(),
-                        style = MaterialTheme.typography.displaySmall,
-                    )
-                    Text(
-                        pluralStringResource(
-                            Res.plurals.monthly_expense_count,
-                            statement.expenses.size,
-                            statement.expenses.size,
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            item {
-                LoomCard {
-                    SectionTitle(stringResource(Res.string.ui_your_month))
-                    StatementRow(
-                        stringResource(Res.string.ui_you_paid),
-                        statement.paidMinor,
-                        statement.currency,
-                    )
-                    StatementRow(
-                        stringResource(Res.string.ui_your_share),
-                        statement.shareMinor,
-                        statement.currency,
-                    )
-                    HorizontalDivider()
-                    StatementRow(
-                        stringResource(Res.string.ui_opening_balance),
-                        statement.openingBalanceMinor,
-                        statement.currency,
-                    )
-                    StatementRow(
-                        stringResource(Res.string.ui_closing_balance),
-                        statement.closingBalanceMinor,
-                        statement.currency,
-                    )
-                    Text(
-                        stringResource(
-                            Res.string.ui_a_positive_balance_means_you_re_owed_money_repayments,
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            item { SectionTitle(stringResource(Res.string.ui_where_it_went)) }
-            categoryRows.forEach { row ->
+        if (loading) item { LoadingRows() }
+        else
+            statement?.let { statement ->
                 item {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LoomCard {
+                        Text(
+                            stringResource(Res.string.ui_household_spending),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                        Text(
+                            MoneyDomain(statement.totalMinor, statement.currency).formatted(),
+                            style = MaterialTheme.typography.displaySmall,
+                        )
+                        Text(
+                            pluralStringResource(
+                                Res.plurals.monthly_expense_count,
+                                statement.expenses.size,
+                                statement.expenses.size,
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                item {
+                    LoomCard {
+                        SectionTitle(stringResource(Res.string.ui_your_month))
                         StatementRow(
-                            expenseCategoryLabel(row.category),
-                            row.amountMinor,
+                            stringResource(Res.string.ui_you_paid),
+                            statement.paidMinor,
                             statement.currency,
                         )
-                        Box(
-                            Modifier.fillMaxWidth()
-                                .height(7.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.surfaceVariant,
-                                    RoundedCornerShape(4.dp),
-                                ),
-                        ) {
+                        StatementRow(
+                            stringResource(Res.string.ui_your_share),
+                            statement.shareMinor,
+                            statement.currency,
+                        )
+                        HorizontalDivider()
+                        StatementRow(
+                            stringResource(Res.string.ui_opening_balance),
+                            statement.openingBalanceMinor,
+                            statement.currency,
+                        )
+                        StatementRow(
+                            stringResource(Res.string.ui_closing_balance),
+                            statement.closingBalanceMinor,
+                            statement.currency,
+                        )
+                        Text(
+                            stringResource(
+                                Res.string.ui_a_positive_balance_means_you_re_owed_money_repayments,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                item { SectionTitle(stringResource(Res.string.ui_where_it_went)) }
+                categoryRows.forEach { row ->
+                    item {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            StatementRow(
+                                expenseCategoryLabel(row.category),
+                                row.amountMinor,
+                                statement.currency,
+                            )
                             Box(
-                                Modifier.fillMaxWidth(row.progress)
+                                Modifier.fillMaxWidth()
                                     .height(7.dp)
                                     .background(
-                                        MaterialTheme.colorScheme.secondary,
+                                        MaterialTheme.colorScheme.surfaceVariant,
                                         RoundedCornerShape(4.dp),
                                     ),
-                            )
+                            ) {
+                                Box(
+                                    Modifier.fillMaxWidth(row.progress)
+                                        .height(7.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.secondary,
+                                            RoundedCornerShape(4.dp),
+                                        ),
+                                )
+                            }
                         }
                     }
                 }
-            }
-            item {
-                LoomButton(
-                    stringResource(Res.string.ui_export_statement_as_csv),
-                    {
-                        onExport(
-                            summaryHeader,
-                            expenseHeader,
-                            exportTitle,
-                        )
-                    },
-                    Modifier.fillMaxWidth(),
-                    enabled = !busy,
-                )
-            }
-            item {
-                OutlinedButton(
-                    onClick = onSave,
-                    enabled = !busy,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        if (busy) stringResource(Res.string.ui_saving)
-                        else stringResource(Res.string.ui_save_statement_snapshot),
+                item {
+                    LoomButton(
+                        stringResource(Res.string.ui_export_statement_as_csv),
+                        {
+                            onExport(
+                                summaryHeader,
+                                expenseHeader,
+                                exportTitle,
+                            )
+                        },
+                        Modifier.fillMaxWidth(),
+                        enabled = !busy,
                     )
                 }
+                item {
+                    OutlinedButton(
+                        onClick = onSave,
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            if (busy) stringResource(Res.string.ui_saving)
+                            else stringResource(Res.string.ui_save_statement_snapshot),
+                        )
+                    }
+                }
             }
-        }
     }
 }
 

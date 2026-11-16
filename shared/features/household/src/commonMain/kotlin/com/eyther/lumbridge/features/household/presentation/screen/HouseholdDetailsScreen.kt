@@ -17,6 +17,7 @@ import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.ListRow
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
@@ -35,18 +36,23 @@ fun HouseholdDetailsScreen(
     context: HouseholdContextDomain,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    InnerHouseholdDetailsScreen(
-        name = context.name,
-        currency = context.currency,
-        timeZone = context.timeZone,
-        members = state.members,
-        loading = state.loading,
-        busy = state.busy,
-        canInvite = state.canInvite,
-        error = state.error,
-        onInvite = viewModel::onCreateInvitation,
-        onDismiss = viewModel::onDismissError,
-    )
+    PullToRefreshContentContainer(
+        isRefreshing = state.refreshing,
+        onRefresh = viewModel::onRefresh,
+    ) {
+        InnerHouseholdDetailsScreen(
+            name = context.name,
+            currency = context.currency,
+            timeZone = context.timeZone,
+            members = state.members,
+            loading = state.loading || state.refreshing,
+            busy = state.busy,
+            canInvite = state.canInvite,
+            error = state.displayError,
+            onInvite = viewModel::onCreateInvitation,
+            onDismiss = viewModel::onDismissError,
+        )
+    }
 }
 
 @Composable
@@ -76,21 +82,22 @@ private fun InnerHouseholdDetailsScreen(
         }
         error?.let { message -> item { ErrorNotice(message = message, onDismiss = onDismiss) } }
         if (loading) item { LoadingRows() }
-        items(members, key = { it.id }) { member ->
-            ListRow {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(member.name, modifier = Modifier.weight(1f))
-                    Text(
-                        stringResource(
-                            if (member.role == "owner") Res.string.details_owner
-                            else Res.string.details_member,
-                        ),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+        if (!loading)
+            items(members, key = { it.id }) { member ->
+                ListRow {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(member.name, modifier = Modifier.weight(1f))
+                        Text(
+                            stringResource(
+                                if (member.role == "owner") Res.string.details_owner
+                                else Res.string.details_member,
+                            ),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
-        }
         if (canInvite)
             item {
                 LoomButton(

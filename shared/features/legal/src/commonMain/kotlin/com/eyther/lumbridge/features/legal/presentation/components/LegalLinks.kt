@@ -7,6 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.DestructiveButton
 import com.eyther.lumbridge.features.legal.domain.model.LegalDocumentDomain
 import com.eyther.lumbridge.features.legal.generated.resources.Res
 import com.eyther.lumbridge.features.legal.generated.resources.delete_account
@@ -29,9 +30,10 @@ fun LegalLinks(
             }
         }
         if (showAccountDeletion) {
-            TextButton(onClick = { onOpenDocument(LegalDocumentDomain.ACCOUNT_DELETION) }) {
-                Text(stringResource(Res.string.delete_account))
-            }
+            DestructiveButton(
+                text = stringResource(Res.string.delete_account),
+                onClick = { onOpenDocument(LegalDocumentDomain.ACCOUNT_DELETION) },
+            )
         }
     }
 }

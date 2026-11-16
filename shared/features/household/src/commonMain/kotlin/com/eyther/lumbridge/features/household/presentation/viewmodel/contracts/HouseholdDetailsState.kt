@@ -7,9 +7,12 @@ data class HouseholdDetailsState(
     val userId: String,
     val members: List<MemberDomain> = emptyList(),
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val busy: Boolean = false,
     val invitation: String? = null,
     val error: TextResource? = null,
+    val loadError: TextResource? = null,
 ) {
+    val displayError: TextResource? = error ?: loadError
     val canInvite: Boolean = members.firstOrNull { it.id == userId }?.role == "owner" && !busy
 }

@@ -8,6 +8,8 @@ abstract class RemindersScreenViewModelContract : LoomViewModel() {
 
     abstract val state: StateFlow<RemindersState>
 
+    abstract fun onRefresh()
+
     abstract fun onAddSheetVisibilityChanged(value: Boolean)
 
     abstract fun onTitleChanged(value: String)

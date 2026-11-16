@@ -11,13 +11,17 @@ import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.text.AnnotatedString
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -26,6 +30,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import java.io.File
+import kotlin.math.abs
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -39,13 +44,16 @@ class UsabilityDeviceTest {
     @Before
     fun awaitHome() {
         compose.waitUntil(timeoutMillis = 15_000) {
-            compose.onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+            compose.onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty()
         }
     }
 
     @Test
     fun continuousEntryStaysFocusedAndAboveTheRealKeyboardOnALongList() {
         compose.onNodeWithTag("navigation_shopping").performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("shopping_inline_input").fetchSemanticsNodes().isNotEmpty()
+        }
         repeat(30) { index ->
             val input = compose.onNodeWithTag("shopping_inline_input")
             input.performScrollTo().performClick().performTextInput("Checklist item $index")
@@ -92,12 +100,19 @@ class UsabilityDeviceTest {
     @Test
     fun cancellingSplitAndBackgroundingRetainTheExpenseDraftThenBackReturnsToBalances() {
         compose.onNodeWithTag("navigation_money").performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("add_expense").fetchSemanticsNodes().isNotEmpty()
+        }
         compose.onNodeWithTag("add_expense").performClick()
         compose.onNodeWithTag("expense_title").performTextInput("Holiday groceries")
         compose.onNodeWithTag("expense_amount").performTextInput("30.00")
         hideKeyboard()
         compose.onNodeWithText("Split", substring = false).performScrollTo().performClick()
         compose.onNodeWithText("By shares").performClick()
+        compose.onNodeWithContentDescription("Increase share for You").performClick()
+        compose.onNodeWithContentDescription("Share for You").assertTextContains("2")
+        compose.onNodeWithContentDescription("Decrease share for You").performClick()
+        compose.onNodeWithContentDescription("Share for You").assertTextContains("1")
         capture(name = "expense-split-sheet")
         device.pressBack()
         compose.onNodeWithTag("expense_title").assertTextContains("Holiday groceries")
@@ -110,6 +125,59 @@ class UsabilityDeviceTest {
         compose.onNodeWithTag("expense_title").assertDoesNotExist()
         device.pressBack()
         awaitDestination(tag = "home_content")
+    }
+
+    @Test
+    fun checkboxGeometryAndDraftSurviveSavingAndPullToRefresh() {
+        compose.onNodeWithTag("navigation_shopping").performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("shopping_inline_input").fetchSemanticsNodes().isNotEmpty()
+        }
+        val input = compose.onNodeWithTag("shopping_inline_input")
+        input.performScrollTo().performClick().performTextInput("Aligned grocery")
+        val inputLeft = input.fetchSemanticsNode().boundsInWindow.left
+        val checkboxCenter =
+            compose
+                .onNodeWithTag("shopping_entry_checkbox")
+                .fetchSemanticsNode()
+                .boundsInWindow
+                .center
+                .x
+        input.performImeAction()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("check_Aligned grocery").fetchSemanticsNodes().isNotEmpty()
+        }
+        val savedCenter =
+            compose
+                .onNodeWithTag("check_Aligned grocery")
+                .fetchSemanticsNode()
+                .boundsInWindow
+                .center
+                .x
+        val savedLeft =
+            compose.onNodeWithTag("edit_Aligned grocery").fetchSemanticsNode().boundsInWindow.left
+        assertTrue(
+            "Saving must not move the checkbox column",
+            abs(savedCenter - checkboxCenter) <= 2f,
+        )
+        assertTrue("Saving must not move the text column", abs(savedLeft - inputLeft) <= 2f)
+        input.performTextInput("Next grocery draft")
+        hideKeyboard()
+        compose.onNodeWithTag("shopping_content").performScrollToIndex(0)
+        compose.onNodeWithTag("shopping_content").performTouchInput {
+            swipeDown(startY = height * .15f, endY = height * .8f, durationMillis = 600)
+        }
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isNotEmpty()
+        }
+        capture(name = "shopping-refresh-skeleton")
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
+        }
+        compose
+            .onNodeWithTag("shopping_inline_input")
+            .performScrollTo()
+            .assertTextContains("Next grocery draft")
     }
 
     private fun capture(name: String) {

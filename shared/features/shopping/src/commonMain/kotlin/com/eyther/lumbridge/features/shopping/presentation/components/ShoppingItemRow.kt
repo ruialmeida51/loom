@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -12,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
@@ -34,6 +37,9 @@ fun ShoppingItemRow(
     item: ShoppingItemDomain,
     moveTargets: ImmutableList<ShoppingListDomain>,
     busy: Boolean,
+    selectionMode: Boolean = false,
+    selected: Boolean = false,
+    onSelect: () -> Unit = {},
     onToggle: (ShoppingItemDomain) -> Unit,
     onEdit: (ShoppingItemDomain) -> Unit,
     onRemove: (ShoppingItemDomain) -> Unit,
@@ -46,15 +52,21 @@ fun ShoppingItemRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Checkbox(
-                checked = item.checked,
-                onCheckedChange = { onToggle(item) },
+                checked = if (selectionMode) selected else item.checked,
+                onCheckedChange = { if (selectionMode) onSelect() else onToggle(item) },
                 enabled = !busy,
-                modifier = Modifier.testTag("check_${item.name}"),
+                modifier =
+                    Modifier.size(48.dp).testTag("check_${item.name}").semantics {
+                        contentDescription = item.name
+                    },
             )
             Column(
                 modifier =
                     Modifier.weight(1f)
-                        .clickable(enabled = !busy, onClick = { onEdit(item) })
+                        .clickable(
+                            enabled = !busy,
+                            onClick = { if (selectionMode) onSelect() else onEdit(item) },
+                        )
                         .testTag("edit_${item.name}"),
             ) {
                 Text(
@@ -71,51 +83,52 @@ fun ShoppingItemRow(
                     )
             }
             if (item.favorite) Text(text = "★", color = MaterialTheme.colorScheme.primary)
-            ActionMenu(
-                contentDescription = stringResource(Res.string.ui_item_options, item.name),
-                modifier = Modifier.testTag("actions_${item.name}"),
-                items =
-                    buildList {
-                        add(
-                            ActionMenuItem(
-                                text = TextResource.Resource(Res.string.ui_edit),
-                                onClick = { onEdit(item) },
-                                enabled = !busy,
-                            ),
-                        )
-                        add(
-                            ActionMenuItem(
-                                text =
-                                    TextResource.Resource(
-                                        if (item.favorite) Res.string.ui_favorite_remove
-                                        else Res.string.ui_favorite_add,
-                                    ),
-                                onClick = { onFavorite(item) },
-                                enabled = !busy,
-                            ),
-                        )
-                        moveTargets.forEach { target ->
+            if (!selectionMode)
+                ActionMenu(
+                    contentDescription = stringResource(Res.string.ui_item_options, item.name),
+                    modifier = Modifier.testTag("actions_${item.name}"),
+                    items =
+                        buildList {
+                            add(
+                                ActionMenuItem(
+                                    text = TextResource.Resource(Res.string.ui_edit),
+                                    onClick = { if (selectionMode) onSelect() else onEdit(item) },
+                                    enabled = !busy,
+                                ),
+                            )
                             add(
                                 ActionMenuItem(
                                     text =
                                         TextResource.Resource(
-                                            Res.string.ui_move_to,
-                                            args = listOf(target.name),
+                                            if (item.favorite) Res.string.ui_favorite_remove
+                                            else Res.string.ui_favorite_add,
                                         ),
-                                    onClick = { onMove(item, target.id) },
+                                    onClick = { onFavorite(item) },
                                     enabled = !busy,
                                 ),
                             )
-                        }
-                        add(
-                            ActionMenuItem(
-                                text = TextResource.Resource(Res.string.ui_remove),
-                                onClick = { onRemove(item) },
-                                enabled = !busy,
-                            ),
-                        )
-                    },
-            )
+                            moveTargets.forEach { target ->
+                                add(
+                                    ActionMenuItem(
+                                        text =
+                                            TextResource.Resource(
+                                                Res.string.ui_move_to,
+                                                args = listOf(target.name),
+                                            ),
+                                        onClick = { onMove(item, target.id) },
+                                        enabled = !busy,
+                                    ),
+                                )
+                            }
+                            add(
+                                ActionMenuItem(
+                                    text = TextResource.Resource(Res.string.ui_remove),
+                                    onClick = { onRemove(item) },
+                                    enabled = !busy,
+                                ),
+                            )
+                        },
+                )
         }
     }
 }

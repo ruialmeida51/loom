@@ -33,42 +33,125 @@ import kotlinx.serialization.json.put
 
 class CommonShoppingDataSourceTest {
 
-    private val context = HouseholdContextDomain(
-        id = "home",
-        userId = "alice",
-        name = "Our home",
-        currency = "EUR",
-        timeZone = "Europe/Lisbon",
-    )
+    private val context =
+        HouseholdContextDomain(
+            id = "home",
+            userId = "alice",
+            name = "Our home",
+            currency = "EUR",
+            timeZone = "Europe/Lisbon",
+        )
+
+    @Test
+    fun completedRemovalPreservesListScopeAndEverySelectedVersion() = runTest {
+        var path: String? = null
+        var body: JsonObject? = null
+        val client =
+            createSupabaseClient("https://loom.test", "test-key") {
+                install(Postgrest)
+                httpEngine = MockEngine { request ->
+                    path = request.url.encodedPath
+                    body =
+                        Json.decodeFromString<JsonObject>(
+                            request.body.toByteArray().decodeToString(),
+                        )
+                    respond(
+                        content = "[]",
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+            }
+        try {
+            val source =
+                CommonShoppingDataSource(access = SupabaseAccess(client), context = context)
+            source
+                .removeCompletedItems(
+                    items =
+                        listOf(
+                            ShoppingItemDomain(
+                                "milk",
+                                "Milk",
+                                "",
+                                "Other",
+                                true,
+                                "food",
+                                version = 7,
+                            ),
+                        ),
+                )
+                .getOrThrow()
+            assertEquals("/rest/v1/rpc/remove_completed_shopping_items", path)
+            assertEquals("home", body?.get("p_household_id")?.jsonPrimitive?.content)
+            assertEquals("food", body?.get("p_list_id")?.jsonPrimitive?.content)
+            assertEquals(7L, (body?.get("p_versions") as JsonObject)["milk"]?.jsonPrimitive?.long)
+        } finally {
+            client.close()
+        }
+    }
+
+    @Test
+    fun invalidCompletedSelectionUsesItsOwnTypedFailure() = runTest {
+        val client = errorClient("P0001", "shopping.message_invalid_completed_selection")
+        try {
+            val result =
+                CommonShoppingDataSource(access = SupabaseAccess(client), context = context)
+                    .removeCompletedItems(
+                        items =
+                            listOf(
+                                ShoppingItemDomain(
+                                    "milk",
+                                    "Milk",
+                                    "",
+                                    "Other",
+                                    true,
+                                    "food",
+                                    version = 1,
+                                ),
+                            ),
+                    )
+            assertIs<ShoppingError.InvalidCompletedSelection>(
+                assertIs<AppResult.Failure>(result).error,
+            )
+        } finally {
+            client.close()
+        }
+    }
 
     @Test
     fun itemWritesKeepWireFieldNamesVersionsAndHouseholdScope() = runTest {
         var requestPath: String? = null
         var requestBody: JsonObject? = null
-        val client = createSupabaseClient("https://loom.test", "test-key") {
-            install(Postgrest)
-            httpEngine = MockEngine { request ->
-                requestPath = request.url.encodedPath
-                requestBody = Json.decodeFromString<JsonObject>(request.body.toByteArray().decodeToString())
-                respond(
-                    content = """{"id":"milk","name":"Milk","quantity":"2","category":"Pantry","checked":false,"list_id":"food","version":4,"removed":false,"favorite":true}""",
-                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
-                )
+        val client =
+            createSupabaseClient("https://loom.test", "test-key") {
+                install(Postgrest)
+                httpEngine = MockEngine { request ->
+                    requestPath = request.url.encodedPath
+                    requestBody =
+                        Json.decodeFromString<JsonObject>(
+                            request.body.toByteArray().decodeToString(),
+                        )
+                    respond(
+                        content =
+                            """{"id":"milk","name":"Milk","quantity":"2","category":"Pantry","checked":false,"list_id":"food","version":4,"removed":false,"favorite":true}""",
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
             }
-        }
 
         try {
-            val source = CommonShoppingDataSource(access = SupabaseAccess(client), context = context)
-            val item = ShoppingItemDomain(
-                id = "milk",
-                name = "Milk",
-                quantity = "2",
-                category = "Pantry",
-                checked = false,
-                listId = "food",
-                version = 3,
-                favorite = true,
-            )
+            val source =
+                CommonShoppingDataSource(access = SupabaseAccess(client), context = context)
+            val item =
+                ShoppingItemDomain(
+                    id = "milk",
+                    name = "Milk",
+                    quantity = "2",
+                    category = "Pantry",
+                    checked = false,
+                    listId = "food",
+                    version = 3,
+                    favorite = true,
+                )
             val saved = SaveShoppingItemUseCase(source)(item).getOrThrow()
 
             assertEquals("/rest/v1/rpc/save_shopping_item", requestPath)
@@ -83,13 +166,19 @@ class CommonShoppingDataSourceTest {
 
     @Test
     fun optimisticConcurrencyIsTypedBeforeItReachesTheUseCase() = runTest {
-        val client = errorClient("P0001", "shopping.message_this_item_changed_refresh_before_undoing_or_editing_it")
+        val client =
+            errorClient(
+                "P0001",
+                "shopping.message_this_item_changed_refresh_before_undoing_or_editing_it",
+            )
 
         try {
-            val source = CommonShoppingDataSource(access = SupabaseAccess(client), context = context)
+            val source =
+                CommonShoppingDataSource(access = SupabaseAccess(client), context = context)
             val item = ShoppingItemDomain("milk", "Milk", "", "Pantry", false, "food", version = 1)
             val result = SaveShoppingItemUseCase(source)(item)
-            val error = assertIs<ShoppingError.ItemChanged>(assertIs<AppResult.Failure>(result).error)
+            val error =
+                assertIs<ShoppingError.ItemChanged>(assertIs<AppResult.Failure>(result).error)
 
             assertIs<PostgrestRestException>(error.cause)
         } finally {
@@ -99,21 +188,31 @@ class CommonShoppingDataSourceTest {
 
     @Test
     fun uniquenessIsRecognizedOnlyForTheExpectedConstraintAndSqlState() = runTest {
-        val client = errorClient("23505", "duplicate key value violates unique constraint \"shopping_lists_active_name_idx\"")
+        val client =
+            errorClient(
+                "23505",
+                "duplicate key value violates unique constraint \"shopping_lists_active_name_idx\"",
+            )
 
         try {
-            val result = CommonShoppingDataSource(SupabaseAccess(client), context)
-                .saveList(ShoppingListDomain("food", "Groceries"))
+            val result =
+                CommonShoppingDataSource(SupabaseAccess(client), context)
+                    .saveList(ShoppingListDomain("food", "Groceries"))
 
             assertIs<ShoppingError.ListNameAlreadyExists>(assertIs<AppResult.Failure>(result).error)
         } finally {
             client.close()
         }
 
-        val unrelated = errorClient("23505", "duplicate key value violates unique constraint \"shopping_lists_pkey\"")
+        val unrelated =
+            errorClient(
+                "23505",
+                "duplicate key value violates unique constraint \"shopping_lists_pkey\"",
+            )
         try {
-            val result = CommonShoppingDataSource(SupabaseAccess(unrelated), context)
-                .saveList(ShoppingListDomain("food", "Groceries"))
+            val result =
+                CommonShoppingDataSource(SupabaseAccess(unrelated), context)
+                    .saveList(ShoppingListDomain("food", "Groceries"))
 
             assertIs<CommonError.Unknown>(assertIs<AppResult.Failure>(result).error)
         } finally {
@@ -123,14 +222,18 @@ class CommonShoppingDataSourceTest {
 
     @Test
     fun partialOrUnrelatedServerMessagesDoNotMatchDomainErrors() = runTest {
-        for ((code, message) in listOf(
-            "23514" to "shopping.message_this_item_changed_refresh_before_undoing_or_editing_it",
-            "P0001" to "prefix shopping.message_this_item_changed_refresh_before_undoing_or_editing_it suffix",
-        )) {
+        for ((code, message) in
+            listOf(
+                "23514" to
+                    "shopping.message_this_item_changed_refresh_before_undoing_or_editing_it",
+                "P0001" to
+                    "prefix shopping.message_this_item_changed_refresh_before_undoing_or_editing_it suffix",
+            )) {
             val client = errorClient(code, message)
             try {
-                val result = CommonShoppingDataSource(SupabaseAccess(client), context)
-                    .saveList(ShoppingListDomain("food", "Groceries"))
+                val result =
+                    CommonShoppingDataSource(SupabaseAccess(client), context)
+                        .saveList(ShoppingListDomain("food", "Groceries"))
 
                 assertIs<CommonError.Unknown>(assertIs<AppResult.Failure>(result).error)
             } finally {
@@ -152,20 +255,21 @@ class CommonShoppingDataSourceTest {
         }
     }
 
-    private fun errorClient(code: String, message: String) = createSupabaseClient("https://loom.test", "test-key") {
-        install(Postgrest)
-        httpEngine = MockEngine {
-            val body = buildJsonObject {
-                put("code", code)
-                put("message", message)
-                put("details", "")
-                put("hint", "")
+    private fun errorClient(code: String, message: String) =
+        createSupabaseClient("https://loom.test", "test-key") {
+            install(Postgrest)
+            httpEngine = MockEngine {
+                val body = buildJsonObject {
+                    put("code", code)
+                    put("message", message)
+                    put("details", "")
+                    put("hint", "")
+                }
+                respond(
+                    content = body.toString(),
+                    status = HttpStatusCode.BadRequest,
+                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                )
             }
-            respond(
-                content = body.toString(),
-                status = HttpStatusCode.BadRequest,
-                headers = headersOf(HttpHeaders.ContentType, "application/json"),
-            )
         }
-    }
 }

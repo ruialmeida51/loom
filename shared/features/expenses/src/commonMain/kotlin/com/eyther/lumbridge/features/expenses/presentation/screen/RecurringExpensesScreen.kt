@@ -18,10 +18,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.DestructiveButton
 import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
@@ -57,21 +59,23 @@ fun RecurringExpensesScreen(
     viewModel: RecurringExpensesScreenViewModelContract,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    InnerRecurringExpensesScreen(
-        rules = state.rows,
-        showEmpty = state.showEmpty,
-        loading = state.loading,
-        busy = state.busy,
-        error = state.displayError,
-        currency = state.currency,
-        cancellation = state.cancellation,
-        onCancelRequested = viewModel::onCancelRequested,
-        onCancelDismissed = viewModel::onCancelDismissed,
-        onCancelConfirmed = viewModel::onCancelConfirmed,
-        onControl = viewModel::onControlSchedule,
-        onRetry = viewModel::onRetry,
-        onDismiss = viewModel::onDismissError,
-    )
+    PullToRefreshContentContainer(isRefreshing = state.refreshing, onRefresh = viewModel::onRetry) {
+        InnerRecurringExpensesScreen(
+            rules = state.rows,
+            showEmpty = state.showEmpty,
+            loading = state.loading || state.refreshing,
+            busy = state.busy,
+            error = state.displayError,
+            currency = state.currency,
+            cancellation = state.cancellation,
+            onCancelRequested = viewModel::onCancelRequested,
+            onCancelDismissed = viewModel::onCancelDismissed,
+            onCancelConfirmed = viewModel::onCancelConfirmed,
+            onControl = viewModel::onControlSchedule,
+            onRetry = viewModel::onRetry,
+            onDismiss = viewModel::onDismissError,
+        )
+    }
 }
 
 @Composable
@@ -111,77 +115,80 @@ private fun InnerRecurringExpensesScreen(
             }
         }
         if (loading) item { LoadingRows() }
-        if (showEmpty)
+        if (showEmpty && !loading)
             item {
                 EmptyNotice(
                     stringResource(Res.string.ui_no_recurring_expenses_yet),
                     stringResource(Res.string.ui_rent_internet_and_subscriptions_can_live_here),
                 )
             }
-        items(rules, key = { it.rule.id }) { row ->
-            val rule = row.rule
-            LoomCard {
-                Text(rule.title, style = MaterialTheme.typography.titleLarge)
-                Text(
-                    stringResource(
-                        Res.string.ui_1_s_monthly,
-                        MoneyDomain(rule.amountMinor, currency).formatted(),
-                    ),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    when (rule.status) {
-                        RecurringExpenseStatusDomain.ACTIVE -> stringResource(Res.string.ui_active)
-                        RecurringExpenseStatusDomain.PAUSED -> stringResource(Res.string.ui_paused)
-                        RecurringExpenseStatusDomain.CANCELLED ->
-                            stringResource(Res.string.ui_cancelled)
-                    },
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-                if (rule.active) Text(stringResource(Res.string.ui_next_entry_1_s, rule.nextOn))
-                if (!rule.cancelled) Text(stringResource(Res.string.ui_monthly_day, rule.anchorDay))
-                Text(
-                    stringResource(
-                        Res.string.ui_payer_1_s,
-                        row.payerName ?: stringResource(Res.string.ui_former_member),
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                if (row.canManage)
-                    Row {
-                        TextButton(
-                            onClick = {
-                                onControl(
-                                    rule,
-                                    row.toggleAction,
-                                )
-                            },
-                            enabled = !busy,
-                            modifier = Modifier.testTag("toggle_recurring_${rule.title}"),
-                        ) {
-                            Text(
-                                if (rule.active) stringResource(Res.string.ui_pause)
-                                else stringResource(Res.string.ui_resume),
-                            )
-                        }
-                        TextButton(
-                            onClick = { onCancelRequested(rule) },
-                            enabled = !busy,
-                            modifier = Modifier.testTag("cancel_recurring_${rule.title}"),
-                        ) {
-                            Text(stringResource(Res.string.ui_cancel_schedule))
-                        }
-                    }
-                if (row.isPaused)
+        if (!loading)
+            items(rules, key = { it.rule.id }) { row ->
+                val rule = row.rule
+                LoomCard {
+                    Text(rule.title, style = MaterialTheme.typography.titleLarge)
                     Text(
                         stringResource(
-                            Res.string
-                                .ui_resuming_schedules_the_next_future_entry_paused_months_are,
+                            Res.string.ui_1_s_monthly,
+                            MoneyDomain(rule.amountMinor, currency).formatted(),
+                        ),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        when (rule.status) {
+                            RecurringExpenseStatusDomain.ACTIVE ->
+                                stringResource(Res.string.ui_active)
+                            RecurringExpenseStatusDomain.PAUSED ->
+                                stringResource(Res.string.ui_paused)
+                            RecurringExpenseStatusDomain.CANCELLED ->
+                                stringResource(Res.string.ui_cancelled)
+                        },
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                    if (rule.active) Text(stringResource(Res.string.ui_next_entry_1_s, rule.nextOn))
+                    if (!rule.cancelled)
+                        Text(stringResource(Res.string.ui_monthly_day, rule.anchorDay))
+                    Text(
+                        stringResource(
+                            Res.string.ui_payer_1_s,
+                            row.payerName ?: stringResource(Res.string.ui_former_member),
                         ),
                         style = MaterialTheme.typography.bodySmall,
                     )
+                    if (row.canManage)
+                        Row {
+                            TextButton(
+                                onClick = {
+                                    onControl(
+                                        rule,
+                                        row.toggleAction,
+                                    )
+                                },
+                                enabled = !busy,
+                                modifier = Modifier.testTag("toggle_recurring_${rule.title}"),
+                            ) {
+                                Text(
+                                    if (rule.active) stringResource(Res.string.ui_pause)
+                                    else stringResource(Res.string.ui_resume),
+                                )
+                            }
+                            DestructiveButton(
+                                text = stringResource(Res.string.ui_cancel_schedule),
+                                onClick = { onCancelRequested(rule) },
+                                enabled = !busy,
+                                modifier = Modifier.testTag("cancel_recurring_${rule.title}"),
+                            )
+                        }
+                    if (row.isPaused)
+                        Text(
+                            stringResource(
+                                Res.string
+                                    .ui_resuming_schedules_the_next_future_entry_paused_months_are,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                }
             }
-        }
     }
     cancellation?.let { rule ->
         AlertDialog(
@@ -195,16 +202,15 @@ private fun InnerRecurringExpensesScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                DestructiveButton(
+                    text = stringResource(Res.string.ui_cancel_schedule),
                     onClick = onCancelConfirmed,
-                    enabled = !busy,
+                    loading = busy,
                     modifier = Modifier.testTag("confirm_cancel_recurring"),
-                ) {
-                    Text(stringResource(Res.string.ui_cancel_schedule))
-                }
+                )
             },
             dismissButton = {
-                TextButton(onClick = onCancelDismissed) {
+                TextButton(onClick = onCancelDismissed, enabled = !busy) {
                     Text(stringResource(Res.string.ui_keep_schedule))
                 }
             },

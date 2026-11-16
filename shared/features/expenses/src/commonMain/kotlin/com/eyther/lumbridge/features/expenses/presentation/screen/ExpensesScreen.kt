@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
+import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
@@ -71,29 +72,34 @@ fun ExpensesScreen(
     onRecurringExpenses: () -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    InnerExpensesScreen(
-        account = state.account,
-        history = state.history,
-        selectedView = state.selectedView,
-        memberBalances = state.memberBalances,
-        suggestions = state.suggestions,
-        memberNames = state.memberNames,
-        userId = state.userId,
-        currency = state.currency,
-        loading = state.loading,
-        canCreate = state.canCreateExpense,
-        error = state.displayError,
-        onAccounts = { viewModel.onAccountsVisibilityChanged(true) },
-        onAddExpense = onAddExpense,
-        onOpenExpense = onOpenExpense,
-        onManage = { viewModel.onManageAccountsVisibilityChanged(true) },
-        onView = viewModel::onViewChanged,
-        onRepayment = viewModel::onSuggestedRepayment,
-        onInsights = onInsights,
-        onRecurringExpenses = onRecurringExpenses,
-        onDismiss = viewModel::onDismissError,
-        onRetry = viewModel::onRefresh,
-    )
+    PullToRefreshContentContainer(
+        isRefreshing = state.refreshing,
+        onRefresh = viewModel::onRefresh,
+    ) {
+        InnerExpensesScreen(
+            account = state.account,
+            history = state.history,
+            selectedView = state.selectedView,
+            memberBalances = state.memberBalances,
+            suggestions = state.suggestions,
+            memberNames = state.memberNames,
+            userId = state.userId,
+            currency = state.currency,
+            loading = state.loading || state.refreshing,
+            canCreate = state.canCreateExpense,
+            error = state.displayError,
+            onAccounts = { viewModel.onAccountsVisibilityChanged(true) },
+            onAddExpense = onAddExpense,
+            onOpenExpense = onOpenExpense,
+            onManage = { viewModel.onManageAccountsVisibilityChanged(true) },
+            onView = viewModel::onViewChanged,
+            onRepayment = viewModel::onSuggestedRepayment,
+            onInsights = onInsights,
+            onRecurringExpenses = onRecurringExpenses,
+            onDismiss = viewModel::onDismissError,
+            onRetry = viewModel::onRefresh,
+        )
+    }
 }
 
 @Composable
@@ -208,7 +214,10 @@ private fun InnerExpensesScreen(
                         )
                     }
                     items(section.items, key = { it.key }) { item ->
-                        ExpenseHistoryRow(item = item, onOpen = onOpenExpense)
+                        ExpenseHistoryRow(
+                            item = item,
+                            onOpen = onOpenExpense,
+                        )
                     }
                 }
             } else if (account != null) {

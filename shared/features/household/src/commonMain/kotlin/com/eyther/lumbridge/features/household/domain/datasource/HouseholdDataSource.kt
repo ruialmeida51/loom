@@ -20,5 +20,7 @@ interface HouseholdDataSource {
 
     suspend fun getMembers(householdId: String): AppResult<List<MemberDomain>>
 
+    suspend fun revokeInvitation(householdId: String): AppResult<Unit>
+
     suspend fun createInvitation(householdId: String): AppResult<String>
 }

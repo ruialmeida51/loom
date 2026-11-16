@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -31,7 +31,9 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDom
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelectionDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.form_split
+import com.eyther.lumbridge.features.expenses.generated.resources.split_decrease
 import com.eyther.lumbridge.features.expenses.generated.resources.split_done
+import com.eyther.lumbridge.features.expenses.generated.resources.split_increase
 import com.eyther.lumbridge.features.expenses.generated.resources.split_input_amount
 import com.eyther.lumbridge.features.expenses.generated.resources.split_input_percent
 import com.eyther.lumbridge.features.expenses.generated.resources.split_input_shares
@@ -40,6 +42,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.expenses.presentation.mapper.splitMethodLabel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseSplitViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
+import kotlinx.collections.immutable.ImmutableSet
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -62,11 +65,14 @@ fun ExpenseSplitBottomSheet(
         selected = state.selected,
         custom = state.custom,
         amounts = state.amounts,
+        canDecrease = state.canDecrease,
+        canIncrease = state.canIncrease,
         error = state.error,
         canConfirm = state.selection != null,
         onMethod = viewModel::onMethodChanged,
         onParticipant = viewModel::onParticipantToggled,
         onCustom = viewModel::onCustomChanged,
+        onStep = viewModel::onCustomStepped,
         onConfirm = viewModel::onConfirm,
         onClose = onClose,
     )
@@ -80,11 +86,14 @@ private fun InnerExpenseSplitBottomSheet(
     selected: Set<String>,
     custom: Map<String, String>,
     amounts: Map<String, String>,
+    canDecrease: ImmutableSet<String>,
+    canIncrease: ImmutableSet<String>,
     error: TextResource?,
     canConfirm: Boolean,
     onMethod: (ExpenseSplitMethodDomain) -> Unit,
     onParticipant: (String) -> Unit,
     onCustom: (String, String) -> Unit,
+    onStep: (String, Boolean) -> Unit,
     onConfirm: () -> Unit,
     onClose: () -> Unit,
 ) {
@@ -113,56 +122,80 @@ private fun InnerExpenseSplitBottomSheet(
             }
         }
         members.forEach { member ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Checkbox(
-                    checked = member.id in selected,
-                    onCheckedChange = { onParticipant(member.id) },
-                    modifier = Modifier.semantics { contentDescription = member.name },
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(member.name)
-                    amounts[member.id]?.let { value ->
-                        Text(
-                            value,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = member.id in selected,
+                        onCheckedChange = { onParticipant(member.id) },
+                        modifier = Modifier.semantics { contentDescription = member.name },
+                    )
+                    Text(
+                        member.name,
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    amounts[member.id]?.let {
+                        Text(it, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
                 if (method != ExpenseSplitMethodDomain.EQUAL && member.id in selected) {
-                    val participantLabel = stringResource(Res.string.split_value, member.name)
-                    OutlinedTextField(
-                        value = custom[member.id].orEmpty(),
-                        onValueChange = { onCustom(member.id, it) },
-                        singleLine = true,
-                        keyboardOptions =
-                            KeyboardOptions(
-                                keyboardType =
-                                    if (method == ExpenseSplitMethodDomain.AMOUNTS)
-                                        KeyboardType.Decimal
-                                    else KeyboardType.Number,
-                            ),
-                        label = {
-                            Text(
-                                stringResource(
-                                    when (method) {
-                                        ExpenseSplitMethodDomain.AMOUNTS ->
-                                            Res.string.split_input_amount
-                                        ExpenseSplitMethodDomain.PERCENTAGES ->
-                                            Res.string.split_input_percent
-                                        else -> Res.string.split_input_shares
-                                    },
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        val decreaseLabel = stringResource(Res.string.split_decrease, member.name)
+                        val increaseLabel = stringResource(Res.string.split_increase, member.name)
+                        FilledTonalIconButton(
+                            onClick = { onStep(member.id, false) },
+                            enabled = member.id in canDecrease,
+                            modifier =
+                                Modifier.testTag("split_decrease_${member.id}").semantics {
+                                    contentDescription = decreaseLabel
+                                },
+                        ) {
+                            Text("−", style = MaterialTheme.typography.titleLarge)
+                        }
+                        val participantLabel = stringResource(Res.string.split_value, member.name)
+                        OutlinedTextField(
+                            value = custom[member.id].orEmpty(),
+                            onValueChange = { onCustom(member.id, it) },
+                            singleLine = true,
+                            keyboardOptions =
+                                KeyboardOptions(
+                                    keyboardType =
+                                        if (method == ExpenseSplitMethodDomain.AMOUNTS)
+                                            KeyboardType.Decimal
+                                        else KeyboardType.Number,
                                 ),
-                            )
-                        },
-                        modifier =
-                            Modifier.width(112.dp).testTag("split_${member.id}").semantics {
-                                contentDescription = participantLabel
+                            label = {
+                                Text(
+                                    stringResource(
+                                        when (method) {
+                                            ExpenseSplitMethodDomain.AMOUNTS ->
+                                                Res.string.split_input_amount
+                                            ExpenseSplitMethodDomain.PERCENTAGES ->
+                                                Res.string.split_input_percent
+                                            else -> Res.string.split_input_shares
+                                        },
+                                    ),
+                                )
                             },
-                    )
+                            modifier =
+                                Modifier.weight(1f).testTag("split_${member.id}").semantics {
+                                    contentDescription = participantLabel
+                                },
+                        )
+                        FilledTonalIconButton(
+                            onClick = { onStep(member.id, true) },
+                            enabled = member.id in canIncrease,
+                            modifier =
+                                Modifier.testTag("split_increase_${member.id}").semantics {
+                                    contentDescription = increaseLabel
+                                },
+                        ) {
+                            Text("+", style = MaterialTheme.typography.titleLarge)
+                        }
+                    }
                 }
             }
         }

@@ -50,7 +50,7 @@ select public.create_expense('00000000-0000-4000-8000-000000000040',current_sett
 select set_config('loom.test.rule',(select recurring_rule_id::text from public.expenses where id='00000000-0000-4000-8000-000000000040'),true);
 select public.control_recurring_expense(current_setting('loom.test.home')::uuid,current_setting('loom.test.rule')::uuid,'pause',1);
 set request.jwt.claim.sub='00000000-0000-4000-8000-000000000012';
-select public.join_household(current_setting('loom.test.invite'));
+select public.redeem_household_invitation(current_setting('loom.test.invite'));
 do $$begin
     assert (select count(*) from public.shopping_lists)=2,'Other households lists are not visible';
     begin perform public.control_recurring_expense(current_setting('loom.test.home')::uuid,current_setting('loom.test.rule')::uuid,'resume',2);raise exception 'Non-manager changed schedule';

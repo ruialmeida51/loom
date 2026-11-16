@@ -26,3 +26,24 @@ fun LoomCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() 
         )
     }
 }
+
+/** Clickable counterpart with the same surface, padding and shape as grouped Loom content. */
+@Composable
+fun LoomCard(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(
+            Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            content = content,
+        )
+    }
+}

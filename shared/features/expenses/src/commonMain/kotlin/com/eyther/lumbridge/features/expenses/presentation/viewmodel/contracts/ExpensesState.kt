@@ -41,6 +41,7 @@ data class ExpensesState(
     val to: String = "",
     val settleAmount: String = "",
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val busy: Boolean = false,
     val error: TextResource? = null,
     val loadError: TextResource? = null,
@@ -110,6 +111,7 @@ data class ExpensesState(
                 ExpenseHistoryItemUi.Purchase(
                     expense = it,
                     payerName = memberNames[it.paidBy],
+                    yourShare = MoneyDomain(it.shares[userId] ?: 0L, currency).formatted(),
                     amount = MoneyDomain(it.amountMinor, currency).formatted(),
                 )
             } +

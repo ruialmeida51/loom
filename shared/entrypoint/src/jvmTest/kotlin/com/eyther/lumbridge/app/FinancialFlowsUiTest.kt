@@ -15,6 +15,7 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -27,6 +28,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import com.eyther.lumbridge.app.demo.LoomDemoApp
+import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import java.io.File
 import kotlin.test.Test
@@ -40,6 +42,7 @@ class FinancialFlowsUiTest {
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
             startApp()
             onNodeWithTag("navigation_money").performClick()
+            awaitLoadedDestination(tag = "expenses_content")
             onNodeWithTag("expense_accounts").performClick()
             onNodeWithText("New trip or event").performClick()
             onNodeWithText("Account name").performTextInput("Lisbon weekend")
@@ -48,6 +51,7 @@ class FinancialFlowsUiTest {
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Lisbon weekend").fetchSemanticsNodes().isNotEmpty()
             }
+            awaitLoadedDestination(tag = "expenses_content")
             onNodeWithTag("add_expense").performClick()
             onNodeWithTag("expense_title").performTextInput("Beach groceries")
             onNodeWithTag("expense_amount").performTextInput("30.00")
@@ -86,11 +90,14 @@ class FinancialFlowsUiTest {
             onNodeWithTag("expense_amount").performTextInput("12.00")
             onNodeWithText("Save expense").performClick()
             waitUntil(timeoutMillis = 5000) {
-                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                    onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithTag("navigation_money").performClick()
+            awaitLoadedDestination(tag = "expenses_content")
             onNodeWithTag("expenses_content").performScrollToNode(hasText("Electrician"))
             onNodeWithText("Electrician").performClick()
+            awaitLoadedDestination(tag = "expense_details_content")
             onNodeWithText("Edit expense").performClick()
             onNodeWithTag("expense_title").performTextReplacement("Electrician final")
             onNodeWithTag("expense_amount").performTextReplacement("18.00")
@@ -98,6 +105,7 @@ class FinancialFlowsUiTest {
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Expense details").fetchSemanticsNodes().isNotEmpty()
             }
+            awaitLoadedDestination(tag = "expense_details_content")
             onNodeWithText("Electrician final").assertExists()
             onNodeWithText("€18.00").assertExists()
             capture("expense-details-light")
@@ -145,6 +153,7 @@ class FinancialFlowsUiTest {
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
             startApp()
             onNodeWithTag("navigation_money").performClick()
+            awaitLoadedDestination(tag = "expenses_content")
             onNodeWithTag("expense_accounts").performClick()
             onNodeWithText("New trip or event").performClick()
             onNodeWithText("Account name").performTextInput("Summer rental")
@@ -153,6 +162,7 @@ class FinancialFlowsUiTest {
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Summer rental").fetchSemanticsNodes().isNotEmpty()
             }
+            awaitLoadedDestination(tag = "expenses_content")
             onNodeWithTag("add_expense").performClick()
             onNodeWithTag("expense_title").performTextInput("Cottage rent")
             onNodeWithTag("expense_amount").performTextInput("90.00")
@@ -182,7 +192,8 @@ class FinancialFlowsUiTest {
         ThemePreferences.set("LIGHT")
         setContent { Box(Modifier.fillMaxSize().testTag("loom_app")) { LoomDemoApp() } }
         waitUntil(timeoutMillis = 10000) {
-            onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+            onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
         }
     }
 
@@ -192,6 +203,7 @@ class FinancialFlowsUiTest {
         waitUntil(timeoutMillis = 5000) {
             onAllNodesWithText("Expense accounts").fetchSemanticsNodes().isEmpty()
         }
+        awaitLoadedDestination(tag = "expenses_content")
     }
 
     private fun SkikoComposeUiTest.capture(name: String) {

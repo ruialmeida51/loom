@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Select and delete completed groceries; keep checklist rows aligned while typing.
+- Pull to refresh with skeletons and clearer reminder completion feedback.
+- See upcoming reminders and a shopping preview on Home.
+- Adjust split shares with plus/minus controls and scan clearer expense cards.
+- Share six-character household codes; improved account spacing and selectors.
+
 ## [4.0.2] - 2026-11-16
 
 - Keep typing shopping items with Enter, stable ordering and keyboard clearance.

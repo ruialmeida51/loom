@@ -135,7 +135,7 @@ internal fun BalancesHost(
                     expenseId = key.expenseId,
                     onBack = navigator::goBack,
                     onSaved = {
-                        overviewViewModel.onRefresh()
+                        overviewViewModel.onContentChanged()
                         navigator.goBack()
                     },
                 )
@@ -165,7 +165,7 @@ internal fun BalancesHost(
                             )
                         },
                         onDeleted = {
-                            overviewViewModel.onRefresh()
+                            overviewViewModel.onContentChanged()
                             navigator.goBack()
                         },
                     )
@@ -192,7 +192,7 @@ internal fun BalancesHost(
                         viewModel = viewModel,
                         onSaved = { id ->
                             overviewViewModel.onAccountSelected(id)
-                            overviewViewModel.onRefresh()
+                            overviewViewModel.onContentChanged()
                             navigator.goBack()
                         },
                     )

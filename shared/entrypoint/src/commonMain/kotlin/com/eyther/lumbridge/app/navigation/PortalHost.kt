@@ -98,6 +98,7 @@ internal fun PortalHost(
             PortalToolbar(
                 householdName = context?.name,
                 nickname = accountState.profile?.nickname.orEmpty(),
+                loadingProfile = accountState.loading,
                 onHousehold = { navigator.navigateTo(PortalDestination.Households) },
                 onAccount = { navigator.navigateTo(PortalDestination.Account) },
             )
@@ -109,7 +110,6 @@ internal fun PortalHost(
                         HouseholdSetupHost(
                             userId = userId,
                             onSelect = onSelect,
-                            onSignOut = onSignOut,
                             onAccount = { navigator.navigateTo(PortalDestination.Account) },
                         )
                     } else {
@@ -127,7 +127,6 @@ internal fun PortalHost(
                             onSelect(household)
                             navigator.goBack()
                         },
-                        onSignOut = onSignOut,
                         onBack = navigator::goBack,
                         onAccount = { navigator.navigateTo(PortalDestination.Account) },
                     )

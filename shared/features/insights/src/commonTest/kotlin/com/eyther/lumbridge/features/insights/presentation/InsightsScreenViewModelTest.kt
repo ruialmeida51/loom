@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -150,6 +151,8 @@ class InsightsScreenViewModelTest {
 
         try {
             backgroundScope.launch { viewModel.state.collect() }
+            runCurrent()
+            advanceTimeBy(300)
             runCurrent()
             val displayedMonth = viewModel.state.value.month
             expenses.value =

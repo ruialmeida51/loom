@@ -24,6 +24,10 @@ internal fun HouseholdDetailsSheetHost(
     controller.registerBottomSheet<HouseholdDetailsSheets.Invitation> {
         InvitationBottomSheet(
             invitation = state.invitation.orEmpty(),
+            busy = state.busy,
+            error = state.error,
+            onRevoke = viewModel::onRevokeInvitation,
+            onDismissError = viewModel::onDismissError,
             onClose = viewModel::onCloseInvitation,
         )
     }

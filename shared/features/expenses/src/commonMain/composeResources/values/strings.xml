@@ -155,4 +155,7 @@
     <string name="split_input_shares">Shares</string>
     <string name="split_input_amount">Amount</string>
     <string name="split_input_percent">Percent</string>
+    <string name="split_increase">Increase share for %1$s</string>
+    <string name="split_decrease">Decrease share for %1$s</string>
+    <string name="history_your_share">Your share %1$s</string>
 </resources>

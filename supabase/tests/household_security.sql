@@ -28,15 +28,14 @@ do $$begin
 end;$$;
 
 set request.jwt.claim.sub='00000000-0000-4000-8000-000000000002';
-select public.join_household(current_setting('loom.test.invite'));
+select public.redeem_household_invitation(current_setting('loom.test.invite'));
 select public.register_push_device('00000000-0000-4000-8000-000000000900','test-device-token-for-bob','fcm');
 do $$begin
     assert (select count(*) from public.households)=1,'Member cannot see other household';
     assert (select count(*) from public.shopping_items)=1,'Shopping is household scoped';
     assert (select count(*) from public.profiles)=2,'Profiles are limited to self and household';
     assert (select count(*) from public.household_members_with_names(current_setting('loom.test.home')::uuid))=2;
-    begin perform public.join_household(current_setting('loom.test.invite'));raise exception 'Invitation reused';
-    exception when raise_exception then if sqlerrm not like '%invalid or has expired%' then raise;end if;end;
+    assert public.redeem_household_invitation(current_setting('loom.test.invite'))->>'status' = 'invalid', 'Invitation cannot be reused';
     begin update public.household_members set role='owner' where user_id=auth.uid();raise exception 'Role escalation accepted';
     exception when insufficient_privilege then null;end;
     begin

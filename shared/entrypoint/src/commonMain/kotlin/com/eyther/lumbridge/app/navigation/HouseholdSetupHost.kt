@@ -7,7 +7,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.eyther.lumbridge.app.navigation.components.ScreenAnalyticsEffect
@@ -33,7 +32,6 @@ import org.koin.compose.viewmodel.koinViewModel
 internal fun HouseholdSetupHost(
     userId: String,
     onSelect: (HouseholdDomain) -> Unit,
-    onSignOut: () -> Unit,
     onBack: (() -> Unit)? = null,
     onAccount: (() -> Unit)? = null,
 ) {
@@ -50,7 +48,6 @@ internal fun HouseholdSetupHost(
             subclass(HouseholdSetupDestination.Join::class)
         }
     val navigator = remember(state) { Navigator(state = state) }
-    LaunchedEffect(selectionViewModel) { selectionViewModel.onRefresh() }
 
     HorizontalSlideNavDisplay(navigator = navigator, navigationState = state) { destination ->
         when (destination) {
@@ -83,7 +80,6 @@ internal fun HouseholdSetupHost(
                         HouseholdScreen(
                             viewModel = selectionViewModel,
                             onSelect = onSelect,
-                            onSignOut = onSignOut,
                             onCreate = { navigator.navigateTo(HouseholdSetupDestination.Create) },
                             onJoin = { navigator.navigateTo(HouseholdSetupDestination.Join) },
                         )

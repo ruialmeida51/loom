@@ -36,6 +36,7 @@ internal fun HomeHost(
     context: HouseholdContextDomain,
     portalToolbar: @Composable () -> Unit,
     onRootChanged: (Boolean) -> Unit,
+    onShopping: () -> Unit,
 ) {
     val state =
         rememberNavigationState(startRoot = HomeDestination.Home) {
@@ -69,6 +70,7 @@ internal fun HomeHost(
                     Box(Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize()) {
                         HomeScreen(
                             viewModel = koinViewModel<HomeScreenViewModelContract>(),
+                            onShopping = onShopping,
                             onReminders = { navigator.navigateTo(HomeDestination.Reminders()) },
                             onAddExpense = {
                                 navigator.navigateTo(
@@ -96,7 +98,7 @@ internal fun HomeHost(
                     onBack = navigator::goBack,
                 ) {
                     RemindersSheetHost(viewModel = viewModel, timeZone = context.timeZone) {
-                        RemindersScreen(viewModel = viewModel, timeZone = context.timeZone)
+                        RemindersScreen(viewModel = viewModel)
                     }
                 }
             }

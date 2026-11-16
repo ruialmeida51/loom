@@ -12,4 +12,5 @@ enum class Glyph {
     PLUS,
     ARROW,
     CHECK,
+    DELETE,
 }

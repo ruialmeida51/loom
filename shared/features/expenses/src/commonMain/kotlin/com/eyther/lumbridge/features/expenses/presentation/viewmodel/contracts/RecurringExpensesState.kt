@@ -14,6 +14,7 @@ data class RecurringExpensesState(
     val role: String? = null,
     val busy: Boolean = false,
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val error: TextResource? = null,
     val loadError: TextResource? = null,
 ) {

@@ -22,6 +22,8 @@ abstract class ExpenseSplitViewModelContract : LoomViewModel() {
 
     abstract fun onCustomChanged(id: String, value: String)
 
+    abstract fun onCustomStepped(id: String, increase: Boolean)
+
     abstract fun onConfirm()
 
     abstract fun onNavigationHandled()

@@ -14,6 +14,7 @@ data class FeedState(
     val unreadOnly: Boolean = false,
     val busy: Boolean = false,
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val hasLoaded: Boolean = false,
     val error: TextResource? = null,
     val loadError: TextResource? = null,

@@ -22,7 +22,8 @@ kotlin {
         commonMain.dependencies {
             api(projects.shared.core)
             api(projects.shared.features.household)
-            implementation(projects.shared.features.reminders)
+            api(projects.shared.features.reminders)
+            api(projects.shared.features.shopping)
             api(libs.compose.runtime)
             api(libs.compose.foundation)
             api(libs.compose.ui)

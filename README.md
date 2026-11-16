@@ -10,6 +10,8 @@ Application ID and iOS bundle ID: **`com.eyther.lumbridge`**.
 
 Flows: [More](docs/screenshots/more-light.png), [All reminders](docs/screenshots/reminders-light.png), [Shopping checklist](docs/screenshots/shopping-light.png), [Trip balances](docs/screenshots/trip-balances-light.png), [Unequal split](docs/screenshots/split-shares-light.png), and [Repayment](docs/screenshots/repayment-light.png).
 
+Refinements: [Completed grocery selection](docs/screenshots/shopping-completed-selection.png), [Reminder feedback on a narrow screen](docs/screenshots/reminder-completion-narrow.png), and [Account group spacing](docs/screenshots/account-group-spacing.png).
+
 Editing sheets: [Shopping on a short screen](docs/screenshots/shopping-sheet-narrow.png), [Nickname](docs/screenshots/nickname-sheet-light.png), and [dark mode](docs/screenshots/nickname-sheet-dark.png).
 
 Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [Create account](docs/screenshots/auth-register-light.png), and [Verification](docs/screenshots/auth-verification-light.png).
@@ -20,10 +22,11 @@ Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [C
 - Separate household selection, creation and invitation-joining screens, each with its own ViewModel.
 - Home, Shopping, Balances and More tabs, with square Home quick actions and full Reminders/Feed destinations under More. Household selection and global My account follow Plannot’s portal pattern.
 - Multiple households, owner invitations, quick switching, and restoring the last accessible household. My account is available before the first household exists.
-- Named shared shopping lists with inline Enter-to-add, collapsed completed items, optional editing, undo, favorites, moving items, and list rename/archive/restore.
-- Household reminders, daily/weekly repeats, timezone handling, and completion.
+- Named shared shopping lists with aligned Enter-to-add, completed-item selection and bulk deletion, optional editing, undo, favorites, moving items, and list rename/archive/restore/delete.
+- Household reminders, daily/weekly repeats, clear relative/absolute dates and completion feedback.
+- Pull-to-refresh with skeletons across data screens, compact Home shopping previews and six-character household invitations.
 - Independent Everyday and trip/event accounts with one currency each and household-member participants.
-- Dedicated expense entry/detail/editing, equal/weighted-share/exact-amount/percentage splits, who-pays-whom balances and repayments.
+- Dedicated expense entry/detail/editing, equal/weighted-share/exact-amount/percentage splits with steppers, who-pays-whom balances and repayments.
 - Monthly recurring expense schedules with payment dates, pause/resume/cancel controls, monthly reports, statistics, CSV export, and immutable statement revisions.
 - RSS/Atom subscriptions with per-user read state and scheduled server refreshes.
 - Light, dark, and system themes using the Loom gold and yarn branding.
@@ -35,7 +38,7 @@ Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [C
 
 Recurring schedules generate monthly expense records; repayments record money you have already sent or received. Pausing skips future entries, resuming skips paused months, and cancellation preserves recorded expense history.
 
-The [product roadmap](docs/product-roadmap.md) records delivered work and following milestones. Offline functionality is deferred. See the [architecture and localization audit](docs/implementation-audit.md).
+The [product roadmap](docs/product-roadmap.md) records delivered work and following milestones. Offline functionality is deferred. See the [architecture and localization audit](docs/implementation-audit.md) and [household usability audit](docs/household-refinement-audit.md).
 
 ## Architecture
 

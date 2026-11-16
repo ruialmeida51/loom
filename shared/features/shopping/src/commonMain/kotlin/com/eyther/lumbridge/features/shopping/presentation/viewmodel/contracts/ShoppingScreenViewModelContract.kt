@@ -9,6 +9,18 @@ abstract class ShoppingScreenViewModelContract : LoomViewModel() {
 
     abstract val state: StateFlow<ShoppingState>
 
+    abstract fun onCompletedSelectionChanged(selecting: Boolean)
+
+    abstract fun onCompletedItemSelected(id: String)
+
+    abstract fun onSelectAllCompleted()
+
+    abstract fun onDeleteCompletedRequested()
+
+    abstract fun onDeleteCompletedCancelled()
+
+    abstract fun onDeleteCompletedConfirmed()
+
     abstract fun onInlineNameChanged(value: String)
 
     abstract fun onAddInlineItem()

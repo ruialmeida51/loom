@@ -3,8 +3,6 @@ package com.eyther.lumbridge.features.shopping.presentation.components.bottomshe
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +18,6 @@ import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.list_delete
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_archive
-import com.eyther.lumbridge.features.shopping.generated.resources.ui_done
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_new_list
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_rename
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_restore
@@ -35,7 +32,6 @@ fun ShoppingListsBottomSheet(
     onSelect: (String) -> Unit,
     busy: Boolean,
     formError: TextResource?,
-    onShowLists: (Boolean) -> Unit,
     onListForm: (ShoppingListDomain?) -> Unit,
     onArchive: (ShoppingListDomain) -> Unit,
     onDelete: (ShoppingListDomain) -> Unit,
@@ -43,17 +39,13 @@ fun ShoppingListsBottomSheet(
 ) {
     FormBottomSheet(
         title = stringResource(Res.string.ui_shopping_lists),
+        dismissAction = {},
         action = {
             LoomButton(
                 text = stringResource(Res.string.ui_new_list),
                 onClick = { onListForm(null) },
                 enabled = !busy,
             )
-        },
-        dismissAction = {
-            TextButton(onClick = { onShowLists(false) }, enabled = !busy) {
-                Text(stringResource(Res.string.ui_done))
-            }
         },
     ) {
         lists.forEach { list ->

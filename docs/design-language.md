@@ -49,3 +49,30 @@ Before release, review light and dark captures, a narrow viewport, larger text, 
 The draw-phase `shimmer`/`shimmerReverse` modifier is copied from Plannot's core presentation modifier, with Loom's Material colours. `LoadingLine` and `LoadingRow` adapt its grouped loading skeletons; `LoadingForm` adapts `FormSectionShimmer`. The minimum-duration coroutine helper follows its `Delay.kt`, using monotonic time. Portal targets follow its weighted start/end toolbar content and label weighting. Files remain under Loom's generic core infrastructure; feature loading decisions and copy remain in their features.
 
 Repeated lists use stable item keys and immutable presentation collections. Realtime reads are serialized and equal snapshots suppressed; an older query result cannot undo an acknowledged shopping update. First reads use minimum loading duration, while refreshes retain existing content. Shimmer reads its animation in drawing, without recomposing the whole skeleton every frame.
+
+
+## Refresh, action feedback and compact content
+
+Data destinations share Plannot's pull-to-refresh pattern: explicit gestures show an indicator and
+matching skeleton rows, while subscription/polling updates stay silent. A failed refresh retains the
+last data and draft. Static menus and forms do not add a cosmetic gesture; reference-data retries in
+forms preserve the input. The Host owns system/toolbar/bottom-navigation insets once.
+
+Use filled or outlined destructive buttons, including outlined icon buttons with an item-specific
+accessibility label when a text button would squeeze row content. Menus may open a brief confirmation.
+Actions show their own progress; recurring reminder completion acknowledges the occurrence with a
+transient snackbar even when the next occurrence remains on the list.
+
+Home shows one Reminders section, up to four pending reminders and a compact three-name preview of
+the selected shopping list. View all opens that existing checklist. Reminder dates combine localized
+relative and absolute dates in the household zone. Profiles and preferences each have a layout root
+with explicit heading/card spacing. Expense cards prioritize title and total, followed by payer and
+personal share; date remains in the ledger's section heading.
+
+Completed grocery selection changes deletion targets, not completion. Select all selects only the
+completed items in the current list. Confirmation freezes their versions; a restored or edited item
+causes the server to reject the whole request. The composer, pending rows and saved rows reserve the
+same checkbox/text columns and retain stable record keys.
+
+See [the patterns skill](../.agents/skills/loom-patterns/SKILL.md), [component inventory](../ai/PATTERNS_COMPONENTS.md)
+and [reviewer procedure](../ai/agents/AGENTS_REVIEWER.agent.md).

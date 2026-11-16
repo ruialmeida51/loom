@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.take
 data class InsightsState(
     val month: String = todayIso().take(7),
     val statement: MonthlyStatementDomain? = null,
+    val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val busy: Boolean = false,
     val message: TextResource? = null,
     val error: TextResource? = null,
@@ -17,9 +19,18 @@ data class InsightsState(
 
     val displayError: TextResource? = error ?: loadError
 
-    val categoryRows: List<SpendingCategoryUi> = statement?.let { current ->
-        current.categories.entries.sortedByDescending { it.value }.map { (category, amount) ->
-            SpendingCategoryUi(category = category, amountMinor = amount, totalMinor = current.totalMinor)
-        }
-    }.orEmpty()
+    val categoryRows: List<SpendingCategoryUi> =
+        statement
+            ?.let { current ->
+                current.categories.entries
+                    .sortedByDescending { it.value }
+                    .map { (category, amount) ->
+                        SpendingCategoryUi(
+                            category = category,
+                            amountMinor = amount,
+                            totalMinor = current.totalMinor,
+                        )
+                    }
+            }
+            .orEmpty()
 }
