@@ -1,14 +1,11 @@
 package com.eyther.lumbridge.features.home.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -19,14 +16,19 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.home.generated.resources.Res
 import com.eyther.lumbridge.features.home.generated.resources.home_add_expense
 import com.eyther.lumbridge.features.home.generated.resources.home_add_reminder
 import org.jetbrains.compose.resources.stringResource
 
+private val QuickActionIconSize = 24.dp // Standard icon size inside the square action area.
+private val MinimumQuickActionHeight =
+    88.dp // Keep a square icon and readable label inside a compact action.
+
 @Composable
 internal fun HomeQuickActions(onAddExpense: () -> Unit, onAddReminder: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium)) {
         QuickActionTile(
             title = stringResource(Res.string.home_add_expense),
             glyph = Glyph.MONEY,
@@ -46,20 +48,26 @@ internal fun HomeQuickActions(onAddExpense: () -> Unit, onAddReminder: () -> Uni
 private fun QuickActionTile(title: String, glyph: Glyph, onClick: () -> Unit, modifier: Modifier) {
     Surface(
         onClick = onClick,
-        modifier = modifier.aspectRatio(1f),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface,
+        modifier = modifier.heightIn(min = MinimumQuickActionHeight),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Row(
+            modifier = Modifier.padding(LoomSpacing.medium),
+            horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            LoomIcon(
-                glyph = glyph,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
+            Surface(
+                modifier = Modifier.testTag("home_action_icon_$glyph"),
+                shape = MaterialTheme.shapes.medium,
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ) {
+                LoomIcon(
+                    glyph = glyph,
+                    modifier = Modifier.padding(LoomSpacing.medium).size(QuickActionIconSize),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
             Text(title, style = MaterialTheme.typography.titleMedium)
         }
     }

@@ -72,7 +72,7 @@ fun InsightsScreen(
     ) {
         InnerInsightsScreen(
             month = state.month,
-            loading = state.loading || state.refreshing,
+            loading = state.loading,
             statement = state.statement,
             categoryRows = state.categoryRows,
             busy = state.busy,

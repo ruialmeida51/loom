@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.household.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.extensions.delayAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.launchWith
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsUseCase
@@ -36,7 +35,7 @@ class HouseholdScreenViewModel(
     }
 
     private suspend fun loadHouseholds(state: MutableStateFlow<HouseholdState>) {
-        val result = delayAtLeast { getHouseholdsUseCase() }
+        val result = getHouseholdsUseCase()
         state.update { oldState ->
             when (result) {
                 is AppResult.Success ->

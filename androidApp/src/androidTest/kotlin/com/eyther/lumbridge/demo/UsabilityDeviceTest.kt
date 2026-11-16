@@ -108,6 +108,7 @@ class UsabilityDeviceTest {
         compose.onNodeWithTag("expense_amount").performTextInput("30.00")
         hideKeyboard()
         compose.onNodeWithText("Split", substring = false).performScrollTo().performClick()
+        compose.onNodeWithTag("split_method").performClick()
         compose.onNodeWithText("By shares").performClick()
         compose.onNodeWithContentDescription("Increase share for You").performClick()
         compose.onNodeWithContentDescription("Share for You").assertTextContains("2")
@@ -167,13 +168,12 @@ class UsabilityDeviceTest {
         compose.onNodeWithTag("shopping_content").performTouchInput {
             swipeDown(startY = height * .15f, endY = height * .8f, durationMillis = 600)
         }
-        compose.waitUntil(timeoutMillis = 5_000) {
-            compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isNotEmpty()
-        }
-        capture(name = "shopping-refresh-skeleton")
-        compose.waitUntil(timeoutMillis = 5_000) {
-            compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
-        }
+        compose.waitForIdle()
+        assertTrue(
+            "Refreshing retains the loaded checklist",
+            compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty(),
+        )
+        capture(name = "shopping-refresh-retains-content")
         compose
             .onNodeWithTag("shopping_inline_input")
             .performScrollTo()

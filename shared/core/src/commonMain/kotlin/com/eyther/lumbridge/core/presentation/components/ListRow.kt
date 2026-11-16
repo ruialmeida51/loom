@@ -9,7 +9,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 
 /**
  * Repeated content stays in a list, with one quiet separator instead of a card around every item.
@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ListRow(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(
-        modifier = modifier.fillMaxWidth().padding(top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = modifier.fillMaxWidth().padding(top = LoomSpacing.small),
+        verticalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
     ) {
         content()
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

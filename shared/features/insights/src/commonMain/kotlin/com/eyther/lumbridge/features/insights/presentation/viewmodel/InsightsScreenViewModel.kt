@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.insights.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.todayIso
@@ -40,7 +39,7 @@ class InsightsScreenViewModel(
         MutableStateFlow(InsightsState()).observeWith(viewModelScope) { state ->
             refreshRequests
                 .flatMapLatest {
-                    getMonthlyStatementStreamUseCase(selectedMonth).delayFirstAtLeast()
+                    getMonthlyStatementStreamUseCase(selectedMonth)
                 }
                 .updateState(state) { result ->
                     when (result) {

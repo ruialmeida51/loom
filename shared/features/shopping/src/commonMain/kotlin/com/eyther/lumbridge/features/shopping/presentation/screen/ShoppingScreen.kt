@@ -85,7 +85,7 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
             onSelectCompleted = viewModel::onCompletedItemSelected,
             onSelectAllCompleted = viewModel::onSelectAllCompleted,
             onDeleteCompleted = viewModel::onDeleteCompletedRequested,
-            loading = state.loading || state.refreshing,
+            loading = state.loading,
             busy = state.busy || state.deletingCompleted,
             savingItemIds = state.savingItemIds,
             inlineName = state.inlineName,

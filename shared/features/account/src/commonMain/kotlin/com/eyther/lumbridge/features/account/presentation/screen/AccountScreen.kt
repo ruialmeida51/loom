@@ -60,7 +60,7 @@ fun AccountScreen(
         InnerAccountScreen(
             nickname = state.profile?.nickname.orEmpty(),
             canEditNickname = state.canEditNickname,
-            loading = state.loading || state.refreshing,
+            loading = state.loading,
             preferences = state.preferences,
             analytics = state.analytics,
             busy = state.busy,

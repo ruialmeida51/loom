@@ -1,17 +1,19 @@
 package com.eyther.lumbridge.features.feed.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
+import com.eyther.lumbridge.features.feed.domain.model.StarterFeedDomain
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.presentation.mapper.toFeedTextResource
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedState
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.update
 @OptIn(ExperimentalCoroutinesApi::class)
 class FeedScreenViewModel(
     private val getFeedStreamUseCase: GetFeedStreamUseCase,
+    private val getStarterFeedsUseCase: GetStarterFeedsUseCase,
     private val followFeedUseCase: FollowFeedUseCase,
     private val markArticleReadUseCase: MarkArticleReadUseCase,
 ) : FeedScreenViewModelContract() {
@@ -33,7 +36,7 @@ class FeedScreenViewModel(
     private val inputState = MutableStateFlow(InnerInputState())
 
     private val mutableState =
-        MutableStateFlow(FeedState())
+        MutableStateFlow(FeedState(suggestions = getStarterFeedsUseCase().toImmutableList()))
             .observeWith(viewModelScope) { state ->
                 inputState.updateState(state) { input ->
                     copy(url = input.url)
@@ -41,7 +44,7 @@ class FeedScreenViewModel(
             }
             .observeWith(viewModelScope) { state ->
                 refreshRequests
-                    .flatMapLatest { getFeedStreamUseCase().delayFirstAtLeast() }
+                    .flatMapLatest { getFeedStreamUseCase() }
                     .updateState(state) { result ->
                         when (result) {
                             is AppResult.Success ->
@@ -63,6 +66,12 @@ class FeedScreenViewModel(
             }
 
     override val state = mutableState.asStateFlow()
+
+    override fun onStarterFeedSelected(feed: StarterFeedDomain) {
+        if (state.value.busy) return
+        inputState.value = InnerInputState(url = feed.url)
+        mutableState.update { oldState -> oldState.copy(showFollow = true, formError = null) }
+    }
 
     override fun onRetry() {
         if (state.value.refreshing) return

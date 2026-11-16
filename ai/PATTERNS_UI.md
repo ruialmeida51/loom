@@ -7,8 +7,9 @@ a clear primary action and relevant amounts ahead of metadata. Feature dimension
 shared tokens carry shared semantics. Test light/dark, narrow screens, IME and larger text.
 
 Shimmer is for content loading; CircularProgressIndicator is for requests triggered by actions.
-Use Loom's draw-phase shimmer and delayAtLeast/delayFirstAtLeast. A skeleton matches its final grouping.
-Pull-to-refresh is real and visible; background updates remain silent. Retain data on refresh failure.
+Use Loom's draw-phase shimmer for initial missing content; never delay usable data for a skeleton.
+A skeleton matches its final grouping. Pull-to-refresh retains loaded content and shows an indicator;
+background updates remain silent. Retain data on refresh failure.
 
 Prefer persistent UI lists/maps/sets and stable keys. Mark sealed UI interfaces and subtypes @Stable;
 never annotate mutable types as immutable. Filtering/mapping belongs outside composition. Small

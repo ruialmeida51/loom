@@ -1,32 +1,41 @@
 package com.eyther.lumbridge.features.home.presentation.viewmodel.contracts
 
 import com.eyther.lumbridge.core.presentation.resources.TextResource
-import com.eyther.lumbridge.features.home.domain.model.HomeOverviewDomain
+import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
+import com.eyther.lumbridge.features.feed.presentation.mapper.toPreviewUi
+import com.eyther.lumbridge.features.feed.presentation.model.ArticlePreviewUi
 import com.eyther.lumbridge.features.home.presentation.mapper.toHomeUi
 import com.eyther.lumbridge.features.home.presentation.model.HomeReminderUi
+import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
-import com.eyther.lumbridge.features.shopping.presentation.mapper.toShoppingTextResource
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
 data class HomeState(
-    val overview: HomeOverviewDomain? = null,
-    val loading: Boolean = true,
-    val refreshing: Boolean = false,
-    val timeZone: String = "UTC",
-    val error: TextResource? = null,
+    val today: String,
+    val timeZone: String,
+    val reminderItems: List<ReminderDomain>? = null,
+    val shoppingPreview: List<ShoppingItemDomain>? = null,
+    val feedItems: List<ArticleDomain>? = null,
+    val remindersLoading: Boolean = true,
+    val shoppingLoading: Boolean = true,
+    val feedLoading: Boolean = true,
+    val remindersRefreshing: Boolean = false,
+    val shoppingRefreshing: Boolean = false,
+    val feedRefreshing: Boolean = false,
+    val remindersError: TextResource? = null,
+    val shoppingError: TextResource? = null,
+    val feedError: TextResource? = null,
 ) {
-    val hasOverview: Boolean = overview != null
+    val refreshing: Boolean = remindersRefreshing || shoppingRefreshing || feedRefreshing
     val reminders: ImmutableList<HomeReminderUi> =
-        overview
-            ?.reminders
+        reminderItems
             .orEmpty()
-            .take(4)
-            .map {
-                it.toHomeUi(today = overview?.today.orEmpty(), timeZone = timeZone)
-            }
+            .take(3)
+            .map { it.toHomeUi(today = today, timeZone = timeZone) }
             .toImmutableList()
     val shoppingItems: ImmutableList<ShoppingItemDomain> =
-        overview?.shoppingItems.orEmpty().take(3).toImmutableList()
-    val shoppingError: TextResource? = overview?.shoppingError?.toShoppingTextResource()
+        shoppingPreview.orEmpty().take(3).toImmutableList()
+    val articles: ImmutableList<ArticlePreviewUi> =
+        feedItems.orEmpty().take(3).map { it.toPreviewUi(timeZone = timeZone) }.toImmutableList()
 }

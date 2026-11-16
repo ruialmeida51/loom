@@ -2,11 +2,13 @@ package com.eyther.lumbridge.features.feed.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.feed.data.local.CommonFeedCatalogDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.errors.FeedError
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedScreenViewModel
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedState
@@ -60,18 +62,23 @@ class FeedStateTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val articles =
             MutableStateFlow<AppResult<List<ArticleDomain>>>(AppResult.Success(emptyList()))
+        var followRequests = 0
         val source =
             object : FeedDataSource {
                 override fun stream() = articles
 
-                override suspend fun followFeed(url: String): AppResult<Unit> =
-                    AppResult.Failure(FeedError.InvalidUrl())
+                override suspend fun followFeed(url: String): AppResult<Unit> {
+                    followRequests++
+                    return AppResult.Failure(FeedError.InvalidUrl())
+                }
 
                 override suspend fun markArticleRead(id: String, read: Boolean): AppResult<Unit> =
                     AppResult.Failure(FeedError.RefreshFailed())
             }
         val viewModel =
             FeedScreenViewModel(
+                getStarterFeedsUseCase =
+                    GetStarterFeedsUseCase(feedCatalogDataSource = CommonFeedCatalogDataSource()),
                 getFeedStreamUseCase = GetFeedStreamUseCase(feedDataSource = source),
                 followFeedUseCase = FollowFeedUseCase(feedDataSource = source),
                 markArticleReadUseCase = MarkArticleReadUseCase(feedDataSource = source),
@@ -88,6 +95,12 @@ class FeedStateTest {
             runCurrent()
             assertNull(viewModel.state.value.displayError)
 
+            val suggestion = viewModel.state.value.suggestions.first()
+            viewModel.onStarterFeedSelected(feed = suggestion)
+            runCurrent()
+            assertEquals(suggestion.url, viewModel.state.value.url)
+            assertTrue(viewModel.state.value.showFollow)
+            assertEquals(0, followRequests)
             viewModel.onFollowSheetVisibilityChanged(value = true)
             viewModel.onUrlChanged(value = "invalid")
             runCurrent()

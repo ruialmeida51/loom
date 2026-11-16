@@ -61,7 +61,7 @@ fun RemindersScreen(viewModel: RemindersScreenViewModelContract) {
             items = state.rows,
             completingIds = state.completingIds,
             removingIds = state.removingIds,
-            loading = state.loading || state.refreshing,
+            loading = state.loading,
             showEmpty = state.showEmpty,
             error = state.displayError,
             onShowAdd = viewModel::onAddSheetVisibilityChanged,

@@ -1,19 +1,16 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
-import com.eyther.lumbridge.core.domain.wrapper.AppResult
-import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
-import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelectionDomain
-import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 
 data class ExpenseFormState(
     val userId: String,
     val account: ExpenseAccountDomain? = null,
+    val editing: Boolean = false,
     val expense: ExpenseDomain? = null,
     val members: List<MemberDomain> = emptyList(),
     val title: String = "",
@@ -37,14 +34,4 @@ data class ExpenseFormState(
             title.isNotBlank() &&
             amount.isNotBlank() &&
             account?.canAddExpense(userId = userId) == true
-    val shares: Map<String, Long>? =
-        (safeCall {
-                ExpenseSplitDomain.resolve(
-                    amountMinor = MoneyDomain.parse(text = amount, currency = currency).minorUnits,
-                    selection = split,
-                )
-            }
-                as? AppResult.Success)
-            ?.value
-    val memberNames: Map<String, String> = members.associate { it.id to it.name }
 }

@@ -63,7 +63,7 @@ fun RecurringExpensesScreen(
         InnerRecurringExpensesScreen(
             rules = state.rows,
             showEmpty = state.showEmpty,
-            loading = state.loading || state.refreshing,
+            loading = state.loading,
             busy = state.busy,
             error = state.displayError,
             currency = state.currency,

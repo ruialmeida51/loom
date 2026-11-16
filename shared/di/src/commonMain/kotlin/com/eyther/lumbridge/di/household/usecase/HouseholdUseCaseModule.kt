@@ -25,7 +25,8 @@ import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
-import com.eyther.lumbridge.features.home.domain.usecase.GetHomeOverviewStreamUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeRemindersStreamUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
@@ -164,15 +165,21 @@ class HouseholdUseCaseModule {
         )
 
     @Single
-    fun provideGetHomeOverviewStreamUseCase(
+    fun provideGetHomeRemindersStreamUseCase(
         getRemindersStreamUseCase: GetRemindersStreamUseCase,
         context: HouseholdContextDomain,
-        getShoppingStreamUseCase: GetShoppingStreamUseCase,
-        getShoppingSelectionStreamUseCase: GetShoppingSelectionStreamUseCase,
-    ): GetHomeOverviewStreamUseCase =
-        GetHomeOverviewStreamUseCase(
+    ): GetHomeRemindersStreamUseCase =
+        GetHomeRemindersStreamUseCase(
             getRemindersStreamUseCase = getRemindersStreamUseCase,
             context = context,
+        )
+
+    @Single
+    fun provideGetHomeShoppingStreamUseCase(
+        getShoppingStreamUseCase: GetShoppingStreamUseCase,
+        getShoppingSelectionStreamUseCase: GetShoppingSelectionStreamUseCase,
+    ): GetHomeShoppingStreamUseCase =
+        GetHomeShoppingStreamUseCase(
             getShoppingStreamUseCase = getShoppingStreamUseCase,
             getShoppingSelectionStreamUseCase = getShoppingSelectionStreamUseCase,
         )
@@ -355,15 +362,15 @@ class HouseholdUseCaseModule {
 
     @Single
     fun provideGetExpenseFormUseCase(
-        getExpenseAccountUseCase: GetExpenseAccountUseCase,
+        expenseAccountDataSource: ExpenseAccountDataSource,
         getExpenseUseCase: GetExpenseUseCase,
-        getMembersUseCase: GetMembersUseCase,
+        householdDataSource: HouseholdDataSource,
         context: HouseholdContextDomain,
     ): GetExpenseFormUseCase =
         GetExpenseFormUseCase(
-            getExpenseAccountUseCase = getExpenseAccountUseCase,
+            expenseAccountDataSource = expenseAccountDataSource,
             getExpenseUseCase = getExpenseUseCase,
-            getMembersUseCase = getMembersUseCase,
+            householdDataSource = householdDataSource,
             context = context,
         )
 

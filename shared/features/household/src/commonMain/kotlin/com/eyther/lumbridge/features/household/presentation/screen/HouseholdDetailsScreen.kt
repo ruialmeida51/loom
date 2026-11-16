@@ -45,7 +45,7 @@ fun HouseholdDetailsScreen(
             currency = context.currency,
             timeZone = context.timeZone,
             members = state.members,
-            loading = state.loading || state.refreshing,
+            loading = state.loading,
             busy = state.busy,
             canInvite = state.canInvite,
             error = state.displayError,

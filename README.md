@@ -8,6 +8,8 @@ Application ID and iOS bundle ID: **`com.eyther.lumbridge`**.
 
 <img src="docs/screenshots/home-light.png" width="260" alt="Loom household overview in light mode" /> <img src="docs/screenshots/home-dark.png" width="260" alt="Loom household overview in dark mode" />
 
+Current refinements: [Expense capture](docs/screenshots/expense-form-light.png), [Split editor with larger text](docs/screenshots/split-shares-narrow.png), [Home news preview](docs/screenshots/home-news-light.png), and [implementation audit](docs/usability-redesign-audit.md).
+
 Flows: [More](docs/screenshots/more-light.png), [All reminders](docs/screenshots/reminders-light.png), [Shopping checklist](docs/screenshots/shopping-light.png), [Trip balances](docs/screenshots/trip-balances-light.png), [Unequal split](docs/screenshots/split-shares-light.png), and [Repayment](docs/screenshots/repayment-light.png).
 
 Refinements: [Completed grocery selection](docs/screenshots/shopping-completed-selection.png), [Reminder feedback on a narrow screen](docs/screenshots/reminder-completion-narrow.png), and [Account group spacing](docs/screenshots/account-group-spacing.png).
@@ -20,11 +22,11 @@ Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [C
 
 - Google sign-in, separate email login/registration/verification screens, password visibility controls, and code resend with a cooldown. Existing accounts can also request an email sign-in code.
 - Separate household selection, creation and invitation-joining screens, each with its own ViewModel.
-- Home, Shopping, Balances and More tabs, with square Home quick actions and full Reminders/Feed destinations under More. Household selection and global My account follow Plannot’s portal pattern.
+- Home, Shopping, Balances and More tabs, with compact Home quick actions and full Reminders/Feed destinations under More and secondary news previews on Home. Household selection and global My account follow Plannot’s portal pattern.
 - Multiple households, owner invitations, quick switching, and restoring the last accessible household. My account is available before the first household exists.
 - Named shared shopping lists with aligned Enter-to-add, completed-item selection and bulk deletion, optional editing, undo, favorites, moving items, and list rename/archive/restore/delete.
 - Household reminders, daily/weekly repeats, clear relative/absolute dates and completion feedback.
-- Pull-to-refresh with skeletons across data screens, compact Home shopping previews and six-character household invitations.
+- Pull-to-refresh that retains loaded content, with skeletons for first loads, compact Home shopping previews and six-character household invitations.
 - Independent Everyday and trip/event accounts with one currency each and household-member participants.
 - Dedicated expense entry/detail/editing, equal/weighted-share/exact-amount/percentage splits with steppers, who-pays-whom balances and repayments.
 - Monthly recurring expense schedules with payment dates, pause/resume/cancel controls, monthly reports, statistics, CSV export, and immutable statement revisions.

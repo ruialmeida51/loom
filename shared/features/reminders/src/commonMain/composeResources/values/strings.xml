@@ -22,23 +22,9 @@
     <string name="token_daily">Daily</string>
     <string name="token_weekly">Weekly</string>
     <string name="error_access_denied">This reminder is no longer available to your household.</string>
-    <string name="date_january">January</string>
-    <string name="date_february">February</string>
-    <string name="date_march">March</string>
-    <string name="date_april">April</string>
-    <string name="date_may">May</string>
-    <string name="date_june">June</string>
-    <string name="date_july">July</string>
-    <string name="date_august">August</string>
-    <string name="date_september">September</string>
-    <string name="date_october">October</string>
-    <string name="date_november">November</string>
-    <string name="date_december">December</string>
     <string name="date_today">Today</string>
     <string name="date_tomorrow">Tomorrow</string>
     <string name="date_yesterday">Yesterday</string>
-    <string name="date_absolute">%1$d %2$s</string>
-    <string name="date_absolute_year">%1$d %2$s %3$d</string>
     <string name="date_label">%1$s · %2$s · %3$s</string>
     <plurals name="date_in_days"><item quantity="one">In %1$d day</item><item quantity="other">In %1$d days</item></plurals>
     <plurals name="date_days_ago"><item quantity="one">%1$d day ago</item><item quantity="other">%1$d days ago</item></plurals>

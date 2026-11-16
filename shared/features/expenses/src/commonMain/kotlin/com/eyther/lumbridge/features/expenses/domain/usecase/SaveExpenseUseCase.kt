@@ -13,6 +13,8 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.datetime.LocalDate
 
 class SaveExpenseUseCase(
@@ -36,20 +38,28 @@ class SaveExpenseUseCase(
             ExpenseError.FuturePaymentDate()
         }
         ExpenseSplitDomain.validate(expense.amountMinor, expense.shares)
-        val memberIds = members(context.id).getOrThrow().map { it.id }.toSet()
-        requireDomain(expense.paidBy in memberIds && memberIds.containsAll(expense.shares.keys)) {
-            ExpenseError.InvalidMembers()
+        coroutineScope {
+            val memberRequest = async { members(context.id).getOrThrow().map { it.id }.toSet() }
+            val accountRequest = async {
+                expenseAccountDataSource.getAccount(id = expense.accountId).getOrThrow()
+            }
+            val memberIds = memberRequest.await()
+            requireDomain(
+                expense.paidBy in memberIds && memberIds.containsAll(expense.shares.keys),
+            ) {
+                ExpenseError.InvalidMembers()
+            }
+            val account = accountRequest.await()
+            requireDomain(account.canAddExpense(userId = context.userId)) {
+                ExpenseAccountError.Archived()
+            }
+            requireDomain(
+                expense.paidBy in account.memberIds &&
+                    account.memberIds.containsAll(expense.shares.keys),
+            ) {
+                ExpenseAccountError.InvalidMembers()
+            }
+            expenseDataSource.saveExpense(expense.copy(title = expense.title.trim())).getOrThrow()
         }
-        val account = expenseAccountDataSource.getAccount(id = expense.accountId).getOrThrow()
-        requireDomain(account.canAddExpense(userId = context.userId)) {
-            ExpenseAccountError.Archived()
-        }
-        requireDomain(
-            expense.paidBy in account.memberIds &&
-                account.memberIds.containsAll(expense.shares.keys),
-        ) {
-            ExpenseAccountError.InvalidMembers()
-        }
-        expenseDataSource.saveExpense(expense.copy(title = expense.title.trim())).getOrThrow()
     }
 }

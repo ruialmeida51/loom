@@ -129,6 +129,7 @@
     <string name="split_value">Share for %1$s</string>
     <string name="form_description">Description</string>
     <string name="form_amount">Amount (%1$s)</string>
+    <string name="form_amount_label">Amount</string>
     <string name="form_split">Split</string>
     <string name="form_more">More details</string>
     <string name="form_less">Fewer details</string>
@@ -158,4 +159,9 @@
     <string name="split_increase">Increase share for %1$s</string>
     <string name="split_decrease">Decrease share for %1$s</string>
     <string name="history_your_share">Your share %1$s</string>
+    <string name="split_summary">%1$s · %2$s</string>
+    <plurals name="split_participant_count">
+        <item quantity="one">%1$d person</item>
+        <item quantity="other">%1$d people</item>
+    </plurals>
 </resources>

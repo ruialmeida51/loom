@@ -21,7 +21,7 @@ Authority: [engineering conventions](../AGENTS.md). Adapted from Plannot's
 - Demo ports/fixtures live in entrypoint/app/demo, never production branches.
 - All UI copy, accessibility, dates and errors use owning feature resources.
 - Destructive actions use filled/outlined buttons, never text buttons; confirmations have request progress.
-- Data screens use pull-to-refresh; explicit refresh shows matching skeletons, background updates are silent.
+- Data screens use pull-to-refresh; initial missing content shows matching skeletons. Refresh retains content, drafts and selection; background updates are silent. Do not delay usable data for a loading animation.
 - Mutation loading stays in action controls. A recurring completion confirms the occurrence with a snackbar.
 - Apply insets once; preserve form drafts, composer identity, scroll order and focus through writes/lifecycle.
 - Final review happens after validation and fixes, against the intended base. Never commit directly to main.

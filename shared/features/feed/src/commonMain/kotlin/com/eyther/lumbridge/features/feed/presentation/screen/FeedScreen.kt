@@ -24,17 +24,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.ListRow
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.PageHeading
+import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
+import com.eyther.lumbridge.features.feed.domain.model.StarterFeedDomain
 import com.eyther.lumbridge.features.feed.generated.resources.Res
 import com.eyther.lumbridge.features.feed.generated.resources.feed_retry
+import com.eyther.lumbridge.features.feed.generated.resources.feed_starter_sources
 import com.eyther.lumbridge.features.feed.generated.resources.ui_a_fresh_page
 import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_a_feed
 import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_an_rss_or_atom_feed_to_bring_your
@@ -45,6 +50,7 @@ import com.eyther.lumbridge.features.feed.generated.resources.ui_the_reading_cor
 import com.eyther.lumbridge.features.feed.generated.resources.ui_unread_only
 import com.eyther.lumbridge.features.feed.generated.resources.ui_your_favourite_corners_of_the_internet_in_one_quiet
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
+import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -53,8 +59,10 @@ fun FeedScreen(viewModel: FeedScreenViewModelContract, onOpen: (String) -> Unit)
     PullToRefreshContentContainer(isRefreshing = state.refreshing, onRefresh = viewModel::onRetry) {
         InnerFeedScreen(
             items = state.visibleArticles,
+            suggestions = state.suggestions,
+            onStarterFeed = viewModel::onStarterFeedSelected,
             unreadOnly = state.unreadOnly,
-            loading = state.loading || state.refreshing,
+            loading = state.loading,
             hasLoaded = state.hasLoaded,
             error = state.displayError,
             onOpen = onOpen,
@@ -70,6 +78,8 @@ fun FeedScreen(viewModel: FeedScreenViewModelContract, onOpen: (String) -> Unit)
 @Composable
 private fun InnerFeedScreen(
     items: List<ArticleDomain>,
+    suggestions: ImmutableList<StarterFeedDomain>,
+    onStarterFeed: (StarterFeedDomain) -> Unit,
     unreadOnly: Boolean,
     loading: Boolean,
     hasLoaded: Boolean,
@@ -121,6 +131,15 @@ private fun InnerFeedScreen(
                     stringResource(Res.string.ui_a_fresh_page),
                     stringResource(Res.string.ui_follow_an_rss_or_atom_feed_to_bring_your),
                 )
+            }
+        if (hasLoaded && !loading && items.isEmpty() && !unreadOnly && suggestions.isNotEmpty())
+            item {
+                SectionTitle(title = stringResource(Res.string.feed_starter_sources))
+                GroupedSurface {
+                    suggestions.forEach { feed ->
+                        NavigationRow(title = feed.publisher, onClick = { onStarterFeed(feed) })
+                    }
+                }
             }
         if (!loading)
             items(items, key = { it.id }) { article ->

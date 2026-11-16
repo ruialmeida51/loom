@@ -27,6 +27,7 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runSkikoComposeUiTest
+import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
@@ -56,6 +57,7 @@ class FinancialFlowsUiTest {
             onNodeWithTag("expense_title").performTextInput("Beach groceries")
             onNodeWithTag("expense_amount").performTextInput("30.00")
             onNodeWithText("Split").performClick()
+            onNodeWithTag("split_method").performClick()
             onNodeWithText("By shares").performClick()
             onNodeWithContentDescription("Share for You").performTextReplacement("2")
             capture("split-shares-light")
@@ -127,13 +129,17 @@ class FinancialFlowsUiTest {
             onNodeWithTag("expense_title").performTextInput("Shared dinner")
             onNodeWithTag("expense_amount").performTextInput("12.00")
             onNodeWithText("Split").performClick()
+            onNodeWithTag("split_method").performClick()
             onNodeWithText("Percentages").performClick()
             onNodeWithContentDescription("Share for You").performTextReplacement("60")
             onNodeWithContentDescription("Share for Alex").performTextReplacement("40")
             onNodeWithContentDescription("Share for Sam").performTextReplacement("0")
             onNodeWithText("Done").performClick()
-            onNodeWithText("€7.20").assertExists()
+            onNodeWithText("Percentages", substring = true).assertExists()
             onNodeWithText("Split").performClick()
+            onNodeWithText("€7.20").assertExists()
+            onNodeWithContentDescription("Share for You").assertTextContains("60")
+            onNodeWithTag("split_method").performClick()
             onNodeWithText("Exact amounts").performClick()
             onNodeWithContentDescription("Share for You").performTextReplacement("6.00")
             onNodeWithContentDescription("Share for Alex").performTextReplacement("6.00")
@@ -146,6 +152,26 @@ class FinancialFlowsUiTest {
             capture("expense-date-light")
             onNodeWithText("Done").performClick()
             onNodeWithTag("expense_amount").assertTextContains("12.00")
+        }
+
+    @Test
+    fun splitControlsAndFooterStayReachableOnANarrowScreenWithLargerText() =
+        runSkikoComposeUiTest(size = Size(360f, 640f), density = Density(1f, 1.4f)) {
+            startApp()
+            onNodeWithTag("home_add_expense").performScrollTo().performClick()
+            onNodeWithTag("expense_amount").performTextInput("30.00")
+            onNodeWithTag("expense_title").performTextInput("Weekend food")
+            onNodeWithText("Split").performScrollTo().performClick()
+            onNodeWithTag("split_method").performClick()
+            onNodeWithText("By shares").performClick()
+            onNodeWithContentDescription("Share for You")
+                .performScrollTo()
+                .performTextReplacement("2")
+            onNodeWithTag("confirm_expense_split").assertIsDisplayed()
+            capture("split-shares-narrow")
+            onNodeWithTag("confirm_expense_split").performClick()
+            onNodeWithTag("expense_title").assertTextContains("Weekend food")
+            onNodeWithText("Save expense").assertIsDisplayed()
         }
 
     @Test

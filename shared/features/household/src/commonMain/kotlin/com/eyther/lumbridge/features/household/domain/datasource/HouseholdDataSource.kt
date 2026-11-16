@@ -20,6 +20,10 @@ interface HouseholdDataSource {
 
     suspend fun getMembers(householdId: String): AppResult<List<MemberDomain>>
 
+    /** Recent identities may seed capture; explicit member reads and retries remain fresh. */
+    suspend fun getMemberReferences(householdId: String): AppResult<List<MemberDomain>> =
+        getMembers(householdId = householdId)
+
     suspend fun revokeInvitation(householdId: String): AppResult<Unit>
 
     suspend fun createInvitation(householdId: String): AppResult<String>

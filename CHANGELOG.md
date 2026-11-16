@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Capture expenses sooner with amount-first entry, compact summaries and smaller split controls.
+- Keep loaded content visible during refresh and remove forced loading waits.
+- Load Home sections independently, with compact shortcuts and a secondary news preview.
+- Start reading with optional, editable BBC World and NASA feed suggestions.
+- Apply a complete light/dark Material palette adapted from the original Lumbridge.
+
 ## [4.0.3] - 2026-11-16
 
 - Select and delete completed groceries; keep checklist rows aligned while typing.

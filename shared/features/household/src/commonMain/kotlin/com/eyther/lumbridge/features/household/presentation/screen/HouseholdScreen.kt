@@ -48,7 +48,7 @@ fun HouseholdScreen(
     ) {
         InnerHouseholdScreen(
             items = state.items,
-            busy = state.loading || state.refreshing,
+            busy = state.loading,
             error = state.error,
             onSelect = onSelect,
             onDismiss = viewModel::onDismissError,

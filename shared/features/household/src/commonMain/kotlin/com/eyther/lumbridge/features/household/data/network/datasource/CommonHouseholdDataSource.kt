@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.household.data.network.datasource
 
+import com.eyther.lumbridge.core.data.local.ReferenceSnapshot
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.asApiResult
 import com.eyther.lumbridge.core.data.network.safeApiCall
@@ -29,6 +30,7 @@ class CommonHouseholdDataSource(
     private val access: SupabaseAccess,
     private val profileDataSource: ProfileDataSource,
 ) : HouseholdDataSource {
+    private val members = ReferenceSnapshot<List<MemberDomain>>()
 
     override suspend fun getHouseholds(): AppResult<List<HouseholdDomain>> {
         return safeApiCall(
@@ -96,7 +98,14 @@ class CommonHouseholdDataSource(
             loadMembers(householdId = householdId)
         }
 
+    override suspend fun getMemberReferences(householdId: String): AppResult<List<MemberDomain>> =
+        safeApiCall(mapError = Exception::toHouseholdError) {
+            members.get(key = "${access.userId()}:$householdId")
+                ?: loadMembers(householdId = householdId)
+        }
+
     private suspend fun loadMembers(householdId: String): List<MemberDomain> {
+        val userId = access.userId()
         val request = HouseholdRequest(householdId = householdId)
         return access
             .requireClient()
@@ -104,6 +113,7 @@ class CommonHouseholdDataSource(
             .rpc("household_members_with_names", request)
             .decodeList<MemberResponse>()
             .map { it.toDomain() }
+            .also { members.put(key = "$userId:$householdId", value = it) }
     }
 
     override suspend fun revokeInvitation(householdId: String): AppResult<Unit> =

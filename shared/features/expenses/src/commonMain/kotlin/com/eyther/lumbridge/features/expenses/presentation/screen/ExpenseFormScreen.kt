@@ -9,48 +9,50 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingForm
+import com.eyther.lumbridge.core.presentation.components.LoadingRow
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
-import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_retry
-import com.eyther.lumbridge.features.expenses.generated.resources.form_amount
 import com.eyther.lumbridge.features.expenses.generated.resources.form_date
-import com.eyther.lumbridge.features.expenses.generated.resources.form_description
 import com.eyther.lumbridge.features.expenses.generated.resources.form_less
 import com.eyther.lumbridge.features.expenses.generated.resources.form_monthly
 import com.eyther.lumbridge.features.expenses.generated.resources.form_more
 import com.eyther.lumbridge.features.expenses.generated.resources.form_recurring_unchanged
 import com.eyther.lumbridge.features.expenses.generated.resources.form_save
 import com.eyther.lumbridge.features.expenses.generated.resources.form_split
+import com.eyther.lumbridge.features.expenses.generated.resources.split_participant_count
+import com.eyther.lumbridge.features.expenses.generated.resources.split_summary
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_who_paid
+import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseCaptureFields
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
 import com.eyther.lumbridge.features.expenses.presentation.mapper.expenseCategoryLabel
 import com.eyther.lumbridge.features.expenses.presentation.mapper.splitMethodLabel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
-import com.eyther.lumbridge.features.household.presentation.components.MemberPicker
+import com.eyther.lumbridge.features.household.presentation.components.MemberPickerRow
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -84,10 +86,10 @@ fun ExpenseFormScreen(
         category = state.category,
         recurring = state.recurring,
         splitMethod = state.split.method,
-        shares = state.shares,
-        memberNames = state.memberNames,
+        participantCount = state.split.participants.size,
         showDetails = state.showDetails,
-        editing = state.expense != null,
+        editing = state.editing,
+        readyForInput = !state.editing || state.expense != null,
         loading = state.loading,
         busy = state.busy,
         canSave = state.canSave,
@@ -117,10 +119,10 @@ private fun InnerExpenseFormScreen(
     category: String,
     recurring: Boolean,
     splitMethod: ExpenseSplitMethodDomain,
-    shares: Map<String, Long>?,
-    memberNames: Map<String, String>,
+    participantCount: Int,
     showDetails: Boolean,
     editing: Boolean,
+    readyForInput: Boolean,
     loading: Boolean,
     busy: Boolean,
     canSave: Boolean,
@@ -139,65 +141,59 @@ private fun InnerExpenseFormScreen(
 ) {
     Column(Modifier.fillMaxSize().imePadding()) {
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(LoomSpacing.content),
+            verticalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
         ) {
-            if (loading) LoadingForm()
+            if (readyForInput) {
+                ExpenseCaptureFields(
+                    amount = amount,
+                    title = title,
+                    currency = account?.currency,
+                    enabled = !busy,
+                    onAmount = onAmount,
+                    onTitle = onTitle,
+                )
+            } else if (loading) LoadingForm()
             error?.let { message ->
-                ErrorNotice(message = message, onDismiss = onDismiss)
+                ErrorNotice(message = message, onDismiss = if (account == null) null else onDismiss)
                 if (account == null)
-                    TextButton(onClick = onRetry) { Text(stringResource(Res.string.balance_retry)) }
+                    OutlinedButton(onClick = onRetry) {
+                        Text(stringResource(Res.string.balance_retry))
+                    }
             }
+            if (loading && account == null && readyForInput) LoadingRow()
             if (account != null) {
                 Text(
                     accountLabel(account),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = onTitle,
-                    label = { Text(stringResource(Res.string.form_description)) },
-                    singleLine = true,
-                    enabled = !busy,
-                    modifier = Modifier.fillMaxWidth().testTag("expense_title"),
-                )
-                OutlinedTextField(
-                    value = amount,
-                    onValueChange = onAmount,
-                    label = { Text(stringResource(Res.string.form_amount, account.currency)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true,
-                    enabled = !busy,
-                    modifier = Modifier.fillMaxWidth().testTag("expense_amount"),
-                )
-                MemberPicker(
-                    label = stringResource(Res.string.ui_who_paid),
-                    members = members,
-                    selectedId = paidBy,
-                    onSelected = onPayer,
-                    enabled = !busy,
-                )
-                NavigationRow(
-                    title = stringResource(Res.string.form_split),
-                    description = splitMethodLabel(splitMethod),
-                    onClick = onSplit,
-                    enabled = !busy,
-                )
-                shares?.forEach { (id, share) ->
-                    Row {
-                        Text(
-                            memberNames[id].orEmpty(),
-                            modifier = Modifier.weight(1f),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        Text(
-                            MoneyDomain(share, account.currency).formatted(),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
+                GroupedSurface {
+                    MemberPickerRow(
+                        label = stringResource(Res.string.ui_who_paid),
+                        members = members,
+                        selectedId = paidBy,
+                        onSelected = onPayer,
+                        enabled = !busy,
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    NavigationRow(
+                        title = stringResource(Res.string.form_split),
+                        value =
+                            stringResource(
+                                Res.string.split_summary,
+                                splitMethodLabel(splitMethod),
+                                pluralStringResource(
+                                    Res.plurals.split_participant_count,
+                                    participantCount,
+                                    participantCount,
+                                ),
+                            ),
+                        onClick = onSplit,
+                        enabled = !busy,
+                    )
                 }
-                TextButton(onClick = { onDetails(!showDetails) }, enabled = !busy) {
+                OutlinedButton(onClick = { onDetails(!showDetails) }, enabled = !busy) {
                     Text(
                         stringResource(
                             if (showDetails) Res.string.form_less else Res.string.form_more,
@@ -250,7 +246,9 @@ private fun InnerExpenseFormScreen(
             onClick = onSave,
             enabled = canSave,
             loading = busy,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(horizontal = LoomSpacing.content, vertical = LoomSpacing.medium),
         )
     }
 }

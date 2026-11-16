@@ -124,6 +124,8 @@ class DesignFlowsUiTest {
                             onReminders = {},
                             onShopping = {},
                             onAddReminder = {},
+                            onFeed = {},
+                            onOpenStory = {},
                         )
                     }
                 }
@@ -149,6 +151,8 @@ class DesignFlowsUiTest {
                             onReminders = {},
                             onShopping = {},
                             onAddReminder = {},
+                            onFeed = {},
+                            onOpenStory = {},
                         )
                     }
                 }
@@ -157,10 +161,10 @@ class DesignFlowsUiTest {
                 }
                 onNodeWithText("Check your connection and try again.").assertExists()
                 onNodeWithTag("home_reminders_empty").assertDoesNotExist()
-                onNodeWithTag("home_shopping_preview").assertDoesNotExist()
+                onNodeWithTag("home_shopping_preview").assertExists()
                 onNodeWithText("All settled up").assertDoesNotExist()
                 onNodeWithText("Try again").performClick()
-                waitUntil(timeoutMillis = 5000) { viewModel.state.value.hasOverview }
+                waitUntil(timeoutMillis = 5000) { viewModel.state.value.reminderItems != null }
                 onNodeWithText("Check your connection and try again.").assertDoesNotExist()
                 assertEquals(2, fixture.loads)
             } finally {

@@ -142,8 +142,9 @@ Read [PATTERNS_COMPONENTS](../PATTERNS_COMPONENTS.md) and [PATTERNS_UI](../PATTE
 - Insets are applied once. Scroll padding does not participate in section spacing; preserve keyboard
   and bottom-bar clearance. Skeletons follow the final content's grouping and spacing.
 
-- Destructive actions use filled/outlined buttons, never text buttons. Initial and explicit-refresh
-  reads show skeletons; mutation progress and success feedback stay in action controls/snackbars.
+- Destructive actions use filled/outlined buttons, never text buttons. Initial missing content
+  shows skeletons; explicit refresh retains content and shows an indicator. Do not delay usable data.
+  Mutation progress and success feedback stay in action controls/snackbars.
 - Check shopping selection against restored/changed rows, short-invitation rate-limit persistence,
   reminder recurrence feedback and one-time inset consumption.
 

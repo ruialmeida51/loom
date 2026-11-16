@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.household.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
@@ -32,7 +31,7 @@ class HouseholdDetailsScreenViewModel(
         ) { state ->
             refreshRequests
                 .flatMapLatest {
-                    getMembersStreamUseCase(householdId = context.id).delayFirstAtLeast()
+                    getMembersStreamUseCase(householdId = context.id)
                 }
                 .updateState(state) { result ->
                     when (result) {

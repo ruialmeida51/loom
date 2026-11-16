@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.extensions.delayAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.launchWith
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
@@ -71,9 +70,12 @@ class ExpenseDetailsScreenViewModel(
 
     private suspend fun loadDetails(state: MutableStateFlow<ExpenseDetailsState>) {
         when (
-            val result = delayAtLeast {
-                getExpenseFormUseCase(accountId = params.accountId, expenseId = params.expenseId)
-            }
+            val result =
+                getExpenseFormUseCase(
+                    accountId = params.accountId,
+                    expenseId = params.expenseId,
+                    refreshReferences = true,
+                )
         ) {
             is AppResult.Success ->
                 state.update { oldState ->

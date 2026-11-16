@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,7 +25,7 @@ fun SectionTitle(title: String, action: String? = null, onAction: () -> Unit = {
     ) {
         Text(title, style = MaterialTheme.typography.titleLarge)
         if (action != null)
-            TextButton(onClick = onAction) {
+            OutlinedButton(onClick = onAction) {
                 Text(action)
                 Spacer(Modifier.width(5.dp))
                 LoomIcon(Glyph.ARROW, Modifier.size(15.dp), MaterialTheme.colorScheme.primary)
