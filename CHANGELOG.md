@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.3] - 2026-11-16
+
 - Select and delete completed groceries; keep checklist rows aligned while typing.
 - Pull to refresh with skeletons and clearer reminder completion feedback.
 - See upcoming reminders and a shopping preview on Home.
