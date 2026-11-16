@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.expenses.presentation.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,8 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.ListRow
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.former_member
@@ -29,9 +30,12 @@ internal fun ExpenseHistoryRow(
 ) {
     when (item) {
         is ExpenseHistoryItemUi.Purchase ->
-            LoomCard(onClick = { onOpen(item.expense) }) {
+            ListRow {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .clickable { onOpen(item.expense) }
+                            .padding(vertical = LoomSpacing.small),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
@@ -41,28 +45,34 @@ internal fun ExpenseHistoryRow(
                                 Res.string.history_paid_by,
                                 item.payerName ?: stringResource(Res.string.former_member),
                             ),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     Column(
                         horizontalAlignment = Alignment.End,
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
                     ) {
-                        Text(item.amount, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            item.amount,
+                            style =
+                                MaterialTheme.typography.titleMedium.copy(
+                                    fontFeatureSettings = "tnum",
+                                ),
+                        )
                         Text(
                             stringResource(
                                 Res.string.history_your_share,
                                 item.yourShare,
                             ),
-                            style = MaterialTheme.typography.labelSmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
             }
         is ExpenseHistoryItemUi.Repayment ->
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = LoomSpacing.medium)) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         stringResource(Res.string.history_repayment),
@@ -74,7 +84,7 @@ internal fun ExpenseHistoryRow(
                             item.fromName ?: stringResource(Res.string.former_member),
                             item.toName ?: stringResource(Res.string.former_member),
                         ),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }

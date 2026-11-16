@@ -12,6 +12,10 @@ interface ExpenseAccountDataSource {
 
     suspend fun getAccount(id: String): AppResult<ExpenseAccountDomain>
 
+    /** Initial expense capture may reuse recent reference data; editing still uses getAccount. */
+    suspend fun getReferenceAccount(id: String): AppResult<ExpenseAccountDomain> =
+        getAccount(id = id)
+
     suspend fun selectAccount(id: String): AppResult<Unit>
 
     suspend fun saveAccount(account: ExpenseAccountDomain): AppResult<ExpenseAccountDomain>

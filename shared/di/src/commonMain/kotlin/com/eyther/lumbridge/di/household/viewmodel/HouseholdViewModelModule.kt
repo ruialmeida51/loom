@@ -28,10 +28,12 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.E
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedScreenViewModel
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
-import com.eyther.lumbridge.features.home.domain.usecase.GetHomeOverviewStreamUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeRemindersStreamUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.home.presentation.viewmodel.HomeScreenViewModel
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
@@ -109,22 +111,30 @@ class HouseholdViewModelModule {
     @KoinViewModel(binds = [FeedScreenViewModelContract::class])
     fun provideFeedScreenViewModel(
         getFeedStreamUseCase: GetFeedStreamUseCase,
+        getStarterFeedsUseCase: GetStarterFeedsUseCase,
         followFeedUseCase: FollowFeedUseCase,
         markArticleReadUseCase: MarkArticleReadUseCase,
     ): FeedScreenViewModelContract =
         FeedScreenViewModel(
             getFeedStreamUseCase = getFeedStreamUseCase,
+            getStarterFeedsUseCase = getStarterFeedsUseCase,
             followFeedUseCase = followFeedUseCase,
             markArticleReadUseCase = markArticleReadUseCase,
         )
 
     @KoinViewModel(binds = [HomeScreenViewModelContract::class])
     fun provideHomeScreenViewModel(
-        getHomeOverviewStreamUseCase: GetHomeOverviewStreamUseCase,
+        getHomeRemindersStreamUseCase: GetHomeRemindersStreamUseCase,
+        getHomeShoppingStreamUseCase: GetHomeShoppingStreamUseCase,
+        getFeedStreamUseCase: GetFeedStreamUseCase,
+        markArticleReadUseCase: MarkArticleReadUseCase,
         context: HouseholdContextDomain,
     ): HomeScreenViewModelContract =
         HomeScreenViewModel(
-            getHomeOverviewStreamUseCase = getHomeOverviewStreamUseCase,
+            getHomeRemindersStreamUseCase = getHomeRemindersStreamUseCase,
+            getHomeShoppingStreamUseCase = getHomeShoppingStreamUseCase,
+            getFeedStreamUseCase = getFeedStreamUseCase,
+            markArticleReadUseCase = markArticleReadUseCase,
             context = context,
         )
 
@@ -201,7 +211,6 @@ class HouseholdViewModelModule {
         @InjectedParam params: ExpenseFormScreenViewModelContract.Params,
         getExpenseFormUseCase: GetExpenseFormUseCase,
         saveExpenseUseCase: SaveExpenseUseCase,
-        getMembersStreamUseCase: GetMembersStreamUseCase,
         context: HouseholdContextDomain,
         trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
     ): ExpenseFormScreenViewModelContract =
@@ -209,7 +218,6 @@ class HouseholdViewModelModule {
             params = params,
             getExpenseFormUseCase = getExpenseFormUseCase,
             saveExpenseUseCase = saveExpenseUseCase,
-            getMembersStreamUseCase = getMembersStreamUseCase,
             context = context,
             trackAnalyticsEventUseCase = trackAnalyticsEventUseCase,
         )

@@ -6,12 +6,14 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.LoomDemoApp
@@ -34,9 +36,13 @@ class HomeMoreUiTest {
                 onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
                     onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
-            for (tag in listOf("home_add_expense", "home_add_reminder")) {
-                val bounds = onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
-                assertTrue(abs(bounds.width - bounds.height) < 1f, "Quick actions stay square")
+            for (tag in listOf("home_action_icon_MONEY", "home_action_icon_BELL")) {
+                val bounds =
+                    onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+                assertTrue(
+                    abs(bounds.width - bounds.height) < 1f,
+                    "Quick action icons keep their square target",
+                )
             }
             onNodeWithText("Feed").assertDoesNotExist()
             onNodeWithTag("home_add_reminder").performClick()
@@ -68,6 +74,23 @@ class HomeMoreUiTest {
             onNodeWithTag("navigation_more").performClick()
             onNodeWithText("Household details").performScrollTo().assertIsDisplayed()
             capture("more-short-large-text")
+        }
+
+    @Test
+    fun secondaryNewsPreviewOpensTheFullFeedAndBackKeepsHomeScroll() =
+        runSkikoComposeUiTest(size = Size(440f, 760f)) {
+            ThemePreferences.set("LIGHT")
+            setContent { LoomDemoApp() }
+            waitUntil(timeoutMillis = 10000) {
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithTag("home_content").performScrollToNode(hasText("All news"))
+            onNodeWithTag("home_feed_preview").assertExists()
+            capture("home-news-light")
+            onNodeWithText("All news").performClick()
+            onNodeWithText("The reading corner").assertExists()
+            onNodeWithContentDescription("Back").performClick()
+            onNodeWithText("All news").assertIsDisplayed()
         }
 
     private fun SkikoComposeUiTest.capture(name: String) {

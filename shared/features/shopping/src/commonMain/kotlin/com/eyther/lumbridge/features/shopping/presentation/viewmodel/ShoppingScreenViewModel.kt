@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.shopping.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.newId
@@ -110,7 +109,7 @@ class ShoppingScreenViewModel(
             .observeWith(viewModelScope) { state ->
                 refreshRequests
                     .flatMapLatest {
-                        getShoppingStreamUseCase().delayFirstAtLeast().map { result ->
+                        getShoppingStreamUseCase().map { result ->
                             when (result) {
                                 is AppResult.Failure -> result
                                 is AppResult.Success -> {

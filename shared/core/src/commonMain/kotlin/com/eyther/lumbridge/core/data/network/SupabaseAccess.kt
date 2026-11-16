@@ -1,6 +1,5 @@
 package com.eyther.lumbridge.core.data.network
 
-import com.eyther.lumbridge.core.coroutines.extensions.delayAtLeast
 import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.newId
 import io.github.jan.supabase.SupabaseClient
@@ -34,7 +33,7 @@ class SupabaseAccess(
      */
     fun <T> watch(table: String, scopeId: String, load: suspend () -> T): Flow<T> = channelFlow {
         val client = requireClient()
-        send(delayAtLeast { load() })
+        send(load())
         val invalidations = Channel<Unit>(capacity = Channel.CONFLATED)
         val channel = client.channel("loom-$table-$scopeId-${newId()}")
         val changes =

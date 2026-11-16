@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.newId
@@ -61,7 +60,7 @@ class ExpensesScreenViewModel(
             }
             .observeWith(viewModelScope) { state ->
                 refreshRequests
-                    .flatMapLatest { getExpenseLedgerStreamUseCase().delayFirstAtLeast() }
+                    .flatMapLatest { getExpenseLedgerStreamUseCase() }
                     .updateState(state) { result ->
                         when (result) {
                             is AppResult.Success ->

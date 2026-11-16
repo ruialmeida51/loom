@@ -2,11 +2,14 @@ package com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts
 
 import com.eyther.lumbridge.core.viewmodel.LoomViewModel
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
+import com.eyther.lumbridge.features.feed.domain.model.StarterFeedDomain
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class FeedScreenViewModelContract : LoomViewModel() {
 
     abstract val state: StateFlow<FeedState>
+
+    abstract fun onStarterFeedSelected(feed: StarterFeedDomain)
 
     abstract fun onRetry()
 

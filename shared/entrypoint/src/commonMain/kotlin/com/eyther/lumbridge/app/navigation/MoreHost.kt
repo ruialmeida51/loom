@@ -8,20 +8,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import com.eyther.lumbridge.app.navigation.components.FlowScaffold
 import com.eyther.lumbridge.app.navigation.components.MoreOverviewContent
 import com.eyther.lumbridge.app.navigation.components.ScreenAnalyticsEffect
 import com.eyther.lumbridge.app.navigation.model.MoreDestination
-import com.eyther.lumbridge.app.navigation.sheet.FeedSheetHost
 import com.eyther.lumbridge.app.navigation.sheet.HouseholdDetailsSheetHost
 import com.eyther.lumbridge.app.navigation.sheet.RemindersSheetHost
 import com.eyther.lumbridge.core.navigation.composables.navigation3.HorizontalSlideNavDisplay
 import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
-import com.eyther.lumbridge.features.feed.presentation.screen.FeedScreen
-import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.presentation.screen.HouseholdDetailsScreen
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdDetailsScreenViewModelContract
@@ -30,7 +26,6 @@ import com.eyther.lumbridge.features.reminders.presentation.viewmodel.contracts.
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.household_details
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.toolbar_reminders
-import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_feed
 import kotlinx.serialization.modules.subclass
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -61,7 +56,6 @@ internal fun MoreHost(
                 else -> null
             },
     )
-    val uriHandler = LocalUriHandler.current
     HorizontalSlideNavDisplay(navigator = navigator, navigationState = state) { key ->
         when (key) {
             MoreDestination.Overview ->
@@ -76,17 +70,7 @@ internal fun MoreHost(
                         )
                     }
                 }
-            MoreDestination.Feed -> {
-                val viewModel: FeedScreenViewModelContract = koinViewModel()
-                FlowScaffold(
-                    title = stringResource(Res.string.ui_feed),
-                    onBack = navigator::goBack,
-                ) {
-                    FeedSheetHost(viewModel = viewModel) {
-                        FeedScreen(viewModel = viewModel, onOpen = uriHandler::openUri)
-                    }
-                }
-            }
+            MoreDestination.Feed -> FeedHost(onBack = navigator::goBack)
             MoreDestination.Reminders -> {
                 val viewModel: RemindersScreenViewModelContract = koinViewModel()
                 FlowScaffold(

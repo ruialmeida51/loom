@@ -37,3 +37,14 @@ Roommates and couples should be able to record shared spending, manage groceries
 - Validate the chosen path with real keyboard, gestures, loading/failure, large text, narrow screens and light/dark states.
 - Record approved changes to loading policy, tokens and components in their existing authoritative guides; avoid accumulating contradictory rules.
 - Implement the redesign in reviewable slices and run a final audit after fixes. This research brief does not itself change production UI, backend schemas or release automation.
+
+## Delivery status
+
+The first implementation is complete: Material foundations, compact expense/split capture, prompt
+read delivery, retained refresh content, scoped reference reuse, independent Home sections and a
+secondary news preview with optional editable starter sources. Existing account/member reads,
+explicit retries and financial preflight remain fresh. Financial writes remain server-confirmed.
+
+See the [implementation audit](../usability-redesign-audit.md) and current screenshots for validation.
+Physical-device performance measurements and iOS gesture checks remain follow-up verification;
+shared layout tests do not establish network latency or frame-rate improvements on a phone.

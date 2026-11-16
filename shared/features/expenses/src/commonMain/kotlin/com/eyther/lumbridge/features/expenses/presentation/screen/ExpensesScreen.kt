@@ -31,6 +31,7 @@ import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.resources.calendarDateText
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
@@ -85,7 +86,7 @@ fun ExpensesScreen(
             memberNames = state.memberNames,
             userId = state.userId,
             currency = state.currency,
-            loading = state.loading || state.refreshing,
+            loading = state.loading,
             canCreate = state.canCreateExpense,
             error = state.displayError,
             onAccounts = { viewModel.onAccountsVisibilityChanged(true) },
@@ -208,7 +209,7 @@ private fun InnerExpensesScreen(
                 history.forEach { section ->
                     item(key = section.date) {
                         Text(
-                            section.date,
+                            calendarDateText(section.calendarDate),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

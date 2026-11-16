@@ -56,7 +56,7 @@ fun ExpenseDetailsScreen(
             currency = state.account?.currency.orEmpty(),
             memberNames = state.memberNames,
             canEdit = state.canEdit,
-            loading = state.loading || state.refreshing,
+            loading = state.loading,
             busy = state.busy,
             error = state.error,
             onEdit = onEdit,

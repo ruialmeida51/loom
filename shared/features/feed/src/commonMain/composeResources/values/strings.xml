@@ -18,4 +18,5 @@
     <string name="error_already_followed">Your household already follows this feed.</string>
     <string name="error_refresh_failed">The feed was added, but could not be refreshed. It will refresh automatically.</string>
     <string name="feed_retry">Try again</string>
+  <string name="feed_starter_sources">Some good starting points</string>
 </resources>

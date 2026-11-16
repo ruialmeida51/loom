@@ -1,6 +1,6 @@
 # Loom usability research and proposed design direction
 
-16 November 2026. Proposal following the [captured redesign brief](../plans/redesign-research-brief.md).
+16 November 2026. Baseline research following the [captured redesign brief](../plans/redesign-research-brief.md). Source and capture links below are pinned to the reviewed revision. See the [implementation audit](../usability-redesign-audit.md) for the resulting changes and current validation.
 
 ## Recommendation
 
@@ -40,7 +40,7 @@ Reference code: [original spacing](https://github.com/ruialmeida51/lumbridge-and
 
 ### Expense capture waits before the user can type
 
-[`GetExpenseFormUseCase`](../../shared/features/expenses/src/commonMain/kotlin/com/eyther/lumbridge/features/expenses/domain/usecase/GetExpenseFormUseCase.kt) requests the account, then household members, then the existing expense when editing. [`ExpenseFormScreen`](../../shared/features/expenses/src/commonMain/kotlin/com/eyther/lumbridge/features/expenses/presentation/screen/ExpenseFormScreen.kt) places description and amount inside `if (account != null)`. These are observable request dependencies and a UI gate, not evidence of how slow Supabase is.
+[`GetExpenseFormUseCase`](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/shared/features/expenses/src/commonMain/kotlin/com/eyther/lumbridge/features/expenses/domain/usecase/GetExpenseFormUseCase.kt) requests the account, then household members, then the existing expense when editing. [`ExpenseFormScreen`](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/shared/features/expenses/src/commonMain/kotlin/com/eyther/lumbridge/features/expenses/presentation/screen/ExpenseFormScreen.kt) places description and amount inside `if (account != null)`. These are observable request dependencies and a UI gate, not evidence of how slow Supabase is.
 
 Propose keeping the last successful account/member reference data scoped to the current user and household, and exposing draft inputs immediately. Refresh references in the background and validate authoritatively on save. Start independent reads together where that preserves policy and cancellation; do not make reference data globally shared just to avoid a request. Editing an existing expense still needs its actual record, with a distinct load/error state.
 
@@ -48,7 +48,7 @@ The current form already defaults payer to the current user, date to today and s
 
 ### Loading policy adds a deliberate floor and replaces useful content
 
-[`delayAtLeast`](../../shared/core/src/commonMain/kotlin/com/eyther/lumbridge/core/coroutines/extensions/Delay.kt) and [`delayFirstAtLeast`](../../shared/core/src/commonMain/kotlin/com/eyther/lumbridge/core/coroutines/extensions/DelayFirst.kt) default to 300 ms. [`SupabaseAccess.watch`](../../shared/core/src/commonMain/kotlin/com/eyther/lumbridge/core/data/network/SupabaseAccess.kt) applies a minimum delay to its first read; several ViewModels also delay first emissions. Nested/concurrent timers may overlap: this does **not** establish a universal 600 ms cost.
+[`delayAtLeast`](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/shared/core/src/commonMain/kotlin/com/eyther/lumbridge/core/coroutines/extensions/Delay.kt) and [`delayFirstAtLeast`](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/shared/core/src/commonMain/kotlin/com/eyther/lumbridge/core/coroutines/extensions/DelayFirst.kt) default to 300 ms. [`SupabaseAccess.watch`](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/shared/core/src/commonMain/kotlin/com/eyther/lumbridge/core/data/network/SupabaseAccess.kt) applies a minimum delay to its first read; several ViewModels also delay first emissions. Nested/concurrent timers may overlap: this does **not** establish a universal 600 ms cost.
 
 Shopping explicitly renders skeletons for `loading || refreshing`, hiding its loaded rows during a manual refresh. This follows the current engineering rule, including the earlier user request for refresh skeletons. The proposal revisits that choice openly:
 
@@ -62,7 +62,7 @@ Apple's loading guidance favors showing useful content promptly [S4]. NN/G descr
 
 ### Home currently waits for both feature streams
 
-[`GetHomeOverviewStreamUseCase`](../../shared/features/home/src/commonMain/kotlin/com/eyther/lumbridge/features/home/domain/usecase/GetHomeOverviewStreamUseCase.kt) combines reminders, shopping and selection. It cannot emit an overview until each has emitted. Consider independent section states, so a shopping delay does not prevent reminder content from becoming useful. Adding Feed must not introduce another gate for the whole page.
+[`GetHomeOverviewStreamUseCase`](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/shared/features/home/src/commonMain/kotlin/com/eyther/lumbridge/features/home/domain/usecase/GetHomeOverviewStreamUseCase.kt) combines reminders, shopping and selection. It cannot emit an overview until each has emitted. Consider independent section states, so a shopping delay does not prevent reminder content from becoming useful. Adding Feed must not introduce another gate for the whole page.
 
 ### Repeated subscriptions deserve measurement
 
@@ -70,11 +70,11 @@ Apple's loading guidance favors showing useful content promptly [S4]. NN/G descr
 
 ### Some responsiveness patterns already exist
 
-[`ShoppingScreenViewModel`](../../shared/features/shopping/src/commonMain/kotlin/com/eyther/lumbridge/features/shopping/presentation/viewmodel/ShoppingScreenViewModel.kt) already tracks pending item changes and acknowledges versions. Enter-driven additions and stable server positions were implemented in the preceding pass. Preserve these; investigate remaining movement using keyboard/device captures and tracing rather than rebuilding the checklist or attributing every jump to unstable Compose lists.
+[`ShoppingScreenViewModel`](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/shared/features/shopping/src/commonMain/kotlin/com/eyther/lumbridge/features/shopping/presentation/viewmodel/ShoppingScreenViewModel.kt) already tracks pending item changes and acknowledges versions. Enter-driven additions and stable server positions were implemented in the preceding pass. Preserve these; investigate remaining movement using keyboard/device captures and tracing rather than rebuilding the checklist or attributing every jump to unstable Compose lists.
 
 ### Information hierarchy remains expensive to scan
 
-The stored [Home](../screenshots/home-light.png), [shopping preview](../screenshots/home-shopping-preview.png), [expense form](../screenshots/expense-form-light.png), [split sheet](../screenshots/split-shares-light.png) and [expense list](../screenshots/money-light.png) show:
+The stored [Home](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/docs/screenshots/home-light.png), [shopping preview](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/docs/screenshots/home-shopping-preview.png), [expense form](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/docs/screenshots/expense-form-light.png), [split sheet](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/docs/screenshots/split-shares-light.png) and [expense list](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/docs/screenshots/money-light.png) show:
 
 - Large quick-action tiles and separate reminder cards put the shopping preview below the initial viewport. Keep the requested two quick actions; prototype a smaller footprint and fewer preview rows.
 - The expense form gives amount, description, payer, split and participant breakdown similar visual weight. A simple equal split repeats information that could be summarized until opened.
@@ -85,7 +85,7 @@ These observations identify prototype candidates; changing every card into a fla
 
 ### Theme roles and written rules need consolidation
 
-[`LoomTheme`](../../shared/core/src/commonMain/kotlin/com/eyther/lumbridge/core/presentation/theme/LoomTheme.kt) overrides a subset of Material's color roles. Other roles inherit library defaults and can diverge from Loom's palette when components change. Generate and review a complete light/dark scheme, then use roles consistently.
+[`LoomTheme`](https://github.com/ruialmeida51/loom/blob/a2fa148ab5eb5c5f6f239adfa10470312938c1b9/shared/core/src/commonMain/kotlin/com/eyther/lumbridge/core/presentation/theme/LoomTheme.kt) overrides a subset of Material's color roles. Other roles inherit library defaults and can diverge from Loom's palette when components change. Generate and review a complete light/dark scheme, then use roles consistently.
 
 The current design guide contains both older Today/Coming-up instructions and newer Reminders instructions, plus different refresh descriptions. Replace superseded sections when the new direction is accepted; do not append another layer of exceptions. Its original palette-preservation sentence is superseded by the user's authorization to reconsider colors.
 

@@ -3,11 +3,7 @@ package com.eyther.lumbridge.features.home.domain
 import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
-import com.eyther.lumbridge.features.home.domain.usecase.GetHomeOverviewStreamUseCase
-import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
-import com.eyther.lumbridge.features.reminders.domain.datasource.ReminderDataSource
-import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
-import com.eyther.lumbridge.features.reminders.domain.usecase.GetRemindersStreamUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingSelectionDataSource
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
@@ -42,19 +38,17 @@ class HomeShoppingPreviewTest {
                     ),
             )
         val useCase = overview(selection = selection, shopping = AppResult.Success(snapshot))
-        assertEquals(listOf("coffee"), useCase().first().getOrThrow().shoppingItems.map { it.name })
+        assertEquals(listOf("coffee"), useCase().first().getOrThrow().map { it.name })
         selection.value = "groceries"
-        assertEquals(listOf("milk"), useCase().first().getOrThrow().shoppingItems.map { it.name })
+        assertEquals(listOf("milk"), useCase().first().getOrThrow().map { it.name })
     }
 
     @Test
-    fun aShoppingFailureDoesNotHideLoadedReminders() = runTest {
+    fun aShoppingFailureRemainsTypedInsteadOfBecomingAnEmptyList() = runTest {
         val result =
             overview(MutableStateFlow(null), AppResult.Failure(CommonError.NoConnection()))()
                 .first()
-                .getOrThrow()
-        assertEquals("Bins", result.reminders.single().title)
-        assertIs<CommonError.NoConnection>(result.shoppingError)
+        assertIs<CommonError.NoConnection>(assertIs<AppResult.Failure>(result).error)
     }
 
     private fun item(name: String, list: String, checked: Boolean): ShoppingItemDomain =
@@ -70,33 +64,7 @@ class HomeShoppingPreviewTest {
     private fun overview(
         selection: MutableStateFlow<String?>,
         shopping: AppResult<ShoppingSnapshotDomain>,
-    ): GetHomeOverviewStreamUseCase {
-        val reminderSource =
-            object : ReminderDataSource {
-                override fun stream() =
-                    flowOf(
-                        AppResult.Success(
-                            listOf(
-                                ReminderDomain(
-                                    "id",
-                                    "Bins",
-                                    "2026-11-16T18:00:00Z",
-                                    "daily",
-                                    false,
-                                ),
-                            ),
-                        ),
-                    )
-
-                override suspend fun addReminder(reminder: ReminderDomain): AppResult<Unit> =
-                    error("Read-only test")
-
-                override suspend fun completeReminder(reminder: ReminderDomain): AppResult<Unit> =
-                    error("Read-only test")
-
-                override suspend fun removeReminder(id: String): AppResult<Unit> =
-                    error("Read-only test")
-            }
+    ): GetHomeShoppingStreamUseCase {
         val shoppingSource =
             object : ShoppingDataSource {
                 override fun stream() = flowOf(shopping)
@@ -127,21 +95,11 @@ class HomeShoppingPreviewTest {
                 override suspend fun selectList(id: String): AppResult<Unit> =
                     error("Read-only test")
             }
-        return GetHomeOverviewStreamUseCase(
-            getRemindersStreamUseCase =
-                GetRemindersStreamUseCase(reminderDataSource = reminderSource),
+        return GetHomeShoppingStreamUseCase(
             getShoppingStreamUseCase =
                 GetShoppingStreamUseCase(shoppingDataSource = shoppingSource),
             getShoppingSelectionStreamUseCase =
                 GetShoppingSelectionStreamUseCase(shoppingSelectionDataSource = selectionSource),
-            context =
-                HouseholdContextDomain(
-                    id = "home",
-                    userId = "you",
-                    name = "Home",
-                    currency = "EUR",
-                    timeZone = "UTC",
-                ),
         )
     }
 }

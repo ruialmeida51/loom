@@ -11,6 +11,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import com.eyther.lumbridge.app.navigation.components.FlowScaffold
 import com.eyther.lumbridge.app.navigation.components.ScreenAnalyticsEffect
 import com.eyther.lumbridge.app.navigation.model.HomeDestination
@@ -41,15 +42,18 @@ internal fun HomeHost(
     val state =
         rememberNavigationState(startRoot = HomeDestination.Home) {
             subclass(HomeDestination.Home::class)
+            subclass(HomeDestination.Feed::class)
             subclass(HomeDestination.Reminders::class)
             subclass(HomeDestination.ExpenseForm::class)
         }
+    val uriHandler = LocalUriHandler.current
     val navigator = remember(state) { Navigator(state = state) }
     val destination = state.getActiveBackStack()?.lastOrNull()
     ScreenAnalyticsEffect(
         screen =
             when (destination) {
                 HomeDestination.Home -> AnalyticsScreenDomain.HOME
+                HomeDestination.Feed -> AnalyticsScreenDomain.FEED
                 is HomeDestination.Reminders -> AnalyticsScreenDomain.REMINDERS
                 else -> null
             },
@@ -71,6 +75,8 @@ internal fun HomeHost(
                         HomeScreen(
                             viewModel = koinViewModel<HomeScreenViewModelContract>(),
                             onShopping = onShopping,
+                            onFeed = { navigator.navigateTo(HomeDestination.Feed) },
+                            onOpenStory = uriHandler::openUri,
                             onReminders = { navigator.navigateTo(HomeDestination.Reminders()) },
                             onAddExpense = {
                                 navigator.navigateTo(
@@ -83,6 +89,7 @@ internal fun HomeHost(
                         )
                     }
                 }
+            HomeDestination.Feed -> FeedHost(onBack = navigator::goBack)
             is HomeDestination.ExpenseForm ->
                 ExpenseFormHost(
                     accountId = key.accountId,

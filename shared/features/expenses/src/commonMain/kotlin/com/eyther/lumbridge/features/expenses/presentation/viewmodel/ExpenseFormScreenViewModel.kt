@@ -23,7 +23,6 @@ import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesText
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormState
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
-import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -32,7 +31,6 @@ class ExpenseFormScreenViewModel(
     private val params: ExpenseFormScreenViewModelContract.Params,
     private val getExpenseFormUseCase: GetExpenseFormUseCase,
     private val saveExpenseUseCase: SaveExpenseUseCase,
-    private val getMembersStreamUseCase: GetMembersStreamUseCase,
     private val context: HouseholdContextDomain,
     private val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
 ) : ExpenseFormScreenViewModelContract() {
@@ -47,11 +45,16 @@ class ExpenseFormScreenViewModel(
             ExpenseSplitSelectionDomain(ExpenseSplitMethodDomain.EQUAL, emptySet()),
     )
 
-    private val inputState = MutableStateFlow(InnerInputState())
+    private val inputState =
+        MutableStateFlow(
+            InnerInputState(paidBy = context.userId, occurredOn = todayIso(context.timeZone)),
+        )
     private val expenseId: String = params.expenseId ?: newId()
     private var initialized: Boolean = false
     private val mutableState =
-        MutableStateFlow(ExpenseFormState(userId = context.userId))
+        MutableStateFlow(
+                ExpenseFormState(userId = context.userId, editing = params.expenseId != null),
+            )
             .observeWith(viewModelScope) { state ->
                 inputState.updateState(state) { input ->
                     copy(
@@ -63,15 +66,6 @@ class ExpenseFormScreenViewModel(
                         recurring = input.recurring,
                         split = input.split,
                     )
-                }
-            }
-            .observeWith(viewModelScope) { state ->
-                getMembersStreamUseCase(householdId = context.id).updateState(state) { result ->
-                    if (result is AppResult.Success)
-                        copy(
-                            members = result.value.filter { it.id in account?.memberIds.orEmpty() },
-                        )
-                    else this
                 }
             }
             .launchWith(viewModelScope) { state -> loadInitialData(state = state) }
@@ -179,7 +173,10 @@ class ExpenseFormScreenViewModel(
     }
 
     override fun onRetry() {
-        launch { loadInitialData(state = mutableState) }
+        mutableState.update { oldState ->
+            oldState.copy(loading = oldState.account == null, error = null)
+        }
+        launch { loadInitialData(state = mutableState, refreshReferences = true) }
     }
 
     override fun onDismissError() {
@@ -191,10 +188,17 @@ class ExpenseFormScreenViewModel(
     }
 
     /** Refreshing identities must not replace an in-progress expense draft. */
-    private suspend fun loadInitialData(state: MutableStateFlow<ExpenseFormState>) {
+    private suspend fun loadInitialData(
+        state: MutableStateFlow<ExpenseFormState>,
+        refreshReferences: Boolean = false,
+    ) {
         when (
             val result =
-                getExpenseFormUseCase(accountId = params.accountId, expenseId = params.expenseId)
+                getExpenseFormUseCase(
+                    accountId = params.accountId,
+                    expenseId = params.expenseId,
+                    refreshReferences = refreshReferences,
+                )
         ) {
             is AppResult.Success -> {
                 val data = result.value
@@ -212,22 +216,21 @@ class ExpenseFormScreenViewModel(
                                 participants = expense.shares.keys,
                                 values = expense.splitValues.ifEmpty { expense.shares },
                             )
-                    inputState.value =
-                        InnerInputState(
-                            title = expense?.title.orEmpty(),
-                            amount =
-                                expense
-                                    ?.let {
-                                        MoneyDomain(it.amountMinor, data.account.currency)
-                                            .inputText()
-                                    }
-                                    .orEmpty(),
-                            paidBy = expense?.paidBy ?: context.userId,
-                            occurredOn = expense?.occurredOn ?: todayIso(context.timeZone),
-                            category = expense?.category ?: "Other",
-                            recurring = expense?.recurring ?: false,
-                            split = split,
-                        )
+                    inputState.update { oldState ->
+                        if (expense == null) oldState.copy(split = split)
+                        else
+                            InnerInputState(
+                                title = expense.title,
+                                amount =
+                                    MoneyDomain(expense.amountMinor, data.account.currency)
+                                        .inputText(),
+                                paidBy = expense.paidBy,
+                                occurredOn = expense.occurredOn,
+                                category = expense.category,
+                                recurring = expense.recurring,
+                                split = split,
+                            )
+                    }
                     initialized = true
                 }
                 state.update { oldState ->

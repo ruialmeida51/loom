@@ -14,7 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 
 /** Scroll the fields, keeping the primary action reachable with a keyboard or larger text. */
 @Composable
@@ -28,21 +28,22 @@ fun FormBottomSheet(
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+            modifier =
+                Modifier.padding(horizontal = LoomSpacing.content, vertical = LoomSpacing.medium),
         )
         Column(
             modifier =
                 Modifier.weight(1f, fill = false)
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                    .padding(horizontal = LoomSpacing.content, vertical = LoomSpacing.medium),
+            verticalArrangement = Arrangement.spacedBy(LoomSpacing.content),
             content = content,
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
+            horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
         ) {
             dismissAction()
             Column(modifier = Modifier.weight(1f)) { action() }

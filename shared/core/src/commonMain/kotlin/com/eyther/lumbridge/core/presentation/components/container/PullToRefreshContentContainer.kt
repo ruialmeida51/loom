@@ -16,8 +16,7 @@ import androidx.compose.ui.platform.testTag
 
 /**
  * Plannot's refresh container adapted to host-owned toolbars/insets. The child owns scrolling and
- * content padding; the ViewModel owns refresh progress and replaces fetched sections with
- * skeletons.
+ * content padding; the ViewModel owns refresh progress while loaded sections remain visible.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

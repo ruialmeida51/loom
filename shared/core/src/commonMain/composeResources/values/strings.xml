@@ -19,4 +19,18 @@
     <string name="error_service_unavailable">The service is unavailable. Please try again shortly.</string>
   <string name="icon_more">More</string>
     <string name="icon_delete">Delete</string>
+    <string name="calendar_date">%1$d %2$s %3$d</string>
+    <string name="calendar_january">January</string>
+    <string name="calendar_february">February</string>
+    <string name="calendar_march">March</string>
+    <string name="calendar_april">April</string>
+    <string name="calendar_may">May</string>
+    <string name="calendar_june">June</string>
+    <string name="calendar_july">July</string>
+    <string name="calendar_august">August</string>
+    <string name="calendar_september">September</string>
+    <string name="calendar_october">October</string>
+    <string name="calendar_november">November</string>
+    <string name="calendar_december">December</string>
+    <string name="calendar_date_without_year">%1$d %2$s</string>
 </resources>

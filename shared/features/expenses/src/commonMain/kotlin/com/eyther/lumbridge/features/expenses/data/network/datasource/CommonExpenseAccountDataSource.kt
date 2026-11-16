@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.expenses.data.network.datasource
 
 import com.eyther.lumbridge.core.data.local.PlatformStorage
+import com.eyther.lumbridge.core.data.local.ReferenceSnapshot
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.asApiResult
 import com.eyther.lumbridge.core.data.network.safeApiCall
@@ -32,6 +33,7 @@ class CommonExpenseAccountDataSource(
     private val selectionKey = "expense-account-${context.userId}-${context.id}"
     private val selectedId = MutableStateFlow(PlatformStorage.get(selectionKey) ?: context.id)
     private val changes = MutableStateFlow(0L)
+    private val accounts = ReferenceSnapshot<List<ExpenseAccountDomain>>()
 
     override fun streamSelection(): StateFlow<String> = selectedId.asStateFlow()
 
@@ -39,20 +41,33 @@ class CommonExpenseAccountDataSource(
         changes
             .flatMapLatest {
                 access.watch(table = "expense_accounts", scopeId = context.id) {
+                    val cacheKey = "${access.userId()}:${context.id}"
                     access
                         .requireClient()
                         .from("expense_accounts_with_members")
                         .select { filter { eq("household_id", context.id) } }
                         .decodeList<ExpenseAccountResponse>()
                         .map { it.toDomain() }
+                        .also { accounts.put(key = cacheKey, value = it) }
                 }
             }
             .asApiResult(mapError = Exception::toExpenseError)
 
     override suspend fun getAccount(id: String): AppResult<ExpenseAccountDomain> =
         safeApiCall(mapError = Exception::toExpenseError) {
-            loadAccount(id = id)
+            readAccount(id = id)
         }
+
+    override suspend fun getReferenceAccount(id: String): AppResult<ExpenseAccountDomain> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            val cacheKey = "${access.userId()}:${context.id}"
+            accounts.get(key = cacheKey)?.firstOrNull { it.id == id } ?: readAccount(id = id)
+        }
+
+    private suspend fun readAccount(id: String): ExpenseAccountDomain {
+        val cacheKey = "${access.userId()}:${context.id}"
+        return loadAccount(id = id).also { accounts.put(key = cacheKey, value = listOf(it)) }
+    }
 
     override suspend fun selectAccount(id: String): AppResult<Unit> = safeApiCall {
         PlatformStorage.put(selectionKey, id)
@@ -68,6 +83,7 @@ class CommonExpenseAccountDataSource(
                 .postgrest
                 .rpc("save_expense_account", account.toRequest(householdId = context.id))
             val saved = loadAccount(id = account.id)
+            accounts.clear()
             changes.update { oldVersion -> oldVersion + 1 }
             saved
         }
@@ -102,6 +118,7 @@ class CommonExpenseAccountDataSource(
                 PlatformStorage.put(selectionKey, context.id)
                 selectedId.value = context.id
             }
+            accounts.clear()
             changes.update { oldVersion -> oldVersion + 1 }
             Unit
         }

@@ -9,5 +9,11 @@ abstract class HomeScreenViewModelContract : LoomViewModel() {
 
     abstract fun onRetry()
 
-    abstract fun onDismissError()
+    abstract fun onArticleOpened(id: String)
+
+    abstract fun onRemindersErrorDismissed()
+
+    abstract fun onShoppingErrorDismissed()
+
+    abstract fun onFeedErrorDismissed()
 }

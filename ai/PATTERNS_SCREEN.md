@@ -11,7 +11,7 @@ The Host consumes safe/toolbar/bottom-navigation insets; the nested container ad
 The scrollable child owns content padding and IME clearance. Forms retain explicit reference-data retry.
 
 Render exactly the relevant loading/error/empty/loaded state. A load failure retains prior content;
-initial-load failure must not become an empty success. Explicit refresh substitutes matching skeletons.
+initial-load failure must not become an empty success. Explicit refresh retains loaded content and shows its indicator.
 Background realtime updates do not remove content. Actions show button/row progress, never skeletons.
 
 Transient success uses SuccessSnackbar in the container's snackbarHost; the VM owns its lifetime.

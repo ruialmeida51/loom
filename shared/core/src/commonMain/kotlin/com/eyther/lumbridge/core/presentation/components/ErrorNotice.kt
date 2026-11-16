@@ -16,9 +16,9 @@ import com.eyther.lumbridge.core.generated.resources.ui_dismiss
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import org.jetbrains.compose.resources.stringResource
 
-/** A visible notice; callers omit its list item entirely when no error is present. */
+/** A visible error. Omit dismissal for initial read failures that still need an explicit retry. */
 @Composable
-fun ErrorNotice(message: TextResource, onDismiss: () -> Unit) {
+fun ErrorNotice(message: TextResource, onDismiss: (() -> Unit)? = null) {
     Surface(
         color = MaterialTheme.colorScheme.errorContainer,
         shape = RoundedCornerShape(16.dp),
@@ -30,7 +30,9 @@ fun ErrorNotice(message: TextResource, onDismiss: () -> Unit) {
                 color = MaterialTheme.colorScheme.onErrorContainer,
                 style = MaterialTheme.typography.bodyMedium,
             )
-            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.ui_dismiss)) }
+            onDismiss?.let { dismiss ->
+                TextButton(onClick = dismiss) { Text(stringResource(Res.string.ui_dismiss)) }
+            }
         }
     }
 }
