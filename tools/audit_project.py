@@ -71,6 +71,8 @@ for source in (ROOT / 'shared').rglob('*.kt'):
                 issues.append(f'Name the previous ViewModel state oldState: {path}')
             if re.search(r'\.observeWith\([^)]*\)\s*\{[^}]*mutableState\.update', text, re.S):
                 issues.append(f'Use updateState inside observeWith: {path}')
+        if re.search(r'TextButton\s*\([^)]*(?:\bonDelete\b|::onDeleteConfirmed\b|\bonRemove\b|\bonCancelConfirmed\b|\bonCancelRequested\b)', text, re.S):
+            issues.append(f'Destructive actions require a filled/outlined button: {path}')
         if '/presentation/screen/' in str(source):
             screen_count += 1
             screens = re.findall(r'^fun (\w+Screen)\(', text, re.M)
@@ -89,7 +91,7 @@ for source in (ROOT / 'shared').rglob('*.kt'):
             transport_count += 1
             if not re.search(r'/data/network/model/(?:request|response)/', str(source)):
                 issues.append(f'Transport model outside request/response package: {path}')
-            declarations = re.findall(r'^\s*(?:internal )?data class (\w+)', text, re.M)
+            declarations = re.findall(r'\b(?:internal\s+)?data\s+class\s+(\w+)', text, re.M)
             if declarations != [source.stem]:
                 issues.append(f'Transport model must have its own matching file: {path}')
             if len(re.findall(r'\bval\s+\w+\s*:', text)) != len(re.findall(r'@SerialName\(', text)):

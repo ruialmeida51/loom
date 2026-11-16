@@ -14,6 +14,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -28,6 +29,7 @@ import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.home.data.EmptyHomeViewModel
 import com.eyther.lumbridge.app.home.data.HomeRetryFixture
+import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import com.eyther.lumbridge.core.presentation.components.toolbar.Toolbar
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
@@ -54,6 +56,7 @@ class DesignFlowsUiTest {
             setContent { Box(Modifier.fillMaxSize().testTag("loom_app")) { LoomDemoApp() } }
             waitForHome()
             onNodeWithTag("navigation_shopping").performClick()
+            awaitLoadedDestination(tag = "shopping_content")
             onNodeWithTag("edit_Avocados").performClick()
             onNodeWithTag("form_sheet").assertIsDisplayed()
             onNodeWithText("What do we need?")
@@ -76,6 +79,7 @@ class DesignFlowsUiTest {
             setContent { Box(Modifier.fillMaxSize().testTag("loom_app")) { LoomDemoApp() } }
             waitForHome()
             onNodeWithTag("navigation_money").performClick()
+            awaitLoadedDestination(tag = "expenses_content")
             onNodeWithText("Everyday").assertExists()
             onNodeWithTag("navigation_home").performClick()
             onNodeWithTag("open_my_account").performClick()
@@ -93,6 +97,7 @@ class DesignFlowsUiTest {
             }
             onNodeWithContentDescription("Back").performClick()
             onNodeWithTag("navigation_money").performClick()
+            awaitLoadedDestination(tag = "expenses_content")
             onNodeWithTag("balances_view_balances").performClick()
             onNodeWithText("Rui").assertExists()
             onNodeWithTag("navigation_home").performClick()
@@ -117,6 +122,7 @@ class DesignFlowsUiTest {
                             viewModel = EmptyHomeViewModel(),
                             onAddExpense = { openedExpense = true },
                             onReminders = {},
+                            onShopping = {},
                             onAddReminder = {},
                         )
                     }
@@ -141,6 +147,7 @@ class DesignFlowsUiTest {
                             viewModel = viewModel,
                             onAddExpense = {},
                             onReminders = {},
+                            onShopping = {},
                             onAddReminder = {},
                         )
                     }
@@ -185,7 +192,8 @@ class DesignFlowsUiTest {
 
     private fun ComposeUiTest.waitForHome() {
         waitUntil(timeoutMillis = 10_000) {
-            onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+            onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
         }
     }
 

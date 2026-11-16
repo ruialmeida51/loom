@@ -27,6 +27,7 @@ import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.ListRow
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.PageHeading
+import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
@@ -49,19 +50,21 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun FeedScreen(viewModel: FeedScreenViewModelContract, onOpen: (String) -> Unit) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    InnerFeedScreen(
-        items = state.visibleArticles,
-        unreadOnly = state.unreadOnly,
-        loading = state.loading,
-        hasLoaded = state.hasLoaded,
-        error = state.displayError,
-        onOpen = onOpen,
-        onShowFollow = viewModel::onFollowSheetVisibilityChanged,
-        onUnreadOnly = viewModel::onUnreadOnlyChanged,
-        onDismiss = viewModel::onDismissError,
-        onRetry = viewModel::onRetry,
-        onMarkRead = viewModel::onMarkRead,
-    )
+    PullToRefreshContentContainer(isRefreshing = state.refreshing, onRefresh = viewModel::onRetry) {
+        InnerFeedScreen(
+            items = state.visibleArticles,
+            unreadOnly = state.unreadOnly,
+            loading = state.loading || state.refreshing,
+            hasLoaded = state.hasLoaded,
+            error = state.displayError,
+            onOpen = onOpen,
+            onShowFollow = viewModel::onFollowSheetVisibilityChanged,
+            onUnreadOnly = viewModel::onUnreadOnlyChanged,
+            onDismiss = viewModel::onDismissError,
+            onRetry = viewModel::onRetry,
+            onMarkRead = viewModel::onMarkRead,
+        )
+    }
 }
 
 @Composable
@@ -119,46 +122,47 @@ private fun InnerFeedScreen(
                     stringResource(Res.string.ui_follow_an_rss_or_atom_feed_to_bring_your),
                 )
             }
-        items(items, key = { it.id }) { article ->
-            ListRow {
-                Text(
-                    article.source.uppercase(),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-                Text(article.title, style = MaterialTheme.typography.titleLarge)
-                Text(
-                    article.summary,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TextButton(onClick = { onMarkRead(article, !article.read) }) {
-                        Text(
-                            if (article.read) stringResource(Res.string.ui_mark_unread)
-                            else stringResource(Res.string.ui_mark_as_read),
-                        )
-                    }
-                    TextButton(
-                        onClick = {
-                            onMarkRead(article, true)
-                            onOpen(article.url)
-                        },
+        if (!loading)
+            items(items, key = { it.id }) { article ->
+                ListRow {
+                    Text(
+                        article.source.uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                    Text(article.title, style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        article.summary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(stringResource(Res.string.ui_read_story))
-                        Spacer(Modifier.width(6.dp))
-                        LoomIcon(
-                            Glyph.ARROW,
-                            Modifier.size(16.dp),
-                            MaterialTheme.colorScheme.primary,
-                        )
+                        TextButton(onClick = { onMarkRead(article, !article.read) }) {
+                            Text(
+                                if (article.read) stringResource(Res.string.ui_mark_unread)
+                                else stringResource(Res.string.ui_mark_as_read),
+                            )
+                        }
+                        TextButton(
+                            onClick = {
+                                onMarkRead(article, true)
+                                onOpen(article.url)
+                            },
+                        ) {
+                            Text(stringResource(Res.string.ui_read_story))
+                            Spacer(Modifier.width(6.dp))
+                            LoomIcon(
+                                Glyph.ARROW,
+                                Modifier.size(16.dp),
+                                MaterialTheme.colorScheme.primary,
+                            )
+                        }
                     }
                 }
             }
-        }
     }
 }

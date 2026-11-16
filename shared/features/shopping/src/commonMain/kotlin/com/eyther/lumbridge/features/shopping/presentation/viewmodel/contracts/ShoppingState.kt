@@ -13,6 +13,7 @@ import com.eyther.lumbridge.features.shopping.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingEntryUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentSet
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 
@@ -24,9 +25,16 @@ data class ShoppingState(
     val savingItemIds: PersistentSet<String> = persistentSetOf(),
     val pendingEntries: List<ShoppingEntryUi> = emptyList(),
     val entryRevision: Long = 0,
+    val selectingCompleted: Boolean = false,
+    val selectedCompletedIds: PersistentSet<String> = persistentSetOf(),
+    val pendingCompletedDeletion: ImmutableList<ShoppingItemDomain> = persistentListOf(),
+    val confirmingCompletedDeletion: Boolean = false,
+    val deletingCompleted: Boolean = false,
+    val successMessage: TextResource? = null,
     val deletingList: ShoppingListDomain? = null,
     val inlineError: TextResource? = null,
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val quantity: String = "",
     val category: String = "Produce",
     val showAdd: Boolean = false,
@@ -72,12 +80,11 @@ data class ShoppingState(
             }
             .toImmutableList()
     val canAddInline: Boolean = inlineName.isNotBlank() && selectedList != null && !busy
-    val remainingCount: Int = items.count { !it.checked }
-    val visibleItems: ImmutableList<ShoppingItemDomain> =
-        items.filter { showChecked || !it.checked }.toImmutableList()
-    val sections: Map<String, List<ShoppingItemDomain>> = visibleItems.groupBy { it.category }
-    val suggestions: ImmutableList<ShoppingItemDomain> =
-        snapshot.suggestions(selectedListId).toImmutableList()
+    val selectedCompletedItems: ImmutableList<ShoppingItemDomain> =
+        completedItems.filter { it.id in selectedCompletedIds }.toImmutableList()
+    val allCompletedSelected: Boolean =
+        completedItems.isNotEmpty() && selectedCompletedItems.size == completedItems.size
+
     val moveTargets: ImmutableList<ShoppingListDomain> =
         activeLists.filterNot { it.id == selectedListId }.toImmutableList()
 }

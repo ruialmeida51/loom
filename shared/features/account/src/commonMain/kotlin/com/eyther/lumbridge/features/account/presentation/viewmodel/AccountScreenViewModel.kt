@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.account.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
@@ -44,13 +45,24 @@ class AccountScreenViewModel(
             }
             .observeWith(viewModelScope) { state ->
                 refreshRequests
-                    .flatMapLatest { getProfileStreamUseCase(userId = params.userId) }
+                    .flatMapLatest {
+                        getProfileStreamUseCase(userId = params.userId).delayFirstAtLeast()
+                    }
                     .updateState(state) { result ->
                         when (result) {
                             is AppResult.Success ->
-                                copy(profile = result.value, loading = false, error = null)
+                                copy(
+                                    profile = result.value,
+                                    loading = false,
+                                    refreshing = false,
+                                    loadError = null,
+                                )
                             is AppResult.Failure ->
-                                copy(loading = false, error = result.error.toAccountTextResource())
+                                copy(
+                                    loading = false,
+                                    refreshing = false,
+                                    loadError = result.error.toAccountTextResource(),
+                                )
                         }
                     }
             }
@@ -146,10 +158,12 @@ class AccountScreenViewModel(
     }
 
     override fun onRetry() {
+        if (state.value.refreshing) return
+        mutableState.update { oldState -> oldState.copy(refreshing = true, loadError = null) }
         refreshRequests.update { oldState -> oldState + 1 }
     }
 
     override fun onDismissError() {
-        mutableState.update { oldState -> oldState.copy(error = null) }
+        mutableState.update { oldState -> oldState.copy(error = null, loadError = null) }
     }
 }

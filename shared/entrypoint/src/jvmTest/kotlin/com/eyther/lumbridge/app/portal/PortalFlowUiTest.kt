@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -19,6 +20,7 @@ import androidx.compose.ui.test.runSkikoComposeUiTest
 import com.eyther.lumbridge.app.demo.data.DemoAnalyticsDataSource
 import com.eyther.lumbridge.app.household.data.HouseholdSetupFixtureDataSource
 import com.eyther.lumbridge.app.navigation.PortalHost
+import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
@@ -75,11 +77,13 @@ class PortalFlowUiTest {
             onNodeWithText("My account").performClick()
             onNodeWithText("Profile").assertExists()
             onNodeWithContentDescription("Back").performClick()
+            awaitLoadedDestination(tag = "households_content")
             onNodeWithTag("open_create_household").performClick()
             onNodeWithText("Household name").performTextInput("A new home")
             onNodeWithTag("create_household_submit").performScrollTo().performClick()
             waitUntil(timeoutMillis = 5000) {
-                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                    onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithTag("household_switch").assertIsDisplayed()
             onNodeWithText("A new home").assertExists()
@@ -112,7 +116,9 @@ class PortalFlowUiTest {
                     )
                 }
             }
-            waitForIdle()
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodesWithText("Y", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+            }
             onNodeWithTag("profile_avatar_initial", useUnmergedTree = true).assertTextEquals("Y")
             runOnIdle {
                 profiles.profile.value =
@@ -121,6 +127,6 @@ class PortalFlowUiTest {
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("L", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
             }
-            onNodeWithText("Today").assertExists()
+            onNodeWithTag("home_content").assertExists()
         }
 }

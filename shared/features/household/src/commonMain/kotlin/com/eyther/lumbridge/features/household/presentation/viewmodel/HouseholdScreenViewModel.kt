@@ -1,5 +1,8 @@
 package com.eyther.lumbridge.features.household.presentation.viewmodel
 
+import androidx.lifecycle.viewModelScope
+import com.eyther.lumbridge.core.coroutines.extensions.delayAtLeast
+import com.eyther.lumbridge.core.coroutines.stateflow.launchWith
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsUseCase
 import com.eyther.lumbridge.features.household.presentation.mapper.toHouseholdTextResource
@@ -13,7 +16,10 @@ class HouseholdScreenViewModel(
     private val getHouseholdsUseCase: GetHouseholdsUseCase,
 ) : HouseholdScreenViewModelContract() {
 
-    private val mutableState = MutableStateFlow(HouseholdState())
+    private val mutableState =
+        MutableStateFlow(HouseholdState()).launchWith(viewModelScope) { state ->
+            loadHouseholds(state = state)
+        }
 
     override val state = mutableState.asStateFlow()
 
@@ -24,17 +30,28 @@ class HouseholdScreenViewModel(
     }
 
     override fun onRefresh() {
-        if (state.value.busy) return
-        mutableState.update { oldState ->
-            oldState.copy(items = emptyList(), busy = true, error = null)
-        }
-        launch {
-            val result = getHouseholdsUseCase()
-            mutableState.update { oldState ->
-                when (result) {
-                    is AppResult.Success -> oldState.copy(items = result.value, busy = false)
-                    is AppResult.Failure -> oldState.copy(busy = false, error = result.error.toHouseholdTextResource())
-                }
+        if (state.value.loading || state.value.refreshing) return
+        mutableState.update { oldState -> oldState.copy(refreshing = true, error = null) }
+        launch { loadHouseholds(state = mutableState) }
+    }
+
+    private suspend fun loadHouseholds(state: MutableStateFlow<HouseholdState>) {
+        val result = delayAtLeast { getHouseholdsUseCase() }
+        state.update { oldState ->
+            when (result) {
+                is AppResult.Success ->
+                    oldState.copy(
+                        items = result.value,
+                        loading = false,
+                        refreshing = false,
+                        error = null,
+                    )
+                is AppResult.Failure ->
+                    oldState.copy(
+                        loading = false,
+                        refreshing = false,
+                        error = result.error.toHouseholdTextResource(),
+                    )
             }
         }
     }

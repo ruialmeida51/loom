@@ -11,11 +11,11 @@ select set_config('loom.ux.invite', public.create_household_invite(current_setti
 select set_config('loom.ux.list', (select id::text from public.shopping_lists
     where household_id = current_setting('loom.ux.home')::uuid), true);
 set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000061';
-select public.join_household(current_setting('loom.ux.invite'));
+select public.redeem_household_invitation(current_setting('loom.ux.invite'));
 set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000060';
 select set_config('loom.ux.invite', public.create_household_invite(current_setting('loom.ux.home')::uuid), true);
 set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000062';
-select public.join_household(current_setting('loom.ux.invite'));
+select public.redeem_household_invitation(current_setting('loom.ux.invite'));
 
 -- Reversed UUID order must not change insertion order after a paginated refresh.
 select public.add_shopping_items(current_setting('loom.ux.home')::uuid, jsonb_build_array(

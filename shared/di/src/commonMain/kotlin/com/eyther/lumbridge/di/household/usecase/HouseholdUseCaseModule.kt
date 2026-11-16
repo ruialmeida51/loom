@@ -31,6 +31,7 @@ import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDoma
 import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.RevokeInvitationUseCase
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportDataSource
 import com.eyther.lumbridge.features.insights.domain.usecase.ExportStatementUseCase
@@ -51,6 +52,7 @@ import com.eyther.lumbridge.features.shopping.domain.usecase.AddShoppingItemsUse
 import com.eyther.lumbridge.features.shopping.domain.usecase.DeleteShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
+import com.eyther.lumbridge.features.shopping.domain.usecase.RemoveCompletedShoppingItemsUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingItemUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SelectShoppingListUseCase
@@ -165,10 +167,14 @@ class HouseholdUseCaseModule {
     fun provideGetHomeOverviewStreamUseCase(
         getRemindersStreamUseCase: GetRemindersStreamUseCase,
         context: HouseholdContextDomain,
+        getShoppingStreamUseCase: GetShoppingStreamUseCase,
+        getShoppingSelectionStreamUseCase: GetShoppingSelectionStreamUseCase,
     ): GetHomeOverviewStreamUseCase =
         GetHomeOverviewStreamUseCase(
             getRemindersStreamUseCase = getRemindersStreamUseCase,
             context = context,
+            getShoppingStreamUseCase = getShoppingStreamUseCase,
+            getShoppingSelectionStreamUseCase = getShoppingSelectionStreamUseCase,
         )
 
     @Single
@@ -400,4 +406,15 @@ class HouseholdUseCaseModule {
         expenseAccountDataSource: ExpenseAccountDataSource,
     ): DeleteExpenseAccountUseCase =
         DeleteExpenseAccountUseCase(expenseAccountDataSource = expenseAccountDataSource)
+
+    @Single
+    fun provideRemoveCompletedShoppingItemsUseCase(
+        shoppingDataSource: ShoppingDataSource,
+    ): RemoveCompletedShoppingItemsUseCase =
+        RemoveCompletedShoppingItemsUseCase(shoppingDataSource = shoppingDataSource)
+
+    @Single
+    fun provideRevokeInvitationUseCase(
+        householdDataSource: HouseholdDataSource,
+    ): RevokeInvitationUseCase = RevokeInvitationUseCase(householdDataSource = householdDataSource)
 }

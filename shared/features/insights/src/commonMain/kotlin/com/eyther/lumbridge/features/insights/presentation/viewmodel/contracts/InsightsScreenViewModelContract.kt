@@ -7,6 +7,8 @@ abstract class InsightsScreenViewModelContract : LoomViewModel() {
 
     abstract val state: StateFlow<InsightsState>
 
+    abstract fun onRefresh()
+
     abstract fun onPreviousMonth()
 
     abstract fun onNextMonth()

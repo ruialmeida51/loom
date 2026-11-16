@@ -22,6 +22,7 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.eyther.lumbridge.app.household.data.HouseholdSetupFixtureDataSource
 import com.eyther.lumbridge.app.navigation.HouseholdSetupHost
+import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.di.applicationModules
@@ -47,6 +48,7 @@ class HouseholdSetupUiTest {
                 setContent { TestContent(graph = graph, onSelect = { selected = it }) }
                 onNodeWithText("Household name").assertDoesNotExist()
                 onNodeWithText("Invitation code").assertDoesNotExist()
+                awaitLoadedDestination(tag = "households_content")
                 onNodeWithTag("open_create_household").performClick()
                 onNodeWithText("Invitation code").assertDoesNotExist()
                 onNodeWithText("Household name").performTextInput("Little home")
@@ -66,9 +68,10 @@ class HouseholdSetupUiTest {
         try {
             runComposeUiTest {
                 setContent { TestContent(graph = graph, onSelect = {}) }
+                awaitLoadedDestination(tag = "households_content")
                 onNodeWithTag("open_join_household").performClick()
                 onNodeWithText("Household name").assertDoesNotExist()
-                onNodeWithText("Invitation code").performTextInput("valid-household-invitation")
+                onNodeWithText("Invitation code").performTextInput("ABC234")
                 onNodeWithTag("join_household_submit").performClick()
                 waitUntil(timeoutMillis = 5000) {
                     onAllNodesWithText("Joined home").fetchSemanticsNodes().isNotEmpty()
@@ -96,6 +99,7 @@ class HouseholdSetupUiTest {
                         TestContent(graph = graph, onSelect = {})
                     }
                 }
+                awaitLoadedDestination(tag = "households_content")
                 onNodeWithTag("open_create_household").performClick()
                 onNodeWithText("Household name").performTextInput("Our little home")
                 runOnIdle { owner.lifecycle.currentState = Lifecycle.State.CREATED }
@@ -116,6 +120,7 @@ class HouseholdSetupUiTest {
         try {
             runComposeUiTest {
                 setContent { TestContent(graph = graph, onSelect = {}) }
+                awaitLoadedDestination(tag = "households_content")
                 onNodeWithTag("open_create_household").performClick()
                 waitForIdle()
                 val finalLeft =
@@ -149,7 +154,7 @@ class HouseholdSetupUiTest {
         KoinIsolatedContext(context = graph) {
             LoomTheme(mode = ThemeMode.LIGHT) {
                 Box(Modifier.requiredSize(440.dp, 760.dp)) {
-                    HouseholdSetupHost(userId = "test-member", onSelect = onSelect, onSignOut = {})
+                    HouseholdSetupHost(userId = "test-member", onSelect = onSelect)
                 }
             }
         }

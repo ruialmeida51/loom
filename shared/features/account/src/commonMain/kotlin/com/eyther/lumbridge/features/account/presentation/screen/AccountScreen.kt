@@ -24,6 +24,7 @@ import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
+import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
@@ -55,23 +56,25 @@ fun AccountScreen(
     onOpenLegalDocument: (LegalDocumentDomain) -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    InnerAccountScreen(
-        nickname = state.profile?.nickname.orEmpty(),
-        canEditNickname = state.canEditNickname,
-        loading = state.loading,
-        preferences = state.preferences,
-        analytics = state.analytics,
-        busy = state.busy,
-        error = state.error,
-        onEditNickname = viewModel::onEditNickname,
-        onTheme = viewModel::onThemeSelected,
-        onNotifications = viewModel::onNotificationsChanged,
-        onAnalyticsConsent = viewModel::onAnalyticsConsentChanged,
-        onRetry = viewModel::onRetry,
-        onDismiss = viewModel::onDismissError,
-        onSignOut = onSignOut,
-        onOpenLegalDocument = onOpenLegalDocument,
-    )
+    PullToRefreshContentContainer(isRefreshing = state.refreshing, onRefresh = viewModel::onRetry) {
+        InnerAccountScreen(
+            nickname = state.profile?.nickname.orEmpty(),
+            canEditNickname = state.canEditNickname,
+            loading = state.loading || state.refreshing,
+            preferences = state.preferences,
+            analytics = state.analytics,
+            busy = state.busy,
+            error = state.displayError,
+            onEditNickname = viewModel::onEditNickname,
+            onTheme = viewModel::onThemeSelected,
+            onNotifications = viewModel::onNotificationsChanged,
+            onAnalyticsConsent = viewModel::onAnalyticsConsentChanged,
+            onRetry = viewModel::onRetry,
+            onDismiss = viewModel::onDismissError,
+            onSignOut = onSignOut,
+            onOpenLegalDocument = onOpenLegalDocument,
+        )
+    }
 }
 
 @Composable
@@ -104,55 +107,60 @@ private fun InnerAccountScreen(
             }
         }
         item {
-            SectionTitle(title = stringResource(Res.string.profile_title))
-            if (loading) LoadingRows()
-            else
-                GroupedSurface {
-                    NavigationRow(
-                        title = nickname.ifBlank { stringResource(Res.string.ui_nickname_title) },
-                        description = stringResource(Res.string.nickname_description),
-                        onClick = onEditNickname,
-                        enabled = canEditNickname,
-                        modifier = Modifier.testTag("edit_nickname"),
-                    )
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SectionTitle(title = stringResource(Res.string.profile_title))
+                if (loading) LoadingRows()
+                else
+                    GroupedSurface {
+                        NavigationRow(
+                            title =
+                                nickname.ifBlank { stringResource(Res.string.ui_nickname_title) },
+                            description = stringResource(Res.string.nickname_description),
+                            onClick = onEditNickname,
+                            enabled = canEditNickname,
+                            modifier = Modifier.testTag("edit_nickname"),
+                        )
+                    }
+            }
         }
         item {
-            SectionTitle(title = stringResource(Res.string.preferences_title))
-            GroupedSurface {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        stringResource(Res.string.appearance_title),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ThemeMode.entries.forEach { theme ->
-                            FilterChip(
-                                selected = preferences.theme == theme.name,
-                                onClick = { onTheme(theme.name) },
-                                label = { Text(themeLabel(theme)) },
-                            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SectionTitle(title = stringResource(Res.string.preferences_title))
+                GroupedSurface {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            stringResource(Res.string.appearance_title),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            ThemeMode.entries.forEach { theme ->
+                                FilterChip(
+                                    selected = preferences.theme == theme.name,
+                                    onClick = { onTheme(theme.name) },
+                                    label = { Text(themeLabel(theme)) },
+                                )
+                            }
                         }
                     }
-                }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                AccountPreferenceRow(
-                    title = stringResource(Res.string.notifications_title),
-                    description = stringResource(Res.string.notifications_description),
-                    checked = preferences.notifications,
-                    onCheckedChange = onNotifications,
-                    enabled = !busy,
-                )
-                if (analytics.available) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     AccountPreferenceRow(
-                        title = stringResource(Res.string.analytics_title),
-                        description = stringResource(Res.string.analytics_description),
-                        checked = analytics.enabled,
-                        onCheckedChange = onAnalyticsConsent,
+                        title = stringResource(Res.string.notifications_title),
+                        description = stringResource(Res.string.notifications_description),
+                        checked = preferences.notifications,
+                        onCheckedChange = onNotifications,
                         enabled = !busy,
-                        modifier = Modifier.testTag("analytics_consent"),
                     )
+                    if (analytics.available) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        AccountPreferenceRow(
+                            title = stringResource(Res.string.analytics_title),
+                            description = stringResource(Res.string.analytics_description),
+                            checked = analytics.enabled,
+                            onCheckedChange = onAnalyticsConsent,
+                            enabled = !busy,
+                            modifier = Modifier.testTag("analytics_consent"),
+                        )
+                    }
                 }
             }
         }

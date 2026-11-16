@@ -120,6 +120,7 @@ internal fun DemoPortalHost(
             PortalToolbar(
                 householdName = store.context.name,
                 nickname = accountState.profile?.nickname.orEmpty(),
+                loadingProfile = accountState.loading,
                 onHousehold = { navigator.navigateTo(PortalDestination.Households) },
                 onAccount = { navigator.navigateTo(PortalDestination.Account) },
             )

@@ -11,6 +11,7 @@ data class ExpenseDetailsState(
     val expense: ExpenseDomain? = null,
     val members: List<MemberDomain> = emptyList(),
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val busy: Boolean = false,
     val error: TextResource? = null,
     val showDeleteConfirmation: Boolean = false,

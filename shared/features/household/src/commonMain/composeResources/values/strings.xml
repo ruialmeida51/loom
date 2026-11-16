@@ -29,4 +29,7 @@
     <string name="details_invite">Invite a household member</string>
     <string name="details_owner">Owner</string>
     <string name="details_member">Member</string>
+    <string name="error_invitation_rate_limited">Too many attempts. Wait 15 minutes before trying again.</string>
+    <string name="invitation_short_description">Share this 6-character code. It can be used once within 24 hours. Creating a new code replaces the previous one.</string>
+    <string name="invitation_revoke">Revoke code</string>
 </resources>

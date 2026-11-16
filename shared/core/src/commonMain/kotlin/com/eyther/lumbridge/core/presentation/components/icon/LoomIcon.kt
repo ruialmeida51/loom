@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.generated.resources.Res
 import com.eyther.lumbridge.core.generated.resources.icon_add
 import com.eyther.lumbridge.core.generated.resources.icon_bell
+import com.eyther.lumbridge.core.generated.resources.icon_delete
 import com.eyther.lumbridge.core.generated.resources.icon_done
 import com.eyther.lumbridge.core.generated.resources.icon_feed
 import com.eyther.lumbridge.core.generated.resources.icon_home
@@ -47,6 +48,7 @@ fun LoomIcon(
                 Glyph.PLUS -> Res.string.icon_add
                 Glyph.ARROW -> Res.string.icon_next
                 Glyph.CHECK -> Res.string.icon_done
+                Glyph.DELETE -> Res.string.icon_delete
             },
         )
     Canvas(
@@ -64,6 +66,15 @@ fun LoomIcon(
                 StrokeCap.Round,
             )
         when (glyph) {
+            Glyph.DELETE -> {
+                line(5f, 6f, 19f, 6f)
+                line(9f, 3f, 15f, 3f)
+                line(7f, 9f, 8f, 21f)
+                line(8f, 21f, 16f, 21f)
+                line(16f, 21f, 17f, 9f)
+                line(10f, 10f, 10f, 17f)
+                line(14f, 10f, 14f, 17f)
+            }
             Glyph.MORE ->
                 listOf(5f, 12f, 19f).forEach { x ->
                     drawCircle(tint, 1.5f * s, Offset(x * s, 12f * s))

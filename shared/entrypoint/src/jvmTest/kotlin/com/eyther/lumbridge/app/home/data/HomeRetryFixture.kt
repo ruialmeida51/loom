@@ -2,6 +2,8 @@ package com.eyther.lumbridge.app.home.data
 
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
 import com.eyther.lumbridge.app.demo.data.DemoReminderDataSource
+import com.eyther.lumbridge.app.demo.data.DemoShoppingDataSource
+import com.eyther.lumbridge.app.demo.data.DemoShoppingSelectionDataSource
 import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeOverviewStreamUseCase
@@ -9,6 +11,8 @@ import com.eyther.lumbridge.features.home.presentation.viewmodel.HomeScreenViewM
 import com.eyther.lumbridge.features.reminders.domain.datasource.ReminderDataSource
 import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
 import com.eyther.lumbridge.features.reminders.domain.usecase.GetRemindersStreamUseCase
+import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
+import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -33,6 +37,15 @@ internal class HomeRetryFixture {
                     getRemindersStreamUseCase =
                         GetRemindersStreamUseCase(reminderDataSource = failingReminders),
                     context = context,
+                    getShoppingSelectionStreamUseCase =
+                        GetShoppingSelectionStreamUseCase(
+                            shoppingSelectionDataSource =
+                                DemoShoppingSelectionDataSource(store = store),
+                        ),
+                    getShoppingStreamUseCase =
+                        GetShoppingStreamUseCase(
+                            shoppingDataSource = DemoShoppingDataSource(store = store),
+                        ),
                 ),
             context = context,
         )

@@ -17,9 +17,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.DestructiveButton
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
@@ -45,34 +47,39 @@ fun ExpenseDetailsScreen(
     val state by viewModel.state.platformCollectAsStateOnStart()
     LaunchedEffect(Unit) { viewModel.onRefresh() }
     LaunchedEffect(state.deleted) { if (state.deleted) onDeleted() }
-    InnerExpenseDetailsScreen(
-        expense = state.expense,
-        currency = state.account?.currency.orEmpty(),
-        memberNames = state.memberNames,
-        canEdit = state.canEdit,
-        loading = state.loading,
-        busy = state.busy,
-        error = state.error,
-        onEdit = onEdit,
-        onDelete = viewModel::onDeleteRequested,
-        onRetry = viewModel::onRefresh,
-        onDismiss = viewModel::onDismissError,
-    )
+    PullToRefreshContentContainer(
+        isRefreshing = state.refreshing,
+        onRefresh = viewModel::onRefresh,
+    ) {
+        InnerExpenseDetailsScreen(
+            expense = state.expense,
+            currency = state.account?.currency.orEmpty(),
+            memberNames = state.memberNames,
+            canEdit = state.canEdit,
+            loading = state.loading || state.refreshing,
+            busy = state.busy,
+            error = state.error,
+            onEdit = onEdit,
+            onDelete = viewModel::onDeleteRequested,
+            onRetry = viewModel::onRefresh,
+            onDismiss = viewModel::onDismissError,
+        )
+    }
     if (state.showDeleteConfirmation)
         AlertDialog(
             onDismissRequest = viewModel::onDeleteCancelled,
             title = { Text(stringResource(Res.string.detail_delete_title)) },
             text = { Text(stringResource(Res.string.detail_delete_message)) },
             confirmButton = {
-                TextButton(
+                DestructiveButton(
+                    text = stringResource(Res.string.detail_delete),
                     onClick = viewModel::onDeleteConfirmed,
+                    loading = state.busy,
                     modifier = Modifier.testTag("confirm_delete_expense"),
-                ) {
-                    Text(stringResource(Res.string.detail_delete))
-                }
+                )
             },
             dismissButton = {
-                TextButton(onClick = viewModel::onDeleteCancelled) {
+                TextButton(onClick = viewModel::onDeleteCancelled, enabled = !state.busy) {
                     Text(stringResource(Res.string.ui_cancel))
                 }
             },
@@ -94,7 +101,10 @@ private fun InnerExpenseDetailsScreen(
     onDismiss: () -> Unit,
 ) {
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        Modifier.fillMaxSize()
+            .testTag("expense_details_content")
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         if (loading) LoadingRows()
@@ -102,7 +112,7 @@ private fun InnerExpenseDetailsScreen(
             ErrorNotice(message = message, onDismiss = onDismiss)
             TextButton(onClick = onRetry) { Text(stringResource(Res.string.balance_retry)) }
         }
-        if (expense != null) {
+        if (expense != null && !loading) {
             Text(expense.title, style = MaterialTheme.typography.titleLarge)
             Text(
                 MoneyDomain(expense.amountMinor, currency).formatted(),
@@ -130,12 +140,11 @@ private fun InnerExpenseDetailsScreen(
                     onClick = onEdit,
                     loading = busy,
                 )
-                TextButton(onClick = onDelete, enabled = !busy) {
-                    Text(
-                        stringResource(Res.string.detail_delete),
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
+                DestructiveButton(
+                    text = stringResource(Res.string.detail_delete),
+                    onClick = onDelete,
+                    enabled = !busy,
+                )
             }
         }
     }

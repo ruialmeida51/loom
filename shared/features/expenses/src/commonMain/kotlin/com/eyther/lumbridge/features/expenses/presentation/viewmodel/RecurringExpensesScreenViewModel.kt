@@ -47,6 +47,7 @@ class RecurringExpensesScreenViewModel(
                                 copy(
                                     account = result.value.account,
                                     loading = false,
+                                    refreshing = false,
                                     rules =
                                         result.value.rules.sortedWith(
                                             compareBy<RecurringExpenseDomain> { it.cancelled }
@@ -59,6 +60,7 @@ class RecurringExpensesScreenViewModel(
                                 copy(
                                     loadError = result.error.toExpensesTextResource(),
                                     loading = false,
+                                    refreshing = false,
                                 )
                         }
                     }
@@ -104,6 +106,7 @@ class RecurringExpensesScreenViewModel(
                     is AppResult.Success ->
                         oldState.copy(
                             busy = false,
+                            cancellation = null,
                             rules =
                                 oldState.rules.map { schedule ->
                                     if (schedule.id == rule.id) result.value else schedule
@@ -113,6 +116,7 @@ class RecurringExpensesScreenViewModel(
                     is AppResult.Failure ->
                         oldState.copy(
                             busy = false,
+                            cancellation = null,
                             error = result.error.toExpensesTextResource(),
                         )
                 }
@@ -136,7 +140,6 @@ class RecurringExpensesScreenViewModel(
 
     override fun onCancelConfirmed() {
         val rule = state.value.cancellation ?: return
-        mutableState.update { oldState -> oldState.copy(cancellation = null) }
         onControlSchedule(rule = rule, action = RecurringExpenseActionDomain.CANCEL)
     }
 
@@ -147,6 +150,8 @@ class RecurringExpensesScreenViewModel(
     }
 
     override fun onRetry() {
+        if (state.value.refreshing) return
+        mutableState.update { oldState -> oldState.copy(refreshing = true) }
         onDismissError()
         refreshRequests.update { oldVersion -> oldVersion + 1 }
     }

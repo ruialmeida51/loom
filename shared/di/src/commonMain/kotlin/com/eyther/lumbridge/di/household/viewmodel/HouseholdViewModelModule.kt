@@ -37,6 +37,7 @@ import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeS
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.RevokeInvitationUseCase
 import com.eyther.lumbridge.features.household.presentation.viewmodel.HouseholdDetailsScreenViewModel
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdDetailsScreenViewModelContract
 import com.eyther.lumbridge.features.insights.domain.usecase.ExportStatementUseCase
@@ -54,6 +55,7 @@ import com.eyther.lumbridge.features.shopping.domain.usecase.AddShoppingItemsUse
 import com.eyther.lumbridge.features.shopping.domain.usecase.DeleteShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
+import com.eyther.lumbridge.features.shopping.domain.usecase.RemoveCompletedShoppingItemsUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingItemUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SelectShoppingListUseCase
@@ -146,8 +148,10 @@ class HouseholdViewModelModule {
         addReminderUseCase: AddReminderUseCase,
         completeReminderUseCase: CompleteReminderUseCase,
         removeReminderUseCase: RemoveReminderUseCase,
+        context: HouseholdContextDomain,
     ): RemindersScreenViewModelContract =
         RemindersScreenViewModel(
+            context = context,
             getRemindersStreamUseCase = getRemindersStreamUseCase,
             addReminderUseCase = addReminderUseCase,
             completeReminderUseCase = completeReminderUseCase,
@@ -159,11 +163,13 @@ class HouseholdViewModelModule {
         context: HouseholdContextDomain,
         getMembersStreamUseCase: GetMembersStreamUseCase,
         createInvitationUseCase: CreateInvitationUseCase,
+        revokeInvitationUseCase: RevokeInvitationUseCase,
     ): HouseholdDetailsScreenViewModelContract =
         HouseholdDetailsScreenViewModel(
             context = context,
             getMembersStreamUseCase = getMembersStreamUseCase,
             createInvitationUseCase = createInvitationUseCase,
+            revokeInvitationUseCase = revokeInvitationUseCase,
         )
 
     @KoinViewModel(binds = [ShoppingScreenViewModelContract::class])
@@ -175,6 +181,7 @@ class HouseholdViewModelModule {
         saveShoppingItemUseCase: SaveShoppingItemUseCase,
         saveShoppingListUseCase: SaveShoppingListUseCase,
         deleteShoppingListUseCase: DeleteShoppingListUseCase,
+        removeCompletedShoppingItemsUseCase: RemoveCompletedShoppingItemsUseCase,
         trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
     ): ShoppingScreenViewModelContract =
         ShoppingScreenViewModel(
@@ -185,6 +192,7 @@ class HouseholdViewModelModule {
             saveShoppingItemUseCase = saveShoppingItemUseCase,
             saveShoppingListUseCase = saveShoppingListUseCase,
             deleteShoppingListUseCase = deleteShoppingListUseCase,
+            removeCompletedShoppingItemsUseCase = removeCompletedShoppingItemsUseCase,
             trackAnalyticsEventUseCase = trackAnalyticsEventUseCase,
         )
 

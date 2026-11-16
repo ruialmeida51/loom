@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.newId
@@ -60,7 +61,7 @@ class ExpensesScreenViewModel(
             }
             .observeWith(viewModelScope) { state ->
                 refreshRequests
-                    .flatMapLatest { getExpenseLedgerStreamUseCase() }
+                    .flatMapLatest { getExpenseLedgerStreamUseCase().delayFirstAtLeast() }
                     .updateState(state) { result ->
                         when (result) {
                             is AppResult.Success ->
@@ -70,31 +71,39 @@ class ExpensesScreenViewModel(
                                     settlements = result.value.settlements,
                                     balances = result.value.balances,
                                     loading = false,
+                                    refreshing = false,
                                     loadError = null,
                                 )
                             is AppResult.Failure ->
                                 copy(
                                     loading = false,
+                                    refreshing = false,
                                     loadError = result.error.toExpensesTextResource(),
                                 )
                         }
                     }
             }
             .observeWith(viewModelScope) { state ->
-                getExpenseAccountsStreamUseCase().updateState(state) { result ->
-                    when (result) {
-                        is AppResult.Success -> copy(accounts = result.value)
-                        is AppResult.Failure -> copy(error = result.error.toExpensesTextResource())
+                refreshRequests
+                    .flatMapLatest { getExpenseAccountsStreamUseCase() }
+                    .updateState(state) { result ->
+                        when (result) {
+                            is AppResult.Success -> copy(accounts = result.value)
+                            is AppResult.Failure ->
+                                copy(error = result.error.toExpensesTextResource())
+                        }
                     }
-                }
             }
             .observeWith(viewModelScope) { state ->
-                getMembersStreamUseCase(householdId = context.id).updateState(state) { result ->
-                    when (result) {
-                        is AppResult.Success -> copy(members = result.value)
-                        is AppResult.Failure -> copy(error = result.error.toHouseholdTextResource())
+                refreshRequests
+                    .flatMapLatest { getMembersStreamUseCase(householdId = context.id) }
+                    .updateState(state) { result ->
+                        when (result) {
+                            is AppResult.Success -> copy(members = result.value)
+                            is AppResult.Failure ->
+                                copy(error = result.error.toHouseholdTextResource())
+                        }
                     }
-                }
             }
     override val state = mutableState.asStateFlow()
 
@@ -131,12 +140,13 @@ class ExpensesScreenViewModel(
             when (val result = selectExpenseAccountUseCase(id = id)) {
                 is AppResult.Success -> {
                     // Selecting the cached ID must also restart a stream that previously failed.
-                    onRefresh()
+                    onContentChanged()
                 }
                 is AppResult.Failure ->
                     mutableState.update { oldState ->
                         oldState.copy(
                             loading = false,
+                            refreshing = false,
                             error = result.error.toExpensesTextResource(),
                         )
                     }
@@ -179,7 +189,7 @@ class ExpensesScreenViewModel(
                             accounts = oldState.accounts.filterNot { it.id == account.id },
                         )
                     }
-                    onRefresh()
+                    onContentChanged()
                 }
                 is AppResult.Failure ->
                     mutableState.update { oldState ->
@@ -283,11 +293,17 @@ class ExpensesScreenViewModel(
                         )
                 }
             }
-            if (result is AppResult.Success) onRefresh()
+            if (result is AppResult.Success) onContentChanged()
         }
     }
 
+    override fun onContentChanged() {
+        refreshRequests.update { oldState -> oldState + 1 }
+    }
+
     override fun onRefresh() {
+        if (state.value.refreshing) return
+        mutableState.update { oldState -> oldState.copy(refreshing = true) }
         refreshRequests.update { oldVersion -> oldVersion + 1 }
     }
 

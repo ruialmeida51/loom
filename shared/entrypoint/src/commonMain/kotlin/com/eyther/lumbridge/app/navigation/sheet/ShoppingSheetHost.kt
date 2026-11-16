@@ -55,7 +55,6 @@ internal fun ShoppingSheetHost(
             onSelect = viewModel::onListSelected,
             busy = state.busy || state.addingInline || state.savingItemIds.isNotEmpty(),
             formError = state.formError,
-            onShowLists = viewModel::onListsVisibilityChanged,
             onListForm = viewModel::onOpenListForm,
             onArchive = viewModel::onArchiveList,
             onDelete = viewModel::onDeleteListRequested,

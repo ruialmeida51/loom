@@ -13,9 +13,12 @@ data class AccountState(
     val preferences: SettingsDomain = SettingsDomain(),
     val analytics: AnalyticsPreferencesDomain = AnalyticsPreferencesDomain(),
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val busy: Boolean = false,
     val error: TextResource? = null,
+    val loadError: TextResource? = null,
 ) {
+    val displayError: TextResource? = error ?: loadError
     val canEditNickname: Boolean = profile != null && !busy
     val canSaveNickname: Boolean =
         nickname.trim().isNotEmpty() && nickname.trim() != profile?.nickname && !busy

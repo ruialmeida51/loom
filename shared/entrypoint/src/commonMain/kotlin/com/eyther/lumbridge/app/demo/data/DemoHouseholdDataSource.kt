@@ -27,6 +27,7 @@ class DemoHouseholdDataSource(private val store: DemoHouseholdStore) : Household
 
     override suspend fun getMembers(householdId: String) = AppResult.Success(store.members)
 
-    override suspend fun createInvitation(householdId: String) =
-        AppResult.Success("PREVIEW-INVITATION")
+    override suspend fun revokeInvitation(householdId: String) = AppResult.Success(Unit)
+
+    override suspend fun createInvitation(householdId: String) = AppResult.Success("ABC234")
 }

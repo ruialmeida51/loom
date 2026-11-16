@@ -4,6 +4,8 @@ import com.eyther.lumbridge.core.domain.errors.AppError
 
 sealed class HouseholdError(cause: Throwable? = null) : AppError(cause) {
 
+    class InvitationRateLimited(cause: Throwable? = null) : HouseholdError(cause)
+
     class InvalidInvitation(cause: Throwable? = null) : HouseholdError(cause)
 
     class InvalidName(cause: Throwable? = null) : HouseholdError(cause)

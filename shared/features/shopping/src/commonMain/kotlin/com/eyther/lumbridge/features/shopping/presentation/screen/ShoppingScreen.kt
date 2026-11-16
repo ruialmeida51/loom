@@ -29,21 +29,30 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
+import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
+import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackbar
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.checklist_completed
+import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_message
+import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_selected
+import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_title
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_create
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_empty
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_empty_description
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_refresh_and_retry
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_shopping_lists
+import com.eyther.lumbridge.features.shopping.presentation.components.CompletedShoppingActions
 import com.eyther.lumbridge.features.shopping.presentation.components.PendingShoppingItemRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingEntryRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingItemRow
@@ -57,37 +66,73 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    InnerShoppingScreen(
-        selectedListName = state.selectedList?.name.orEmpty(),
-        uncheckedItems = state.uncheckedItems,
-        completedItems = state.completedItems,
-        moveTargets = state.moveTargets,
-        showCompleted = state.showChecked,
-        loading = state.loading,
-        busy = state.busy,
-        savingItemIds = state.savingItemIds,
-        inlineName = state.inlineName,
-        pendingEntries = state.visiblePendingEntries,
-        entryRevision = state.entryRevision,
-        hasList = state.selectedList != null,
-        canAddInline = state.canAddInline,
-        inlineError = state.inlineError,
-        error = state.displayError,
-        onName = viewModel::onInlineNameChanged,
-        onAdd = viewModel::onAddInlineItem,
-        onRetryEntry = viewModel::onRetryEntry,
-        onDiscardEntry = viewModel::onDiscardEntry,
-        onCreateList = { viewModel.onOpenListForm(null) },
-        onShowLists = { viewModel.onListsVisibilityChanged(true) },
-        onShowCompleted = viewModel::onCheckedItemsVisibilityChanged,
-        onToggle = viewModel::onToggleItem,
-        onEdit = viewModel::onEditItem,
-        onRemove = viewModel::onRemoveItem,
-        onFavorite = viewModel::onToggleFavorite,
-        onMove = viewModel::onMoveItem,
-        onDismiss = viewModel::onDismissError,
-        onRetry = viewModel::onRetry,
-    )
+    PullToRefreshContentContainer(
+        isRefreshing = state.refreshing,
+        onRefresh = viewModel::onRetry,
+        snackbarHost = { SuccessSnackbar(message = state.successMessage) },
+    ) {
+        InnerShoppingScreen(
+            selectedListName = state.selectedList?.name.orEmpty(),
+            uncheckedItems = state.uncheckedItems,
+            completedItems = state.completedItems,
+            moveTargets = state.moveTargets,
+            showCompleted = state.showChecked,
+            selectingCompleted = state.selectingCompleted,
+            selectedCompletedIds = state.selectedCompletedIds,
+            selectedCount = state.selectedCompletedItems.size,
+            allCompletedSelected = state.allCompletedSelected,
+            onSelectingCompleted = viewModel::onCompletedSelectionChanged,
+            onSelectCompleted = viewModel::onCompletedItemSelected,
+            onSelectAllCompleted = viewModel::onSelectAllCompleted,
+            onDeleteCompleted = viewModel::onDeleteCompletedRequested,
+            loading = state.loading || state.refreshing,
+            busy = state.busy || state.deletingCompleted,
+            savingItemIds = state.savingItemIds,
+            inlineName = state.inlineName,
+            pendingEntries = state.visiblePendingEntries,
+            entryRevision = state.entryRevision,
+            hasList = state.selectedList != null,
+            canAddInline = state.canAddInline,
+            inlineError = state.inlineError,
+            error = state.displayError,
+            onName = viewModel::onInlineNameChanged,
+            onAdd = viewModel::onAddInlineItem,
+            onRetryEntry = viewModel::onRetryEntry,
+            onDiscardEntry = viewModel::onDiscardEntry,
+            onCreateList = { viewModel.onOpenListForm(null) },
+            onShowLists = { viewModel.onListsVisibilityChanged(true) },
+            onShowCompleted = viewModel::onCheckedItemsVisibilityChanged,
+            onToggle = viewModel::onToggleItem,
+            onEdit = viewModel::onEditItem,
+            onRemove = viewModel::onRemoveItem,
+            onFavorite = viewModel::onToggleFavorite,
+            onMove = viewModel::onMoveItem,
+            onDismiss = viewModel::onDismissError,
+            onRetry = viewModel::onRetry,
+        )
+    }
+    if (state.confirmingCompletedDeletion)
+        DestructiveConfirmation(
+            confirmation =
+                DestructiveConfirmationUi(
+                    title = TextResource.Resource(Res.string.completed_delete_title),
+                    message =
+                        TextResource.Resource(
+                            Res.string.completed_delete_message,
+                            args = listOf(state.pendingCompletedDeletion.size),
+                        ),
+                    confirmText =
+                        TextResource.Resource(
+                            Res.string.completed_delete_selected,
+                            args = listOf(state.pendingCompletedDeletion.size),
+                        ),
+                    cancelText = TextResource.Resource(Res.string.ui_cancel),
+                ),
+            busy = state.deletingCompleted,
+            confirmationTag = "confirm_delete_completed",
+            onConfirm = viewModel::onDeleteCompletedConfirmed,
+            onDismiss = viewModel::onDeleteCompletedCancelled,
+        )
 }
 
 @Composable
@@ -97,6 +142,14 @@ private fun InnerShoppingScreen(
     completedItems: ImmutableList<ShoppingItemDomain>,
     moveTargets: ImmutableList<ShoppingListDomain>,
     showCompleted: Boolean,
+    selectingCompleted: Boolean,
+    selectedCompletedIds: ImmutableSet<String>,
+    selectedCount: Int,
+    allCompletedSelected: Boolean,
+    onSelectingCompleted: (Boolean) -> Unit,
+    onSelectCompleted: (String) -> Unit,
+    onSelectAllCompleted: () -> Unit,
+    onDeleteCompleted: () -> Unit,
     loading: Boolean,
     busy: Boolean,
     savingItemIds: ImmutableSet<String>,
@@ -126,7 +179,11 @@ private fun InnerShoppingScreen(
     val entryVisibility = remember { BringIntoViewRequester() }
     var entryFocused by remember { mutableStateOf(false) }
     val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
-    val entryIndex = 1 + (if (error != null) 1 else 0) + uncheckedItems.size + pendingEntries.size
+    val entryIndex =
+        1 +
+            (if (error != null) 1 else 0) +
+            (if (loading) 1 else uncheckedItems.size) +
+            pendingEntries.size
     LaunchedEffect(entryRevision, keyboardHeight, entryFocused) {
         if (entryFocused && !loading && hasList) {
             listState.animateScrollToItem(entryIndex)
@@ -190,7 +247,7 @@ private fun InnerShoppingScreen(
                     onMove = onMove,
                 )
             }
-        if (!loading)
+        if (hasList)
             items(pendingEntries, key = { it.item.id }, contentType = { "checklist_item" }) { entry
                 ->
                 PendingShoppingItemRow(
@@ -200,7 +257,7 @@ private fun InnerShoppingScreen(
                     onDiscard = { onDiscardEntry(entry.item.id) },
                 )
             }
-        if (!loading && hasList)
+        if (hasList)
             item(key = "inline_entry") {
                 ShoppingEntryRow(
                     value = inlineName,
@@ -231,12 +288,26 @@ private fun InnerShoppingScreen(
                     )
                 }
             }
+            item(key = "completed_actions") {
+                CompletedShoppingActions(
+                    selecting = selectingCompleted,
+                    selectedCount = selectedCount,
+                    allSelected = allCompletedSelected,
+                    busy = busy,
+                    onSelecting = onSelectingCompleted,
+                    onSelectAll = onSelectAllCompleted,
+                    onDelete = onDeleteCompleted,
+                )
+            }
             if (showCompleted)
                 items(completedItems, key = { it.id }) { item ->
                     ShoppingItemRow(
                         item = item,
                         moveTargets = moveTargets,
                         busy = busy || item.id in savingItemIds,
+                        selectionMode = selectingCompleted,
+                        selected = item.id in selectedCompletedIds,
+                        onSelect = { onSelectCompleted(item.id) },
                         onToggle = onToggle,
                         onEdit = onEdit,
                         onRemove = onRemove,

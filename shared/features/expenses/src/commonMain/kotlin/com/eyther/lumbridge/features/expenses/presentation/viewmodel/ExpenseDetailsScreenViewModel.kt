@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.eyther.lumbridge.core.coroutines.extensions.delayAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.launchWith
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
@@ -27,7 +28,8 @@ class ExpenseDetailsScreenViewModel(
     override val state = mutableState.asStateFlow()
 
     override fun onRefresh() {
-        if (state.value.loading || state.value.busy) return
+        if (state.value.loading || state.value.refreshing || state.value.busy) return
+        mutableState.update { oldState -> oldState.copy(refreshing = true, error = null) }
         launch { loadDetails(state = mutableState) }
     }
 
@@ -45,7 +47,7 @@ class ExpenseDetailsScreenViewModel(
         if (!state.value.canEdit) return
         val expense = state.value.expense ?: return
         mutableState.update { oldState ->
-            oldState.copy(busy = true, showDeleteConfirmation = false, error = null)
+            oldState.copy(busy = true, error = null)
         }
         launch {
             val result = deleteExpenseUseCase(expense = expense)
@@ -53,7 +55,11 @@ class ExpenseDetailsScreenViewModel(
                 when (result) {
                     is AppResult.Success -> oldState.copy(busy = false, deleted = true)
                     is AppResult.Failure ->
-                        oldState.copy(busy = false, error = result.error.toExpensesTextResource())
+                        oldState.copy(
+                            busy = false,
+                            showDeleteConfirmation = false,
+                            error = result.error.toExpensesTextResource(),
+                        )
                 }
             }
         }
@@ -65,8 +71,9 @@ class ExpenseDetailsScreenViewModel(
 
     private suspend fun loadDetails(state: MutableStateFlow<ExpenseDetailsState>) {
         when (
-            val result =
+            val result = delayAtLeast {
                 getExpenseFormUseCase(accountId = params.accountId, expenseId = params.expenseId)
+            }
         ) {
             is AppResult.Success ->
                 state.update { oldState ->
@@ -75,12 +82,17 @@ class ExpenseDetailsScreenViewModel(
                         expense = result.value.expense,
                         members = result.value.members,
                         loading = false,
+                        refreshing = false,
                         error = null,
                     )
                 }
             is AppResult.Failure ->
                 state.update { oldState ->
-                    oldState.copy(loading = false, error = result.error.toExpensesTextResource())
+                    oldState.copy(
+                        loading = false,
+                        refreshing = false,
+                        error = result.error.toExpensesTextResource(),
+                    )
                 }
         }
     }

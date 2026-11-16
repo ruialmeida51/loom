@@ -47,6 +47,9 @@ class RestoreHouseholdTest {
         override suspend fun getMembers(householdId: String) =
             AppResult.Success(emptyList<MemberDomain>())
 
+        override suspend fun revokeInvitation(householdId: String): AppResult<Unit> =
+            AppResult.Success(Unit)
+
         override suspend fun createInvitation(householdId: String) =
             AppResult.Failure(CommonError.Unknown())
     }

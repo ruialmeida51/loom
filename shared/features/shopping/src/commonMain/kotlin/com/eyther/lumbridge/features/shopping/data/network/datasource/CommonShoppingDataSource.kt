@@ -12,6 +12,7 @@ import com.eyther.lumbridge.features.shopping.data.network.mapper.toRequest
 import com.eyther.lumbridge.features.shopping.data.network.mapper.toShoppingError
 import com.eyther.lumbridge.features.shopping.data.network.model.request.AddShoppingItemsRequest
 import com.eyther.lumbridge.features.shopping.data.network.model.request.DeleteShoppingListRequest
+import com.eyther.lumbridge.features.shopping.data.network.model.request.RemoveCompletedShoppingItemsRequest
 import com.eyther.lumbridge.features.shopping.data.network.model.response.ShoppingItemResponse
 import com.eyther.lumbridge.features.shopping.data.network.model.response.ShoppingListResponse
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
@@ -96,6 +97,24 @@ class CommonShoppingDataSource(
                 .toDomain()
         }
     }
+
+    override suspend fun removeCompletedItems(
+        items: List<ShoppingItemDomain>,
+    ): AppResult<List<ShoppingItemDomain>> =
+        safeApiCall(mapError = Exception::toShoppingError) {
+            val request =
+                RemoveCompletedShoppingItemsRequest(
+                    householdId = context.id,
+                    listId = items.first().listId,
+                    versions = items.associate { it.id to it.version },
+                )
+            access
+                .requireClient()
+                .postgrest
+                .rpc("remove_completed_shopping_items", request)
+                .decodeList<ShoppingItemResponse>()
+                .map { it.toDomain() }
+        }
 
     override suspend fun deleteList(list: ShoppingListDomain): AppResult<Unit> =
         safeApiCall(mapError = Exception::toShoppingError) {

@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -30,15 +31,16 @@ import kotlinx.coroutines.test.setMain
 @OptIn(ExperimentalCoroutinesApi::class)
 class FeedStateTest {
 
-    private fun article(id: String, read: Boolean): ArticleDomain = ArticleDomain(
-        id = id,
-        title = id,
-        summary = "",
-        url = "https://example.com/$id",
-        source = "Example",
-        publishedAt = "2026-11-14T00:00:00Z",
-        read = read,
-    )
+    private fun article(id: String, read: Boolean): ArticleDomain =
+        ArticleDomain(
+            id = id,
+            title = id,
+            summary = "",
+            url = "https://example.com/$id",
+            source = "Example",
+            publishedAt = "2026-11-14T00:00:00Z",
+            read = read,
+        )
 
     @Test
     fun unreadProjectionChangesWithBothTheFilterAndReadState() {
@@ -48,28 +50,36 @@ class FeedStateTest {
 
         assertEquals(listOf(unread), state.visibleArticles)
         assertEquals(2, state.copy(unreadOnly = false).visibleArticles.size)
-        assertTrue(state.copy(items = listOf(unread.copy(read = true), read)).visibleArticles.isEmpty())
+        assertTrue(
+            state.copy(items = listOf(unread.copy(read = true), read)).visibleArticles.isEmpty(),
+        )
     }
 
     @Test
     fun aSuccessfulRefreshDoesNotEraseADialogOrActionFailure() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
-        val articles = MutableStateFlow<AppResult<List<ArticleDomain>>>(AppResult.Success(emptyList()))
-        val source = object : FeedDataSource {
-            override fun stream() = articles
+        val articles =
+            MutableStateFlow<AppResult<List<ArticleDomain>>>(AppResult.Success(emptyList()))
+        val source =
+            object : FeedDataSource {
+                override fun stream() = articles
 
-            override suspend fun followFeed(url: String): AppResult<Unit> = AppResult.Failure(FeedError.InvalidUrl())
+                override suspend fun followFeed(url: String): AppResult<Unit> =
+                    AppResult.Failure(FeedError.InvalidUrl())
 
-            override suspend fun markArticleRead(id: String, read: Boolean): AppResult<Unit> =
-                AppResult.Failure(FeedError.RefreshFailed())
-        }
-        val viewModel = FeedScreenViewModel(
-            getFeedStreamUseCase = GetFeedStreamUseCase(feedDataSource = source),
-            followFeedUseCase = FollowFeedUseCase(feedDataSource = source),
-            markArticleReadUseCase = MarkArticleReadUseCase(feedDataSource = source),
-        )
+                override suspend fun markArticleRead(id: String, read: Boolean): AppResult<Unit> =
+                    AppResult.Failure(FeedError.RefreshFailed())
+            }
+        val viewModel =
+            FeedScreenViewModel(
+                getFeedStreamUseCase = GetFeedStreamUseCase(feedDataSource = source),
+                followFeedUseCase = FollowFeedUseCase(feedDataSource = source),
+                markArticleReadUseCase = MarkArticleReadUseCase(feedDataSource = source),
+            )
         try {
             backgroundScope.launch { viewModel.state.collect() }
+            runCurrent()
+            advanceTimeBy(300)
             runCurrent()
             articles.value = AppResult.Failure(FeedError.RefreshFailed())
             runCurrent()

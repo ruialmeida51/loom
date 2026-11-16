@@ -74,6 +74,25 @@ class DemoShoppingDataSource(private val store: DemoHouseholdStore) : ShoppingDa
         saved
     }
 
+    override suspend fun removeCompletedItems(
+        items: List<ShoppingItemDomain>,
+    ): AppResult<List<ShoppingItemDomain>> = safeCall {
+        items.forEach { target ->
+            val current = store.shopping.value.items.firstOrNull { it.id == target.id }
+            requireDomain(
+                current?.version == target.version && current.checked && !current.removed,
+            ) {
+                ShoppingError.ItemChanged()
+            }
+        }
+        val saved = items.map { it.copy(removed = true, version = it.version + 1) }
+        val byId = saved.associateBy { it.id }
+        store.shopping.update { oldState ->
+            oldState.copy(items = oldState.items.map { byId[it.id] ?: it })
+        }
+        saved
+    }
+
     override suspend fun deleteList(list: ShoppingListDomain): AppResult<Unit> = safeCall {
         val existing = store.shopping.value.lists.firstOrNull { it.id == list.id }
         requireDomain(existing == null || existing.version == list.version) {

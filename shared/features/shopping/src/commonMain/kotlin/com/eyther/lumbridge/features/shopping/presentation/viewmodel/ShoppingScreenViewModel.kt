@@ -1,10 +1,12 @@
 package com.eyther.lumbridge.features.shopping.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.presentation.components.snackbar.DEFAULT_ALERT_DURATION
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsActionDomain
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
@@ -15,10 +17,12 @@ import com.eyther.lumbridge.features.shopping.domain.usecase.AddShoppingItemsUse
 import com.eyther.lumbridge.features.shopping.domain.usecase.DeleteShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
+import com.eyther.lumbridge.features.shopping.domain.usecase.RemoveCompletedShoppingItemsUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingItemUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SelectShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
+import com.eyther.lumbridge.features.shopping.generated.resources.completed_deleted
 import com.eyther.lumbridge.features.shopping.generated.resources.favorite_updated
 import com.eyther.lumbridge.features.shopping.generated.resources.item_moved
 import com.eyther.lumbridge.features.shopping.generated.resources.item_removed
@@ -28,8 +32,12 @@ import com.eyther.lumbridge.features.shopping.presentation.mapper.toShoppingText
 import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingEntryUi
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingState
+import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -45,6 +53,7 @@ class ShoppingScreenViewModel(
     private val addShoppingItemsUseCase: AddShoppingItemsUseCase,
     private val saveShoppingItemUseCase: SaveShoppingItemUseCase,
     private val saveShoppingListUseCase: SaveShoppingListUseCase,
+    private val removeCompletedShoppingItemsUseCase: RemoveCompletedShoppingItemsUseCase,
     private val deleteShoppingListUseCase: DeleteShoppingListUseCase,
     private val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
 ) : ShoppingScreenViewModelContract() {
@@ -71,6 +80,7 @@ class ShoppingScreenViewModel(
     private var editingList: ShoppingListDomain? = null
     private var requestIds: List<String> = emptyList()
     private var newListId: String = newId()
+    private var feedbackJob: Job? = null
     private var undoChange: UndoChange? = null
 
     private val mutableState =
@@ -100,7 +110,7 @@ class ShoppingScreenViewModel(
             .observeWith(viewModelScope) { state ->
                 refreshRequests
                     .flatMapLatest {
-                        getShoppingStreamUseCase().map { result ->
+                        getShoppingStreamUseCase().delayFirstAtLeast().map { result ->
                             when (result) {
                                 is AppResult.Failure -> result
                                 is AppResult.Success -> {
@@ -137,6 +147,7 @@ class ShoppingScreenViewModel(
                                 copy(
                                     snapshot = result.value,
                                     loading = false,
+                                    refreshing = false,
                                     selectedListId =
                                         result.value.resolveActiveListId(selectedListId),
                                     loadError = null,
@@ -145,6 +156,7 @@ class ShoppingScreenViewModel(
                             is AppResult.Failure ->
                                 copy(
                                     loading = false,
+                                    refreshing = false,
                                     loadError = result.error.toShoppingTextResource(),
                                 )
                         }
@@ -152,6 +164,103 @@ class ShoppingScreenViewModel(
             }
 
     override val state = mutableState.asStateFlow()
+
+    override fun onCompletedSelectionChanged(selecting: Boolean) {
+        if (state.value.deletingCompleted) return
+        if (selecting) onDismissUndo()
+        mutableState.update { oldState ->
+            oldState.copy(
+                selectingCompleted = selecting,
+                selectedCompletedIds = persistentSetOf(),
+                showChecked = if (selecting) true else oldState.showChecked,
+            )
+        }
+    }
+
+    override fun onCompletedItemSelected(id: String) {
+        if (state.value.deletingCompleted) return
+        mutableState.update { oldState ->
+            oldState.copy(
+                selectedCompletedIds =
+                    if (id in oldState.selectedCompletedIds)
+                        oldState.selectedCompletedIds.remove(id)
+                    else oldState.selectedCompletedIds.add(id),
+            )
+        }
+    }
+
+    override fun onSelectAllCompleted() {
+        if (state.value.deletingCompleted) return
+        mutableState.update { oldState ->
+            oldState.copy(
+                selectedCompletedIds =
+                    if (oldState.allCompletedSelected) persistentSetOf()
+                    else oldState.completedItems.map { it.id }.toPersistentSet(),
+            )
+        }
+    }
+
+    override fun onDeleteCompletedRequested() {
+        if (state.value.selectedCompletedItems.isNotEmpty())
+            mutableState.update { oldState ->
+                oldState.copy(
+                    confirmingCompletedDeletion = true,
+                    pendingCompletedDeletion = oldState.selectedCompletedItems,
+                )
+            }
+    }
+
+    override fun onDeleteCompletedCancelled() {
+        if (!state.value.deletingCompleted)
+            mutableState.update { oldState -> oldState.copy(confirmingCompletedDeletion = false) }
+    }
+
+    override fun onDeleteCompletedConfirmed() {
+        if (state.value.deletingCompleted) return
+        val items = state.value.pendingCompletedDeletion
+        if (items.isEmpty()) return
+        mutableState.update { oldState -> oldState.copy(deletingCompleted = true, error = null) }
+        launch {
+            when (val result = removeCompletedShoppingItemsUseCase(items = items)) {
+                is AppResult.Success -> {
+                    val savedIds = result.value.map { it.id }.toSet()
+                    acknowledgedItems = acknowledgedItems + result.value.associateBy { it.id }
+                    mutableState.update { oldState ->
+                        oldState.copy(
+                            snapshot =
+                                oldState.snapshot.copy(
+                                    items =
+                                        oldState.snapshot.items.filterNot { it.id in savedIds } +
+                                            result.value,
+                                ),
+                            deletingCompleted = false,
+                            selectingCompleted = false,
+                            confirmingCompletedDeletion = false,
+                            selectedCompletedIds = persistentSetOf(),
+                            successMessage =
+                                TextResource.Resource(
+                                    Res.string.completed_deleted,
+                                    args = listOf(result.value.size),
+                                ),
+                        )
+                    }
+                    feedbackJob?.cancel()
+                    feedbackJob = launch {
+                        delay(DEFAULT_ALERT_DURATION)
+                        mutableState.update { oldState -> oldState.copy(successMessage = null) }
+                    }
+                }
+                is AppResult.Failure ->
+                    mutableState.update { oldState ->
+                        oldState.copy(
+                            deletingCompleted = false,
+                            confirmingCompletedDeletion = false,
+                            error = result.error.toShoppingTextResource(),
+                        )
+                    }
+            }
+        }
+    }
 
     override fun onInlineNameChanged(value: String) {
         inputState.update { oldState -> oldState.copy(inlineName = value) }
@@ -260,6 +369,8 @@ class ShoppingScreenViewModel(
         mutableState.update { oldState ->
             oldState.copy(
                 selectedListId = id,
+                selectingCompleted = false,
+                selectedCompletedIds = persistentSetOf(),
                 showChecked = false,
                 showLists = false,
                 inlineError = null,
@@ -338,6 +449,8 @@ class ShoppingScreenViewModel(
     }
 
     override fun onRetry() {
+        if (state.value.refreshing) return
+        mutableState.update { oldState -> oldState.copy(refreshing = true) }
         onDismissError()
         refreshRequests.update { oldVersion -> oldVersion + 1 }
     }

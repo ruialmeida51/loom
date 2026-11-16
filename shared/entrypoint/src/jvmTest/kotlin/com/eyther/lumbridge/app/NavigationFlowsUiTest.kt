@@ -5,7 +5,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -20,6 +19,7 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
 import com.eyther.lumbridge.app.navigation.push.PendingPush
+import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -50,29 +50,32 @@ class NavigationFlowsUiTest {
                 }
             }
             waitUntil(timeoutMillis = 10000) {
-                onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                    onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithContentDescription("Back").assertDoesNotExist()
             onNodeWithTag("navigation_shopping").performClick()
+            awaitLoadedDestination(tag = "shopping_content")
             onNodeWithTag("shopping_inline_input").performTextInput("Milk draft")
             runOnIdle { input.back() }
-            onNodeWithText("Today").assertIsDisplayed()
+            onNodeWithTag("home_content").assertIsDisplayed()
             assertEquals(0, exits)
             onNodeWithTag("navigation_money").performClick()
+            awaitLoadedDestination(tag = "expenses_content")
             onNodeWithTag("add_expense").performClick()
             onNodeWithTag("expense_title").performTextInput("Draft expense")
             runOnIdle { input.back() }
             onNodeWithTag("expenses_content").assertIsDisplayed()
             onNodeWithContentDescription("Back").assertDoesNotExist()
             runOnIdle { input.back() }
-            onNodeWithText("Today").assertIsDisplayed()
+            onNodeWithTag("home_content").assertIsDisplayed()
             assertEquals(0, exits)
             onNodeWithTag("navigation_more").performClick()
             onNodeWithText("Feed").performClick()
             runOnIdle { input.back() }
             onNodeWithTag("more_content").assertIsDisplayed()
             runOnIdle { input.back() }
-            onNodeWithText("Today").assertIsDisplayed()
+            onNodeWithTag("home_content").assertIsDisplayed()
             runOnIdle { input.back() }
             assertEquals(1, exits)
             runOnIdle { dispatcher.dispose() }
@@ -85,7 +88,8 @@ class NavigationFlowsUiTest {
             try {
                 setContent { LoomDemoApp() }
                 waitUntil(timeoutMillis = 10000) {
-                    onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+                    onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                        onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
                 }
                 onNodeWithTag("open_my_account").performClick()
                 onNodeWithText("Profile").assertIsDisplayed()

@@ -7,11 +7,13 @@ import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEven
 import com.eyther.lumbridge.features.shopping.data.fixtures.ShoppingAnalyticsFixtureDataSource
 import com.eyther.lumbridge.features.shopping.data.fixtures.ShoppingEntryFixtureDataSource
 import com.eyther.lumbridge.features.shopping.data.fixtures.ShoppingSelectionFixtureDataSource
+import com.eyther.lumbridge.features.shopping.domain.errors.ShoppingError
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.usecase.AddShoppingItemsUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.DeleteShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingStreamUseCase
+import com.eyther.lumbridge.features.shopping.domain.usecase.RemoveCompletedShoppingItemsUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingItemUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SelectShoppingListUseCase
@@ -28,6 +30,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -45,6 +48,8 @@ class ShoppingEntryTest {
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 viewModel.state.collect()
             }
+            runCurrent()
+            advanceTimeBy(300)
             runCurrent()
             viewModel.onInlineNameChanged("Milk")
             viewModel.onAddInlineItem()
@@ -84,6 +89,8 @@ class ShoppingEntryTest {
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 viewModel.state.collect()
             }
+            runCurrent()
+            advanceTimeBy(300)
             runCurrent()
             viewModel.onInlineNameChanged("Milk")
             viewModel.onAddInlineItem()
@@ -137,6 +144,8 @@ class ShoppingEntryTest {
                 restored.state.collect()
             }
             runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
             assertEquals("holiday", restored.state.value.selectedListId)
             restored.onInlineNameChanged("Sun cream")
             restored.onAddInlineItem()
@@ -163,6 +172,8 @@ class ShoppingEntryTest {
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 viewModel.state.collect()
             }
+            runCurrent()
+            advanceTimeBy(300)
             runCurrent()
             viewModel.onInlineNameChanged("Milk")
             viewModel.onAddInlineItem()
@@ -216,6 +227,8 @@ class ShoppingEntryTest {
                 viewModel.state.collect()
             }
             runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
             viewModel.onToggleItem(first)
             viewModel.onToggleItem(second)
             runCurrent()
@@ -249,6 +262,8 @@ class ShoppingEntryTest {
                 viewModel.state.collect()
             }
             runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
             for (list in viewModel.state.value.activeLists.toList()) {
                 viewModel.onDeleteListRequested(list = list)
                 viewModel.onConfirmDeleteList()
@@ -258,6 +273,133 @@ class ShoppingEntryTest {
             assertEquals(null, viewModel.state.value.selectedList)
             assertFalse(viewModel.state.value.showLists)
             assertFalse(viewModel.state.value.canAddInline)
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun refreshKeepsDraftAndSelectionWhenTheNetworkFails() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source = ShoppingEntryFixtureDataSource()
+        val original = (source.snapshot.value as AppResult.Success).value
+        source.snapshot.value =
+            AppResult.Success(
+                original.copy(
+                    items =
+                        listOf(
+                            ShoppingItemDomain(
+                                id = "done",
+                                name = "Milk",
+                                quantity = "",
+                                category = "Other",
+                                listId = "groceries",
+                                checked = true,
+                                version = 1,
+                            ),
+                        ),
+                ),
+            )
+        val store = ViewModelStore()
+        try {
+            val viewModel = createViewModel(source).also { store.put("shopping", it) }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            viewModel.onInlineNameChanged("Bread draft")
+            viewModel.onCompletedSelectionChanged(true)
+            viewModel.onSelectAllCompleted()
+            runCurrent()
+            viewModel.onRetry()
+            assertTrue(viewModel.state.value.refreshing)
+            source.snapshot.value = AppResult.Failure(CommonError.NoConnection())
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            assertFalse(viewModel.state.value.refreshing)
+            assertNotNull(viewModel.state.value.loadError)
+            assertEquals("Bread draft", viewModel.state.value.inlineName)
+            assertEquals(setOf("done"), viewModel.state.value.selectedCompletedIds)
+            assertEquals(1, viewModel.state.value.completedItems.size)
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun selectingCompletedItemsDoesNotChangeTheirCompletionAndBulkFailureKeepsThem() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source = ShoppingEntryFixtureDataSource()
+        val original = (source.snapshot.value as AppResult.Success).value
+        source.snapshot.value =
+            AppResult.Success(
+                original.copy(
+                    items =
+                        listOf(
+                            ShoppingItemDomain(
+                                id = "milk",
+                                name = "Milk",
+                                quantity = "",
+                                category = "Other",
+                                listId = "groceries",
+                                checked = true,
+                                version = 1,
+                            ),
+                            ShoppingItemDomain(
+                                id = "bread",
+                                name = "Bread",
+                                quantity = "",
+                                category = "Other",
+                                listId = "groceries",
+                                checked = true,
+                                version = 1,
+                            ),
+                            ShoppingItemDomain(
+                                id = "apples",
+                                name = "Apples",
+                                quantity = "",
+                                category = "Other",
+                                listId = "groceries",
+                                checked = false,
+                                version = 1,
+                            ),
+                        ),
+                ),
+            )
+        val store = ViewModelStore()
+        try {
+            val viewModel = createViewModel(source).also { store.put("shopping", it) }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            viewModel.onCompletedSelectionChanged(true)
+            viewModel.onCompletedItemSelected("milk")
+            assertEquals(2, viewModel.state.value.completedItems.size)
+            assertEquals(setOf("milk"), viewModel.state.value.selectedCompletedIds)
+            source.removalError = ShoppingError.ItemChanged()
+            viewModel.onDeleteCompletedRequested()
+            viewModel.onDeleteCompletedConfirmed()
+            runCurrent()
+            assertEquals(setOf("milk"), viewModel.state.value.selectedCompletedIds)
+            assertEquals(2, viewModel.state.value.completedItems.size)
+            assertNotNull(viewModel.state.value.error)
+            source.removalError = null
+            viewModel.onSelectAllCompleted()
+            viewModel.onDeleteCompletedRequested()
+            viewModel.onDeleteCompletedConfirmed()
+            runCurrent()
+            assertEquals(setOf("milk", "bread"), source.removals.last().map { it.id }.toSet())
+            assertTrue(viewModel.state.value.completedItems.isEmpty())
+            assertEquals("Apples", viewModel.state.value.uncheckedItems.single().name)
+            assertNotNull(viewModel.state.value.successMessage)
         } finally {
             store.clear()
             Dispatchers.resetMain()
@@ -277,6 +419,8 @@ class ShoppingEntryTest {
             addShoppingItemsUseCase = AddShoppingItemsUseCase(shoppingDataSource = source),
             saveShoppingItemUseCase = SaveShoppingItemUseCase(shoppingDataSource = source),
             saveShoppingListUseCase = SaveShoppingListUseCase(shoppingDataSource = source),
+            removeCompletedShoppingItemsUseCase =
+                RemoveCompletedShoppingItemsUseCase(shoppingDataSource = source),
             deleteShoppingListUseCase = DeleteShoppingListUseCase(shoppingDataSource = source),
             trackAnalyticsEventUseCase =
                 TrackAnalyticsEventUseCase(

@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.feed.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
@@ -40,7 +41,7 @@ class FeedScreenViewModel(
             }
             .observeWith(viewModelScope) { state ->
                 refreshRequests
-                    .flatMapLatest { getFeedStreamUseCase() }
+                    .flatMapLatest { getFeedStreamUseCase().delayFirstAtLeast() }
                     .updateState(state) { result ->
                         when (result) {
                             is AppResult.Success ->
@@ -48,10 +49,15 @@ class FeedScreenViewModel(
                                     items = result.value,
                                     loadError = null,
                                     loading = false,
+                                    refreshing = false,
                                     hasLoaded = true,
                                 )
                             is AppResult.Failure ->
-                                copy(loadError = result.error.toFeedTextResource(), loading = false)
+                                copy(
+                                    loadError = result.error.toFeedTextResource(),
+                                    loading = false,
+                                    refreshing = false,
+                                )
                         }
                     }
             }
@@ -59,6 +65,8 @@ class FeedScreenViewModel(
     override val state = mutableState.asStateFlow()
 
     override fun onRetry() {
+        if (state.value.refreshing) return
+        mutableState.update { oldState -> oldState.copy(refreshing = true) }
         refreshRequests.update { oldVersion -> oldVersion + 1 }
     }
 

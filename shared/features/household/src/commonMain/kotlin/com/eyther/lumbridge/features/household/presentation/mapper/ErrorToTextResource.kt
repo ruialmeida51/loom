@@ -10,11 +10,14 @@ import com.eyther.lumbridge.features.household.generated.resources.error_expired
 import com.eyther.lumbridge.features.household.generated.resources.error_household_full
 import com.eyther.lumbridge.features.household.generated.resources.error_invalid_invitation
 import com.eyther.lumbridge.features.household.generated.resources.error_invalid_name
+import com.eyther.lumbridge.features.household.generated.resources.error_invitation_rate_limited
 import com.eyther.lumbridge.features.household.generated.resources.error_owner_required
 import com.eyther.lumbridge.features.household.generated.resources.error_unsupported_currency
 
 fun AppError.toHouseholdTextResource(): TextResource =
     when (this) {
+        is HouseholdError.InvitationRateLimited ->
+            TextResource.Resource(Res.string.error_invitation_rate_limited)
         is HouseholdError.InvalidInvitation ->
             TextResource.Resource(Res.string.error_invalid_invitation)
         is HouseholdError.InvalidName -> TextResource.Resource(Res.string.error_invalid_name)

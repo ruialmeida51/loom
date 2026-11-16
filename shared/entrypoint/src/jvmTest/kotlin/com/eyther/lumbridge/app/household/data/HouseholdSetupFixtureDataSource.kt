@@ -48,6 +48,9 @@ internal class HouseholdSetupFixtureDataSource : HouseholdDataSource {
     override suspend fun getMembers(householdId: String): AppResult<List<MemberDomain>> =
         AppResult.Success(emptyList())
 
+    override suspend fun revokeInvitation(householdId: String): AppResult<Unit> =
+        AppResult.Success(Unit)
+
     override suspend fun createInvitation(householdId: String): AppResult<String> =
         AppResult.Success("test-invitation")
 }

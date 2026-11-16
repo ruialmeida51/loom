@@ -37,6 +37,8 @@ abstract class ExpensesScreenViewModelContract : LoomViewModel() {
 
     abstract fun onRecordSettlement()
 
+    abstract fun onContentChanged()
+
     abstract fun onRefresh()
 
     abstract fun onDismissError()

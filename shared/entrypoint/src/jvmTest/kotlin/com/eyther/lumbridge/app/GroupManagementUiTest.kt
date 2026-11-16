@@ -7,6 +7,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -15,6 +16,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import com.eyther.lumbridge.app.demo.LoomDemoApp
+import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
@@ -24,6 +26,7 @@ class GroupManagementUiTest {
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
             startApp()
             onNodeWithTag("navigation_shopping").performClick()
+            awaitLoadedDestination(tag = "shopping_content")
             onNodeWithTag("manage_lists").performClick()
             onNodeWithTag("list_actions_Groceries").performClick()
             onNodeWithText("Delete list").performClick()
@@ -46,6 +49,7 @@ class GroupManagementUiTest {
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
             startApp()
             onNodeWithTag("navigation_money").performClick()
+            awaitLoadedDestination(tag = "expenses_content")
             onNodeWithTag("expense_accounts").performClick()
             onNodeWithText("New trip or event").performClick()
             onNodeWithText("Account name").performTextInput("Finished holiday")
@@ -77,7 +81,8 @@ class GroupManagementUiTest {
     private fun ComposeUiTest.startApp() {
         setContent { LoomDemoApp() }
         waitUntil(timeoutMillis = 10_000) {
-            onAllNodesWithText("Today").fetchSemanticsNodes().isNotEmpty()
+            onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
         }
     }
 }

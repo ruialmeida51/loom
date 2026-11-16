@@ -94,7 +94,7 @@ internal fun MoreHost(
                     onBack = navigator::goBack,
                 ) {
                     RemindersSheetHost(viewModel = viewModel, timeZone = context.timeZone) {
-                        RemindersScreen(viewModel = viewModel, timeZone = context.timeZone)
+                        RemindersScreen(viewModel = viewModel)
                     }
                 }
             }

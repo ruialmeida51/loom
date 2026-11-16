@@ -125,6 +125,7 @@ fun HouseholdHost(
                         context = context,
                         portalToolbar = portalToolbar,
                         onRootChanged = { showTabs = it },
+                        onShopping = { navigator.navigateTo(HouseholdDestination.Shopping) },
                     )
                 HouseholdDestination.Shopping ->
                     ShoppingHost(

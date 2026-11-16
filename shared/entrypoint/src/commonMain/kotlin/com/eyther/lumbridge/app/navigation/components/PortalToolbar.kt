@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
+import com.eyther.lumbridge.core.presentation.extensions.shimmer
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.portal_households
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.portal_my_account
@@ -36,6 +37,7 @@ import org.jetbrains.compose.resources.stringResource
 internal fun PortalToolbar(
     householdName: String?,
     nickname: String,
+    loadingProfile: Boolean,
     onHousehold: () -> Unit,
     onAccount: () -> Unit,
 ) {
@@ -80,11 +82,18 @@ internal fun PortalToolbar(
             ) {
                 Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer) {
                     Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
-                        Text(
-                            nickname.take(1).uppercase(),
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.testTag("profile_avatar_initial"),
-                        )
+                        if (loadingProfile)
+                            Box(
+                                Modifier.size(36.dp)
+                                    .shimmer(true, shape = CircleShape)
+                                    .testTag("profile_avatar_loading"),
+                            )
+                        else
+                            Text(
+                                nickname.ifBlank { accountLabel }.take(1).uppercase(),
+                                style = MaterialTheme.typography.titleSmall,
+                                modifier = Modifier.testTag("profile_avatar_initial"),
+                            )
                     }
                 }
             }

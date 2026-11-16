@@ -9,7 +9,7 @@ set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000041';
 select set_config('loom.accounts.home', public.create_household('Accounts home', 'EUR', 'UTC')::text, true);
 select set_config('loom.accounts.invite', public.create_household_invite(current_setting('loom.accounts.home')::uuid), true);
 set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000042';
-select public.join_household(current_setting('loom.accounts.invite'));
+select public.redeem_household_invitation(current_setting('loom.accounts.invite'));
 set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000041';
 
 select public.save_expense_account(current_setting('loom.accounts.home')::uuid,

@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.insights.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.todayIso
@@ -15,13 +16,16 @@ import com.eyther.lumbridge.features.insights.generated.resources.statement_save
 import com.eyther.lumbridge.features.insights.presentation.mapper.toInsightsTextResource
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsScreenViewModelContract
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsState
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class InsightsScreenViewModel(
     private val getMonthlyStatementStreamUseCase: GetMonthlyStatementStreamUseCase,
     private val saveStatementUseCase: SaveStatementUseCase,
@@ -29,25 +33,43 @@ class InsightsScreenViewModel(
     private val exportStatementUseCase: ExportStatementUseCase,
 ) : InsightsScreenViewModelContract() {
 
+    private val refreshRequests = MutableStateFlow(0)
     private val selectedMonth = MutableStateFlow(todayIso(context.timeZone).take(7))
 
     private val mutableState =
         MutableStateFlow(InsightsState()).observeWith(viewModelScope) { state ->
-            getMonthlyStatementStreamUseCase(selectedMonth).updateState(state) { result ->
-                when (result) {
-                    is AppResult.Success ->
-                        copy(
-                            statement = result.value,
-                            month = result.value.month,
-                            loadError = null,
-                        )
-
-                    is AppResult.Failure -> copy(loadError = result.error.toInsightsTextResource())
+            refreshRequests
+                .flatMapLatest {
+                    getMonthlyStatementStreamUseCase(selectedMonth).delayFirstAtLeast()
                 }
-            }
+                .updateState(state) { result ->
+                    when (result) {
+                        is AppResult.Success ->
+                            copy(
+                                statement = result.value,
+                                loading = false,
+                                refreshing = false,
+                                month = result.value.month,
+                                loadError = null,
+                            )
+
+                        is AppResult.Failure ->
+                            copy(
+                                loading = false,
+                                refreshing = false,
+                                loadError = result.error.toInsightsTextResource(),
+                            )
+                    }
+                }
         }
 
     override val state = mutableState.asStateFlow()
+
+    override fun onRefresh() {
+        if (state.value.refreshing) return
+        mutableState.update { oldState -> oldState.copy(refreshing = true, loadError = null) }
+        refreshRequests.update { oldState -> oldState + 1 }
+    }
 
     override fun onPreviousMonth() {
         changeMonth(offset = -1)

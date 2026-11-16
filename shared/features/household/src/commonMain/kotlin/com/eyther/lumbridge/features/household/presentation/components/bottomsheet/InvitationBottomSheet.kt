@@ -3,26 +3,51 @@ package com.eyther.lumbridge.features.household.presentation.components.bottomsh
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import com.eyther.lumbridge.core.presentation.components.DestructiveButton
+import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
+import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.household.generated.resources.Res
+import com.eyther.lumbridge.features.household.generated.resources.invitation_revoke
+import com.eyther.lumbridge.features.household.generated.resources.invitation_short_description
 import com.eyther.lumbridge.features.household.generated.resources.ui_done
 import com.eyther.lumbridge.features.household.generated.resources.ui_invite_someone_home
-import com.eyther.lumbridge.features.household.generated.resources.ui_one_time_invitation_expires_in_48_hours
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun InvitationBottomSheet(invitation: String, onClose: () -> Unit) {
+fun InvitationBottomSheet(
+    invitation: String,
+    busy: Boolean,
+    error: TextResource?,
+    onRevoke: () -> Unit,
+    onDismissError: () -> Unit,
+    onClose: () -> Unit,
+) {
     FormBottomSheet(
         title = stringResource(Res.string.ui_invite_someone_home),
-        action = { TextButton(onClick = onClose) { Text(stringResource(Res.string.ui_done)) } },
+        action = {
+            LoomButton(
+                text = stringResource(Res.string.ui_done),
+                onClick = onClose,
+                enabled = !busy,
+            )
+        },
         dismissAction = {},
     ) {
         Text(
-            text = stringResource(Res.string.ui_one_time_invitation_expires_in_48_hours),
+            text = stringResource(Res.string.invitation_short_description),
             style = MaterialTheme.typography.bodyMedium,
         )
-        SelectionContainer { Text(text = invitation, style = MaterialTheme.typography.bodyLarge) }
+        error?.let { ErrorNotice(message = it, onDismiss = onDismissError) }
+        DestructiveButton(
+            text = stringResource(Res.string.invitation_revoke),
+            onClick = onRevoke,
+            loading = busy,
+        )
+        SelectionContainer {
+            Text(text = invitation, style = MaterialTheme.typography.headlineMedium)
+        }
     }
 }

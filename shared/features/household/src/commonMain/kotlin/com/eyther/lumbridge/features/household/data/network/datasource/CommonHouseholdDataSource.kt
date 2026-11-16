@@ -5,12 +5,14 @@ import com.eyther.lumbridge.core.data.network.asApiResult
 import com.eyther.lumbridge.core.data.network.safeApiCall
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.account.domain.datasource.ProfileDataSource
+import com.eyther.lumbridge.features.household.data.network.mapper.requireJoined
 import com.eyther.lumbridge.features.household.data.network.mapper.toDomain
 import com.eyther.lumbridge.features.household.data.network.mapper.toHouseholdError
 import com.eyther.lumbridge.features.household.data.network.model.request.CreateHouseholdRequest
 import com.eyther.lumbridge.features.household.data.network.model.request.HouseholdRequest
 import com.eyther.lumbridge.features.household.data.network.model.request.JoinHouseholdRequest
 import com.eyther.lumbridge.features.household.data.network.model.response.HouseholdResponse
+import com.eyther.lumbridge.features.household.data.network.model.response.JoinHouseholdResponse
 import com.eyther.lumbridge.features.household.data.network.model.response.MemberResponse
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
@@ -70,8 +72,12 @@ class CommonHouseholdDataSource(
         ) {
             val request = JoinHouseholdRequest(token = token)
 
-            access.requireClient().postgrest.rpc("join_household", request)
-            Unit
+            access
+                .requireClient()
+                .postgrest
+                .rpc("redeem_household_invitation", request)
+                .decodeAs<JoinHouseholdResponse>()
+                .requireJoined()
         }
     }
 
@@ -100,6 +106,15 @@ class CommonHouseholdDataSource(
             .map { it.toDomain() }
     }
 
+    override suspend fun revokeInvitation(householdId: String): AppResult<Unit> =
+        safeApiCall(mapError = Exception::toHouseholdError) {
+            access
+                .requireClient()
+                .postgrest
+                .rpc("revoke_household_invitation", HouseholdRequest(householdId = householdId))
+            Unit
+        }
+
     override suspend fun createInvitation(householdId: String): AppResult<String> {
         return safeApiCall(
             mapError = Exception::toHouseholdError,
@@ -109,7 +124,7 @@ class CommonHouseholdDataSource(
             access
                 .requireClient()
                 .postgrest
-                .rpc("create_household_invite", request)
+                .rpc("create_short_household_invitation", request)
                 .decodeAs<String>()
         }
     }

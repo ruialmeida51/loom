@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.household.domain.model.InvitationCodeDomain
 import com.eyther.lumbridge.features.household.domain.usecase.JoinHouseholdUseCase
 import com.eyther.lumbridge.features.household.presentation.mapper.toHouseholdTextResource
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.JoinHouseholdScreenViewModelContract
@@ -20,8 +21,8 @@ class JoinHouseholdScreenViewModel(
 
     private val inputState = MutableStateFlow(InnerInputState())
 
-    private val mutableState = MutableStateFlow(JoinHouseholdState())
-        .observeWith(viewModelScope) { state ->
+    private val mutableState =
+        MutableStateFlow(JoinHouseholdState()).observeWith(viewModelScope) { state ->
             inputState.updateState(state) { input -> copy(token = input.token) }
         }
 
@@ -29,7 +30,12 @@ class JoinHouseholdScreenViewModel(
 
     override fun onInvitationCodeChanged(value: String) {
         inputState.update { oldState ->
-            oldState.copy(token = value)
+            oldState.copy(
+                token =
+                    if (value.trim().length == 64 && InvitationCodeDomain.isComplete(value.trim()))
+                        value.trim()
+                    else value.trim().uppercase().take(InvitationCodeDomain.LENGTH),
+            )
         }
     }
 
@@ -44,8 +50,10 @@ class JoinHouseholdScreenViewModel(
             val result = joinHouseholdUseCase(token = token)
             mutableState.update { oldState ->
                 when (result) {
-                    is AppResult.Success -> oldState.copy(busy = false, redirectTo = RedirectTo.Households)
-                    is AppResult.Failure -> oldState.copy(busy = false, error = result.error.toHouseholdTextResource())
+                    is AppResult.Success ->
+                        oldState.copy(busy = false, redirectTo = RedirectTo.Households)
+                    is AppResult.Failure ->
+                        oldState.copy(busy = false, error = result.error.toHouseholdTextResource())
                 }
             }
         }
