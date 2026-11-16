@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.2] - 2026-11-16
+
 - Keep typing shopping items with Enter, stable ordering and keyboard clearance.
 - Delete shopping lists and trip accounts; manage archived trips separately.
 - Edit expense splits in a sheet without losing your draft.
