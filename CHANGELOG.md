@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.4] - 2026-11-16
+
 - Capture expenses sooner with amount-first entry, compact summaries and smaller split controls.
 - Keep loaded content visible during refresh and remove forced loading waits.
 - Load Home sections independently, with compact shortcuts and a secondary news preview.
