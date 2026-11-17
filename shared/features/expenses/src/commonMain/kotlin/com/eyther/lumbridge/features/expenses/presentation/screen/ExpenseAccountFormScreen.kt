@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingForm
@@ -137,7 +138,7 @@ private fun InnerExpenseAccountFormScreen(
             onClick = onSave,
             enabled = canSave,
             loading = busy,
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp).testTag("save_expense_account"),
         )
     }
 }

@@ -34,7 +34,9 @@ class ExpenseDetailsScreenViewModel(
 
     override fun onDeleteRequested() {
         if (state.value.canEdit)
-            mutableState.update { oldState -> oldState.copy(showDeleteConfirmation = true) }
+            mutableState.update { oldState ->
+                oldState.copy(showDeleteConfirmation = true, error = null)
+            }
     }
 
     override fun onDeleteCancelled() {
@@ -43,7 +45,7 @@ class ExpenseDetailsScreenViewModel(
     }
 
     override fun onDeleteConfirmed() {
-        if (!state.value.canEdit) return
+        if (!state.value.showDeleteConfirmation || !state.value.canEdit) return
         val expense = state.value.expense ?: return
         mutableState.update { oldState ->
             oldState.copy(busy = true, error = null)

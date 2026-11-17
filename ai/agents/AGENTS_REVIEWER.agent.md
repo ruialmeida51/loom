@@ -145,6 +145,12 @@ Read [PATTERNS_COMPONENTS](../PATTERNS_COMPONENTS.md) and [PATTERNS_UI](../PATTE
 - Destructive actions use filled/outlined buttons, never text buttons. Initial missing content
   and explicit refresh show matching skeletons for a single 300 ms minimum transition. Retain data/drafts underneath; resume/background reads have no minimum delay.
   Mutation progress and success feedback stay in action controls/snackbars.
+- Confirm sign out and destructive shared actions before writing. Check Cancel, busy dismissal,
+  duplicate confirmation and typed failure/retry. Routine completion and reversible archive/restore
+  stay direct.
+- Form sheets use equal-width horizontal Cancel/Save actions with matching heights when labels wrap;
+  read-only sheets use Close, and immediate-selection managers omit Cancel/Done. Popup menus anchor
+  to their caret/overflow icon rather than a full-width row.
 - Check shopping selection against restored/changed rows, short-invitation rate-limit persistence,
   reminder recurrence feedback and one-time inset consumption.
 

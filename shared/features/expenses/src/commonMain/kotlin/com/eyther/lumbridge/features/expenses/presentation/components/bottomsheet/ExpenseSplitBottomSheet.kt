@@ -1,13 +1,11 @@
 package com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,9 +16,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
@@ -28,9 +27,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDom
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelectionDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.form_split
-import com.eyther.lumbridge.features.expenses.generated.resources.split_done
 import com.eyther.lumbridge.features.expenses.generated.resources.split_total
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseSplitParticipantRow
 import com.eyther.lumbridge.features.expenses.presentation.mapper.splitMethodLabel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseSplitViewModelContract
@@ -92,18 +89,11 @@ private fun InnerExpenseSplitBottomSheet(
 ) {
     FormBottomSheet(
         title = stringResource(Res.string.form_split),
+        onAction = onConfirm,
+        onDismiss = onClose,
+        actionEnabled = canConfirm,
+        actionModifier = Modifier.testTag("confirm_expense_split"),
         contentSpacing = LoomSpacing.small,
-        action = {
-            LoomButton(
-                text = stringResource(Res.string.split_done),
-                onClick = onConfirm,
-                enabled = canConfirm,
-                modifier = Modifier.fillMaxWidth().testTag("confirm_expense_split"),
-            )
-        },
-        dismissAction = {
-            OutlinedButton(onClick = onClose) { Text(stringResource(Res.string.ui_cancel)) }
-        },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -114,26 +104,35 @@ private fun InnerExpenseSplitBottomSheet(
             )
             Text(total, style = MaterialTheme.typography.titleLarge)
         }
-        Box {
-            var expanded by remember { mutableStateOf(false) }
-            SelectorButton(
-                text = splitMethodLabel(method),
-                textStyle = MaterialTheme.typography.titleSmall,
-                onClick = { expanded = true },
-                modifier = Modifier.fillMaxWidth().testTag("split_method"),
-            )
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                ExpenseSplitMethodDomain.entries.forEach { choice ->
-                    DropdownMenuItem(
-                        text = { Text(splitMethodLabel(choice)) },
-                        onClick = {
-                            expanded = false
-                            onMethod(choice)
-                        },
-                    )
+        var expanded by remember { mutableStateOf(false) }
+        SelectorButton(
+            text = splitMethodLabel(method),
+            expanded = expanded,
+            textStyle = MaterialTheme.typography.titleSmall,
+            onClick = { expanded = true },
+            modifier = Modifier.fillMaxWidth().testTag("split_method"),
+            menu = {
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.testTag("split_method_menu"),
+                ) {
+                    ExpenseSplitMethodDomain.entries.forEach { choice ->
+                        DropdownMenuItem(
+                            text = { Text(splitMethodLabel(choice)) },
+                            trailingIcon = {
+                                if (choice == method)
+                                    LoomIcon(glyph = Glyph.CHECK, decorative = true)
+                            },
+                            onClick = {
+                                expanded = false
+                                onMethod(choice)
+                            },
+                        )
+                    }
                 }
-            }
-        }
+            },
+        )
         members.forEach { member ->
             ExpenseSplitParticipantRow(
                 member = member,

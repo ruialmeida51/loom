@@ -1,9 +1,16 @@
 package com.eyther.lumbridge.features.tasks.presentation.viewmodel.contracts
 
 import com.eyther.lumbridge.core.domain.todayIso
+import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.tasks.domain.model.TaskDomain
 import com.eyther.lumbridge.features.tasks.domain.model.TaskRecurrenceDomain
+import com.eyther.lumbridge.features.tasks.generated.resources.Res
+import com.eyther.lumbridge.features.tasks.generated.resources.task_delete_confirm
+import com.eyther.lumbridge.features.tasks.generated.resources.task_delete_message
+import com.eyther.lumbridge.features.tasks.generated.resources.task_delete_recurring_message
+import com.eyther.lumbridge.features.tasks.generated.resources.task_delete_title
+import com.eyther.lumbridge.features.tasks.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.tasks.presentation.mapper.toDateUi
 import com.eyther.lumbridge.features.tasks.presentation.model.TaskRowUi
 import kotlinx.collections.immutable.PersistentSet
@@ -19,6 +26,8 @@ data class TasksState(
     val refreshing: Boolean = false,
     val completingIds: PersistentSet<String> = persistentSetOf(),
     val removingIds: PersistentSet<String> = persistentSetOf(),
+    val deletingTask: TaskDomain? = null,
+    val deleteError: TextResource? = null,
     val successMessage: TextResource? = null,
     val loading: Boolean = true,
     val title: String = "",
@@ -34,6 +43,21 @@ data class TasksState(
     val loadError: TextResource? = null,
     val formError: TextResource? = null,
 ) {
+
+    val deleteConfirmation: DestructiveConfirmationUi? = deletingTask?.let { task ->
+        DestructiveConfirmationUi(
+            title = TextResource.Resource(Res.string.task_delete_title),
+            message =
+                TextResource.Resource(
+                    if (task.recurrence == TaskRecurrenceDomain.NONE) Res.string.task_delete_message
+                    else Res.string.task_delete_recurring_message,
+                    args = listOf(task.title),
+                ),
+            confirmText = TextResource.Resource(Res.string.task_delete_confirm),
+            cancelText = TextResource.Resource(Res.string.ui_cancel),
+        )
+    }
+    val deleting: Boolean = deletingTask?.id in removingIds
 
     val displayError: TextResource? = error ?: loadError
     val showEmpty: Boolean =

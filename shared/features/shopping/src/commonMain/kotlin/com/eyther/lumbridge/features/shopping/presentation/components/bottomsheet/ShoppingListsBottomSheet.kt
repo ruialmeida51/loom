@@ -2,7 +2,6 @@ package com.eyther.lumbridge.features.shopping.presentation.components.bottomshe
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -14,14 +13,12 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
-import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.resources.TextResource
-import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.list_delete
@@ -47,15 +44,9 @@ fun ShoppingListsBottomSheet(
 ) {
     FormBottomSheet(
         title = stringResource(Res.string.ui_shopping_lists),
-        dismissAction = {},
-        action = {
-            LoomButton(
-                text = stringResource(Res.string.ui_new_list),
-                onClick = { onListForm(null) },
-                enabled = !busy,
-                modifier = Modifier.padding(top = LoomSpacing.small),
-            )
-        },
+        onAction = { onListForm(null) },
+        actionLabel = stringResource(Res.string.ui_new_list),
+        busy = busy,
     ) {
         GroupedSurface {
             lists.forEachIndexed { index, list ->

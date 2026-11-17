@@ -30,30 +30,37 @@ internal fun AppearancePreferenceRow(
     onSelected: (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    Box {
-        NavigationRow(
-            title = stringResource(Res.string.appearance_title),
-            value = themeLabel(theme),
-            glyph = Glyph.SETTINGS,
-            trailingGlyph = Glyph.CHEVRON_DOWN,
-            onClick = { expanded = true },
-            enabled = enabled,
-            modifier = Modifier.testTag("appearance_preference"),
-        )
-        DropdownMenu(expanded = expanded && enabled, onDismissRequest = { expanded = false }) {
-            ThemeMode.entries.forEach { choice ->
-                DropdownMenuItem(
-                    modifier = Modifier.semantics { selected = theme == choice },
-                    text = { Text(themeLabel(choice)) },
-                    trailingIcon = {
-                        if (theme == choice) LoomIcon(glyph = Glyph.CHECK, decorative = true)
-                    },
-                    onClick = {
-                        expanded = false
-                        onSelected(choice.name)
-                    },
-                )
+    NavigationRow(
+        title = stringResource(Res.string.appearance_title),
+        value = themeLabel(theme),
+        glyph = Glyph.SETTINGS,
+        onClick = { expanded = true },
+        enabled = enabled,
+        modifier = Modifier.testTag("appearance_preference"),
+        trailingContent = {
+            Box(modifier = Modifier.testTag("appearance_menu_anchor")) {
+                LoomIcon(glyph = Glyph.CHEVRON_DOWN, decorative = true)
+                DropdownMenu(
+                    expanded = expanded && enabled,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.testTag("appearance_menu"),
+                ) {
+                    ThemeMode.entries.forEach { choice ->
+                        DropdownMenuItem(
+                            modifier = Modifier.semantics { selected = theme == choice },
+                            text = { Text(themeLabel(choice)) },
+                            trailingIcon = {
+                                if (theme == choice)
+                                    LoomIcon(glyph = Glyph.CHECK, decorative = true)
+                            },
+                            onClick = {
+                                expanded = false
+                                onSelected(choice.name)
+                            },
+                        )
+                    }
+                }
             }
-        }
-    }
+        },
+    )
 }

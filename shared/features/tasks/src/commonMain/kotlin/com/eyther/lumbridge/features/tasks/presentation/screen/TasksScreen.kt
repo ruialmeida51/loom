@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.ActionFab
+import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.FloatingActionContentPadding
 import com.eyther.lumbridge.core.presentation.components.IllustratedEmptyState
@@ -65,6 +66,16 @@ fun TasksScreen(viewModel: TasksScreenViewModelContract) {
             onDismiss = viewModel::onDismissError,
             onComplete = viewModel::onCompleteTask,
             onRemove = viewModel::onRemoveTask,
+        )
+    }
+    state.deleteConfirmation?.let { confirmation ->
+        DestructiveConfirmation(
+            confirmation = confirmation,
+            busy = state.deleting,
+            error = state.deleteError,
+            confirmationTag = "confirm_delete_task",
+            onConfirm = viewModel::onRemoveTaskConfirmed,
+            onDismiss = viewModel::onRemoveTaskCancelled,
         )
     }
 }

@@ -62,11 +62,11 @@ class DesignFlowsUiTest {
             onNodeWithText("What do we need?")
                 .performScrollTo()
                 .performTextReplacement("Barista oat drink")
-            onNodeWithText("Save item").assertIsDisplayed()
+            onNodeWithTag("save_shopping_item").assertIsDisplayed()
             captureNode(tag = "modal_sheet", name = "shopping-sheet-narrow")
-            onNodeWithText("Save item").performClick()
+            onNodeWithTag("save_shopping_item").performClick()
             waitUntil(timeoutMillis = 5000) {
-                onAllNodesWithText("Save item").fetchSemanticsNodes().isEmpty()
+                onAllNodesWithTag("save_shopping_item").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithTag("shopping_content").performScrollToNode(hasText("Barista oat drink"))
             onNodeWithText("Barista oat drink").assertExists()
@@ -86,14 +86,14 @@ class DesignFlowsUiTest {
             onNodeWithTag("edit_nickname").performScrollTo().performClick()
             onNodeWithTag("nickname_input").assertTextContains("You")
             onNodeWithTag("nickname_input").performTextReplacement("x".repeat(81))
-            onNodeWithText("Save nickname").performClick()
+            onNodeWithTag("save_nickname").performClick()
             onNodeWithText("Use 1–80 characters for your nickname.").assertExists()
             onNodeWithTag("nickname_input").assertTextContains("x".repeat(81))
             onNodeWithTag("nickname_input").performTextReplacement("Rui")
             captureNode(tag = "modal_sheet", name = "nickname-sheet-light")
-            onNodeWithText("Save nickname").performClick()
+            onNodeWithTag("save_nickname").performClick()
             waitUntil(timeoutMillis = 5000) {
-                onAllNodesWithText("Save nickname").fetchSemanticsNodes().isEmpty()
+                onAllNodesWithTag("save_nickname").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithContentDescription("Back").performClick()
             onNodeWithTag("navigation_money").performClick()

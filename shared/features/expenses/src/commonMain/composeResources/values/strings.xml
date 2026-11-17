@@ -47,13 +47,11 @@
   <string name="ui_split_with">Split with</string>
   <string name="ui_category">Category</string>
   <string name="ui_repeat_this_bill_monthly">Repeat this bill monthly</string>
-  <string name="ui_save_expense">Save expense</string>
   <string name="ui_cancel">Cancel</string>
   <string name="ui_record_a_repayment">Record payment</string>
   <string name="ui_money_sent_by">Paid by</string>
   <string name="ui_received_by">Received by</string>
   <string name="ui_this_records_a_payment_you_ve_already_made_or">Record a payment already made.</string>
-  <string name="ui_record_repayment">Save payment</string>
   <string name="ui_every_month_sorted">EVERY MONTH, SORTED</string>
   <string name="ui_manage_the_fixed_expenses_you_share_at_home">Manage the fixed expenses you share at home.</string>
   <string name="ui_add_an_expense_in_money_and_choose_monthly_repeat">Add an expense in Money and choose monthly repeat to create a schedule.</string>
@@ -126,7 +124,6 @@
     <string name="split_shares">By shares</string>
     <string name="split_amounts">Exact amounts</string>
     <string name="split_percentages">Percentages</string>
-    <string name="split_done">Done</string>
     <string name="split_value">Share for %1$s</string>
     <string name="form_description">Description</string>
     <string name="form_amount">Amount (%1$s)</string>
@@ -137,7 +134,7 @@
     <string name="form_date">Date</string>
     <string name="form_monthly">Repeat monthly</string>
     <string name="form_recurring_unchanged">Edits apply to this expense. Upcoming bills keep their existing schedule.</string>
-    <string name="form_save">Save expense</string>
+    <string name="form_save">Save</string>
     <string name="detail_edit">Edit expense</string>
     <string name="detail_delete">Delete expense</string>
     <string name="detail_delete_title">Delete this expense?</string>
@@ -146,7 +143,7 @@
     <string name="account_name">Account name</string>
     <string name="account_currency">Currency</string>
     <string name="account_participants">Participants</string>
-    <string name="account_save">Save account</string>
+    <string name="account_save">Save</string>
     <string name="balance_gets_back">Gets back</string>
     <string name="balance_owes">Owes</string>
     <string name="account_manage">Manage accounts</string>
@@ -173,4 +170,13 @@
     <string name="payment_i_paid_person">I paid %1$s</string>
     <string name="payment_person_paid_me">%1$s paid me</string>
     <string name="split_total">Total</string>
+    <string name="ui_close">Close</string>
+    <string name="detail_your_share">Your share</string>
+    <string name="detail_recurring">Recurring</string>
+    <string name="detail_payer">Payer</string>
+    <string name="detail_you">You</string>
+    <string name="detail_you_payer">You · Payer</string>
+    <string name="detail_paid_by">Paid by</string>
+    <string name="detail_date">Date</string>
+    <string name="detail_account">Account</string>
 </resources>

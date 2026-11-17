@@ -2,15 +2,13 @@ package com.eyther.lumbridge.features.expenses.presentation.components.bottomshe
 
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.form_date
-import com.eyther.lumbridge.features.expenses.generated.resources.split_done
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -28,26 +26,16 @@ fun ExpenseDateBottomSheet(date: String, onSelected: (String) -> Unit, onClose: 
         )
     FormBottomSheet(
         title = stringResource(Res.string.form_date),
-        action = {
-            OutlinedButton(
-                enabled = picker.selectedDateMillis != null,
-                onClick = {
-                    picker.selectedDateMillis?.let {
-                        onSelected(
-                            Instant.fromEpochMilliseconds(it)
-                                .toLocalDateTime(TimeZone.UTC)
-                                .date
-                                .toString(),
-                        )
-                    }
-                },
-            ) {
-                Text(stringResource(Res.string.split_done))
+        onAction = {
+            picker.selectedDateMillis?.let {
+                onSelected(
+                    Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date.toString(),
+                )
             }
         },
-        dismissAction = {
-            OutlinedButton(onClick = onClose) { Text(stringResource(Res.string.ui_cancel)) }
-        },
+        onDismiss = onClose,
+        actionEnabled = picker.selectedDateMillis != null,
+        actionModifier = Modifier.testTag("confirm_expense_date"),
     ) {
         DatePicker(state = picker, showModeToggle = false)
     }

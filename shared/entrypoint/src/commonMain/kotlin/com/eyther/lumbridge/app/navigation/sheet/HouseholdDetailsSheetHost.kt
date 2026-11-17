@@ -25,7 +25,7 @@ internal fun HouseholdDetailsSheetHost(
         InvitationBottomSheet(
             invitation = state.invitation.orEmpty(),
             busy = state.busy,
-            error = state.error,
+            error = state.invitationError,
             onRevoke = viewModel::onRevokeInvitation,
             onDismissError = viewModel::onDismissError,
             onClose = viewModel::onCloseInvitation,

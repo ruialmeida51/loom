@@ -123,6 +123,7 @@ private fun SplitStepperButton(
     FilledTonalIconButton(
         onClick = onClick,
         enabled = enabled,
+        shape = MaterialTheme.shapes.medium,
         modifier = modifier.size(StepperTargetSize).semantics { contentDescription = label },
     ) {
         val color = LocalContentColor.current

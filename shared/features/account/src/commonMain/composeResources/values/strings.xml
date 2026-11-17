@@ -15,10 +15,11 @@
     <string name="ui_edit_nickname">Edit nickname</string>
     <string name="ui_nickname_help">This is how you appear in all your households.</string>
     <string name="ui_nickname_title">Nickname</string>
-    <string name="ui_save_nickname">Save nickname</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="delete_account">Delete account</string>
     <string name="account_deletion_description">Account and data deletion options</string>
+    <string name="sign_out_title">Sign out of Loom?</string>
+    <string name="sign_out_message">You’ll need to sign in again to access your households.</string>
 </resources>

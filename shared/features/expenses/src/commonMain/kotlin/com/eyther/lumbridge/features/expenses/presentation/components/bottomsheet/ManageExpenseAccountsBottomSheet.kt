@@ -3,7 +3,6 @@ package com.eyther.lumbridge.features.expenses.presentation.components.bottomshe
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
@@ -27,7 +26,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.account_manage
 import com.eyther.lumbridge.features.expenses.generated.resources.account_manage_hint
 import com.eyther.lumbridge.features.expenses.generated.resources.account_rename
 import com.eyther.lumbridge.features.expenses.generated.resources.account_restore
-import com.eyther.lumbridge.features.expenses.generated.resources.split_done
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_close
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
 import org.jetbrains.compose.resources.stringResource
 
@@ -47,12 +46,9 @@ fun ManageExpenseAccountsBottomSheet(
 ) {
     FormBottomSheet(
         title = stringResource(Res.string.account_manage),
-        action = {
-            OutlinedButton(onClick = onClose, enabled = !busy) {
-                Text(stringResource(Res.string.split_done))
-            }
-        },
-        dismissAction = {},
+        onAction = onClose,
+        actionLabel = stringResource(Res.string.ui_close),
+        busy = busy,
     ) {
         Text(
             stringResource(Res.string.account_manage_hint),

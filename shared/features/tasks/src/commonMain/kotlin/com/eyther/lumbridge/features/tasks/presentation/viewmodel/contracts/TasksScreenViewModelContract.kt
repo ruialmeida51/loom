@@ -36,4 +36,8 @@ abstract class TasksScreenViewModelContract : LoomViewModel() {
     abstract fun onCompleteTask(item: TaskDomain)
 
     abstract fun onRemoveTask(id: String)
+
+    abstract fun onRemoveTaskCancelled()
+
+    abstract fun onRemoveTaskConfirmed()
 }

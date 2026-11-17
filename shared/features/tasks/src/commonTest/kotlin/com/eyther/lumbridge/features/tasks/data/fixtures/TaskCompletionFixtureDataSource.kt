@@ -20,6 +20,9 @@ internal class TaskCompletionFixtureDataSource : TaskDataSource {
     val items = MutableStateFlow<AppResult<List<TaskDomain>>>(AppResult.Success(listOf(task)))
     val completion = CompletableDeferred<AppResult<Unit>>()
     var calls = 0
+    var removalCalls = 0
+    var removalGate: CompletableDeferred<AppResult<Unit>>? = null
+    var removalResult: AppResult<Unit> = AppResult.Success(Unit)
 
     override fun stream() = items
 
@@ -30,5 +33,10 @@ internal class TaskCompletionFixtureDataSource : TaskDataSource {
         return completion.await()
     }
 
-    override suspend fun removeTask(id: String): AppResult<Unit> = AppResult.Success(Unit)
+    override suspend fun removeTask(id: String): AppResult<Unit> {
+        removalCalls++
+        val result = removalGate?.await() ?: removalResult
+        if (result is AppResult.Success) items.value = AppResult.Success(emptyList())
+        return result
+    }
 }

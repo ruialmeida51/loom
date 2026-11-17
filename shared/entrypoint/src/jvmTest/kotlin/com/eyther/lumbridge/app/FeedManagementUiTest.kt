@@ -46,14 +46,14 @@ class FeedManagementUiTest {
             onNodeWithText("Add a feed").performClick()
             onNodeWithText("https://…")
                 .performTextInput("https://rss.impresa.pt/feed/latest/expresso.rss")
-            onNodeWithText("Save feed").performClick()
+            onNodeWithTag("save_feed_subscription").performClick()
             onNodeWithTag("feed_subscriptions").performScrollToNode(hasText("rss.impresa.pt"))
             onNodeWithText("rss.impresa.pt").assertExists()
             val originalCard =
                 hasTestTag("feed_subscription_card") and hasAnyDescendant(hasText("rss.impresa.pt"))
             onNode(hasText("rss.impresa.pt") and hasAnyAncestor(originalCard)).performClick()
             onNodeWithText("https://…").performTextReplacement("https://www.nasa.gov/feed/")
-            onNodeWithText("Save feed").performClick()
+            onNodeWithTag("save_feed_subscription").performClick()
             onNodeWithTag("feed_subscriptions").performScrollToNode(hasText("www.nasa.gov"))
             onNodeWithText("www.nasa.gov").assertExists()
             val editedCard =
