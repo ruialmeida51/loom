@@ -34,7 +34,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - run: sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :shared:di:jvmTest :shared:features:analytics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest :shared:features:settings:jvmTest :shared:features:account:jvmTest :shared:features:home:jvmTest :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest :shared:features:feed:jvmTest :shared:features:insights:jvmTest :shared:features:reminders:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
+      - run: ./gradlew :shared:di:jvmTest :shared:features:analytics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest :shared:features:settings:jvmTest :shared:features:account:jvmTest :shared:features:home:jvmTest :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest :shared:features:feed:jvmTest :shared:features:insights:jvmTest :shared:features:tasks:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
       - run: python3 tools/test_database.py
       - uses: denoland/setup-deno@v2
         with:
@@ -69,6 +69,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Enable emulator acceleration
         run: sudo chmod 666 /dev/kvm
+      - name: Build native test APKs before booting the emulator
+        run: >-
+          ./gradlew :androidApp:assembleDebug :androidApp:assembleDebugAndroidTest --no-daemon
+          --no-parallel --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process
+          '-Dorg.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8'
       - name: Check Android keyboard, system Back and resume
         uses: reactivecircus/android-emulator-runner@4c44018e59b437e86cdfc41da381398f93ed8808 # v2
         with:
@@ -77,7 +82,7 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 2048
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 3072 -cores 2 -no-snapshot
           script: ./tools/check_android_usability.sh
       - uses: actions/upload-artifact@v4
         if: always()

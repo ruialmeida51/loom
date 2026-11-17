@@ -1,5 +1,5 @@
 import { isWorker, response, serviceClient } from "../_shared/backend.ts";
-import { defaultHosts, fetchFeed, parseFeed } from "../_shared/rss.ts";
+import { allowedFeedHosts, fetchFeed, parseFeed } from "../_shared/rss.ts";
 
 Deno.serve(async (request) => {
   if (request.method !== "POST") return response({ error: "Use POST" }, 405);
@@ -42,8 +42,7 @@ Deno.serve(async (request) => {
   if (error) {
     return response({ error: "Could not load feed subscriptions" }, 500);
   }
-  const hosts = (Deno.env.get("RSS_ALLOWED_HOSTS") ?? defaultHosts.join(","))
-    .split(",").map((host) => host.trim().toLowerCase()).filter(Boolean);
+  const hosts = allowedFeedHosts(Deno.env.get("RSS_ALLOWED_HOSTS"));
   let refreshed = 0;
   const failures: string[] = [];
   for (const subscription of subscriptions ?? []) {

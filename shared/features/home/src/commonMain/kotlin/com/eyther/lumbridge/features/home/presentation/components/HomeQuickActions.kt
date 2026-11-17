@@ -19,7 +19,7 @@ import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.home.generated.resources.Res
 import com.eyther.lumbridge.features.home.generated.resources.home_add_expense
-import com.eyther.lumbridge.features.home.generated.resources.home_add_reminder
+import com.eyther.lumbridge.features.home.generated.resources.home_add_task
 import org.jetbrains.compose.resources.stringResource
 
 private val QuickActionIconSize = 24.dp // Standard icon size inside the square action area.
@@ -27,7 +27,7 @@ private val MinimumQuickActionHeight =
     88.dp // Keep a square icon and readable label inside a compact action.
 
 @Composable
-internal fun HomeQuickActions(onAddExpense: () -> Unit, onAddReminder: () -> Unit) {
+internal fun HomeQuickActions(onAddExpense: () -> Unit, onAddTask: () -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium)) {
         QuickActionTile(
             title = stringResource(Res.string.home_add_expense),
@@ -36,10 +36,10 @@ internal fun HomeQuickActions(onAddExpense: () -> Unit, onAddReminder: () -> Uni
             modifier = Modifier.weight(1f).testTag("home_add_expense"),
         )
         QuickActionTile(
-            title = stringResource(Res.string.home_add_reminder),
-            glyph = Glyph.BELL,
-            onClick = onAddReminder,
-            modifier = Modifier.weight(1f).testTag("home_add_reminder"),
+            title = stringResource(Res.string.home_add_task),
+            glyph = Glyph.TASKS,
+            onClick = onAddTask,
+            modifier = Modifier.weight(1f).testTag("home_add_task"),
         )
     }
 }

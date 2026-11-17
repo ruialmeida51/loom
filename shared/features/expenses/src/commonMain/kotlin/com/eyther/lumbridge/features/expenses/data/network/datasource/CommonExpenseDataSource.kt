@@ -38,7 +38,7 @@ class CommonExpenseDataSource(
                     .decodeList<ExpenseResponse>()
                     .map { it.toDomain() }
             }
-            .asApiResult(mapError = Exception::toExpenseError)
+            .asApiResult(mapError = Exception::toExpenseError, retryTransientFailures = true)
 
     override fun streamSettlements(accountId: String): Flow<AppResult<List<SettlementDomain>>> =
         access
@@ -55,7 +55,7 @@ class CommonExpenseDataSource(
                     .decodeList<SettlementResponse>()
                     .map { it.toDomain() }
             }
-            .asApiResult(mapError = Exception::toExpenseError)
+            .asApiResult(mapError = Exception::toExpenseError, retryTransientFailures = true)
 
     override suspend fun getExpense(id: String, accountId: String): AppResult<ExpenseDomain> =
         safeApiCall(mapError = Exception::toExpenseError) {

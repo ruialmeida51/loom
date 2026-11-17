@@ -7,7 +7,9 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
+import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +17,8 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 class SupabaseAccess(
     val client: SupabaseClient?,
@@ -33,7 +37,7 @@ class SupabaseAccess(
      */
     fun <T> watch(table: String, scopeId: String, load: suspend () -> T): Flow<T> = channelFlow {
         val client = requireClient()
-        send(load())
+        send(client.readAuthenticated(action = load))
         val invalidations = Channel<Unit>(capacity = Channel.CONFLATED)
         val channel = client.channel("loom-$table-$scopeId-${newId()}")
         val changes =
@@ -60,13 +64,17 @@ class SupabaseAccess(
         }
         try {
             // One reader serializes reloads; a slower older response cannot replace a newer one.
-            for (invalidation in invalidations) send(load())
+            for (invalidation in invalidations) {
+                send(client.readAuthenticated(action = load))
+            }
         } finally {
             listener.cancel()
             subscription.cancel()
             poller.cancel()
             invalidations.close()
-            channel.unsubscribe()
+            withContext(NonCancellable) {
+                withTimeoutOrNull(2_000L) { client.realtime.removeChannel(channel) }
+            }
         }
     }
         .distinctUntilChanged()

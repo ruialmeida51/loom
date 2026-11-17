@@ -9,20 +9,22 @@ import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDa
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.feed.data.network.datasource.CommonFeedDataSource
+import com.eyther.lumbridge.features.feed.data.network.datasource.CommonFeedSubscriptionDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
+import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.data.export.CommonStatementExportDataSource
 import com.eyther.lumbridge.features.insights.data.network.datasource.CommonStatementDataSource
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportDataSource
-import com.eyther.lumbridge.features.reminders.data.network.datasource.CommonReminderDataSource
-import com.eyther.lumbridge.features.reminders.domain.datasource.ReminderDataSource
 import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
 import com.eyther.lumbridge.features.shopping.data.local.datasource.CommonShoppingSelectionDataSource
 import com.eyther.lumbridge.features.shopping.data.network.datasource.CommonShoppingDataSource
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingSelectionDataSource
+import com.eyther.lumbridge.features.tasks.data.network.datasource.CommonTaskDataSource
+import com.eyther.lumbridge.features.tasks.domain.datasource.TaskDataSource
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
@@ -59,11 +61,11 @@ class HouseholdDataSourceModule(
         )
 
     @Single
-    fun provideReminderDataSource(
+    fun provideTaskDataSource(
         access: SupabaseAccess,
         context: HouseholdContextDomain,
-    ): ReminderDataSource =
-        CommonReminderDataSource(
+    ): TaskDataSource =
+        CommonTaskDataSource(
             access = access,
             context = context,
         )
@@ -103,6 +105,13 @@ class HouseholdDataSourceModule(
             access = access,
             context = context,
         )
+
+    @Single
+    fun provideFeedSubscriptionDataSource(
+        access: SupabaseAccess,
+        context: HouseholdContextDomain,
+    ): FeedSubscriptionDataSource =
+        CommonFeedSubscriptionDataSource(access = access, context = context)
 
     @Single
     fun provideStatementDataSource(

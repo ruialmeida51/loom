@@ -1,8 +1,11 @@
 package com.eyther.lumbridge.app.navigation
 
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -17,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
@@ -30,8 +34,9 @@ import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
-import com.eyther.lumbridge.shared.entrypoint.generated.resources.tab_balances
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.tab_money
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.tab_more
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.tab_tasks
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.token_home
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_shopping
 import kotlinx.serialization.modules.subclass
@@ -47,6 +52,7 @@ fun HouseholdHost(
             HouseholdDestination.Home,
             HouseholdDestination.Shopping,
             HouseholdDestination.Balances,
+            HouseholdDestination.Tasks,
             HouseholdDestination.More,
         )
     val state =
@@ -54,6 +60,7 @@ fun HouseholdHost(
             subclass(HouseholdDestination.Home::class)
             subclass(HouseholdDestination.Shopping::class)
             subclass(HouseholdDestination.Balances::class)
+            subclass(HouseholdDestination.Tasks::class)
             subclass(HouseholdDestination.More::class)
         }
     val navigator = remember(state) { Navigator(state = state) }
@@ -70,47 +77,71 @@ fun HouseholdHost(
         if (target != null && target.householdId == context.id) {
             if (target.route == "money" || target.route == "insights")
                 navigator.navigateTo(HouseholdDestination.Balances)
-            else navigator.navigateTo(HouseholdDestination.Home)
+            else if (target.route == "tasks" || target.route == "reminders") {
+                navigator.navigateTo(HouseholdDestination.Tasks)
+                PendingPush.clear()
+            } else navigator.navigateTo(HouseholdDestination.Home)
         }
     }
     Scaffold(
         bottomBar = {
             if (showTabs)
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 0.dp,
-                ) {
-                    listOf(
-                            Triple(
-                                HouseholdDestination.Home,
-                                stringResource(Res.string.token_home),
-                                Glyph.HOME,
-                            ),
-                            Triple(
-                                HouseholdDestination.Shopping,
-                                stringResource(Res.string.ui_shopping),
-                                Glyph.SHOPPING,
-                            ),
-                            Triple(
-                                HouseholdDestination.Balances,
-                                stringResource(Res.string.tab_balances),
-                                Glyph.MONEY,
-                            ),
-                            Triple(
-                                HouseholdDestination.More,
-                                stringResource(Res.string.tab_more),
-                                Glyph.MORE,
-                            ),
-                        )
-                        .forEach { (destination, label, glyph) ->
-                            NavigationBarItem(
-                                selected = state.activeRoot == destination,
-                                onClick = { navigator.navigateTo(destination) },
-                                icon = { LoomIcon(glyph = glyph) },
-                                label = { Text(label) },
-                                modifier = Modifier.testTag("navigation_${glyph.name.lowercase()}"),
+                BoxWithConstraints {
+                    val tabWidth = maxWidth / roots.size
+                    NavigationBar(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 0.dp,
+                    ) {
+                        listOf(
+                                Triple(
+                                    HouseholdDestination.Home,
+                                    stringResource(Res.string.token_home),
+                                    Glyph.HOME,
+                                ),
+                                Triple(
+                                    HouseholdDestination.Shopping,
+                                    stringResource(Res.string.ui_shopping),
+                                    Glyph.SHOPPING,
+                                ),
+                                Triple(
+                                    HouseholdDestination.Balances,
+                                    stringResource(Res.string.tab_money),
+                                    Glyph.MONEY,
+                                ),
+                                Triple(
+                                    HouseholdDestination.Tasks,
+                                    stringResource(Res.string.tab_tasks),
+                                    Glyph.TASKS,
+                                ),
+                                Triple(
+                                    HouseholdDestination.More,
+                                    stringResource(Res.string.tab_more),
+                                    Glyph.MORE,
+                                ),
                             )
-                        }
+                            .forEach { (destination, label, glyph) ->
+                                NavigationBarItem(
+                                    selected = state.activeRoot == destination,
+                                    onClick = { navigator.navigateTo(destination) },
+                                    icon = { LoomIcon(glyph = glyph) },
+                                    label = {
+                                        Text(
+                                            text = label,
+                                            maxLines = 1,
+                                            softWrap = false,
+                                            overflow = TextOverflow.Ellipsis,
+                                            // Use the full tab width before truncating accessible
+                                            // larger text.
+                                            modifier =
+                                                Modifier.wrapContentWidth(unbounded = true)
+                                                    .widthIn(max = tabWidth),
+                                        )
+                                    },
+                                    modifier =
+                                        Modifier.testTag("navigation_${glyph.name.lowercase()}"),
+                                )
+                            }
+                    }
                 }
         },
     ) { padding ->
@@ -126,6 +157,7 @@ fun HouseholdHost(
                         portalToolbar = portalToolbar,
                         onRootChanged = { showTabs = it },
                         onShopping = { navigator.navigateTo(HouseholdDestination.Shopping) },
+                        onTasks = { navigator.navigateTo(HouseholdDestination.Tasks) },
                     )
                 HouseholdDestination.Shopping ->
                     ShoppingHost(
@@ -138,11 +170,18 @@ fun HouseholdHost(
                         portalToolbar = portalToolbar,
                         onRootChanged = { showTabs = it },
                     )
+                HouseholdDestination.Tasks ->
+                    TasksHost(
+                        context = context,
+                        portalToolbar = portalToolbar,
+                        onRootChanged = { showTabs = it },
+                    )
                 HouseholdDestination.More ->
                     MoreHost(
                         context = context,
                         portalToolbar = portalToolbar,
                         onRootChanged = { showTabs = it },
+                        onTasks = { navigator.navigateTo(HouseholdDestination.Tasks) },
                     )
             }
         }

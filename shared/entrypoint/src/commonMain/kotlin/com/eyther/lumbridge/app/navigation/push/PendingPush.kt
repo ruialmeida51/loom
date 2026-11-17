@@ -10,7 +10,7 @@ object PendingPush {
     fun open(householdId: String, route: String, accountId: String? = null) {
         if (
             Regex("[0-9a-fA-F-]{36}").matches(householdId) &&
-                route in listOf("money", "reminders", "insights")
+                route in listOf("money", "tasks", "insights")
         )
             mutable.value =
                 PushDestination(

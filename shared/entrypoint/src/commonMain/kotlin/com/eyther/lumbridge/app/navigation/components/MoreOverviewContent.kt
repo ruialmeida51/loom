@@ -18,14 +18,12 @@ import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.household_details
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.tab_more
-import com.eyther.lumbridge.shared.entrypoint.generated.resources.toolbar_reminders
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_feed
 import org.jetbrains.compose.resources.stringResource
 
 /** This is a navigation menu. Feature state and behavior stay in the destination's own feature. */
 @Composable
 internal fun MoreOverviewContent(
-    onReminders: () -> Unit,
     onFeed: () -> Unit,
     onHouseholdDetails: () -> Unit,
 ) {
@@ -39,11 +37,6 @@ internal fun MoreOverviewContent(
     ) {
         Text(stringResource(Res.string.tab_more), style = MaterialTheme.typography.titleLarge)
         GroupedSurface {
-            NavigationRow(
-                title = stringResource(Res.string.toolbar_reminders),
-                onClick = onReminders,
-            )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             NavigationRow(title = stringResource(Res.string.ui_feed), onClick = onFeed)
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             NavigationRow(

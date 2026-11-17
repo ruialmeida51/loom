@@ -27,7 +27,7 @@ kotlin {
             implementation(projects.shared.features.household)
             implementation(projects.shared.features.insights)
             implementation(projects.shared.features.legal)
-            implementation(projects.shared.features.reminders)
+            implementation(projects.shared.features.tasks)
             implementation(projects.shared.features.settings)
             implementation(projects.shared.features.shopping)
             api(libs.koin.core)

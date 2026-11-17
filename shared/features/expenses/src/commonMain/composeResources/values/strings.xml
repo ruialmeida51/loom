@@ -106,9 +106,10 @@
     <string name="history_expenses">Expenses</string>
     <string name="history_balances">Balances</string>
     <string name="history_empty">Add your first shared expense.</string>
+    <string name="history_paid_on">Paid by %1$s · %2$s</string>
     <string name="history_paid_by">Paid by %1$s</string>
     <string name="history_repayment">Repayment</string>
-    <string name="history_transfer">%1$s → %2$s</string>
+    <string name="history_transfer_on">%1$s → %2$s · %3$s</string>
     <string name="former_member">Former member</string>
     <string name="balance_who_pays">Who pays whom</string>
     <string name="balance_person_owes">%1$s owes %2$s</string>
@@ -164,4 +165,7 @@
         <item quantity="one">%1$d person</item>
         <item quantity="other">%1$d people</item>
     </plurals>
+  <string name="account_selected">Current</string>
+  <string name="balance_you_settled">You’re settled up</string>
+  <string name="balance_everyone">Everyone’s balance</string>
 </resources>

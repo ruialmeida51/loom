@@ -28,12 +28,19 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.E
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedSubscriptionUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.RemoveFeedSubscriptionUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.UpdateFeedSubscriptionUseCase
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedScreenViewModel
+import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedSubscriptionsScreenViewModel
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
-import com.eyther.lumbridge.features.home.domain.usecase.GetHomeRemindersStreamUseCase
+import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedSubscriptionsScreenViewModelContract
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCase
 import com.eyther.lumbridge.features.home.presentation.viewmodel.HomeScreenViewModel
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
@@ -47,12 +54,6 @@ import com.eyther.lumbridge.features.insights.domain.usecase.GetMonthlyStatement
 import com.eyther.lumbridge.features.insights.domain.usecase.SaveStatementUseCase
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.InsightsScreenViewModel
 import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsScreenViewModelContract
-import com.eyther.lumbridge.features.reminders.domain.usecase.AddReminderUseCase
-import com.eyther.lumbridge.features.reminders.domain.usecase.CompleteReminderUseCase
-import com.eyther.lumbridge.features.reminders.domain.usecase.GetRemindersStreamUseCase
-import com.eyther.lumbridge.features.reminders.domain.usecase.RemoveReminderUseCase
-import com.eyther.lumbridge.features.reminders.presentation.viewmodel.RemindersScreenViewModel
-import com.eyther.lumbridge.features.reminders.presentation.viewmodel.contracts.RemindersScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.domain.usecase.AddShoppingItemsUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.DeleteShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
@@ -63,6 +64,12 @@ import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingListUse
 import com.eyther.lumbridge.features.shopping.domain.usecase.SelectShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.ShoppingScreenViewModel
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
+import com.eyther.lumbridge.features.tasks.domain.usecase.AddTaskUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.CompleteTaskUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.GetTasksStreamUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.RemoveTaskUseCase
+import com.eyther.lumbridge.features.tasks.presentation.viewmodel.TasksScreenViewModel
+import com.eyther.lumbridge.features.tasks.presentation.viewmodel.contracts.TasksScreenViewModelContract
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 import org.koin.core.annotation.Module
@@ -110,28 +117,32 @@ class HouseholdViewModelModule {
 
     @KoinViewModel(binds = [FeedScreenViewModelContract::class])
     fun provideFeedScreenViewModel(
+        context: HouseholdContextDomain,
         getFeedStreamUseCase: GetFeedStreamUseCase,
         getStarterFeedsUseCase: GetStarterFeedsUseCase,
+        refreshFeedsUseCase: RefreshFeedsUseCase,
         followFeedUseCase: FollowFeedUseCase,
         markArticleReadUseCase: MarkArticleReadUseCase,
     ): FeedScreenViewModelContract =
         FeedScreenViewModel(
+            timeZone = context.timeZone,
             getFeedStreamUseCase = getFeedStreamUseCase,
             getStarterFeedsUseCase = getStarterFeedsUseCase,
+            refreshFeedsUseCase = refreshFeedsUseCase,
             followFeedUseCase = followFeedUseCase,
             markArticleReadUseCase = markArticleReadUseCase,
         )
 
     @KoinViewModel(binds = [HomeScreenViewModelContract::class])
     fun provideHomeScreenViewModel(
-        getHomeRemindersStreamUseCase: GetHomeRemindersStreamUseCase,
+        getHomeTasksStreamUseCase: GetHomeTasksStreamUseCase,
         getHomeShoppingStreamUseCase: GetHomeShoppingStreamUseCase,
         getFeedStreamUseCase: GetFeedStreamUseCase,
         markArticleReadUseCase: MarkArticleReadUseCase,
         context: HouseholdContextDomain,
     ): HomeScreenViewModelContract =
         HomeScreenViewModel(
-            getHomeRemindersStreamUseCase = getHomeRemindersStreamUseCase,
+            getHomeTasksStreamUseCase = getHomeTasksStreamUseCase,
             getHomeShoppingStreamUseCase = getHomeShoppingStreamUseCase,
             getFeedStreamUseCase = getFeedStreamUseCase,
             markArticleReadUseCase = markArticleReadUseCase,
@@ -152,20 +163,20 @@ class HouseholdViewModelModule {
             exportStatementUseCase = exportStatementUseCase,
         )
 
-    @KoinViewModel(binds = [RemindersScreenViewModelContract::class])
-    fun provideRemindersScreenViewModel(
-        getRemindersStreamUseCase: GetRemindersStreamUseCase,
-        addReminderUseCase: AddReminderUseCase,
-        completeReminderUseCase: CompleteReminderUseCase,
-        removeReminderUseCase: RemoveReminderUseCase,
+    @KoinViewModel(binds = [TasksScreenViewModelContract::class])
+    fun provideTasksScreenViewModel(
+        getTasksStreamUseCase: GetTasksStreamUseCase,
+        addTaskUseCase: AddTaskUseCase,
+        completeTaskUseCase: CompleteTaskUseCase,
+        removeTaskUseCase: RemoveTaskUseCase,
         context: HouseholdContextDomain,
-    ): RemindersScreenViewModelContract =
-        RemindersScreenViewModel(
+    ): TasksScreenViewModelContract =
+        TasksScreenViewModel(
             context = context,
-            getRemindersStreamUseCase = getRemindersStreamUseCase,
-            addReminderUseCase = addReminderUseCase,
-            completeReminderUseCase = completeReminderUseCase,
-            removeReminderUseCase = removeReminderUseCase,
+            getTasksStreamUseCase = getTasksStreamUseCase,
+            addTaskUseCase = addTaskUseCase,
+            completeTaskUseCase = completeTaskUseCase,
+            removeTaskUseCase = removeTaskUseCase,
         )
 
     @KoinViewModel(binds = [HouseholdDetailsScreenViewModelContract::class])
@@ -260,5 +271,21 @@ class HouseholdViewModelModule {
         ExpenseSplitViewModel(
             params = params,
             resolveExpenseSplitUseCase = resolveExpenseSplitUseCase,
+        )
+
+    @KoinViewModel(binds = [FeedSubscriptionsScreenViewModelContract::class])
+    fun provideFeedSubscriptionsScreenViewModel(
+        getFeedSubscriptionsStreamUseCase: GetFeedSubscriptionsStreamUseCase,
+        followFeedUseCase: FollowFeedUseCase,
+        refreshFeedSubscriptionUseCase: RefreshFeedSubscriptionUseCase,
+        updateFeedSubscriptionUseCase: UpdateFeedSubscriptionUseCase,
+        removeFeedSubscriptionUseCase: RemoveFeedSubscriptionUseCase,
+    ): FeedSubscriptionsScreenViewModelContract =
+        FeedSubscriptionsScreenViewModel(
+            getFeedSubscriptionsStreamUseCase = getFeedSubscriptionsStreamUseCase,
+            followFeedUseCase = followFeedUseCase,
+            refreshFeedSubscriptionUseCase = refreshFeedSubscriptionUseCase,
+            updateFeedSubscriptionUseCase = updateFeedSubscriptionUseCase,
+            removeFeedSubscriptionUseCase = removeFeedSubscriptionUseCase,
         )
 }

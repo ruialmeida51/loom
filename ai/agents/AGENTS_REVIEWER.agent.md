@@ -21,7 +21,7 @@ Run one pass per relevant group; independent groups may be reviewed in parallel:
 
 1. Shared components, theme, inputs and dialogs.
 2. Authentication, registration and account.
-3. Home, Shopping and Reminders.
+3. Home, Shopping and Tasks.
 4. Households, invitation codes and member details.
 5. Balances, recurring bills, statements and settings.
 6. Navigation, data, DI and platform integration.
@@ -143,7 +143,7 @@ Read [PATTERNS_COMPONENTS](../PATTERNS_COMPONENTS.md) and [PATTERNS_UI](../PATTE
   and bottom-bar clearance. Skeletons follow the final content's grouping and spacing.
 
 - Destructive actions use filled/outlined buttons, never text buttons. Initial missing content
-  shows skeletons; explicit refresh retains content and shows an indicator. Do not delay usable data.
+  and explicit refresh show matching skeletons for a single 300 ms minimum transition. Retain data/drafts underneath; resume/background reads have no minimum delay.
   Mutation progress and success feedback stay in action controls/snackbars.
 - Check shopping selection against restored/changed rows, short-invitation rate-limit persistence,
   reminder recurrence feedback and one-time inset consumption.

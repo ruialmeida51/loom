@@ -54,6 +54,7 @@ internal fun ExpensesSheetHost(
     controller.registerBottomSheet<ExpensesSheets.Accounts> {
         ExpenseAccountsBottomSheet(
             active = state.activeAccounts,
+            selectedId = state.account?.id,
             busy = state.busy,
             onSelect = viewModel::onAccountSelected,
             onManage = { viewModel.onManageAccountsVisibilityChanged(true) },
@@ -61,7 +62,6 @@ internal fun ExpensesSheetHost(
                 viewModel.onAccountsVisibilityChanged(false)
                 onCreateAccount()
             },
-            onClose = { viewModel.onAccountsVisibilityChanged(false) },
         )
     }
     controller.registerBottomSheet<ExpensesSheets.ManageAccounts> {

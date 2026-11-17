@@ -1,9 +1,9 @@
 package com.eyther.lumbridge.features.feed.presentation.components.bottomsheet
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
@@ -40,7 +40,7 @@ fun FollowFeedBottomSheet(
             )
         },
         dismissAction = {
-            TextButton(onClick = { onShowFollow(false) }, enabled = !busy) {
+            OutlinedButton(onClick = { onShowFollow(false) }, enabled = !busy) {
                 Text(stringResource(Res.string.ui_cancel))
             }
         },

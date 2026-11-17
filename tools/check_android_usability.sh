@@ -10,4 +10,11 @@ collect_device_evidence() {
     exit "$usability_status"
 }
 trap collect_device_evidence EXIT
-./gradlew :androidApp:connectedDebugAndroidTest --no-parallel --max-workers=1 '-Dorg.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8'
+adb shell setprop log.tag.WindowOnBackDispatcher DEBUG
+# Use a narrow phone at a lower physical resolution to keep software rendering within CI resources.
+adb shell wm size 720x1600
+adb shell wm density 320
+# Reset the system launcher after display configuration; a foreign Quickstep ANR steals Back input.
+adb shell am force-stop com.android.launcher3
+timeout 45s adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.HOME > /dev/null
+./gradlew :androidApp:connectedDebugAndroidTest --no-daemon --no-parallel --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process '-Dorg.gradle.jvmargs=-Xmx2g -Dfile.encoding=UTF-8'

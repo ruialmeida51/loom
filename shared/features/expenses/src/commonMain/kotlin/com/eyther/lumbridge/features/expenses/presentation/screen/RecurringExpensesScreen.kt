@@ -9,8 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -109,7 +109,7 @@ private fun InnerRecurringExpensesScreen(
         error?.let { message ->
             item(key = "error") {
                 ErrorNotice(message = message, onDismiss = onDismiss)
-                TextButton(onClick = onRetry) {
+                OutlinedButton(onClick = onRetry) {
                     Text(stringResource(Res.string.ui_refresh_and_retry))
                 }
             }
@@ -157,7 +157,7 @@ private fun InnerRecurringExpensesScreen(
                     )
                     if (row.canManage)
                         Row {
-                            TextButton(
+                            OutlinedButton(
                                 onClick = {
                                     onControl(
                                         rule,
@@ -210,7 +210,7 @@ private fun InnerRecurringExpensesScreen(
                 )
             },
             dismissButton = {
-                TextButton(onClick = onCancelDismissed, enabled = !busy) {
+                OutlinedButton(onClick = onCancelDismissed, enabled = !busy) {
                     Text(stringResource(Res.string.ui_keep_schedule))
                 }
             },

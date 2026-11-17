@@ -2,8 +2,8 @@ package com.eyther.lumbridge.features.authentication.presentation.screen
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -130,7 +130,7 @@ private fun InnerLoginScreen(
             loading = requestingCode,
             enabled = canRequestCode && !signingIn && !startingGoogle,
         )
-        TextButton(onClick = onRegister, enabled = !busy) {
+        OutlinedButton(onClick = onRegister, enabled = !busy) {
             Text(stringResource(Res.string.ui_new_here_create_an_account))
         }
         LegalLinks(onOpenDocument = onOpenLegalDocument, showAccountDeletion = true)

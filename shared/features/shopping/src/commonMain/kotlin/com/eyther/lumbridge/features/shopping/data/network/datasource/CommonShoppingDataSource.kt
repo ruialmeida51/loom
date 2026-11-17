@@ -44,7 +44,7 @@ class CommonShoppingDataSource(
             ) { lists, items ->
                 ShoppingSnapshotDomain(lists = lists, items = items)
             }
-            .asApiResult(mapError = Exception::toShoppingError)
+            .asApiResult(mapError = Exception::toShoppingError, retryTransientFailures = true)
     }
 
     override suspend fun addItems(

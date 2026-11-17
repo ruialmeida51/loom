@@ -15,8 +15,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,7 +42,6 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
-import com.eyther.lumbridge.features.shopping.generated.resources.checklist_completed
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_message
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_selected
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_title
@@ -53,6 +52,7 @@ import com.eyther.lumbridge.features.shopping.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_refresh_and_retry
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_shopping_lists
 import com.eyther.lumbridge.features.shopping.presentation.components.CompletedShoppingActions
+import com.eyther.lumbridge.features.shopping.presentation.components.CompletedShoppingSectionHeader
 import com.eyther.lumbridge.features.shopping.presentation.components.PendingShoppingItemRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingEntryRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingItemRow
@@ -60,7 +60,6 @@ import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingEntryUi
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
-import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -211,7 +210,7 @@ private fun InnerShoppingScreen(
         error?.let { message ->
             item {
                 ErrorNotice(message = message, onDismiss = onDismiss)
-                TextButton(onClick = onRetry) {
+                OutlinedButton(onClick = onRetry) {
                     Text(stringResource(Res.string.ui_refresh_and_retry))
                 }
             }
@@ -273,32 +272,26 @@ private fun InnerShoppingScreen(
                 inlineError?.let { Text(it.getString(), color = MaterialTheme.colorScheme.error) }
             }
         if (!loading && completedItems.isNotEmpty()) {
-            item {
-                TextButton(
-                    onClick = { onShowCompleted(!showCompleted) },
-                    modifier = Modifier.testTag("shopping_completed"),
-                ) {
-                    Text(
-                        text =
-                            pluralStringResource(
-                                Res.plurals.checklist_completed,
-                                completedItems.size,
-                                completedItems.size,
-                            ),
-                    )
-                }
-            }
-            item(key = "completed_actions") {
-                CompletedShoppingActions(
+            item(key = "completed_header") {
+                CompletedShoppingSectionHeader(
+                    count = completedItems.size,
+                    expanded = showCompleted,
                     selecting = selectingCompleted,
-                    selectedCount = selectedCount,
-                    allSelected = allCompletedSelected,
                     busy = busy,
+                    onExpanded = onShowCompleted,
                     onSelecting = onSelectingCompleted,
-                    onSelectAll = onSelectAllCompleted,
-                    onDelete = onDeleteCompleted,
                 )
             }
+            if (selectingCompleted)
+                item(key = "completed_actions") {
+                    CompletedShoppingActions(
+                        selectedCount = selectedCount,
+                        allSelected = allCompletedSelected,
+                        busy = busy,
+                        onSelectAll = onSelectAllCompleted,
+                        onDelete = onDeleteCompleted,
+                    )
+                }
             if (showCompleted)
                 items(completedItems, key = { it.id }) { item ->
                     ShoppingItemRow(

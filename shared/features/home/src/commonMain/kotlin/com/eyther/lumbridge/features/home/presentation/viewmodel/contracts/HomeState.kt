@@ -5,31 +5,31 @@ import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
 import com.eyther.lumbridge.features.feed.presentation.mapper.toPreviewUi
 import com.eyther.lumbridge.features.feed.presentation.model.ArticlePreviewUi
 import com.eyther.lumbridge.features.home.presentation.mapper.toHomeUi
-import com.eyther.lumbridge.features.home.presentation.model.HomeReminderUi
-import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
+import com.eyther.lumbridge.features.home.presentation.model.HomeTaskUi
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
+import com.eyther.lumbridge.features.tasks.domain.model.TaskDomain
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
 data class HomeState(
     val today: String,
     val timeZone: String,
-    val reminderItems: List<ReminderDomain>? = null,
+    val taskItems: List<TaskDomain>? = null,
     val shoppingPreview: List<ShoppingItemDomain>? = null,
     val feedItems: List<ArticleDomain>? = null,
-    val remindersLoading: Boolean = true,
+    val tasksLoading: Boolean = true,
     val shoppingLoading: Boolean = true,
     val feedLoading: Boolean = true,
-    val remindersRefreshing: Boolean = false,
+    val tasksRefreshing: Boolean = false,
     val shoppingRefreshing: Boolean = false,
     val feedRefreshing: Boolean = false,
-    val remindersError: TextResource? = null,
+    val tasksError: TextResource? = null,
     val shoppingError: TextResource? = null,
     val feedError: TextResource? = null,
 ) {
-    val refreshing: Boolean = remindersRefreshing || shoppingRefreshing || feedRefreshing
-    val reminders: ImmutableList<HomeReminderUi> =
-        reminderItems
+    val refreshing: Boolean = tasksRefreshing || shoppingRefreshing || feedRefreshing
+    val tasks: ImmutableList<HomeTaskUi> =
+        taskItems
             .orEmpty()
             .take(3)
             .map { it.toHomeUi(today = today, timeZone = timeZone) }

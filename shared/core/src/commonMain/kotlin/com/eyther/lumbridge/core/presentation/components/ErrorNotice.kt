@@ -4,9 +4,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +31,7 @@ fun ErrorNotice(message: TextResource, onDismiss: (() -> Unit)? = null) {
                 style = MaterialTheme.typography.bodyMedium,
             )
             onDismiss?.let { dismiss ->
-                TextButton(onClick = dismiss) { Text(stringResource(Res.string.ui_dismiss)) }
+                OutlinedButton(onClick = dismiss) { Text(stringResource(Res.string.ui_dismiss)) }
             }
         }
     }

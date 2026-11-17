@@ -3,15 +3,18 @@ package com.eyther.lumbridge.demo
 import android.content.ContentValues
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -19,6 +22,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
@@ -29,17 +33,36 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
+import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.math.abs
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
 
 /** These checks exercise Android's actual window/IME and Back dispatch, not desktop substitutes. */
 class UsabilityDeviceTest {
-    @get:Rule val compose = createAndroidComposeRule<UsabilityTestActivity>()
+    @get:Rule(order = 0) val compose = createAndroidComposeRule<UsabilityTestActivity>()
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+
+    @get:Rule(order = 1)
+    val failureEvidence =
+        object : TestWatcher() {
+            override fun failed(error: Throwable, description: Description) {
+                runCatching { capture(name = "failure-${description.methodName}") }
+                    .onFailure { Log.e("LoomTestFailure", "Failure capture unavailable", it) }
+                runCatching {
+                    val hierarchy = ByteArrayOutputStream()
+                    device.dumpWindowHierarchy(hierarchy)
+                    hierarchy.toString(Charsets.UTF_8.name()).chunked(3000).forEach {
+                        Log.e("LoomTestFailure", it)
+                    }
+                }
+            }
+        }
 
     @Before
     fun awaitHome() {
@@ -89,11 +112,11 @@ class UsabilityDeviceTest {
                 inputBottom <= decor.height - keyboard + 2f,
             )
         }
-        device.pressBack() // The keyboard consumes the first Back.
+        pressSystemBack() // The keyboard consumes the first Back.
         compose.waitUntil(timeoutMillis = 5_000) { !keyboardVisible() }
         device.waitForIdle()
         awaitDestination(tag = "shopping_content")
-        device.pressBack() // Then the peer tab returns Home.
+        pressSystemBack() // Then the peer tab returns Home.
         awaitDestination(tag = "home_content")
     }
 
@@ -115,16 +138,20 @@ class UsabilityDeviceTest {
         compose.onNodeWithContentDescription("Decrease share for You").performClick()
         compose.onNodeWithContentDescription("Share for You").assertTextContains("1")
         capture(name = "expense-split-sheet")
-        device.pressBack()
+        pressSystemBack()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()
+        }
         compose.onNodeWithTag("expense_title").assertTextContains("Holiday groceries")
         compose.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
         compose.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+        awaitActivityWindowFocus()
         compose.onNodeWithTag("expense_amount").assertTextContains("30.00")
         hideKeyboard()
-        device.pressBack()
+        pressSystemBack()
         awaitDestination(tag = "expenses_content")
         compose.onNodeWithTag("expense_title").assertDoesNotExist()
-        device.pressBack()
+        pressSystemBack()
         awaitDestination(tag = "home_content")
     }
 
@@ -169,8 +196,12 @@ class UsabilityDeviceTest {
             swipeDown(startY = height * .15f, endY = height * .8f, durationMillis = 600)
         }
         compose.waitForIdle()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("refresh_skeleton").fetchSemanticsNodes().isEmpty() &&
+                compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
+        }
         assertTrue(
-            "Refreshing retains the loaded checklist",
+            "The short refresh transition finishes and restores the checklist",
             compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty(),
         )
         capture(name = "shopping-refresh-retains-content")
@@ -178,6 +209,55 @@ class UsabilityDeviceTest {
             .onNodeWithTag("shopping_inline_input")
             .performScrollTo()
             .assertTextContains("Next grocery draft")
+    }
+
+    @Test
+    fun systemBackFromFeedManagementReturnsThroughNewsAndMore() {
+        compose.onNodeWithTag("navigation_more").performClick()
+        compose.onNodeWithText("Feed").performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("manage_feeds").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag("manage_feeds").performClick()
+        awaitDestination(tag = "feed_subscriptions")
+        pressSystemBack()
+        awaitDestination(tag = "manage_feeds")
+        compose.onNodeWithText("The reading corner").assertIsDisplayed()
+        pressSystemBack()
+        awaitDestination(tag = "more_content")
+        pressSystemBack()
+        awaitDestination(tag = "home_content")
+    }
+
+    @Test
+    fun titleOnlyTaskSavesFromHomeAndSystemBackFromTasksReturnsHome() {
+        val taskTitle = "Check hallway smoke alarm"
+        compose.onNodeWithTag("home_add_task").performClick()
+        compose.onNodeWithTag("task_title").performTextInput(taskTitle)
+        compose.onNodeWithTag("task_notification").assertDoesNotExist()
+        hideKeyboard()
+        compose.onNodeWithTag("save_task").performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()
+        }
+        awaitDestination(tag = "home_content")
+        compose.onNodeWithTag("navigation_tasks").performClick()
+        awaitDestination(tag = "tasks_content")
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
+        }
+        compose.onNodeWithTag("tasks_content").performScrollToNode(hasContentDescription(taskTitle))
+        compose.onNodeWithContentDescription(taskTitle).performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithText("$taskTitle completed").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("$taskTitle completed").assertIsDisplayed()
+        compose.onNodeWithTag("tasks_completed").performScrollTo().performClick()
+        compose.onNodeWithTag("tasks_content").performScrollToNode(hasContentDescription(taskTitle))
+        compose.onNodeWithContentDescription(taskTitle).assertIsDisplayed()
+        capture(name = "tasks-completed")
+        pressSystemBack()
+        awaitDestination(tag = "home_content")
     }
 
     private fun capture(name: String) {
@@ -207,9 +287,23 @@ class UsabilityDeviceTest {
         file.delete()
     }
 
+    private fun pressSystemBack() {
+        Log.d("LoomUsabilityBack", "Pressing Back; foreground=${device.currentPackageName}")
+        device.pressBack()
+    }
+
     private fun awaitDestination(tag: String) {
         compose.waitUntil(timeoutMillis = 5_000) { compose.onNodeWithTag(tag).isDisplayed() }
         compose.waitForIdle()
+    }
+
+    private fun awaitActivityWindowFocus() {
+        // RESUMED can arrive before Android returns input focus from the scenario's helper window.
+        compose.waitUntil(timeoutMillis = 5_000) {
+            var focused = false
+            compose.runOnUiThread { focused = compose.activity.hasWindowFocus() }
+            focused
+        }
     }
 
     private fun keyboardVisible(): Boolean {

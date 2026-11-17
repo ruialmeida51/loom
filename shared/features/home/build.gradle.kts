@@ -23,7 +23,7 @@ kotlin {
             api(projects.shared.features.feed)
             api(projects.shared.core)
             api(projects.shared.features.household)
-            api(projects.shared.features.reminders)
+            api(projects.shared.features.tasks)
             api(projects.shared.features.shopping)
             api(libs.compose.runtime)
             api(libs.compose.foundation)

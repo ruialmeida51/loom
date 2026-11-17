@@ -2,8 +2,8 @@ package com.eyther.lumbridge.features.expenses.presentation.components.bottomshe
 
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
@@ -29,7 +29,7 @@ fun ExpenseDateBottomSheet(date: String, onSelected: (String) -> Unit, onClose: 
     FormBottomSheet(
         title = stringResource(Res.string.form_date),
         action = {
-            TextButton(
+            OutlinedButton(
                 enabled = picker.selectedDateMillis != null,
                 onClick = {
                     picker.selectedDateMillis?.let {
@@ -46,7 +46,7 @@ fun ExpenseDateBottomSheet(date: String, onSelected: (String) -> Unit, onClose: 
             }
         },
         dismissAction = {
-            TextButton(onClick = onClose) { Text(stringResource(Res.string.ui_cancel)) }
+            OutlinedButton(onClick = onClose) { Text(stringResource(Res.string.ui_cancel)) }
         },
     ) {
         DatePicker(state = picker, showModeToggle = false)

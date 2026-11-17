@@ -16,6 +16,34 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
 
 class SafeApiCallTest {
+    @Test
+    fun readStreamsRecoverAfterTransientFailuresWithoutLosingTheFailureEvent() = runTest {
+        var attempts = 0
+        val results = flow {
+            attempts++
+            if (attempts == 1) throw IOException("temporarily offline")
+            emit(42)
+        }
+            .asApiResult(retryTransientFailures = true)
+            .toList()
+        assertIs<CommonError.NoConnection>(assertIs<AppResult.Failure>(results.first()).error)
+        assertEquals(42, assertIs<AppResult.Success<Int>>(results.last()).value)
+        assertEquals(2, attempts)
+    }
+
+    @Test
+    fun authorizationFailuresNeverEnterTheTransportRetryLoop() = runTest {
+        var attempts = 0
+        val results =
+            flow<Int> {
+                    attempts++
+                    throw CommonError.AccessDenied()
+                }
+                .asApiResult(retryTransientFailures = true)
+                .toList()
+        assertIs<CommonError.AccessDenied>(assertIs<AppResult.Failure>(results.single()).error)
+        assertEquals(1, attempts)
+    }
 
     @Test
     fun domainFailuresKeepTheirTypeAndCauseAcrossUseCases() = runTest {
@@ -31,7 +59,10 @@ class SafeApiCallTest {
 
     @Test
     fun arbitraryExceptionTextCannotBecomeARecognizedDomainFailure() = runTest {
-        val cause = IllegalStateException("shopping.message_this_item_changed_refresh_before_undoing_or_editing_it")
+        val cause =
+            IllegalStateException(
+                "shopping.message_this_item_changed_refresh_before_undoing_or_editing_it",
+            )
         val result = safeApiCall<Unit> { throw cause }
         val error = assertIs<CommonError.Unknown>(assertIs<AppResult.Failure>(result).error)
 
@@ -56,10 +87,13 @@ class SafeApiCallTest {
         val results = flow {
             emit(7)
             throw cause
-        }.asApiResult().toList()
+        }
+            .asApiResult()
+            .toList()
 
         assertEquals(7, assertIs<AppResult.Success<Int>>(results.first()).value)
-        val error = assertIs<CommonError.NoConnection>(assertIs<AppResult.Failure>(results.last()).error)
+        val error =
+            assertIs<CommonError.NoConnection>(assertIs<AppResult.Failure>(results.last()).error)
         assertSame(cause, error.cause)
     }
 

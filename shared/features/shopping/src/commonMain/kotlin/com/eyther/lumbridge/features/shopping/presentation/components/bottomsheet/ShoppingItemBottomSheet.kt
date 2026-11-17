@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -57,7 +57,7 @@ fun ShoppingItemBottomSheet(
             )
         },
         dismissAction = {
-            TextButton(onClick = { onShowAdd(false) }, enabled = !busy) {
+            OutlinedButton(onClick = { onShowAdd(false) }, enabled = !busy) {
                 Text(stringResource(Res.string.ui_cancel))
             }
         },

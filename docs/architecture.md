@@ -61,9 +61,9 @@ All provider declarations live in `shared/di`, organized by application/account/
 
 `PortalHost` retains the selected household graph while My account or the household chooser is open. Its user graph provides profile, preferences and notification registration even before the first household exists. A Host-owned ViewModel store scopes the account ViewModel to that authenticated user. The nickname editor belongs to account; membership and invitations belong to household.
 
-`HouseholdHost` owns four peer tabs: Home, Shopping, Balances and More. Each has a feature Host that owns its toolbar and child stack. Tab roots render a compact portal toolbar with household selector and profile avatar; child destinations replace it with Back/title/actions. Home opens reminders and its expense shortcut within its own stack. MoreHost is a navigation hub for full reminders, Feed and household details; it introduces no shared feature models or domain module. Balances owns account management, expense details/editing, recurrence and insights. `ExpenseFormHost` owns split and date sheets. Each split opening gets a scoped ViewModel store; dismissing it destroys only the unconfirmed split draft. Core owns only generic toolbar, sheet and navigation infrastructure.
+`HouseholdHost` owns five peer tabs: Home, Shopping, Money, Tasks and More. Each has a feature Host that owns its toolbar and child stack. Tab roots render a compact portal toolbar with household selector and profile avatar; child destinations replace it with Back/title/actions. Home opens task creation in place and its expense shortcut within its own stack. TasksHost owns the full task list; MoreHost is a navigation hub for Feed and household details; it introduces no shared feature models or domain module. Balances owns account management, expense details/editing, recurrence and insights. `ExpenseFormHost` owns split and date sheets. Each split opening gets a scoped ViewModel store; dismissing it destroys only the unconfirmed split draft. Core owns only generic toolbar, sheet and navigation infrastructure.
 
-Android Back pops a child first, then returns Shopping/Balances/More roots to Home. Only Home root leaves the app. Tab transitions fade; child transitions slide in the appropriate forward/back direction. Navigation decorators retain per-tab stores, and the household graph stays alive through account/chooser visits. Safe-area padding is applied and consumed once by the owning scaffold.
+Android Back pops a child first, then returns Shopping/Money/Tasks/More roots to Home. Only Home root leaves the app. Tab transitions fade; child transitions slide in the appropriate forward/back direction. Navigation decorators retain per-tab stores, and the household graph stays alive through account/chooser visits. Safe-area padding is applied and consumed once by the owning scaffold.
 
 ## Data and money
 
@@ -104,3 +104,35 @@ Account owns global profiles and nickname editing. Updating a nickname writes on
 Expense accounts, participants and split metadata belong to expenses. Each household's Everyday account uses the household ID so existing clients and records keep their original scope. New trip/event accounts have independent currencies, expenses, recurring schedules, repayments and statement revisions. Server transactions enforce current membership, account participation, permissions, integer allocations, optimistic versions and retry idempotency. Weighted splits use deterministic largest-remainder rounding; the server verifies both the allocations and their declared split method. Soft deletion changes live ledgers without rewriting saved statements.
 
 Selected shopping lists and spending accounts are stored by both user and household. Profile/preferences stay global. Pending financial notifications carry an account ID, and Hosts select that account before opening its destination. Analytics remains opt-in and accepts only typed screen/action names, never household, profile or transaction content.
+
+
+### Resume and publisher management (17 November 2026)
+
+Data reads wait for SDK initialization/recovery and a token with sufficient lifetime rather than forcing
+parallel refreshes from Home sections. PostgREST and Functions require a session. Read streams opt into
+transport-only retries; real authorization failures remain terminal and writes never retry automatically.
+First/manual load timing belongs in presentation. Refresh covers the existing composition, keeping its
+focus, drafts and geometry alive; Home covers each section independently.
+
+Feed owns subscription identity/status, URL requests, data adapters and management UseCases. Article
+reading and subscription management have separate Screen/contract/VM/routes; the Host owns sheets and
+Back. Subscription rows exist without articles. A transactional address replacement uses a new identity,
+checks the expected old address and cascades old articles, preventing an in-flight old worker from
+publishing under the new source. All SQL mutation checks remain server-side and household scoped.
+
+The current account position is the financial overview. Monthly statement navigation is retired; old
+saved routes/push links redirect to balances. Historical statement storage/export code remains in its
+own insights feature for compatibility, and existing records are not rewritten.
+
+## Tasks and reminder compatibility
+
+`features/tasks` owns typed task/recurrence models, ports, transport mappers and presentation. Home
+depends on that feature for its preview. Domain dates are typed `Instant?`; raw ISO and recurrence
+strings are parsed only in data. The VM owns confirmed optional schedule inputs; picker drafts stay
+in the component. Task creation stays on Home or Tasks and shows mutation feedback in the owning Host.
+
+The canonical `public.tasks` table retains household RLS, scope guards and realtime publication. A
+security-invoker `public.reminders` compatibility view exposes only dated notification-enabled tasks
+to old clients and scheduled workers. Existing reminders keep their notification intent. New app
+writes explicitly choose notification intent. Completion locks the task and checks the expected
+due date (including null) to prevent advancing a newer occurrence from a stale request.

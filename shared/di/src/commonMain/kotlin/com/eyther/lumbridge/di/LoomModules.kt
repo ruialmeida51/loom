@@ -18,14 +18,15 @@ import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDa
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
+import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportDataSource
-import com.eyther.lumbridge.features.reminders.domain.datasource.ReminderDataSource
 import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingSelectionDataSource
+import com.eyther.lumbridge.features.tasks.domain.datasource.TaskDataSource
 import org.koin.core.module.Module
 
 fun applicationModules(): List<Module> = listOf(ApplicationModule().module())
@@ -55,11 +56,12 @@ fun providedHouseholdModules(
     analyticsDataSource: AnalyticsDataSource,
     shoppingDataSource: ShoppingDataSource,
     shoppingSelectionDataSource: ShoppingSelectionDataSource,
-    reminderDataSource: ReminderDataSource,
+    taskDataSource: TaskDataSource,
     expenseAccountDataSource: ExpenseAccountDataSource,
     expenseDataSource: ExpenseDataSource,
     recurringExpenseDataSource: RecurringExpenseDataSource,
     feedDataSource: FeedDataSource,
+    feedSubscriptionDataSource: FeedSubscriptionDataSource,
     statementDataSource: StatementDataSource,
     statementExportDataSource: StatementExportDataSource,
     settingsDataSource: SettingsDataSource,
@@ -72,11 +74,12 @@ fun providedHouseholdModules(
                 analyticsDataSource = analyticsDataSource,
                 shoppingDataSource = shoppingDataSource,
                 shoppingSelectionDataSource = shoppingSelectionDataSource,
-                reminderDataSource = reminderDataSource,
+                taskDataSource = taskDataSource,
                 expenseAccountDataSource = expenseAccountDataSource,
                 expenseDataSource = expenseDataSource,
                 recurringExpenseDataSource = recurringExpenseDataSource,
                 feedDataSource = feedDataSource,
+                feedSubscriptionDataSource = feedSubscriptionDataSource,
                 statementDataSource = statementDataSource,
                 statementExportDataSource = statementExportDataSource,
                 settingsDataSource = settingsDataSource,

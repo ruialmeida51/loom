@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.shopping.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.newId
@@ -109,36 +110,40 @@ class ShoppingScreenViewModel(
             .observeWith(viewModelScope) { state ->
                 refreshRequests
                     .flatMapLatest {
-                        getShoppingStreamUseCase().map { result ->
-                            when (result) {
-                                is AppResult.Failure -> result
-                                is AppResult.Success -> {
-                                    val remoteItems = result.value.items.associateBy { it.id }
-                                    acknowledgedItems = acknowledgedItems.filter { (id, item) ->
-                                        result.value.lists.any { it.id == item.listId } &&
-                                            (remoteItems[id]?.version ?: -1) < item.version
-                                    }
-                                    val retainedIds = acknowledgedItems.keys
-                                    val merged =
-                                        result.value.copy(
-                                            items =
-                                                result.value.items.filterNot {
-                                                    it.id in retainedIds
-                                                } + acknowledgedItems.values,
+                        getShoppingStreamUseCase()
+                            .delayFirstAtLeast(
+                                enabled = state.value.loading || state.value.refreshing,
+                            )
+                            .map { result ->
+                                when (result) {
+                                    is AppResult.Failure -> result
+                                    is AppResult.Success -> {
+                                        val remoteItems = result.value.items.associateBy { it.id }
+                                        acknowledgedItems = acknowledgedItems.filter { (id, item) ->
+                                            result.value.lists.any { it.id == item.listId } &&
+                                                (remoteItems[id]?.version ?: -1) < item.version
+                                        }
+                                        val retainedIds = acknowledgedItems.keys
+                                        val merged =
+                                            result.value.copy(
+                                                items =
+                                                    result.value.items.filterNot {
+                                                        it.id in retainedIds
+                                                    } + acknowledgedItems.values,
+                                            )
+                                        AppResult.Success(
+                                            merged.copy(
+                                                items =
+                                                    merged.items.map { remote ->
+                                                        pendingItemUpdates[remote.id]?.takeIf {
+                                                            it.version >= remote.version
+                                                        } ?: remote
+                                                    },
+                                            ),
                                         )
-                                    AppResult.Success(
-                                        merged.copy(
-                                            items =
-                                                merged.items.map { remote ->
-                                                    pendingItemUpdates[remote.id]?.takeIf {
-                                                        it.version >= remote.version
-                                                    } ?: remote
-                                                },
-                                        ),
-                                    )
+                                    }
                                 }
                             }
-                        }
                     }
                     .updateState(state) { result ->
                         when (result) {

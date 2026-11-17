@@ -30,13 +30,10 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.E
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
-import com.eyther.lumbridge.features.insights.presentation.screen.InsightsScreen
-import com.eyther.lumbridge.features.insights.presentation.viewmodel.contracts.InsightsScreenViewModelContract
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.flow_edit_account
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.flow_expense_details
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.flow_new_account
-import com.eyther.lumbridge.shared.entrypoint.generated.resources.toolbar_insights
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.toolbar_recurring_expenses
 import kotlinx.serialization.modules.subclass
 import org.jetbrains.compose.resources.stringResource
@@ -120,7 +117,6 @@ internal fun BalancesHost(
                                         ),
                                     )
                                 },
-                                onInsights = { navigator.navigateTo(BalancesDestination.Insights) },
                                 onRecurringExpenses = {
                                     navigator.navigateTo(BalancesDestination.Recurring)
                                 },
@@ -208,15 +204,14 @@ internal fun BalancesHost(
                         viewModel = koinViewModel<RecurringExpensesScreenViewModelContract>(),
                     )
                 }
+            // Keep old saved routes/push links readable, but open the current account position.
             BalancesDestination.Insights ->
-                FlowScaffold(
-                    title = stringResource(Res.string.toolbar_insights),
-                    onBack = navigator::goBack,
-                ) {
-                    InsightsScreen(
-                        viewModel = koinViewModel<InsightsScreenViewModelContract>(),
-                        context = context,
+                LaunchedEffect(Unit) {
+                    overviewViewModel.onViewChanged(
+                        com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
+                            .BALANCES,
                     )
+                    navigator.resetTo(BalancesDestination.Overview)
                 }
         }
     }

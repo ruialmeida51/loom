@@ -10,6 +10,9 @@ import com.eyther.lumbridge.features.shopping.domain.errors.ShoppingError
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingItemUseCase
+import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.user.UserSession
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.exception.PostgrestRestException
@@ -247,6 +250,16 @@ class CommonShoppingDataSourceTest {
         val client = errorClient("42501", "permission denied for table shopping_lists")
 
         try {
+            client.auth.awaitInitialization()
+            client.auth.importSession(
+                UserSession(
+                    accessToken = "test-token",
+                    refreshToken = "test-refresh",
+                    expiresIn = 3600,
+                    tokenType = "Bearer",
+                ),
+                autoRefresh = false,
+            )
             val result = CommonShoppingDataSource(SupabaseAccess(client), context).stream().first()
 
             assertIs<CommonError.AccessDenied>(assertIs<AppResult.Failure>(result).error)
@@ -257,6 +270,10 @@ class CommonShoppingDataSourceTest {
 
     private fun errorClient(code: String, message: String) =
         createSupabaseClient("https://loom.test", "test-key") {
+            install(Auth) {
+                autoLoadFromStorage = false
+                autoSaveToStorage = false
+            }
             install(Postgrest)
             httpEngine = MockEngine {
                 val body = buildJsonObject {

@@ -1,0 +1,37 @@
+<resources>
+    <string name="error_invalid_title">Give your task a title, up to 160 characters.</string>
+    <string name="error_invalid_date_time">Choose a valid date and time.</string>
+    <string name="ui_add_a_task">Add task</string>
+    <string name="ui_nothing_on_your_mind">Nothing on your mind.</string>
+    <string name="ui_repeats_1_s">Repeats %1$s</string>
+    <string name="ui_a_little_task">New task</string>
+    <string name="ui_what_needs_doing">What needs doing?</string>
+    <string name="ui_times_are_in_1_s">Times are in %1$s</string>
+    <string name="ui_save_task">Save task</string>
+    <string name="ui_cancel">Cancel</string>
+    <string name="token_no_repeat">No repeat</string>
+    <string name="token_daily">Daily</string>
+    <string name="token_weekly">Weekly</string>
+    <string name="error_access_denied">This task is no longer available to your household.</string>
+    <string name="date_today">Today</string>
+    <string name="date_tomorrow">Tomorrow</string>
+    <string name="date_yesterday">Yesterday</string>
+    <string name="date_label">%1$s · %2$s · %3$s</string>
+    <plurals name="date_in_days"><item quantity="one">In %1$d day</item><item quantity="other">In %1$d days</item></plurals>
+    <plurals name="date_days_ago"><item quantity="one">%1$d day ago</item><item quantity="other">%1$d days ago</item></plurals>
+    <string name="task_completed">%1$s completed</string>
+    <string name="task_reopened">%1$s reopened</string>
+    <string name="task_removed">Task deleted</string>
+    <string name="task_added">Task added</string>
+    <string name="task_delete_description">Delete task: %1$s</string>
+    <string name="task_add_date">Add date</string>
+    <string name="task_remove_date">Remove due date</string>
+    <string name="task_notify_household">Notify the household</string>
+    <string name="task_notification_time">Notification time</string>
+    <string name="task_at_time">At %1$s</string>
+    <string name="task_picker_done">Done</string>
+    <string name="task_date_required">Choose a date before adding a repeat or notification.</string>
+    <string name="date_label_without_time">%1$s · %2$s</string>
+    <string name="tasks_title">Tasks</string>
+    <plurals name="tasks_completed"><item quantity="one">Completed (%1$d)</item><item quantity="other">Completed (%1$d)</item></plurals>
+</resources>

@@ -13,9 +13,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -91,7 +91,7 @@ private fun InnerExpenseAccountFormScreen(
             if (loading) LoadingForm()
             error?.let {
                 ErrorNotice(message = it, onDismiss = onDismiss)
-                TextButton(onClick = onRetry) { Text(stringResource(Res.string.balance_retry)) }
+                OutlinedButton(onClick = onRetry) { Text(stringResource(Res.string.balance_retry)) }
             }
             if (members.isNotEmpty()) {
                 OutlinedTextField(

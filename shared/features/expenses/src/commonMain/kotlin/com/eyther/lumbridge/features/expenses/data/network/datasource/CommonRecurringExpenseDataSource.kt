@@ -37,7 +37,7 @@ class CommonRecurringExpenseDataSource(
                     .decodeList<RecurringExpenseResponse>()
                     .map { it.toDomain() }
             }
-            .asApiResult(mapError = Exception::toExpenseError)
+            .asApiResult(mapError = Exception::toExpenseError, retryTransientFailures = true)
     }
 
     override suspend fun controlSchedule(

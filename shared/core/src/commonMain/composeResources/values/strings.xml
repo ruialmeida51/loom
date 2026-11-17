@@ -14,7 +14,7 @@
     <string name="icon_done">Done</string>
     <string name="error_no_connection">Check your connection and try again.</string>
     <string name="error_not_authenticated">Please sign in again.</string>
-    <string name="error_access_denied">You no longer have access to this household.</string>
+    <string name="error_access_denied">You don’t have permission to do that.</string>
     <string name="error_not_found">This item no longer exists. Refresh and try again.</string>
     <string name="error_service_unavailable">The service is unavailable. Please try again shortly.</string>
   <string name="icon_more">More</string>
@@ -33,4 +33,7 @@
     <string name="calendar_november">November</string>
     <string name="calendar_december">December</string>
     <string name="calendar_date_without_year">%1$d %2$s</string>
+  <string name="icon_person">Profile</string>
+  <string name="icon_privacy">Privacy</string>
+    <string name="icon_tasks">Tasks</string>
 </resources>

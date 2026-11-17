@@ -1,8 +1,8 @@
 package com.eyther.lumbridge.app.demo
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -14,15 +14,16 @@ import com.eyther.lumbridge.app.demo.data.DemoAnalyticsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseAccountDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseDataSource
 import com.eyther.lumbridge.app.demo.data.DemoFeedDataSource
+import com.eyther.lumbridge.app.demo.data.DemoFeedSubscriptionDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
 import com.eyther.lumbridge.app.demo.data.DemoProfileDataSource
 import com.eyther.lumbridge.app.demo.data.DemoRecurringExpenseDataSource
-import com.eyther.lumbridge.app.demo.data.DemoReminderDataSource
 import com.eyther.lumbridge.app.demo.data.DemoSettingsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoShoppingDataSource
 import com.eyther.lumbridge.app.demo.data.DemoShoppingSelectionDataSource
 import com.eyther.lumbridge.app.demo.data.DemoStatementDataSource
+import com.eyther.lumbridge.app.demo.data.DemoTaskDataSource
 import com.eyther.lumbridge.app.navigation.AccountHost
 import com.eyther.lumbridge.app.navigation.HouseholdHost
 import com.eyther.lumbridge.app.navigation.components.FlowScaffold
@@ -81,11 +82,12 @@ internal fun DemoPortalHost(
                         shoppingDataSource = DemoShoppingDataSource(store = store),
                         shoppingSelectionDataSource =
                             DemoShoppingSelectionDataSource(store = store),
-                        reminderDataSource = DemoReminderDataSource(store = store),
+                        taskDataSource = DemoTaskDataSource(store = store),
                         expenseAccountDataSource = DemoExpenseAccountDataSource(store = store),
                         expenseDataSource = DemoExpenseDataSource(store = store),
                         recurringExpenseDataSource = DemoRecurringExpenseDataSource(store = store),
                         feedDataSource = DemoFeedDataSource(store = store),
+                        feedSubscriptionDataSource = DemoFeedSubscriptionDataSource(store = store),
                         statementDataSource = DemoStatementDataSource(),
                         statementExportDataSource = CommonStatementExportDataSource(),
                         settingsDataSource = settings,
@@ -146,7 +148,7 @@ internal fun DemoPortalHost(
                     ) {
                         Column {
                             stores.values.forEach { household ->
-                                TextButton(
+                                OutlinedButton(
                                     onClick = {
                                         onSelect(household.context.id)
                                         navigator.goBack()

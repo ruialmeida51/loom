@@ -71,8 +71,8 @@ for source in (ROOT / 'shared').rglob('*.kt'):
                 issues.append(f'Name the previous ViewModel state oldState: {path}')
             if re.search(r'\.observeWith\([^)]*\)\s*\{[^}]*mutableState\.update', text, re.S):
                 issues.append(f'Use updateState inside observeWith: {path}')
-        if re.search(r'TextButton\s*\([^)]*(?:\bonDelete\b|::onDeleteConfirmed\b|\bonRemove\b|\bonCancelConfirmed\b|\bonCancelRequested\b)', text, re.S):
-            issues.append(f'Destructive actions require a filled/outlined button: {path}')
+        if re.search(r'\bTextButton\s*\(', text):
+            issues.append(f'Use filled, tonal or outlined actions, or grouped navigation rows, instead of TextButton: {path}')
         if '/presentation/screen/' in str(source):
             screen_count += 1
             screens = re.findall(r'^fun (\w+Screen)\(', text, re.M)

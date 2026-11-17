@@ -1,9 +1,11 @@
 package com.eyther.lumbridge.app
 
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -17,7 +19,10 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
+import java.io.File
 import kotlin.test.Test
+import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Image
 
 @OptIn(ExperimentalTestApi::class)
 class GroupManagementUiTest {
@@ -28,6 +33,17 @@ class GroupManagementUiTest {
             onNodeWithTag("navigation_shopping").performClick()
             awaitLoadedDestination(tag = "shopping_content")
             onNodeWithTag("manage_lists").performClick()
+            onNodeWithText("New list").assertIsDisplayed()
+            onNodeWithText("Cancel").assertDoesNotExist()
+            onNodeWithText("Done").assertDoesNotExist()
+            waitForIdle()
+            val screenshot = Image.makeFromBitmap(captureToImage().asSkiaBitmap())
+            File(
+                    System.getProperty("loom.screenshots.dir", "build/screenshots"),
+                    "shopping-lists-light.png",
+                )
+                .apply { parentFile.mkdirs() }
+                .writeBytes(checkNotNull(screenshot.encodeToData(EncodedImageFormat.PNG)).bytes)
             onNodeWithTag("list_actions_Groceries").performClick()
             onNodeWithText("Delete list").performClick()
             onNodeWithTag("confirm_delete_list").performClick()

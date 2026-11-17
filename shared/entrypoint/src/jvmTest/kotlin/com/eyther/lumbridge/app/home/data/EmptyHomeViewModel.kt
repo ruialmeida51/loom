@@ -11,10 +11,10 @@ internal class EmptyHomeViewModel : HomeScreenViewModelContract() {
             HomeState(
                 today = "2026-11-16",
                 timeZone = "UTC",
-                reminderItems = emptyList(),
+                taskItems = emptyList(),
                 shoppingPreview = emptyList(),
                 feedItems = emptyList(),
-                remindersLoading = false,
+                tasksLoading = false,
                 shoppingLoading = false,
                 feedLoading = false,
             ),
@@ -25,7 +25,7 @@ internal class EmptyHomeViewModel : HomeScreenViewModelContract() {
 
     override fun onArticleOpened(id: String) = Unit
 
-    override fun onRemindersErrorDismissed() = Unit
+    override fun onTasksErrorDismissed() = Unit
 
     override fun onShoppingErrorDismissed() = Unit
 
