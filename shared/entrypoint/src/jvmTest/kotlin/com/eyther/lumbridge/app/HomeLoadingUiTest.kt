@@ -38,7 +38,7 @@ class HomeLoadingUiTest {
                 waitUntil(timeoutMillis = 5000) { viewModel.state.value.reminderItems != null }
                 onNodeWithText("Water the plants").assertIsDisplayed()
                 viewModel.onRetry()
-                waitForIdle()
+                waitUntil(timeoutMillis = 5000) { !viewModel.state.value.remindersRefreshing }
                 onNodeWithText("Water the plants").assertIsDisplayed()
                 fixture.releaseSecondaryReads()
                 waitUntil(timeoutMillis = 5000) { !viewModel.state.value.refreshing }

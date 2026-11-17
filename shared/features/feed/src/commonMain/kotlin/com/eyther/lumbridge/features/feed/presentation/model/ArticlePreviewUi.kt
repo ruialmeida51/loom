@@ -8,4 +8,6 @@ data class ArticlePreviewUi(
     val url: String,
     val source: String,
     val publishedOn: LocalDate?,
+    val summary: String = "",
+    val read: Boolean = false,
 )

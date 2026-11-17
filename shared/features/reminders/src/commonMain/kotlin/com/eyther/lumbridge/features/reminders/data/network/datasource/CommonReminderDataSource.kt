@@ -24,9 +24,13 @@ class CommonReminderDataSource(
 ) : ReminderDataSource {
 
     override fun stream(): Flow<AppResult<List<ReminderDomain>>> {
-        return access.watch("reminders", context.id) {
-            access.selectHouseholdRows<ReminderResponse>("reminders", context.id).map { it.toDomain() }
-        }.asApiResult(mapError = Exception::toReminderError)
+        return access
+            .watch("reminders", context.id) {
+                access.selectHouseholdRows<ReminderResponse>("reminders", context.id).map {
+                    it.toDomain()
+                }
+            }
+            .asApiResult(mapError = Exception::toReminderError, retryTransientFailures = true)
     }
 
     override suspend fun addReminder(reminder: ReminderDomain): AppResult<Unit> {
@@ -44,11 +48,12 @@ class CommonReminderDataSource(
         return safeApiCall(
             mapError = Exception::toReminderError,
         ) {
-            val request = CompleteReminderRequest(
-                reminderId = reminder.id,
-                completed = !reminder.completed,
-                expectedDueAt = reminder.dueAt,
-            )
+            val request =
+                CompleteReminderRequest(
+                    reminderId = reminder.id,
+                    completed = !reminder.completed,
+                    expectedDueAt = reminder.dueAt,
+                )
 
             access.requireClient().postgrest.rpc("complete_reminder", request)
             Unit

@@ -28,7 +28,8 @@
     <string name="home_add_reminder">Add reminder</string>
     <string name="home_add_expense">Add expense</string>
     <string name="home_feed">Feed</string>
-    <string name="home_nothing_due">Nothing due today. A little breathing room.</string>
+    <string name="home_nothing_due">Nothing for today. Enjoy the breathing room.</string>
+    <string name="home_shopping_empty">Nothing to pick up. You’re all stocked up.</string>
     <string name="home_manage_household">Household details</string>
     <string name="home_overdue">Overdue · %1$s</string>
     <string name="home_all_reminders">All reminders</string>

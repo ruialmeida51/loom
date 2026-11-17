@@ -7,7 +7,7 @@
     <string name="notifications_title">Notifications</string>
     <string name="notifications_description">Reminders and shared expenses</string>
     <string name="analytics_title">Help improve Loom</string>
-    <string name="analytics_description">Share anonymous usage analytics. Household content stays private.</string>
+    <string name="analytics_description">Share optional usage analytics to help improve Loom.</string>
     <string name="sign_out">Sign out</string>
     <string name="retry">Try again</string>
     <string name="invalid_nickname">Use 1–80 characters for your nickname.</string>

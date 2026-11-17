@@ -2,4 +2,6 @@
     <string name="privacy_policy">Privacy policy</string>
     <string name="terms_of_use">Terms of use</string>
     <string name="delete_account">Delete account and data</string>
+  <string name="privacy_and_legal">Privacy &amp; legal</string>
+  <string name="privacy_introduction">Read how Loom handles your household data, your choices and the terms for using the app.</string>
 </resources>

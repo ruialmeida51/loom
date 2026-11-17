@@ -79,7 +79,8 @@ data class ShoppingState(
                     snapshot.items.none { it.id == entry.item.id }
             }
             .toImmutableList()
-    val canAddInline: Boolean = inlineName.isNotBlank() && selectedList != null && !busy
+    val canAddInline: Boolean =
+        inlineName.isNotBlank() && selectedList != null && !busy && !refreshing
     val selectedCompletedItems: ImmutableList<ShoppingItemDomain> =
         completedItems.filter { it.id in selectedCompletedIds }.toImmutableList()
     val allCompletedSelected: Boolean =

@@ -11,6 +11,8 @@ import com.eyther.lumbridge.features.expenses.domain.model.MonthlyRecurrenceDoma
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
+import com.eyther.lumbridge.features.feed.domain.model.FeedSubscriptionDomain
+import com.eyther.lumbridge.features.feed.domain.model.FeedSubscriptionStatusDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
@@ -217,6 +219,26 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 ),
             ),
         )
+    val feedSubscriptions =
+        MutableStateFlow(
+            listOf(
+                FeedSubscriptionDomain(
+                    id = "weekend",
+                    url = "https://www.theguardian.com/lifeandstyle/rss",
+                    publisher = "The weekend edit",
+                    lastFetchedAt = nowIso(),
+                    status = FeedSubscriptionStatusDomain.READY,
+                ),
+                FeedSubscriptionDomain(
+                    id = "table",
+                    url = "https://feeds.bbci.co.uk/news/world/rss.xml",
+                    publisher = "Around the table",
+                    lastFetchedAt = nowIso(),
+                    status = FeedSubscriptionStatusDomain.READY,
+                ),
+            ),
+        )
+
     val articles =
         MutableStateFlow(
             listOf(

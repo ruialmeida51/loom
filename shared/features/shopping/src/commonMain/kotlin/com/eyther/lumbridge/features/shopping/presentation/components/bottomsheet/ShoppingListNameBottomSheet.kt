@@ -2,9 +2,9 @@ package com.eyther.lumbridge.features.shopping.presentation.components.bottomshe
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
@@ -34,7 +34,7 @@ fun ShoppingListNameBottomSheet(
             LoomButton(stringResource(Res.string.ui_save_list), onSaveList, loading = busy)
         },
         dismissAction = {
-            TextButton(onClick = onCloseListForm, enabled = !busy) {
+            OutlinedButton(onClick = onCloseListForm, enabled = !busy) {
                 Text(stringResource(Res.string.ui_cancel))
             }
         },

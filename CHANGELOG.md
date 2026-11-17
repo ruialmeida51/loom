@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Smooth loading and refresh skeletons while retaining drafts, focus and scroll.
+- Recover household reads after session or connection interruptions.
+- Clearer expense cards, current balances and account selection.
+- Manage feeds, retry updates, edit addresses and remove sources; support Expresso.
+- Edge-to-edge Home news, illustrated empty states and clearer settings/privacy buttons.
+
 ## [4.0.4] - 2026-11-16
 
 - Capture expenses sooner with amount-first entry, compact summaries and smaller split controls.

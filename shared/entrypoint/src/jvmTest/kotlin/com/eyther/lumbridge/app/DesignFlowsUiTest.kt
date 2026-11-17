@@ -131,7 +131,8 @@ class DesignFlowsUiTest {
                 }
             }
             onNodeWithTag("home_reminders_empty").assertExists()
-            onNodeWithTag("home_shopping_preview").assertDoesNotExist()
+            onNodeWithTag("home_shopping_preview").assertExists()
+            onNodeWithText("Nothing to pick up. You’re all stocked up.").assertExists()
             captureNode(tag = "empty_home", name = "home-empty-light")
             onNodeWithTag("home_add_expense").performClick()
             assertTrue(openedExpense)

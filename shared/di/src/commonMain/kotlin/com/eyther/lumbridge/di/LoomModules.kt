@@ -18,6 +18,7 @@ import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDa
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
+import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
@@ -60,6 +61,7 @@ fun providedHouseholdModules(
     expenseDataSource: ExpenseDataSource,
     recurringExpenseDataSource: RecurringExpenseDataSource,
     feedDataSource: FeedDataSource,
+    feedSubscriptionDataSource: FeedSubscriptionDataSource,
     statementDataSource: StatementDataSource,
     statementExportDataSource: StatementExportDataSource,
     settingsDataSource: SettingsDataSource,
@@ -77,6 +79,7 @@ fun providedHouseholdModules(
                 expenseDataSource = expenseDataSource,
                 recurringExpenseDataSource = recurringExpenseDataSource,
                 feedDataSource = feedDataSource,
+                feedSubscriptionDataSource = feedSubscriptionDataSource,
                 statementDataSource = statementDataSource,
                 statementExportDataSource = statementExportDataSource,
                 settingsDataSource = settingsDataSource,

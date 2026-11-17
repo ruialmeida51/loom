@@ -66,7 +66,7 @@ Provider credentials are entered through Supabase secrets settings or a gitignor
 
 ## RSS publishers
 
-The default allowlist includes BBC, The Guardian, Hacker News, Ars Technica, FeedBurner, and NASA feed hosts. Add another trusted publisher by setting `RSS_ALLOWED_HOSTS` to the complete comma-separated list. Redirect destinations also need to be listed. Article HTML is reduced to plain text before storage and display.
+The default allowlist includes BBC, The Guardian, Hacker News, Ars Technica, FeedBurner, NASA, and Expresso feed hosts. Add another trusted publisher by setting `RSS_ALLOWED_HOSTS` to the complete comma-separated list. Expresso is also included when an older configured list omits it; other configured restrictions are preserved. Redirect destinations also need to be listed. Article HTML is reduced to plain text before storage and display.
 
 ## Operations
 

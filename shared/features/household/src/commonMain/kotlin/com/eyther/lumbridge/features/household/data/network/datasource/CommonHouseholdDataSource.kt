@@ -91,7 +91,7 @@ class CommonHouseholdDataSource(
                     loadMembers(householdId = householdId)
                 }
             }
-            .asApiResult(mapError = Exception::toHouseholdError)
+            .asApiResult(mapError = Exception::toHouseholdError, retryTransientFailures = true)
 
     override suspend fun getMembers(householdId: String): AppResult<List<MemberDomain>> =
         safeApiCall(mapError = Exception::toHouseholdError) {

@@ -5,6 +5,7 @@ import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDa
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
+import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
@@ -28,6 +29,7 @@ class ProvidedHouseholdDataSourceModule(
     private val expenseDataSource: ExpenseDataSource,
     private val recurringExpenseDataSource: RecurringExpenseDataSource,
     private val feedDataSource: FeedDataSource,
+    private val feedSubscriptionDataSource: FeedSubscriptionDataSource,
     private val statementDataSource: StatementDataSource,
     private val statementExportDataSource: StatementExportDataSource,
     private val settingsDataSource: SettingsDataSource,
@@ -56,6 +58,9 @@ class ProvidedHouseholdDataSourceModule(
     fun provideRecurringExpenseDataSource(): RecurringExpenseDataSource = recurringExpenseDataSource
 
     @Single fun provideFeedDataSource(): FeedDataSource = feedDataSource
+
+    @Single
+    fun provideFeedSubscriptionDataSource(): FeedSubscriptionDataSource = feedSubscriptionDataSource
 
     @Single fun provideStatementDataSource(): StatementDataSource = statementDataSource
 

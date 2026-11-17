@@ -25,6 +25,8 @@ import com.eyther.lumbridge.core.generated.resources.icon_home
 import com.eyther.lumbridge.core.generated.resources.icon_money
 import com.eyther.lumbridge.core.generated.resources.icon_more
 import com.eyther.lumbridge.core.generated.resources.icon_next
+import com.eyther.lumbridge.core.generated.resources.icon_person
+import com.eyther.lumbridge.core.generated.resources.icon_privacy
 import com.eyther.lumbridge.core.generated.resources.icon_settings
 import com.eyther.lumbridge.core.generated.resources.icon_shopping
 import org.jetbrains.compose.resources.stringResource
@@ -34,6 +36,7 @@ fun LoomIcon(
     glyph: Glyph,
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.onSurface,
+    decorative: Boolean = false,
 ) {
     val iconLabel =
         stringResource(
@@ -45,6 +48,8 @@ fun LoomIcon(
                 Glyph.MONEY -> Res.string.icon_money
                 Glyph.BELL -> Res.string.icon_bell
                 Glyph.SETTINGS -> Res.string.icon_settings
+                Glyph.PERSON -> Res.string.icon_person
+                Glyph.SHIELD -> Res.string.icon_privacy
                 Glyph.PLUS -> Res.string.icon_add
                 Glyph.ARROW -> Res.string.icon_next
                 Glyph.CHECK -> Res.string.icon_done
@@ -52,9 +57,15 @@ fun LoomIcon(
             },
         )
     Canvas(
-        modifier.size(23.dp).semantics {
-            contentDescription = iconLabel
-        },
+        modifier
+            .size(23.dp)
+            .then(
+                if (decorative) Modifier
+                else
+                    Modifier.semantics {
+                        contentDescription = iconLabel
+                    },
+            ),
     ) {
         val s = size.width / 24f
         fun line(x1: Float, y1: Float, x2: Float, y2: Float) =
@@ -66,6 +77,36 @@ fun LoomIcon(
                 StrokeCap.Round,
             )
         when (glyph) {
+            Glyph.PERSON -> {
+                drawCircle(
+                    tint,
+                    radius = 4f * s,
+                    center = Offset(12f * s, 7f * s),
+                    style = Stroke(1.7f * s),
+                )
+                drawArc(
+                    tint,
+                    startAngle = 180f,
+                    sweepAngle = 180f,
+                    useCenter = false,
+                    topLeft = Offset(4f * s, 14f * s),
+                    size = Size(16f * s, 14f * s),
+                    style = Stroke(1.7f * s),
+                )
+            }
+            Glyph.SHIELD -> {
+                val outline =
+                    Path().apply {
+                        moveTo(12f * s, 3f * s)
+                        lineTo(20f * s, 6f * s)
+                        lineTo(19f * s, 14f * s)
+                        quadraticTo(17f * s, 19f * s, 12f * s, 22f * s)
+                        quadraticTo(7f * s, 19f * s, 5f * s, 14f * s)
+                        lineTo(4f * s, 6f * s)
+                        close()
+                    }
+                drawPath(outline, tint, style = Stroke(1.7f * s))
+            }
             Glyph.DELETE -> {
                 line(5f, 6f, 19f, 6f)
                 line(9f, 3f, 15f, 3f)

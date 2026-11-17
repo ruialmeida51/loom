@@ -43,12 +43,11 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 
 ## Data readiness and feedback
 
-- Show matching skeletons only where initial content is missing. Sections can become useful
+- Show matching skeletons during first load and explicit refresh. Sections can become useful
   independently; shopping or optional news must not hold reminders behind a page-wide skeleton.
-- Pull-to-refresh retains existing rows, selection, draft and scroll, with a refresh indicator.
+- Pull-to-refresh briefly shows matching skeletons, with a single approximately 300 ms minimum transition. Retain the existing data, selection, draft and scroll underneath.
   Realtime/polling changes remain silent. A failed refresh keeps prior content and an actionable error.
-- Publish usable data promptly. Do not prolong reads with minimum-duration helpers for an animation.
-  Plannot's monotonic helpers remain available for an explicitly justified timing need.
+- Apply Plannot's monotonic helper once for initial/explicit loading only. Resume and background updates never add a timing floor.
 - Mutation progress belongs to its button/row, never a page skeleton. Confirm successful recurring
   reminder completion with a transient snackbar even when the next occurrence remains visible.
 - Destructive actions use filled/outlined destructive buttons, including accessible icon buttons,
@@ -62,7 +61,7 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 Home starts with two compact quick actions with square icon areas, followed by one Reminders
 section with up to three pending items, a three-item preview of the selected shopping list and a
 secondary News preview. Each section has an explicit route to the full destination. Reminder dates
-combine localized relative and absolute dates in the household zone. Empty shopping adds no wrapper.
+combine localized relative and absolute dates in the household zone. Empty reminders/shopping use a compact illustrated state without duplicate add actions; errors remain distinct.
 News is manually scrolled, never auto-advances, and does not gate household content.
 
 Expense capture shows amount and description first, even while a new form's reference data loads.

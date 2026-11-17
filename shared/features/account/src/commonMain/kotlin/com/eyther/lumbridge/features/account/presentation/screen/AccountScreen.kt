@@ -13,7 +13,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -25,6 +24,7 @@ import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
@@ -103,7 +103,7 @@ private fun InnerAccountScreen(
         error?.let { message ->
             item {
                 ErrorNotice(message = message, onDismiss = onDismiss)
-                TextButton(onClick = onRetry) { Text(stringResource(Res.string.retry)) }
+                OutlinedButton(onClick = onRetry) { Text(stringResource(Res.string.retry)) }
             }
         }
         item {
@@ -117,6 +117,7 @@ private fun InnerAccountScreen(
                                 nickname.ifBlank { stringResource(Res.string.ui_nickname_title) },
                             description = stringResource(Res.string.nickname_description),
                             onClick = onEditNickname,
+                            glyph = Glyph.PERSON,
                             enabled = canEditNickname,
                             modifier = Modifier.testTag("edit_nickname"),
                         )
@@ -164,7 +165,13 @@ private fun InnerAccountScreen(
                 }
             }
         }
-        item { LegalLinks(onOpenDocument = onOpenLegalDocument, showAccountDeletion = true) }
+        item {
+            LegalLinks(
+                onOpenDocument = onOpenLegalDocument,
+                showAccountDeletion = true,
+                showIntroduction = true,
+            )
+        }
         item {
             OutlinedButton(
                 onClick = onSignOut,

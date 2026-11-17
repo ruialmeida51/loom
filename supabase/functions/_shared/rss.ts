@@ -1,5 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 
+const requiredHosts = ["rss.impresa.pt"];
 export const defaultHosts = [
   "feeds.bbci.co.uk",
   "www.theguardian.com",
@@ -7,8 +8,16 @@ export const defaultHosts = [
   "feeds.arstechnica.com",
   "feeds.feedburner.com",
   "www.nasa.gov",
+  ...requiredHosts,
 ];
 export const maxFeedBytes = 1_048_576;
+
+/** Preserve configured restrictions while adding the publisher explicitly supported by this release. */
+export function allowedFeedHosts(configured?: string): string[] {
+  const hosts = (configured ?? defaultHosts.join(",")).split(",")
+    .map((host) => host.trim().toLowerCase()).filter(Boolean);
+  return [...new Set([...hosts, ...requiredHosts])];
+}
 
 /** Fetches are restricted to explicitly trusted publishers, including every redirect hop. */
 export function trustedFeedUrl(value: string, hosts: string[]): URL {

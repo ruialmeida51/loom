@@ -30,4 +30,6 @@
   <string name="tab_more">More</string>
     <string name="startup_restoring">Getting things ready…</string>
     <string name="startup_reconnecting">Reconnecting. Your account is still saved.</string>
+  <string name="toolbar_feed_subscriptions">Manage feeds</string>
+  <string name="toolbar_feed">The reading corner</string>
 </resources>

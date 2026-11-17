@@ -9,8 +9,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -79,7 +79,7 @@ fun ExpenseDetailsScreen(
                 )
             },
             dismissButton = {
-                TextButton(onClick = viewModel::onDeleteCancelled, enabled = !state.busy) {
+                OutlinedButton(onClick = viewModel::onDeleteCancelled, enabled = !state.busy) {
                     Text(stringResource(Res.string.ui_cancel))
                 }
             },
@@ -110,7 +110,7 @@ private fun InnerExpenseDetailsScreen(
         if (loading) LoadingRows()
         error?.let { message ->
             ErrorNotice(message = message, onDismiss = onDismiss)
-            TextButton(onClick = onRetry) { Text(stringResource(Res.string.balance_retry)) }
+            OutlinedButton(onClick = onRetry) { Text(stringResource(Res.string.balance_retry)) }
         }
         if (expense != null && !loading) {
             Text(expense.title, style = MaterialTheme.typography.titleLarge)

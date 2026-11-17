@@ -3,9 +3,9 @@ package com.eyther.lumbridge.app.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -63,7 +63,7 @@ internal fun HouseholdSetupHost(
                             onBack = { onBack?.invoke() },
                             actions = {
                                 if (onAccount != null)
-                                    TextButton(onClick = onAccount) {
+                                    OutlinedButton(onClick = onAccount) {
                                         Text(
                                             stringResource(
                                                 Res.string.portal_my_account,

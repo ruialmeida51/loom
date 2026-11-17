@@ -104,3 +104,22 @@ Account owns global profiles and nickname editing. Updating a nickname writes on
 Expense accounts, participants and split metadata belong to expenses. Each household's Everyday account uses the household ID so existing clients and records keep their original scope. New trip/event accounts have independent currencies, expenses, recurring schedules, repayments and statement revisions. Server transactions enforce current membership, account participation, permissions, integer allocations, optimistic versions and retry idempotency. Weighted splits use deterministic largest-remainder rounding; the server verifies both the allocations and their declared split method. Soft deletion changes live ledgers without rewriting saved statements.
 
 Selected shopping lists and spending accounts are stored by both user and household. Profile/preferences stay global. Pending financial notifications carry an account ID, and Hosts select that account before opening its destination. Analytics remains opt-in and accepts only typed screen/action names, never household, profile or transaction content.
+
+
+### Resume and publisher management (17 November 2026)
+
+Data reads wait for SDK initialization/recovery and a token with sufficient lifetime rather than forcing
+parallel refreshes from Home sections. PostgREST and Functions require a session. Read streams opt into
+transport-only retries; real authorization failures remain terminal and writes never retry automatically.
+First/manual load timing belongs in presentation. Refresh covers the existing composition, keeping its
+focus, drafts and geometry alive; Home covers each section independently.
+
+Feed owns subscription identity/status, URL requests, data adapters and management UseCases. Article
+reading and subscription management have separate Screen/contract/VM/routes; the Host owns sheets and
+Back. Subscription rows exist without articles. A transactional address replacement uses a new identity,
+checks the expected old address and cascades old articles, preventing an in-flight old worker from
+publishing under the new source. All SQL mutation checks remain server-side and household scoped.
+
+The current account position is the financial overview. Monthly statement navigation is retired; old
+saved routes/push links redirect to balances. Historical statement storage/export code remains in its
+own insights feature for compatibility, and existing records are not rewritten.

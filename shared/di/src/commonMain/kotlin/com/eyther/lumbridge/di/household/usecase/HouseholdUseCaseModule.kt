@@ -22,9 +22,15 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountU
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccountUseCase
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
+import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedSubscriptionUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.RemoveFeedSubscriptionUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.UpdateFeedSubscriptionUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeRemindersStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
@@ -424,4 +430,34 @@ class HouseholdUseCaseModule {
     fun provideRevokeInvitationUseCase(
         householdDataSource: HouseholdDataSource,
     ): RevokeInvitationUseCase = RevokeInvitationUseCase(householdDataSource = householdDataSource)
+
+    @Single
+    fun provideGetFeedSubscriptionsStreamUseCase(
+        feedSubscriptionDataSource: FeedSubscriptionDataSource,
+    ): GetFeedSubscriptionsStreamUseCase =
+        GetFeedSubscriptionsStreamUseCase(feedSubscriptionDataSource = feedSubscriptionDataSource)
+
+    @Single
+    fun provideRefreshFeedSubscriptionUseCase(
+        feedSubscriptionDataSource: FeedSubscriptionDataSource,
+    ): RefreshFeedSubscriptionUseCase =
+        RefreshFeedSubscriptionUseCase(feedSubscriptionDataSource = feedSubscriptionDataSource)
+
+    @Single
+    fun provideUpdateFeedSubscriptionUseCase(
+        feedSubscriptionDataSource: FeedSubscriptionDataSource,
+    ): UpdateFeedSubscriptionUseCase =
+        UpdateFeedSubscriptionUseCase(feedSubscriptionDataSource = feedSubscriptionDataSource)
+
+    @Single
+    fun provideRemoveFeedSubscriptionUseCase(
+        feedSubscriptionDataSource: FeedSubscriptionDataSource,
+    ): RemoveFeedSubscriptionUseCase =
+        RemoveFeedSubscriptionUseCase(feedSubscriptionDataSource = feedSubscriptionDataSource)
+
+    @Single
+    fun provideRefreshFeedsUseCase(
+        feedSubscriptionDataSource: FeedSubscriptionDataSource,
+    ): RefreshFeedsUseCase =
+        RefreshFeedsUseCase(feedSubscriptionDataSource = feedSubscriptionDataSource)
 }

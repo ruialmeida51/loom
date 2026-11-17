@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.home.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.todayIso
@@ -34,7 +35,13 @@ class HomeScreenViewModel(
         MutableStateFlow(HomeState(today = todayIso(context.timeZone), timeZone = context.timeZone))
             .observeWith(viewModelScope) { state ->
                 refreshRequests
-                    .flatMapLatest { getHomeRemindersStreamUseCase() }
+                    .flatMapLatest {
+                        getHomeRemindersStreamUseCase()
+                            .delayFirstAtLeast(
+                                enabled =
+                                    state.value.remindersLoading || state.value.remindersRefreshing,
+                            )
+                    }
                     .updateState(state) { result ->
                         when (result) {
                             is AppResult.Success ->
@@ -56,7 +63,13 @@ class HomeScreenViewModel(
             }
             .observeWith(viewModelScope) { state ->
                 refreshRequests
-                    .flatMapLatest { getHomeShoppingStreamUseCase() }
+                    .flatMapLatest {
+                        getHomeShoppingStreamUseCase()
+                            .delayFirstAtLeast(
+                                enabled =
+                                    state.value.shoppingLoading || state.value.shoppingRefreshing,
+                            )
+                    }
                     .updateState(state) { result ->
                         when (result) {
                             is AppResult.Success ->
@@ -77,7 +90,12 @@ class HomeScreenViewModel(
             }
             .observeWith(viewModelScope) { state ->
                 refreshRequests
-                    .flatMapLatest { getFeedStreamUseCase() }
+                    .flatMapLatest {
+                        getFeedStreamUseCase()
+                            .delayFirstAtLeast(
+                                enabled = state.value.feedLoading || state.value.feedRefreshing,
+                            )
+                    }
                     .updateState(state) { result ->
                         when (result) {
                             is AppResult.Success ->

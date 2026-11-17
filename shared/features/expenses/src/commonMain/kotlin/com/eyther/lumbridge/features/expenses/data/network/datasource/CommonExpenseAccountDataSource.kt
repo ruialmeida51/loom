@@ -51,7 +51,7 @@ class CommonExpenseAccountDataSource(
                         .also { accounts.put(key = cacheKey, value = it) }
                 }
             }
-            .asApiResult(mapError = Exception::toExpenseError)
+            .asApiResult(mapError = Exception::toExpenseError, retryTransientFailures = true)
 
     override suspend fun getAccount(id: String): AppResult<ExpenseAccountDomain> =
         safeApiCall(mapError = Exception::toExpenseError) {

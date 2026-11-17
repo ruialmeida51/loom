@@ -18,6 +18,8 @@ Editing sheets: [Shopping on a short screen](docs/screenshots/shopping-sheet-nar
 
 Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [Create account](docs/screenshots/auth-register-light.png), and [Verification](docs/screenshots/auth-verification-light.png).
 
+Latest polish: [News](docs/screenshots/feed-light.png), [dark news](docs/screenshots/feed-dark.png), [Manage feeds](docs/screenshots/feed-management-light.png), [current balances](docs/screenshots/balances-light.png) and [empty Home](docs/screenshots/home-empty-light.png). [Feedback/research ledger](docs/plans/2026-11-17-polish-ledger.md) · [Final audit](docs/audits/2026-11-17-household-polish.md).
+
 ## What’s included
 
 - Google sign-in, separate email login/registration/verification screens, password visibility controls, and code resend with a cooldown. Existing accounts can also request an email sign-in code.
@@ -26,11 +28,11 @@ Authentication screenshots: [Sign in](docs/screenshots/auth-login-light.png), [C
 - Multiple households, owner invitations, quick switching, and restoring the last accessible household. My account is available before the first household exists.
 - Named shared shopping lists with aligned Enter-to-add, completed-item selection and bulk deletion, optional editing, undo, favorites, moving items, and list rename/archive/restore/delete.
 - Household reminders, daily/weekly repeats, clear relative/absolute dates and completion feedback.
-- Pull-to-refresh that retains loaded content, with skeletons for first loads, compact Home shopping previews and six-character household invitations.
+- Short skeleton transitions for first loads and pull-to-refresh, preserving drafts and scroll underneath, compact Home shopping previews and six-character household invitations.
 - Independent Everyday and trip/event accounts with one currency each and household-member participants.
 - Dedicated expense entry/detail/editing, equal/weighted-share/exact-amount/percentage splits with steppers, who-pays-whom balances and repayments.
-- Monthly recurring expense schedules with payment dates, pause/resume/cancel controls, monthly reports, statistics, CSV export, and immutable statement revisions.
-- RSS/Atom subscriptions with per-user read state and scheduled server refreshes.
+- Monthly recurring expense schedules with payment dates and pause/resume/cancel controls. Balances prioritizes the account's current position; historical reporting/export code remains for compatibility.
+- RSS/Atom subscriptions with per-user read state, scheduled/manual refreshes and separate source management, including feeds that have not loaded articles yet.
 - Light, dark, and system themes using the Loom gold and yarn branding.
 - Supabase Edge Functions for FCM/APNs push delivery, retries, device rotation, and scheduled household work.
 - A dedicated desktop preview with isolated demo data sources and sample households. Production screens and data sources contain no demo branches.

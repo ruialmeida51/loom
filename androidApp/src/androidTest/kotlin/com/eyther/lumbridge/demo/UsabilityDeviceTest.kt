@@ -169,8 +169,12 @@ class UsabilityDeviceTest {
             swipeDown(startY = height * .15f, endY = height * .8f, durationMillis = 600)
         }
         compose.waitForIdle()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("refresh_skeleton").fetchSemanticsNodes().isEmpty() &&
+                compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
+        }
         assertTrue(
-            "Refreshing retains the loaded checklist",
+            "The short refresh transition finishes and restores the checklist",
             compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty(),
         )
         capture(name = "shopping-refresh-retains-content")
@@ -178,6 +182,23 @@ class UsabilityDeviceTest {
             .onNodeWithTag("shopping_inline_input")
             .performScrollTo()
             .assertTextContains("Next grocery draft")
+    }
+
+    @Test
+    fun systemBackFromFeedManagementReturnsThroughNewsAndMore() {
+        compose.onNodeWithTag("navigation_more").performClick()
+        compose.onNodeWithText("Feed").performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("manage_feeds").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag("manage_feeds").performClick()
+        awaitDestination(tag = "feed_subscriptions")
+        device.pressBack()
+        compose.onNodeWithText("The reading corner").assertIsDisplayed()
+        device.pressBack()
+        awaitDestination(tag = "more_content")
+        device.pressBack()
+        awaitDestination(tag = "home_content")
     }
 
     private fun capture(name: String) {

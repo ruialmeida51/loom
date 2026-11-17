@@ -15,8 +15,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -211,7 +211,7 @@ private fun InnerShoppingScreen(
         error?.let { message ->
             item {
                 ErrorNotice(message = message, onDismiss = onDismiss)
-                TextButton(onClick = onRetry) {
+                OutlinedButton(onClick = onRetry) {
                     Text(stringResource(Res.string.ui_refresh_and_retry))
                 }
             }
@@ -274,7 +274,7 @@ private fun InnerShoppingScreen(
             }
         if (!loading && completedItems.isNotEmpty()) {
             item {
-                TextButton(
+                OutlinedButton(
                     onClick = { onShowCompleted(!showCompleted) },
                     modifier = Modifier.testTag("shopping_completed"),
                 ) {

@@ -9,6 +9,8 @@ enum class Glyph {
     MONEY,
     BELL,
     SETTINGS,
+    PERSON,
+    SHIELD,
     PLUS,
     ARROW,
     CHECK,

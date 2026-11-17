@@ -3,7 +3,7 @@ package com.eyther.lumbridge.core.coroutines.extensions
 import kotlin.time.TimeSource
 import kotlinx.coroutines.delay
 
-/** A monotonic minimum-duration utility; never use it to prolong usable read data. */
+/** A monotonic minimum duration for an intentional first-load or manual-refresh transition. */
 suspend fun <R> delayAtLeast(
     timeToWaitInMillis: Long = 300L,
     block: suspend () -> R,

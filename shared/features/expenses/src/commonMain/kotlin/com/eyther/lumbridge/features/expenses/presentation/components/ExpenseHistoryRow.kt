@@ -1,17 +1,21 @@
 package com.eyther.lumbridge.features.expenses.presentation.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.eyther.lumbridge.core.presentation.components.ListRow
+import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
@@ -19,7 +23,6 @@ import com.eyther.lumbridge.features.expenses.generated.resources.former_member
 import com.eyther.lumbridge.features.expenses.generated.resources.history_paid_by
 import com.eyther.lumbridge.features.expenses.generated.resources.history_repayment
 import com.eyther.lumbridge.features.expenses.generated.resources.history_transfer
-import com.eyther.lumbridge.features.expenses.generated.resources.history_your_share
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import org.jetbrains.compose.resources.stringResource
 
@@ -30,16 +33,47 @@ internal fun ExpenseHistoryRow(
 ) {
     when (item) {
         is ExpenseHistoryItemUi.Purchase ->
-            ListRow {
+            Surface(
+                onClick = { onOpen(item.expense) },
+                shape = MaterialTheme.shapes.large,
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 Row(
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .clickable { onOpen(item.expense) }
-                            .padding(vertical = LoomSpacing.small),
-                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(item.expense.title, style = MaterialTheme.typography.titleMedium)
+                    Surface(
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                    ) {
+                        Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                            LoomIcon(
+                                glyph = Glyph.MONEY,
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                decorative = true,
+                            )
+                        }
+                    }
+                    Column(
+                        Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small)) {
+                            Text(
+                                item.expense.title,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Text(
+                                item.amount,
+                                style =
+                                    MaterialTheme.typography.titleLarge.copy(
+                                        fontFeatureSettings = "tnum",
+                                    ),
+                            )
+                        }
                         Text(
                             stringResource(
                                 Res.string.history_paid_by,
@@ -49,30 +83,21 @@ internal fun ExpenseHistoryRow(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Column(
-                        horizontalAlignment = Alignment.End,
-                        verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
-                    ) {
-                        Text(
-                            item.amount,
-                            style =
-                                MaterialTheme.typography.titleMedium.copy(
-                                    fontFeatureSettings = "tnum",
-                                ),
-                        )
-                        Text(
-                            stringResource(
-                                Res.string.history_your_share,
-                                item.yourShare,
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
                 }
             }
         is ExpenseHistoryItemUi.Repayment ->
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = LoomSpacing.medium)) {
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(horizontal = LoomSpacing.content, vertical = LoomSpacing.medium),
+                horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                LoomIcon(
+                    glyph = Glyph.CHECK,
+                    tint = MaterialTheme.colorScheme.primary,
+                    decorative = true,
+                )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         stringResource(Res.string.history_repayment),

@@ -18,6 +18,7 @@ import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryI
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistorySectionUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import com.eyther.lumbridge.features.expenses.presentation.model.MemberBalanceUi
+import com.eyther.lumbridge.features.expenses.presentation.model.SuggestedRepaymentUi
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
@@ -87,6 +88,18 @@ data class ExpensesState(
         members.associate { it.id to it.name }.toImmutableMap()
     val suggestions: ImmutableList<SuggestedSettlementDomain> =
         HouseholdLedgerDomain.suggestions(balances).toImmutableList()
+    val suggestedRepayments: ImmutableList<SuggestedRepaymentUi> =
+        suggestions
+            .map { settlement ->
+                SuggestedRepaymentUi(
+                    settlement = settlement,
+                    fromName = memberNames[settlement.from],
+                    toName = memberNames[settlement.to],
+                    amount = MoneyDomain(settlement.amountMinor, currency).formatted(),
+                    isPersonal = userId == settlement.from || userId == settlement.to,
+                )
+            }
+            .toImmutableList()
     val ownBalance: BalanceSummaryUi =
         BalanceSummaryUi(
             money = MoneyDomain(minorUnits = balances[userId] ?: 0L, currency = currency),
@@ -111,7 +124,6 @@ data class ExpensesState(
                 ExpenseHistoryItemUi.Purchase(
                     expense = it,
                     payerName = memberNames[it.paidBy],
-                    yourShare = MoneyDomain(it.shares[userId] ?: 0L, currency).formatted(),
                     amount = MoneyDomain(it.amountMinor, currency).formatted(),
                 )
             } +

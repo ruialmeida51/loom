@@ -30,6 +30,8 @@ fun NavigationRow(
     description: String? = null,
     enabled: Boolean = true,
     value: String? = null,
+    glyph: Glyph? = null,
+    trailingGlyph: Glyph = Glyph.ARROW,
 ) {
     Row(
         modifier =
@@ -41,6 +43,9 @@ fun NavigationRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
     ) {
+        glyph?.let {
+            LoomIcon(glyph = it, tint = MaterialTheme.colorScheme.primary, decorative = true)
+        }
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
@@ -62,6 +67,10 @@ fun NavigationRow(
                 modifier = Modifier.widthIn(max = MaximumSummaryWidth),
             )
         }
-        LoomIcon(glyph = Glyph.ARROW, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        LoomIcon(
+            glyph = trailingGlyph,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            decorative = true,
+        )
     }
 }

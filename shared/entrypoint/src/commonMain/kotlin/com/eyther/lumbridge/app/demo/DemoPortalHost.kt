@@ -1,8 +1,8 @@
 package com.eyther.lumbridge.app.demo
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -14,6 +14,7 @@ import com.eyther.lumbridge.app.demo.data.DemoAnalyticsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseAccountDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseDataSource
 import com.eyther.lumbridge.app.demo.data.DemoFeedDataSource
+import com.eyther.lumbridge.app.demo.data.DemoFeedSubscriptionDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
 import com.eyther.lumbridge.app.demo.data.DemoProfileDataSource
@@ -86,6 +87,7 @@ internal fun DemoPortalHost(
                         expenseDataSource = DemoExpenseDataSource(store = store),
                         recurringExpenseDataSource = DemoRecurringExpenseDataSource(store = store),
                         feedDataSource = DemoFeedDataSource(store = store),
+                        feedSubscriptionDataSource = DemoFeedSubscriptionDataSource(store = store),
                         statementDataSource = DemoStatementDataSource(),
                         statementExportDataSource = CommonStatementExportDataSource(),
                         settingsDataSource = settings,
@@ -146,7 +148,7 @@ internal fun DemoPortalHost(
                     ) {
                         Column {
                             stores.values.forEach { household ->
-                                TextButton(
+                                OutlinedButton(
                                     onClick = {
                                         onSelect(household.context.id)
                                         navigator.goBack()

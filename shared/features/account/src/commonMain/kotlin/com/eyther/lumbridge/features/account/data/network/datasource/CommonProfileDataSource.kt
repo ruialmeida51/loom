@@ -33,7 +33,7 @@ class CommonProfileDataSource(private val access: SupabaseAccess) : ProfileDataS
                         .toDomain()
                 }
             }
-            .asApiResult()
+            .asApiResult(retryTransientFailures = true)
             .distinctUntilChanged()
 
     override suspend fun updateNickname(

@@ -2,6 +2,7 @@ package com.eyther.lumbridge.features.feed.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.feed.data.fixtures.FeedSubscriptionFixture
 import com.eyther.lumbridge.features.feed.data.local.CommonFeedCatalogDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.errors.FeedError
@@ -10,6 +11,7 @@ import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedScreenViewModel
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedState
 import kotlin.test.Test
@@ -82,6 +84,8 @@ class FeedStateTest {
                 getFeedStreamUseCase = GetFeedStreamUseCase(feedDataSource = source),
                 followFeedUseCase = FollowFeedUseCase(feedDataSource = source),
                 markArticleReadUseCase = MarkArticleReadUseCase(feedDataSource = source),
+                refreshFeedsUseCase =
+                    RefreshFeedsUseCase(feedSubscriptionDataSource = FeedSubscriptionFixture()),
             )
         try {
             backgroundScope.launch { viewModel.state.collect() }
@@ -114,7 +118,7 @@ class FeedStateTest {
             assertEquals(formError, viewModel.state.value.formError)
             assertNull(viewModel.state.value.displayError)
 
-            viewModel.onMarkRead(item = article(id = "fresh", read = false), read = true)
+            viewModel.onMarkRead(id = "fresh", read = true)
             runCurrent()
             val actionError = assertNotNull(viewModel.state.value.displayError)
             articles.value = AppResult.Success(listOf(article(id = "newer", read = false)))

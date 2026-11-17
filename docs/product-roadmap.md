@@ -15,7 +15,7 @@ This document records the agreed direction. Planned capabilities below are not y
 
 ## Existing foundation
 
-The app already supports multiple households, creating and joining households, invitations, household switching, multiple named shared shopping lists with editing, undo, favorites, and reuse, reminders with daily/weekly repeats, expense splitting and repayments, monthly recurring expense schedules with pause/resume/cancel controls, monthly statements/statistics/CSV, RSS subscriptions, and light/dark/system themes.
+The app already supports multiple households, creating and joining households, invitations, household switching, multiple named shared shopping lists with editing, undo, favorites, and reuse, reminders with daily/weekly repeats, expense splitting and repayments, monthly recurring expense schedules with pause/resume/cancel controls, current account balances and settlements, manageable RSS subscriptions, and light/dark/system themes.
 
 The live app currently requires a connection. Sample-household changes are held in memory. Real push delivery still requires Firebase/APNs configuration as described in [backend setup](backend.md).
 
@@ -36,7 +36,7 @@ Monthly recurring-expense management was delivered alongside shopping: payment d
 
 Home, Shopping, Balances and More are the root tabs. Home has square Add expense/Add reminder shortcuts and today’s reminders; More opens the full Reminders, Feed and household details pages. Shopping starts with inline checklist entry and collapsed completed items. Plannot-style portal navigation keeps global My account outside households and preserves the underlying flow.
 
-Each household has an Everyday account plus independent trip/event accounts for household members. Accounts use one currency each. Dedicated expense, detail and split screens support equal shares, weighted shares, exact amounts and percentages. Expenses can be edited or deleted with version checks; saved statement revisions remain intact. Repayment suggestions, recurring bills, reports and CSV exports use the selected account.
+Each household has an Everyday account plus independent trip/event accounts for household members. Accounts use one currency each. Dedicated expense/detail screens and a split sheet support equal shares, weighted shares, exact amounts and percentages. Expenses can be edited or deleted with version checks; saved statement revisions remain intact. Repayment suggestions and recurring bills use the selected account. The 17 November decision removes monthly statement navigation in favor of current position; existing statement records remain intact.
 
 ## Following delivery: complete money and bill management
 

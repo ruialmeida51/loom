@@ -17,9 +17,14 @@ import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 
 @Composable
-fun SectionTitle(title: String, action: String? = null, onAction: () -> Unit = {}) {
+fun SectionTitle(
+    title: String,
+    action: String? = null,
+    onAction: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
     Row(
-        Modifier.fillMaxWidth(),
+        modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -28,10 +28,17 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.E
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedSubscriptionUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.RemoveFeedSubscriptionUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.UpdateFeedSubscriptionUseCase
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedScreenViewModel
+import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedSubscriptionsScreenViewModel
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
+import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedSubscriptionsScreenViewModelContract
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeRemindersStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.home.presentation.viewmodel.HomeScreenViewModel
@@ -110,14 +117,18 @@ class HouseholdViewModelModule {
 
     @KoinViewModel(binds = [FeedScreenViewModelContract::class])
     fun provideFeedScreenViewModel(
+        context: HouseholdContextDomain,
         getFeedStreamUseCase: GetFeedStreamUseCase,
         getStarterFeedsUseCase: GetStarterFeedsUseCase,
+        refreshFeedsUseCase: RefreshFeedsUseCase,
         followFeedUseCase: FollowFeedUseCase,
         markArticleReadUseCase: MarkArticleReadUseCase,
     ): FeedScreenViewModelContract =
         FeedScreenViewModel(
+            timeZone = context.timeZone,
             getFeedStreamUseCase = getFeedStreamUseCase,
             getStarterFeedsUseCase = getStarterFeedsUseCase,
+            refreshFeedsUseCase = refreshFeedsUseCase,
             followFeedUseCase = followFeedUseCase,
             markArticleReadUseCase = markArticleReadUseCase,
         )
@@ -260,5 +271,21 @@ class HouseholdViewModelModule {
         ExpenseSplitViewModel(
             params = params,
             resolveExpenseSplitUseCase = resolveExpenseSplitUseCase,
+        )
+
+    @KoinViewModel(binds = [FeedSubscriptionsScreenViewModelContract::class])
+    fun provideFeedSubscriptionsScreenViewModel(
+        getFeedSubscriptionsStreamUseCase: GetFeedSubscriptionsStreamUseCase,
+        followFeedUseCase: FollowFeedUseCase,
+        refreshFeedSubscriptionUseCase: RefreshFeedSubscriptionUseCase,
+        updateFeedSubscriptionUseCase: UpdateFeedSubscriptionUseCase,
+        removeFeedSubscriptionUseCase: RemoveFeedSubscriptionUseCase,
+    ): FeedSubscriptionsScreenViewModelContract =
+        FeedSubscriptionsScreenViewModel(
+            getFeedSubscriptionsStreamUseCase = getFeedSubscriptionsStreamUseCase,
+            followFeedUseCase = followFeedUseCase,
+            refreshFeedSubscriptionUseCase = refreshFeedSubscriptionUseCase,
+            updateFeedSubscriptionUseCase = updateFeedSubscriptionUseCase,
+            removeFeedSubscriptionUseCase = removeFeedSubscriptionUseCase,
         )
 }

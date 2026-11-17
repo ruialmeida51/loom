@@ -3,14 +3,17 @@ package com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
 import com.eyther.lumbridge.features.feed.domain.model.StarterFeedDomain
+import com.eyther.lumbridge.features.feed.presentation.mapper.toPreviewUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 /**
  * Load, action and sheet errors have separate lifetimes; refreshed articles never erase a form
  * failure.
  */
 data class FeedState(
+    val timeZone: String = "UTC",
     val items: List<ArticleDomain> = emptyList(),
     val suggestions: ImmutableList<StarterFeedDomain> = persistentListOf(),
     val url: String = "",
@@ -19,6 +22,7 @@ data class FeedState(
     val busy: Boolean = false,
     val loading: Boolean = true,
     val refreshing: Boolean = false,
+    val publishersRefreshing: Boolean = false,
     val hasLoaded: Boolean = false,
     val error: TextResource? = null,
     val loadError: TextResource? = null,
@@ -28,6 +32,7 @@ data class FeedState(
     val displayError: TextResource? = error ?: loadError
 
     val visibleArticles: List<ArticleDomain> = items.filter { !unreadOnly || !it.read }
+    val articleCards = visibleArticles.map { it.toPreviewUi(timeZone = timeZone) }.toImmutableList()
 
     val canFollow: Boolean = url.isNotBlank()
 }

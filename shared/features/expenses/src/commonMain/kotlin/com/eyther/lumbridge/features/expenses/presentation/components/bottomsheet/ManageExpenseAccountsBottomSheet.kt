@@ -2,8 +2,8 @@ package com.eyther.lumbridge.features.expenses.presentation.components.bottomshe
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
@@ -45,7 +45,7 @@ fun ManageExpenseAccountsBottomSheet(
     FormBottomSheet(
         title = stringResource(Res.string.account_manage),
         action = {
-            TextButton(onClick = onClose, enabled = !busy) {
+            OutlinedButton(onClick = onClose, enabled = !busy) {
                 Text(stringResource(Res.string.split_done))
             }
         },

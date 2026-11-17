@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.reminders.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.todayIso
@@ -66,7 +67,12 @@ class RemindersScreenViewModel(
             }
             .observeWith(viewModelScope) { state ->
                 refreshRequests
-                    .flatMapLatest { getRemindersStreamUseCase() }
+                    .flatMapLatest {
+                        getRemindersStreamUseCase()
+                            .delayFirstAtLeast(
+                                enabled = state.value.loading || state.value.refreshing,
+                            )
+                    }
                     .map { it to todayIso(context.timeZone) }
                     .updateState(state) { (result, currentDate) ->
                         when (result) {

@@ -13,10 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import com.eyther.lumbridge.core.presentation.components.RefreshSkeletonContent
 
 /**
  * Plannot's refresh container adapted to host-owned toolbars/insets. The child owns scrolling and
- * content padding; the ViewModel owns refresh progress while loaded sections remain visible.
+ * content padding. Explicit refresh briefly covers the existing composition with skeletons; drafts,
+ * scroll anchors and focused composers remain alive underneath.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,6 +26,7 @@ fun PullToRefreshContentContainer(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
+    coverContentOnRefresh: Boolean = true,
     snackbarHost: @Composable () -> Unit = {},
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -47,7 +50,14 @@ fun PullToRefreshContentContainer(
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             },
-            content = content,
+            content = {
+                RefreshSkeletonContent(
+                    isRefreshing = isRefreshing && coverContentOnRefresh,
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    content()
+                }
+            },
         )
     }
 }

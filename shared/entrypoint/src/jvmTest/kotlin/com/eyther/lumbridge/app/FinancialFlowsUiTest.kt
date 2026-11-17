@@ -200,6 +200,9 @@ class FinancialFlowsUiTest {
             }
             onNodeWithTag("balances_actions").performClick()
             onNodeWithText("Recurring expenses").performClick()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithText("£90.00", substring = true).fetchSemanticsNodes().isNotEmpty()
+            }
             onNodeWithText("£90.00", substring = true).assertExists()
             onNodeWithTag("toggle_recurring_Cottage rent").performScrollTo().performClick()
             onNodeWithText("Paused").assertExists()

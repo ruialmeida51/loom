@@ -28,9 +28,13 @@ class CommonFeedDataSource(
 ) : FeedDataSource {
 
     override fun stream(): Flow<AppResult<List<ArticleDomain>>> {
-        return access.watch("feed_articles", context.id) {
-            access.selectHouseholdRows<ArticleResponse>("feed_articles_with_state", context.id).map { it.toDomain() }
-        }.asApiResult(mapError = Exception::toFeedError)
+        return access
+            .watch("feed_articles", context.id) {
+                access
+                    .selectHouseholdRows<ArticleResponse>("feed_articles_with_state", context.id)
+                    .map { it.toDomain() }
+            }
+            .asApiResult(mapError = Exception::toFeedError, retryTransientFailures = true)
     }
 
     override suspend fun followFeed(url: String): AppResult<Unit> {
@@ -39,19 +43,23 @@ class CommonFeedDataSource(
         ) {
             val address = parseFeedUrl(value = url)
             val id = newId()
-            val request = FollowFeedRequest(
-                id = id,
-                householdId = context.id,
-                url = address,
-                createdBy = context.userId,
-            )
+            val request =
+                FollowFeedRequest(
+                    id = id,
+                    householdId = context.id,
+                    url = address,
+                    createdBy = context.userId,
+                )
 
             access.requireClient().from("feed_subscriptions").insert(request)
             try {
-                access.requireClient().functions.invoke(
-                    function = "refresh-feed",
-                    body = RefreshFeedRequest(subscriptionId = id),
-                )
+                access
+                    .requireClient()
+                    .functions
+                    .invoke(
+                        function = "refresh-feed",
+                        body = RefreshFeedRequest(subscriptionId = id),
+                    )
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
@@ -64,11 +72,12 @@ class CommonFeedDataSource(
         return safeApiCall(
             mapError = Exception::toFeedError,
         ) {
-            val request = ReadArticleRequest(
-                articleId = id,
-                userId = context.userId,
-                read = read,
-            )
+            val request =
+                ReadArticleRequest(
+                    articleId = id,
+                    userId = context.userId,
+                    read = read,
+                )
 
             access.requireClient().from("article_reads").upsert(request)
             Unit

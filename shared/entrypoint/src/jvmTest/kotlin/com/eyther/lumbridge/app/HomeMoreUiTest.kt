@@ -14,7 +14,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
@@ -82,10 +84,21 @@ class HomeMoreUiTest {
             ThemePreferences.set("LIGHT")
             setContent { LoomDemoApp() }
             waitUntil(timeoutMillis = 10000) {
-                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
+                    onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithTag("home_content").performScrollToNode(hasText("All news"))
+            onNodeWithTag("home_content").performTouchInput { swipeUp() }
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithTag("home_feed_preview").fetchSemanticsNodes().isNotEmpty()
+            }
             onNodeWithTag("home_feed_preview").assertExists()
+            val carousel = onNodeWithTag("home_feed_preview").fetchSemanticsNode().boundsInRoot
+            val page = onNodeWithTag("home_content").fetchSemanticsNode().boundsInRoot
+            assertTrue(
+                abs(carousel.left - page.left) < 1f && abs(carousel.right - page.right) < 1f,
+                "The news viewport reaches both screen edges",
+            )
             capture("home-news-light")
             onNodeWithText("All news").performClick()
             onNodeWithText("The reading corner").assertExists()

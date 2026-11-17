@@ -11,10 +11,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.LoomCard
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -34,34 +35,36 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.resources.calendarDateText
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
-import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_accounts
 import com.eyther.lumbridge.features.expenses.generated.resources.account_archived
 import com.eyther.lumbridge.features.expenses.generated.resources.account_manage
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_all_settled
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_everyone
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_gets_back
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_owes
-import com.eyther.lumbridge.features.expenses.generated.resources.balance_person_owes
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_retry
-import com.eyther.lumbridge.features.expenses.generated.resources.balance_statements
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_who_pays
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_you_settled
 import com.eyther.lumbridge.features.expenses.generated.resources.former_member
 import com.eyther.lumbridge.features.expenses.generated.resources.history_balances
 import com.eyther.lumbridge.features.expenses.generated.resources.history_empty
 import com.eyther.lumbridge.features.expenses.generated.resources.history_expenses
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_add_expense
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_record_repayment
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_recurring_expenses
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_you_owe
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_you_re_owed
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseHistoryRow
+import com.eyther.lumbridge.features.expenses.presentation.components.SettlementSuggestionCard
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
+import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistorySectionUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import com.eyther.lumbridge.features.expenses.presentation.model.MemberBalanceUi
+import com.eyther.lumbridge.features.expenses.presentation.model.SuggestedRepaymentUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -69,7 +72,6 @@ fun ExpensesScreen(
     viewModel: ExpensesScreenViewModelContract,
     onAddExpense: () -> Unit,
     onOpenExpense: (ExpenseDomain) -> Unit,
-    onInsights: () -> Unit,
     onRecurringExpenses: () -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
@@ -82,10 +84,8 @@ fun ExpensesScreen(
             history = state.history,
             selectedView = state.selectedView,
             memberBalances = state.memberBalances,
-            suggestions = state.suggestions,
-            memberNames = state.memberNames,
-            userId = state.userId,
-            currency = state.currency,
+            suggestions = state.suggestedRepayments,
+            ownBalance = state.ownBalance,
             loading = state.loading,
             canCreate = state.canCreateExpense,
             error = state.displayError,
@@ -95,7 +95,6 @@ fun ExpensesScreen(
             onManage = { viewModel.onManageAccountsVisibilityChanged(true) },
             onView = viewModel::onViewChanged,
             onRepayment = viewModel::onSuggestedRepayment,
-            onInsights = onInsights,
             onRecurringExpenses = onRecurringExpenses,
             onDismiss = viewModel::onDismissError,
             onRetry = viewModel::onRefresh,
@@ -109,10 +108,8 @@ private fun InnerExpensesScreen(
     history: ImmutableList<ExpenseHistorySectionUi>,
     selectedView: ExpensesViewUi,
     memberBalances: ImmutableList<MemberBalanceUi>,
-    suggestions: ImmutableList<SuggestedSettlementDomain>,
-    memberNames: ImmutableMap<String, String>,
-    userId: String,
-    currency: String,
+    suggestions: ImmutableList<SuggestedRepaymentUi>,
+    ownBalance: BalanceSummaryUi,
     loading: Boolean,
     canCreate: Boolean,
     error: TextResource?,
@@ -122,7 +119,6 @@ private fun InnerExpensesScreen(
     onManage: () -> Unit,
     onView: (ExpensesViewUi) -> Unit,
     onRepayment: (SuggestedSettlementDomain) -> Unit,
-    onInsights: () -> Unit,
     onRecurringExpenses: () -> Unit,
     onDismiss: () -> Unit,
     onRetry: () -> Unit,
@@ -152,12 +148,6 @@ private fun InnerExpensesScreen(
                                         text =
                                             TextResource.Resource(Res.string.ui_recurring_expenses),
                                         onClick = onRecurringExpenses,
-                                    ),
-                                )
-                                add(
-                                    ActionMenuItem(
-                                        text = TextResource.Resource(Res.string.balance_statements),
-                                        onClick = onInsights,
                                     ),
                                 )
                                 add(
@@ -194,7 +184,9 @@ private fun InnerExpensesScreen(
             error?.let { message ->
                 item {
                     ErrorNotice(message = message, onDismiss = onDismiss)
-                    TextButton(onClick = onRetry) { Text(stringResource(Res.string.balance_retry)) }
+                    OutlinedButton(onClick = onRetry) {
+                        Text(stringResource(Res.string.balance_retry))
+                    }
                 }
             }
             if (loading) item { LoadingRows() }
@@ -222,40 +214,50 @@ private fun InnerExpensesScreen(
                     }
                 }
             } else if (account != null) {
-                item {
-                    Text(
-                        stringResource(Res.string.balance_who_pays),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-                if (suggestions.isEmpty())
-                    item {
-                        Text(
-                            stringResource(Res.string.balance_all_settled),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                items(suggestions, key = { "${it.from}-${it.to}" }) { suggestion ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                item(key = "current_position") {
+                    LoomCard {
                         Text(
                             stringResource(
-                                Res.string.balance_person_owes,
-                                memberNames[suggestion.from]
-                                    ?: stringResource(Res.string.former_member),
-                                memberNames[suggestion.to]
-                                    ?: stringResource(Res.string.former_member),
+                                when {
+                                    ownBalance.isSettled && suggestions.isEmpty() ->
+                                        Res.string.balance_all_settled
+                                    ownBalance.isSettled -> Res.string.balance_you_settled
+                                    ownBalance.isOwed -> Res.string.ui_you_re_owed
+                                    else -> Res.string.ui_you_owe
+                                },
                             ),
-                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                        if (!ownBalance.isSettled)
+                            Text(
+                                ownBalance.amount,
+                                style =
+                                    MaterialTheme.typography.displaySmall.copy(
+                                        fontFeatureSettings = "tnum",
+                                    ),
+                            )
+                    }
+                }
+                if (suggestions.isNotEmpty())
+                    item {
                         Text(
-                            MoneyDomain(suggestion.amountMinor, currency).formatted(),
-                            style = MaterialTheme.typography.titleSmall,
+                            stringResource(Res.string.balance_who_pays),
+                            style = MaterialTheme.typography.titleMedium,
                         )
                     }
-                    if (userId == suggestion.from || userId == suggestion.to)
-                        TextButton(onClick = { onRepayment(suggestion) }) {
-                            Text(stringResource(Res.string.ui_record_repayment))
-                        }
+                items(suggestions, key = { "${it.settlement.from}-${it.settlement.to}" }) {
+                    repayment ->
+                    SettlementSuggestionCard(
+                        repayment = repayment,
+                        onRecord = { onRepayment(repayment.settlement) },
+                    )
+                }
+                item {
+                    Text(
+                        stringResource(Res.string.balance_everyone),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
                 }
                 items(memberBalances, key = { it.member.id }) { member ->
                     Row(

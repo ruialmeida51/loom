@@ -9,7 +9,9 @@ import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDa
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.feed.data.network.datasource.CommonFeedDataSource
+import com.eyther.lumbridge.features.feed.data.network.datasource.CommonFeedSubscriptionDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
+import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.data.export.CommonStatementExportDataSource
@@ -103,6 +105,13 @@ class HouseholdDataSourceModule(
             access = access,
             context = context,
         )
+
+    @Single
+    fun provideFeedSubscriptionDataSource(
+        access: SupabaseAccess,
+        context: HouseholdContextDomain,
+    ): FeedSubscriptionDataSource =
+        CommonFeedSubscriptionDataSource(access = access, context = context)
 
     @Single
     fun provideStatementDataSource(

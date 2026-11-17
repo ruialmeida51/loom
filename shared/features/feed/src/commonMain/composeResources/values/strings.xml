@@ -16,7 +16,32 @@
   <string name="ui_cancel">Cancel</string>
   <string name="ui_feed_url_hint" translatable="false">https://…</string>
     <string name="error_already_followed">Your household already follows this feed.</string>
-    <string name="error_refresh_failed">The feed was added, but could not be refreshed. It will refresh automatically.</string>
+    <string name="error_refresh_failed">This feed could not refresh. Retry from Manage feeds or check its address.</string>
     <string name="feed_retry">Try again</string>
   <string name="feed_starter_sources">Some good starting points</string>
+  <string name="feed_manage">Manage feeds</string>
+  <string name="feed_manage_description">Your subscriptions, updates and source settings</string>
+  <string name="feed_add">Add a feed</string>
+  <string name="feed_edit">Edit address</string>
+  <string name="feed_save">Save feed</string>
+  <string name="feed_refresh">Refresh</string>
+  <string name="feed_remove">Remove</string>
+  <string name="feed_remove_title">Remove this feed?</string>
+  <string name="feed_remove_description">Remove %1$s and its articles for everyone in your household. You can add the feed again later.</string>
+  <string name="feed_no_subscriptions">Your reading corner is ready for a first feed.</string>
+  <string name="feed_status_pending">Waiting for its first update</string>
+  <string name="feed_status_ready">Up to date</string>
+  <string name="feed_status_failed">Could not update. Check the address or try again.</string>
+  <string name="feed_status_unsupported">This publisher is not supported yet. Edit the address or remove the feed.</string>
+  <string name="feed_rate_limited">This feed was just refreshed. Try again in a minute.</string>
+  <string name="feed_changed">Someone changed this feed. Refresh before editing it again.</string>
+  <string name="feed_not_found">This feed was removed. Refresh your subscriptions.</string>
+  <string name="feed_saved">Feed saved</string>
+  <string name="feed_saved_pending">Feed saved. Its first update failed; you can retry or edit it here.</string>
+  <string name="feed_refreshed">Feed updated</string>
+  <string name="feed_removed">Feed removed</string>
+  <string name="feed_no_articles">No stories yet</string>
+  <string name="feed_empty_description">Add a source or check its update status in Manage feeds.</string>
+  <string name="feed_caught_up">You’re all caught up</string>
+  <string name="feed_caught_up_description">Turn off Unread only to see the stories you’ve already read.</string>
 </resources>

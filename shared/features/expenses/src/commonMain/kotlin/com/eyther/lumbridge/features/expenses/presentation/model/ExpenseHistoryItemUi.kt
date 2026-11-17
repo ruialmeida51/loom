@@ -14,7 +14,6 @@ sealed interface ExpenseHistoryItemUi {
     data class Purchase(
         val expense: ExpenseDomain,
         val payerName: String?,
-        val yourShare: String,
         override val amount: String,
     ) : ExpenseHistoryItemUi {
         override val key: String = "expense-${expense.id}"

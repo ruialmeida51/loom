@@ -3,8 +3,8 @@ package com.eyther.lumbridge.features.authentication.presentation.screen
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -109,7 +109,7 @@ private fun InnerRegisterScreen(
             loading = busy,
             enabled = canSubmit,
         )
-        TextButton(onClick = onBack, enabled = !busy) {
+        OutlinedButton(onClick = onBack, enabled = !busy) {
             Text(stringResource(Res.string.ui_already_have_an_account_sign_in))
         }
     }

@@ -1,4 +1,4 @@
-import { parseFeed, trustedFeedUrl } from "./rss.ts";
+import { allowedFeedHosts, defaultHosts, parseFeed, trustedFeedUrl } from "./rss.ts";
 function assert(value: unknown, message = "Assertion failed"): asserts value {
   if (!value) throw new Error(message);
 }
@@ -11,6 +11,21 @@ function rejects(action: () => unknown) {
   }
   assert(rejected);
 }
+
+Deno.test("Expresso is supported without opening the publisher allowlist", () => {
+  assert(trustedFeedUrl("https://rss.impresa.pt/feed/latest/expresso.rss", defaultHosts).hostname === "rss.impresa.pt");
+  rejects(() => trustedFeedUrl("https://rss.impresa.pt.evil.test/feed", defaultHosts));
+  rejects(() => trustedFeedUrl("https://127.0.0.1/feed", defaultHosts));
+  rejects(() => trustedFeedUrl("https://rss.impresa.pt:8443/feed", defaultHosts));
+});
+
+Deno.test("Existing configured restrictions retain only their publishers plus the approved addition", () => {
+  const hosts = allowedFeedHosts(" feeds.bbci.co.uk,FEEDS.BBCI.CO.UK ");
+  assert(hosts.length === 2);
+  assert(hosts.includes("feeds.bbci.co.uk") && hosts.includes("rss.impresa.pt"));
+  rejects(() => trustedFeedUrl("https://www.nasa.gov/feed/", hosts));
+  rejects(() => trustedFeedUrl("https://rss.impresa.pt.evil.test/feed", hosts));
+});
 
 Deno.test("RSS parses plain text, valid links, and stable GUIDs", () => {
   const articles = parseFeed(
