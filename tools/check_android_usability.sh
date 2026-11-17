@@ -11,6 +11,10 @@ collect_device_evidence() {
 }
 trap collect_device_evidence EXIT
 adb shell setprop log.tag.WindowOnBackDispatcher DEBUG
-# Wait for the launcher's first draw; compiling before boot avoids starving its startup on CI.
+# Use a narrow phone at a lower physical resolution to keep software rendering within CI resources.
+adb shell wm size 720x1600
+adb shell wm density 320
+# Reset the system launcher after display configuration; a foreign Quickstep ANR steals Back input.
+adb shell am force-stop com.android.launcher3
 timeout 45s adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.HOME > /dev/null
 ./gradlew :androidApp:connectedDebugAndroidTest --no-daemon --no-parallel --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process '-Dorg.gradle.jvmargs=-Xmx2g -Dfile.encoding=UTF-8'

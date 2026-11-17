@@ -29,6 +29,7 @@ import com.eyther.lumbridge.core.generated.resources.icon_person
 import com.eyther.lumbridge.core.generated.resources.icon_privacy
 import com.eyther.lumbridge.core.generated.resources.icon_settings
 import com.eyther.lumbridge.core.generated.resources.icon_shopping
+import com.eyther.lumbridge.core.generated.resources.icon_tasks
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -47,6 +48,7 @@ fun LoomIcon(
                 Glyph.SHOPPING -> Res.string.icon_shopping
                 Glyph.MONEY -> Res.string.icon_money
                 Glyph.BELL -> Res.string.icon_bell
+                Glyph.TASKS -> Res.string.icon_tasks
                 Glyph.SETTINGS -> Res.string.icon_settings
                 Glyph.PERSON -> Res.string.icon_person
                 Glyph.SHIELD -> Res.string.icon_privacy
@@ -179,6 +181,13 @@ fun LoomIcon(
                 )
                 line(3f, 10f, 21f, 10f)
                 line(15f, 15f, 18f, 15f)
+            }
+            Glyph.TASKS -> {
+                listOf(6f, 12f, 18f).forEach { y ->
+                    line(3f, y, 5f, y + 2f)
+                    line(5f, y + 2f, 8f, y - 2f)
+                    line(11f, y, 21f, y)
+                }
             }
             Glyph.BELL -> {
                 val p =

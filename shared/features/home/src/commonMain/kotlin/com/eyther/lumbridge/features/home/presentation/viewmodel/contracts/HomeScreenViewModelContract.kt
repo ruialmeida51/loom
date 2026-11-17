@@ -11,7 +11,7 @@ abstract class HomeScreenViewModelContract : LoomViewModel() {
 
     abstract fun onArticleOpened(id: String)
 
-    abstract fun onRemindersErrorDismissed()
+    abstract fun onTasksErrorDismissed()
 
     abstract fun onShoppingErrorDismissed()
 

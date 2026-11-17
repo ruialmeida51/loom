@@ -5,7 +5,7 @@
     <string name="preferences_title">Preferences</string>
     <string name="appearance_title">Appearance</string>
     <string name="notifications_title">Notifications</string>
-    <string name="notifications_description">Reminders and shared expenses</string>
+    <string name="notifications_description">Tasks and shared expenses</string>
     <string name="analytics_title">Help improve Loom</string>
     <string name="analytics_description">Share optional usage analytics to help improve Loom.</string>
     <string name="sign_out">Sign out</string>

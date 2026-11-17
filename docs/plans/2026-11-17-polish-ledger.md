@@ -60,7 +60,7 @@ Recommendations are Loom-specific inferences; references do not prove Loom's run
 
 ## Existing constraints carried forward
 
-Home, Shopping, Balances, More; global account outside household scope; multiple households and
+Home, Shopping, Money, Tasks, More (updated by the later Tasks decision); global account outside household scope; multiple households and
 everyday/trip accounts; household members only and one currency per account. Keep unequal splits,
 recurring bills, settlement recording, completed-shopping bulk selection, Keep-style Enter composer,
 reminder feedback and refresh across data destinations. Offline support remains deferred.
@@ -182,7 +182,7 @@ household to-dos and reminders. A task can have only a title; dates and notifica
 Keep existing dated/repeating reminders and their notification behavior, a small task preview and
 quick add on Home, and move the full list into its own tab. More retains secondary tools/News.
 Feature models, packages, DI and resources must follow Tasks ownership. Apply the backward-compatible
-backend migration and include this change in the final audit. This work is accepted, not yet implemented.
+backend migration and include this change in the final audit. The feature/package migration is implemented. Title-only capture, optional schedule removal, notification controls, completion/reopen, Home quick-add and narrow light/dark layouts pass the focused shared UI checks. The local 17-migration database run also verifies legacy reminder compatibility, household isolation, recurrence concurrency and push opt-in/queued delivery cancellation. Final platform CI/deployment remain pending.
 
 The manifest change passed the full PR run (Android/shared/device/iOS), but its parallel push run
 still failed the same two native Back checks. The explicit integration removes the disabled-callback
@@ -190,3 +190,15 @@ warning but is not established as the complete fix. The merge remains blocked on
 case. Native failure capture now preserves the failing screen and accessibility hierarchy before
 activity teardown; Back dispatcher debug logs and foreground-package markers distinguish missing
 native input from an incorrect route pop. The four assertions remain intact.
+
+### Tasks capture references
+
+Checked 17 Nov: [Google Tasks Android capture](https://support.google.com/tasks/answer/7675838?co=GENIE.Platform%3DAndroid&hl=en-GB) treats date/repeat as additional controls after the title. [Todoist Quick Add](https://www.todoist.com/help/todoist/features/use-task-quick-add-in-todoist-va4Lhpzz) keeps capture lightweight while exposing schedule details when needed. Loom adopts that progressive disclosure, with explicit opt-in for household notifications and without natural-language parsing or extra project/label systems. These are documentation comparisons, not claims of device testing those apps.
+
+### Tasks implementation and backend verification
+
+- Renamed the feature to `features/tasks` and audited feature ownership, separate DTO/mappers, central annotated DI, resources and named project references. Home depends on the owning task feature.
+- Added Home/Shopping/Money/Tasks/More roots, Home quick-add without a route push, full Tasks list, optional date/repeat/notification controls, collapsed completed tasks and completion/reopen/create feedback. Five-tab labels stay on one line with bounded ellipsis at large accessibility sizes.
+- Final local suite: **178 JVM tests**, Android debug and instrumentation APK builds, **17 disposable PostgreSQL migrations**, 6 Deno RSS/security tests and tooling/architecture checks pass. New HTTP tests verify that new tasks explicitly opt out of alerts and use the correct canonical endpoints.
+- Applied **20261117130457_household_tasks** to Loom. Hosted schema/permission metadata verifies RLS/four member policies, authenticated CRUD, no anonymous table/completion access, realtime publication and the invoker-security legacy view. Existing reminders retain their alert intent; old completion and push workers stay compatible. No hosted household records were queried. Security advisors are unchanged.
+- Captured native Back failures show a foreign Quickstep launcher ANR. The runner now prebuilds APKs before boot, provides 3 GB/two cores, and starts a clean launcher at a software-rendering-friendly phone resolution. Animations, real keyboard/Back and all assertions remain enabled; failure captures remain available. Exact-head native/iOS CI gates and Firebase upload still determine delivery.

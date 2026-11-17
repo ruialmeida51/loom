@@ -8,7 +8,7 @@ enum class AnalyticsScreenDomain {
     FEED,
     SHOPPING,
     EXPENSES,
-    REMINDERS,
+    TASKS,
     RECURRING_EXPENSES,
     INSIGHTS,
     SETTINGS,

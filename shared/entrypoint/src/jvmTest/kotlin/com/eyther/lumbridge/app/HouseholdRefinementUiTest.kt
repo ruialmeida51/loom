@@ -76,18 +76,18 @@ class HouseholdRefinementUiTest {
         }
 
     @Test
-    fun completingARecurringReminderAcknowledgesTheOccurrenceOnANarrowScreen() =
+    fun completingARecurringTaskAcknowledgesTheOccurrenceOnANarrowScreen() =
         runSkikoComposeUiTest(size = Size(360f, 740f), density = Density(1f, fontScale = 1.2f)) {
             startApp()
-            onNodeWithText("All reminders").performScrollTo().performClick()
-            awaitLoadedDestination("reminders_content")
+            onNodeWithText("All tasks").performScrollTo().performClick()
+            awaitLoadedDestination("tasks_content")
             onAllNodes(isToggleable())[0].performClick()
             waitUntil(timeoutMillis = 5_000) {
                 onAllNodesWithText("Water the plants completed").fetchSemanticsNodes().isNotEmpty()
             }
             onNodeWithText("Water the plants", substring = false).assertExists()
             onNodeWithTag("success_snackbar").assertIsDisplayed()
-            capture("reminder-completion-narrow")
+            capture("task-completion-narrow")
         }
 
     private fun SkikoComposeUiTest.startApp() {

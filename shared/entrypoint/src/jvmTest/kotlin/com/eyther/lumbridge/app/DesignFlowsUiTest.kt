@@ -121,16 +121,16 @@ class DesignFlowsUiTest {
                         HomeScreen(
                             viewModel = EmptyHomeViewModel(),
                             onAddExpense = { openedExpense = true },
-                            onReminders = {},
+                            onTasks = {},
                             onShopping = {},
-                            onAddReminder = {},
+                            onAddTask = {},
                             onFeed = {},
                             onOpenStory = {},
                         )
                     }
                 }
             }
-            onNodeWithTag("home_reminders_empty").assertExists()
+            onNodeWithTag("home_tasks_empty").assertExists()
             onNodeWithTag("home_shopping_preview").assertExists()
             onNodeWithText("Nothing to pick up. You’re all stocked up.").assertExists()
             captureNode(tag = "empty_home", name = "home-empty-light")
@@ -149,9 +149,9 @@ class DesignFlowsUiTest {
                         HomeScreen(
                             viewModel = viewModel,
                             onAddExpense = {},
-                            onReminders = {},
+                            onTasks = {},
                             onShopping = {},
-                            onAddReminder = {},
+                            onAddTask = {},
                             onFeed = {},
                             onOpenStory = {},
                         )
@@ -161,11 +161,11 @@ class DesignFlowsUiTest {
                     onAllNodesWithText("Try again").fetchSemanticsNodes().isNotEmpty()
                 }
                 onNodeWithText("Check your connection and try again.").assertExists()
-                onNodeWithTag("home_reminders_empty").assertDoesNotExist()
+                onNodeWithTag("home_tasks_empty").assertDoesNotExist()
                 onNodeWithTag("home_shopping_preview").assertExists()
                 onNodeWithText("All settled up").assertDoesNotExist()
                 onNodeWithText("Try again").performClick()
-                waitUntil(timeoutMillis = 5000) { viewModel.state.value.reminderItems != null }
+                waitUntil(timeoutMillis = 5000) { viewModel.state.value.taskItems != null }
                 onNodeWithText("Check your connection and try again.").assertDoesNotExist()
                 assertEquals(2, fixture.loads)
             } finally {

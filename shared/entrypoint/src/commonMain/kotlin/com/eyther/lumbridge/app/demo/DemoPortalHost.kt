@@ -19,11 +19,11 @@ import com.eyther.lumbridge.app.demo.data.DemoHouseholdDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
 import com.eyther.lumbridge.app.demo.data.DemoProfileDataSource
 import com.eyther.lumbridge.app.demo.data.DemoRecurringExpenseDataSource
-import com.eyther.lumbridge.app.demo.data.DemoReminderDataSource
 import com.eyther.lumbridge.app.demo.data.DemoSettingsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoShoppingDataSource
 import com.eyther.lumbridge.app.demo.data.DemoShoppingSelectionDataSource
 import com.eyther.lumbridge.app.demo.data.DemoStatementDataSource
+import com.eyther.lumbridge.app.demo.data.DemoTaskDataSource
 import com.eyther.lumbridge.app.navigation.AccountHost
 import com.eyther.lumbridge.app.navigation.HouseholdHost
 import com.eyther.lumbridge.app.navigation.components.FlowScaffold
@@ -82,7 +82,7 @@ internal fun DemoPortalHost(
                         shoppingDataSource = DemoShoppingDataSource(store = store),
                         shoppingSelectionDataSource =
                             DemoShoppingSelectionDataSource(store = store),
-                        reminderDataSource = DemoReminderDataSource(store = store),
+                        taskDataSource = DemoTaskDataSource(store = store),
                         expenseAccountDataSource = DemoExpenseAccountDataSource(store = store),
                         expenseDataSource = DemoExpenseDataSource(store = store),
                         recurringExpenseDataSource = DemoRecurringExpenseDataSource(store = store),

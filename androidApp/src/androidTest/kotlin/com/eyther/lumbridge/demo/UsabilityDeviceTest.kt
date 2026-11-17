@@ -226,6 +226,34 @@ class UsabilityDeviceTest {
         awaitDestination(tag = "home_content")
     }
 
+    @Test
+    fun titleOnlyTaskSavesFromHomeAndSystemBackFromTasksReturnsHome() {
+        compose.onNodeWithTag("home_add_task").performClick()
+        compose.onNodeWithTag("task_title").performTextInput("Fix the kitchen shelf")
+        compose.onNodeWithTag("task_notification").assertDoesNotExist()
+        hideKeyboard()
+        compose.onNodeWithTag("save_task").performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()
+        }
+        awaitDestination(tag = "home_content")
+        compose.onNodeWithTag("navigation_tasks").performClick()
+        awaitDestination(tag = "tasks_content")
+        compose
+            .onNodeWithContentDescription("Fix the kitchen shelf")
+            .performScrollTo()
+            .performClick()
+        compose.onNodeWithText("Fix the kitchen shelf completed").assertIsDisplayed()
+        compose.onNodeWithTag("tasks_completed").performScrollTo().performClick()
+        compose
+            .onNodeWithContentDescription("Fix the kitchen shelf")
+            .performScrollTo()
+            .assertIsDisplayed()
+        capture(name = "tasks-completed")
+        pressSystemBack()
+        awaitDestination(tag = "home_content")
+    }
+
     private fun capture(name: String) {
         compose.waitForIdle()
         val file = File(compose.activity.cacheDir, "$name.png")

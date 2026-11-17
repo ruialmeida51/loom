@@ -1,0 +1,129 @@
+package com.eyther.lumbridge.app
+
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.asSkiaBitmap
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SkikoComposeUiTest
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.runSkikoComposeUiTest
+import androidx.compose.ui.unit.Density
+import com.eyther.lumbridge.app.demo.LoomDemoApp
+import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
+import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
+import java.io.File
+import kotlin.test.Test
+import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Image
+
+@OptIn(ExperimentalTestApi::class)
+class TasksUiTest {
+    @Test
+    fun titleOnlyQuickAddStaysOnHomeAndTasksCanBeCompletedAndReopened() =
+        runSkikoComposeUiTest(size = Size(440f, 800f)) {
+            startApp()
+            onNodeWithTag("home_add_task").performClick()
+            onNodeWithTag("task_title").performTextInput("Fix hallway lamp")
+            onNodeWithTag("task_notification").assertDoesNotExist()
+            onNodeWithTag("task_time").assertDoesNotExist()
+            capture("task-quick-add-light")
+            onNodeWithTag("save_task").performClick()
+            awaitSheetDismissed()
+            onNodeWithTag("home_content").assertIsDisplayed()
+            onNodeWithText("Task added").assertExists()
+            onNodeWithContentDescription("Back").assertDoesNotExist()
+            onNodeWithText("All tasks").performScrollTo().performClick()
+            awaitLoadedDestination("tasks_content")
+            onNodeWithTag("tasks_content").performScrollToNode(hasText("Fix hallway lamp"))
+            onNodeWithContentDescription("Fix hallway lamp").performClick()
+            onNodeWithText("Fix hallway lamp completed").assertExists()
+            onNodeWithContentDescription("Fix hallway lamp").assertDoesNotExist()
+            onNodeWithTag("tasks_completed").performScrollTo().performClick()
+            onNodeWithContentDescription("Fix hallway lamp").performScrollTo().performClick()
+            onNodeWithText("Fix hallway lamp reopened").assertExists()
+            onNodeWithTag("tasks_completed").assertDoesNotExist()
+            onNodeWithTag("tasks_content").performScrollToNode(hasText("Fix hallway lamp"))
+            onNodeWithContentDescription("Fix hallway lamp").assertIsDisplayed()
+            capture("tasks-light")
+        }
+
+    @Test
+    fun dateRepeatAndNotificationAreOptionalAndCanBeRemovedBeforeSaving() =
+        runSkikoComposeUiTest(size = Size(440f, 800f)) {
+            startApp()
+            onNodeWithTag("navigation_tasks").performClick()
+            awaitLoadedDestination("tasks_content")
+            onNodeWithTag("add_task").performClick()
+            onNodeWithTag("task_title").performTextInput("Water balcony plants")
+            onNodeWithTag("task_date").performClick()
+            onNodeWithTag("confirm_task_date").performClick()
+            onNodeWithTag("task_notification").assertIsOff()
+            onNodeWithText("Daily").performScrollTo().performClick()
+            onNodeWithTag("task_notification").performScrollTo().performClick()
+            onNodeWithTag("task_time").performScrollTo().performClick()
+            onNodeWithTag("confirm_task_time").performClick()
+            capture("task-schedule-light")
+            onNodeWithContentDescription("Remove due date").performScrollTo().performClick()
+            onNodeWithTag("task_notification").assertDoesNotExist()
+            onNodeWithTag("task_time").assertDoesNotExist()
+            onNodeWithText("Daily").assertDoesNotExist()
+            onNodeWithTag("save_task").performClick()
+            awaitSheetDismissed()
+            onNodeWithTag("tasks_content").performScrollToNode(hasText("Water balcony plants"))
+            onNodeWithContentDescription("Water balcony plants").assertIsDisplayed()
+        }
+
+    @Test
+    fun taskActionsAndFiveTabsFitANarrowViewportWithLargeText() =
+        runSkikoComposeUiTest(size = Size(360f, 640f), density = Density(1f, 1.3f)) {
+            startApp(theme = "DARK")
+            onNodeWithTag("navigation_tasks").performClick()
+            awaitLoadedDestination("tasks_content")
+            onNodeWithTag("navigation_money").assertIsDisplayed()
+            onNodeWithTag("navigation_more").assertIsDisplayed()
+            onNodeWithContentDescription("Back").assertDoesNotExist()
+            capture("tasks-dark-narrow")
+            onNodeWithTag("add_task").performClick()
+            onNodeWithTag("task_title").performTextInput("Book a boiler service")
+            onNodeWithTag("save_task").assertIsDisplayed()
+            capture("task-sheet-dark-narrow")
+            onNodeWithTag("save_task").performClick()
+            awaitSheetDismissed()
+            onNodeWithTag("tasks_content").performScrollToNode(hasText("Book a boiler service"))
+            onNodeWithContentDescription("Book a boiler service").assertIsDisplayed()
+        }
+
+    private fun SkikoComposeUiTest.startApp(theme: String = "LIGHT") {
+        ThemePreferences.set(theme)
+        setContent { LoomDemoApp() }
+        awaitLoadedDestination("home_content")
+    }
+
+    private fun SkikoComposeUiTest.awaitSheetDismissed() {
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()
+        }
+    }
+
+    private fun SkikoComposeUiTest.capture(name: String) {
+        waitForIdle()
+        val directory =
+            File(System.getProperty("loom.screenshots.dir", "build/screenshots")).apply { mkdirs() }
+        File(directory, "$name.png")
+            .writeBytes(
+                Image.makeFromBitmap(captureToImage().asSkiaBitmap())
+                    .encodeToData(EncodedImageFormat.PNG)!!
+                    .bytes,
+            )
+    }
+}

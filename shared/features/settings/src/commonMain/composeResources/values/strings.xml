@@ -5,7 +5,7 @@
   <string name="ui_appearance">Appearance</string>
   <string name="ui_a_little_light_a_little_dark_or_follow_your">A little light, a little dark, or follow your device.</string>
   <string name="ui_gentle_nudges">Gentle nudges</string>
-  <string name="ui_reminders_and_shared_expenses">Reminders and shared expenses</string>
+  <string name="ui_tasks_and_shared_expenses">Tasks and shared expenses</string>
   <string name="ui_invite_someone_home">Invite someone home</string>
   <string name="ui_one_time_invitation_expires_in_48_hours">One-time invitation · expires in 48 hours</string>
   <string name="ui_switch_household">Switch household</string>
@@ -13,7 +13,7 @@
   <string name="ui_loom_life_woven_together">Loom\nLife, woven together.</string>
   <string name="error_unsupported_platform">Push notifications are available in the Android and iOS apps.</string>
   <string name="error_provider_unavailable">Notifications aren’t available in this build yet.</string>
-  <string name="error_permission_denied">Allow notifications in your phone’s settings to receive reminders.</string>
+  <string name="error_permission_denied">Allow notifications in your phone’s settings to receive tasks.</string>
   <string name="error_registration_failed">Couldn’t register notifications. Please try again.</string>
   <string name="token_system">System</string>
   <string name="token_light">Light</string>
@@ -28,7 +28,7 @@
   <string name="ui_nickname_description">Change how your name appears in every household.</string>
   <string name="ui_preferences">Preferences</string>
   <string name="ui_edit_nickname">Make yourself known</string>
-  <string name="ui_nickname_help">Use the name your people know you by. It appears on lists, expenses and reminders.</string>
+  <string name="ui_nickname_help">Use the name your people know you by. It appears on lists, expenses and tasks.</string>
   <string name="ui_save_nickname">Save nickname</string>
   <string name="ui_cancel">Cancel</string>
   <string name="ui_done">Done</string>

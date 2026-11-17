@@ -22,7 +22,7 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 
 ## Navigation and editing
 
-- Home, Shopping, Balances and More are peers. Preserve each tab's stack. Peer changes do not play
+- Home, Shopping, Money, Tasks and More are peers. Preserve each tab's stack. Peer changes do not play
   push/pop slides. Android Back from a non-Home root returns Home; only Home root exits.
 - Root toolbars contain household selection and the global profile. Selectors use a label-adjacent
   caret and generous touch areas. Child Hosts own Back, title and contextual actions. Global account
@@ -31,7 +31,7 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
   toolbar Back. The departing destination stays above the returning one with an opaque background.
 - The owning Host applies and consumes system/toolbar/bottom-navigation insets once. Scrollable
   forms own their IME clearance. The primary action remains reachable with the keyboard open.
-- Use one sheet for a short contextual task: split editing, shopping edits, reminder creation,
+- Use one sheet for a short contextual task: split editing, shopping edits, task creation,
   feed subscription, repayment or nickname editing. Fields scroll above a fixed action footer.
   Close or replace a sheet rather than stacking sheets.
 - Use full destinations for expense capture/details, account creation and browsing full history.
@@ -44,12 +44,12 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 ## Data readiness and feedback
 
 - Show matching skeletons during first load and explicit refresh. Sections can become useful
-  independently; shopping or optional news must not hold reminders behind a page-wide skeleton.
+  independently; shopping or optional news must not hold tasks behind a page-wide skeleton.
 - Pull-to-refresh briefly shows matching skeletons, with a single approximately 300 ms minimum transition. Retain the existing data, selection, draft and scroll underneath.
   Realtime/polling changes remain silent. A failed refresh keeps prior content and an actionable error.
 - Apply Plannot's monotonic helper once for initial/explicit loading only. Resume and background updates never add a timing floor.
 - Mutation progress belongs to its button/row, never a page skeleton. Confirm successful recurring
-  reminder completion with a transient snackbar even when the next occurrence remains visible.
+  task completion with a transient snackbar even when the next occurrence remains visible.
 - Destructive actions use filled/outlined destructive buttons, including accessible icon buttons,
   with progress and sibling disabling. Menus may open a brief confirmation; never use a text Delete.
 - Reference reads may reuse short-lived in-memory snapshots keyed to the current user and scope.
@@ -58,10 +58,11 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 
 ## Daily workflows
 
-Home starts with two compact quick actions with square icon areas, followed by one Reminders
+Home starts with two compact quick actions with square icon areas, followed by one Tasks
 section with up to three pending items, a three-item preview of the selected shopping list and a
-secondary News preview. Each section has an explicit route to the full destination. Reminder dates
-combine localized relative and absolute dates in the household zone. Empty reminders/shopping use a compact illustrated state without duplicate add actions; errors remain distinct.
+secondary News preview. Each section has an explicit route to the full destination. Optional task dates
+combine localized relative and absolute dates in the household zone. Empty tasks/shopping use a compact illustrated state without duplicate add actions; errors remain distinct.
+Tasks allows title-only capture. Date, repeat and household notification are optional progressive controls; removing the date also removes repeat and notification intent. A dated task does not imply a notification. Existing reminders retain their schedule and notification behavior. Completed tasks remain collapsed and can be reopened.
 News is manually scrolled, never auto-advances, and does not gate household content.
 
 Expense capture shows amount and description first, even while a new form's reference data loads.

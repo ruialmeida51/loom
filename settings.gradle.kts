@@ -31,7 +31,7 @@ include(":shared:features:household")
 
 include(":shared:features:shopping")
 
-include(":shared:features:reminders")
+include(":shared:features:tasks")
 
 include(":shared:features:expenses")
 

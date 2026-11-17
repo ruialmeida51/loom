@@ -19,6 +19,7 @@ import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.LoomDemoApp
+import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import java.io.File
 import kotlin.math.abs
@@ -30,7 +31,7 @@ import org.jetbrains.skia.Image
 @OptIn(ExperimentalTestApi::class)
 class HomeMoreUiTest {
     @Test
-    fun squareActionsOpenTheirTaskAndMoreOwnsTheFullReminderList() =
+    fun squareActionsKeepHomeAndTheFullTaskListHasItsOwnTab() =
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
             ThemePreferences.set("LIGHT")
             setContent { LoomDemoApp() }
@@ -38,7 +39,7 @@ class HomeMoreUiTest {
                 onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
                     onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
-            for (tag in listOf("home_action_icon_MONEY", "home_action_icon_BELL")) {
+            for (tag in listOf("home_action_icon_MONEY", "home_action_icon_TASKS")) {
                 val bounds =
                     onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
                 assertTrue(
@@ -47,18 +48,18 @@ class HomeMoreUiTest {
                 )
             }
             onNodeWithText("Feed").assertDoesNotExist()
-            onNodeWithTag("home_add_reminder").performClick()
+            onNodeWithTag("home_add_task").performClick()
             onNodeWithTag("form_sheet").assertIsDisplayed()
             onNodeWithText("Cancel").performClick()
-            onNodeWithContentDescription("Back").performClick()
+            onNodeWithContentDescription("Back").assertDoesNotExist()
             onNodeWithTag("home_add_expense").assertIsDisplayed()
             onNodeWithTag("navigation_more").performClick()
             capture("more-light")
-            onNodeWithText("Reminders").performClick()
-            onNodeWithTag("reminders_content").assertIsDisplayed()
-            capture("reminders-light")
-            onNodeWithContentDescription("Back").performClick()
             onNodeWithTag("more_content").assertIsDisplayed()
+            onNodeWithContentDescription("Back").assertDoesNotExist()
+            onNodeWithTag("navigation_tasks").performClick()
+            awaitLoadedDestination(tag = "tasks_content")
+            capture("tasks-light")
             onNodeWithContentDescription("Back").assertDoesNotExist()
         }
 

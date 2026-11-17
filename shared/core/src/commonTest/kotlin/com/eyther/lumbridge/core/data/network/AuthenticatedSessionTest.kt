@@ -103,16 +103,16 @@ class AuthenticatedSessionTest {
                     RefreshFailureCause.NetworkError(IOException("offline")),
                 ),
             )
-            val reminders = async {
+            val tasks = async {
                 client.awaitAuthenticatedSession()
-                client.from("reminders").select()
+                client.from("tasks").select()
             }
             val shopping = async {
                 client.awaitAuthenticatedSession()
                 client.from("shopping_items").select()
             }
             runCurrent()
-            assertFalse(reminders.isCompleted)
+            assertFalse(tasks.isCompleted)
             assertFalse(shopping.isCompleted)
             assertTrue(authorizations.isEmpty())
 
@@ -126,7 +126,7 @@ class AuthenticatedSessionTest {
                     ),
                 ),
             )
-            reminders.await()
+            tasks.await()
             shopping.await()
             assertEquals(
                 listOf<String?>("Bearer recovered-test-token", "Bearer recovered-test-token"),
@@ -170,7 +170,7 @@ class AuthenticatedSessionTest {
             )
             val result = safeApiCall {
                 client.awaitAuthenticatedSession()
-                client.from("reminders").select()
+                client.from("tasks").select()
             }
             assertIs<CommonError.AccessDenied>(assertIs<AppResult.Failure>(result).error)
             assertEquals(1, requests)

@@ -4,10 +4,11 @@ Final source review against `origin/main` at `f8cfbb6d4d294601d0b3ed41670dc6f393
 using the Plannot-derived `ai/agents/AGENTS_REVIEWER.agent.md` checklist after fixes and validation.
 The feedback/decision/source ledger is [here](../plans/2026-11-17-polish-ledger.md).
 
-**Verdict: source/local validation passes; release verification needs revision.** The intermittent
-native Back verification remains a release gate. Failure captures identify a foreign Quickstep
-launcher ANR stealing input; the CI resource/startup change must pass repeat verification.
-Android device execution and iOS compilation remain release gates in CI. A build is not an upload receipt.
+**Source review: pass.** Local tests/builds pass after the final Tasks and layout changes. Native
+Android and iOS results are enforced CI gates on [PR #14](https://github.com/ruialmeida51/loom/pull/14),
+and Firebase delivery must have an upload receipt. Earlier intermittent native Back failures were
+captured with a foreign Quickstep launcher ANR; the revised emulator resources/startup keep the same
+Back assertions and preserve failure evidence rather than suppressing the dialog.
 
 ## Resolved findings
 
@@ -17,9 +18,11 @@ Android device execution and iOS compilation remain release gates in CI. A build
 | Resume reads | SDK refresh failure exposes no current SDK session while domain identity is retained. Scoped live reads await SDK initialization/recovery and sufficient token lifetime; PostgREST/Functions require a session. Concurrent reads do not force independent token rotations. Genuine permission failures remain failures. |
 | Live stream recovery | Initial/later transport errors formerly completed the stream permanently. Read streams opt into bounded-backoff retries for connection/server availability failures only. Failure values and cancellation are preserved; authorization and writes never enter this retry policy. Realtime channels are removed during cleanup. |
 | Loading | The user's short initial/manual skeleton transition is restored in presentation. Resume/realtime updates have no floor. Refresh covers the existing composition instead of disposing focused inputs or changing list geometry. Home resolves sections independently; initial placeholders match row/carousel grouping. |
-| Money presentation | Expenses show one prominent total and payer. Current position shows personal status, proposed transfers and member balances. Repayment formatting/relevance is prepared in expense UI models rather than computed in the screen. Personal zero balance does not imply everyone else is settled. |
+| Money presentation | Compact, flat expense/repayment rows show one prominent total, payer and actual occurrence date without redundant daily headings. Current position shows personal status, proposed transfers and member balances. Repayment formatting/relevance is prepared in expense UI models rather than computed in the screen. Personal zero balance does not imply everyone else is settled. |
 | Statement navigation | Monthly navigation is removed. Saved legacy routes and push links redirect to current balances. The existing insights compatibility code and historical database records are retained deliberately; no financial history is rewritten. |
 | Account picker | Immediate selection closes the picker, current selection is marked, and Cancel is removed. New account and Manage accounts remain meaningful actions. |
+| Tasks | `features/tasks` replaces the reminders module, including domain/data/presentation, DI and named Gradle references. Five peer tabs are Home, Shopping, Money, Tasks and More. Title-only capture stays on Home; date, repeat and household notification are optional. Existing reminders retain alerts; completion/reopen and creation show feedback. Picker drafts remain transient, confirmed inputs remain VM-owned. |
+| Shopping controls | Completed items use a compact disclosure header; selection actions appear only while selecting. The divider has breathing room. Immediate list selection has no Cancel/Done; draft create/rename forms keep Cancel. |
 | Home | The news viewport reaches both screen edges; headers/items retain content gutters. Empty reminders/shopping use illustrated cards without duplicate add actions. Errors do not become empty success states. |
 | Feed management | Subscriptions are independent of articles. Reading and management have separate Screen/contract/ViewModel/routes. Pending, failed and empty sources remain visible. Add/edit/refresh/remove support progress, typed errors and feedback. Returning to reading reloads quietly. |
 | Feed refresh/edit | Manual News refresh fetches publishers with at most three concurrent requests; recent-source throttles do not block other sources. A transactional address replacement prevents stale editors and an old worker from attaching the previous publisher's articles. |
@@ -28,6 +31,7 @@ Android device execution and iOS compilation remain release gates in CI. A build
 
 ## Architecture and style
 
+- Tasks owns its optional schedule/recurrence domain and UI models, data DTOs/mappers and form/list components. Home imports that feature directly; no task aliases or business models were added to core. Legacy reminder names remain only in saved-route and backend compatibility endpoints.
 - New subscription models, ports, DTOs, mappers, UseCases, state and components live in `features/feed`.
   Repayment UI models/components live in `features/expenses`. Household context remains in household.
 - Core additions are generic session/transport infrastructure and reusable empty/refresh presentation.
@@ -57,7 +61,7 @@ Android device execution and iOS compilation remain release gates in CI. A build
   Stricter runs still failed to dismiss the sheet/pop the nested route. Android reported Back-invoked
   callbacks disabled, so the production manifest now explicitly enables that integration; native
   execution must validate this fix before merge.
-- Disposable PostgreSQL: **16 migrations** and integration tests pass. New cases verify stale edit refusal,
+- Disposable PostgreSQL: **17 migrations** and integration tests pass. New cases verify stale edit refusal,
   household isolation, atomic article removal, anonymous denial and rejection of late old-worker inserts.
 - Deno checks pass; **6 RSS parsing/security/configuration tests** pass. The actual Expresso URL returned
   12,204 bytes and 10 articles through `fetchFeed`/`parseFeed`.
@@ -73,6 +77,15 @@ Applied `20261117045258_feed_subscription_management` to project `eeyfhmlyopuobt
 Permission metadata confirms authenticated execution, no anonymous execution on public/private
 functions, RLS enabled and subscription realtime publication enabled. `refresh-feed` **v3 is ACTIVE**.
 Its existing manual user/worker authentication and gateway configuration are retained.
+
+Applied `20261117130457_household_tasks` after the 17-migration disposable suite passed. Metadata
+confirms Tasks RLS, all four member policies, authenticated CRUD, no anonymous access/completion,
+realtime publication and a security-invoker legacy reminder view. Old reminder writes/completion
+and notification work remain compatible; the new nullable schedule is intentional. Local checks
+cover title-only completion/reopen, stale null-date requests, DST-safe repeated completion,
+notification opt-out and cancellation of already-queued notification deliveries. HTTP adapter checks
+verify explicit notification opt-out, canonical table/RPC requests and typed denial. Saved old
+reminder/money routes are decoded by a compatibility regression test.
 
 No hosted personal or financial records were queried or mutated for verification. New edit/delete
 behavior runs only when a member invokes it; deploying its definition did not remove subscriptions.

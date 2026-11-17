@@ -31,8 +31,8 @@ import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedSubscription
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RemoveFeedSubscriptionUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.UpdateFeedSubscriptionUseCase
-import com.eyther.lumbridge.features.home.domain.usecase.GetHomeRemindersStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCase
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
@@ -44,11 +44,6 @@ import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportD
 import com.eyther.lumbridge.features.insights.domain.usecase.ExportStatementUseCase
 import com.eyther.lumbridge.features.insights.domain.usecase.GetMonthlyStatementStreamUseCase
 import com.eyther.lumbridge.features.insights.domain.usecase.SaveStatementUseCase
-import com.eyther.lumbridge.features.reminders.domain.datasource.ReminderDataSource
-import com.eyther.lumbridge.features.reminders.domain.usecase.AddReminderUseCase
-import com.eyther.lumbridge.features.reminders.domain.usecase.CompleteReminderUseCase
-import com.eyther.lumbridge.features.reminders.domain.usecase.GetRemindersStreamUseCase
-import com.eyther.lumbridge.features.reminders.domain.usecase.RemoveReminderUseCase
 import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
 import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetNotificationsUseCase
@@ -63,6 +58,11 @@ import com.eyther.lumbridge.features.shopping.domain.usecase.RemoveCompletedShop
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingItemUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.SelectShoppingListUseCase
+import com.eyther.lumbridge.features.tasks.domain.datasource.TaskDataSource
+import com.eyther.lumbridge.features.tasks.domain.usecase.AddTaskUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.CompleteTaskUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.GetTasksStreamUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.RemoveTaskUseCase
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
@@ -171,12 +171,12 @@ class HouseholdUseCaseModule {
         )
 
     @Single
-    fun provideGetHomeRemindersStreamUseCase(
-        getRemindersStreamUseCase: GetRemindersStreamUseCase,
+    fun provideGetHomeTasksStreamUseCase(
+        getTasksStreamUseCase: GetTasksStreamUseCase,
         context: HouseholdContextDomain,
-    ): GetHomeRemindersStreamUseCase =
-        GetHomeRemindersStreamUseCase(
-            getRemindersStreamUseCase = getRemindersStreamUseCase,
+    ): GetHomeTasksStreamUseCase =
+        GetHomeTasksStreamUseCase(
+            getTasksStreamUseCase = getTasksStreamUseCase,
             context = context,
         )
 
@@ -233,37 +233,37 @@ class HouseholdUseCaseModule {
         )
 
     @Single
-    fun provideAddReminderUseCase(
-        reminderDataSource: ReminderDataSource,
+    fun provideAddTaskUseCase(
+        taskDataSource: TaskDataSource,
         context: HouseholdContextDomain,
-    ): AddReminderUseCase =
-        AddReminderUseCase(
-            reminderDataSource = reminderDataSource,
+    ): AddTaskUseCase =
+        AddTaskUseCase(
+            taskDataSource = taskDataSource,
             context = context,
         )
 
     @Single
-    fun provideCompleteReminderUseCase(
-        reminderDataSource: ReminderDataSource,
-    ): CompleteReminderUseCase =
-        CompleteReminderUseCase(
-            reminderDataSource = reminderDataSource,
+    fun provideCompleteTaskUseCase(
+        taskDataSource: TaskDataSource,
+    ): CompleteTaskUseCase =
+        CompleteTaskUseCase(
+            taskDataSource = taskDataSource,
         )
 
     @Single
-    fun provideGetRemindersStreamUseCase(
-        reminderDataSource: ReminderDataSource,
-    ): GetRemindersStreamUseCase =
-        GetRemindersStreamUseCase(
-            reminderDataSource = reminderDataSource,
+    fun provideGetTasksStreamUseCase(
+        taskDataSource: TaskDataSource,
+    ): GetTasksStreamUseCase =
+        GetTasksStreamUseCase(
+            taskDataSource = taskDataSource,
         )
 
     @Single
-    fun provideRemoveReminderUseCase(
-        reminderDataSource: ReminderDataSource,
-    ): RemoveReminderUseCase =
-        RemoveReminderUseCase(
-            reminderDataSource = reminderDataSource,
+    fun provideRemoveTaskUseCase(
+        taskDataSource: TaskDataSource,
+    ): RemoveTaskUseCase =
+        RemoveTaskUseCase(
+            taskDataSource = taskDataSource,
         )
 
     @Single

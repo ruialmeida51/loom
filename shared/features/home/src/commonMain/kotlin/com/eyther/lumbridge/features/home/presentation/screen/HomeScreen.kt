@@ -31,19 +31,19 @@ import com.eyther.lumbridge.features.feed.presentation.components.FeedPreviewLoa
 import com.eyther.lumbridge.features.feed.presentation.model.ArticlePreviewUi
 import com.eyther.lumbridge.features.home.generated.resources.Res
 import com.eyther.lumbridge.features.home.generated.resources.home_all_news
-import com.eyther.lumbridge.features.home.generated.resources.home_all_reminders
+import com.eyther.lumbridge.features.home.generated.resources.home_all_tasks
 import com.eyther.lumbridge.features.home.generated.resources.home_choose_sources
 import com.eyther.lumbridge.features.home.generated.resources.home_news
 import com.eyther.lumbridge.features.home.generated.resources.home_news_empty
 import com.eyther.lumbridge.features.home.generated.resources.home_nothing_due
-import com.eyther.lumbridge.features.home.generated.resources.home_reminders
 import com.eyther.lumbridge.features.home.generated.resources.home_shopping
 import com.eyther.lumbridge.features.home.generated.resources.home_shopping_empty
 import com.eyther.lumbridge.features.home.generated.resources.home_shopping_view_all
+import com.eyther.lumbridge.features.home.generated.resources.home_tasks
 import com.eyther.lumbridge.features.home.generated.resources.ui_try_again
 import com.eyther.lumbridge.features.home.presentation.components.HomeQuickActions
-import com.eyther.lumbridge.features.home.presentation.components.HomeReminderRow
-import com.eyther.lumbridge.features.home.presentation.model.HomeReminderUi
+import com.eyther.lumbridge.features.home.presentation.components.HomeTaskRow
+import com.eyther.lumbridge.features.home.presentation.model.HomeTaskUi
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingPreview
@@ -54,9 +54,9 @@ import org.jetbrains.compose.resources.stringResource
 fun HomeScreen(
     viewModel: HomeScreenViewModelContract,
     onShopping: () -> Unit,
-    onReminders: () -> Unit,
+    onTasks: () -> Unit,
     onAddExpense: () -> Unit,
-    onAddReminder: () -> Unit,
+    onAddTask: () -> Unit,
     onFeed: () -> Unit,
     onOpenStory: (String) -> Unit,
 ) {
@@ -67,29 +67,29 @@ fun HomeScreen(
         coverContentOnRefresh = false,
     ) {
         InnerHomeScreen(
-            reminders = state.reminders,
+            tasks = state.tasks,
             shoppingItems = state.shoppingItems,
             articles = state.articles,
-            remindersLoading = state.remindersLoading,
-            remindersRefreshing = state.remindersRefreshing,
+            tasksLoading = state.tasksLoading,
+            tasksRefreshing = state.tasksRefreshing,
             shoppingLoading = state.shoppingLoading,
             shoppingRefreshing = state.shoppingRefreshing,
             feedLoading = state.feedLoading,
             feedRefreshing = state.feedRefreshing,
-            hasReminders = state.reminderItems != null,
+            hasTasks = state.taskItems != null,
             hasFeed = state.feedItems != null,
             hasShopping = state.shoppingPreview != null,
-            remindersError = state.remindersError,
+            tasksError = state.tasksError,
             shoppingError = state.shoppingError,
             feedError = state.feedError,
             onRetry = viewModel::onRetry,
-            onDismissRemindersError = viewModel::onRemindersErrorDismissed,
+            onDismissTasksError = viewModel::onTasksErrorDismissed,
             onDismissShoppingError = viewModel::onShoppingErrorDismissed,
             onDismissFeedError = viewModel::onFeedErrorDismissed,
-            onReminders = onReminders,
+            onTasks = onTasks,
             onShopping = onShopping,
             onAddExpense = onAddExpense,
-            onAddReminder = onAddReminder,
+            onAddTask = onAddTask,
             onFeed = onFeed,
             onOpenStory = { article ->
                 viewModel.onArticleOpened(id = article.id)
@@ -101,29 +101,29 @@ fun HomeScreen(
 
 @Composable
 private fun InnerHomeScreen(
-    reminders: ImmutableList<HomeReminderUi>,
+    tasks: ImmutableList<HomeTaskUi>,
     shoppingItems: ImmutableList<ShoppingItemDomain>,
     articles: ImmutableList<ArticlePreviewUi>,
-    remindersLoading: Boolean,
-    remindersRefreshing: Boolean,
+    tasksLoading: Boolean,
+    tasksRefreshing: Boolean,
     shoppingLoading: Boolean,
     shoppingRefreshing: Boolean,
     feedLoading: Boolean,
     feedRefreshing: Boolean,
-    hasReminders: Boolean,
+    hasTasks: Boolean,
     hasFeed: Boolean,
     hasShopping: Boolean,
-    remindersError: TextResource?,
+    tasksError: TextResource?,
     shoppingError: TextResource?,
     feedError: TextResource?,
     onRetry: () -> Unit,
-    onDismissRemindersError: () -> Unit,
+    onDismissTasksError: () -> Unit,
     onDismissShoppingError: () -> Unit,
     onDismissFeedError: () -> Unit,
     onShopping: () -> Unit,
-    onReminders: () -> Unit,
+    onTasks: () -> Unit,
     onAddExpense: () -> Unit,
-    onAddReminder: () -> Unit,
+    onAddTask: () -> Unit,
     onFeed: () -> Unit,
     onOpenStory: (ArticlePreviewUi) -> Unit,
 ) {
@@ -134,41 +134,41 @@ private fun InnerHomeScreen(
     ) {
         item(key = "quick_actions") {
             Column(Modifier.padding(horizontal = LoomSpacing.content)) {
-                HomeQuickActions(onAddExpense = onAddExpense, onAddReminder = onAddReminder)
+                HomeQuickActions(onAddExpense = onAddExpense, onAddTask = onAddTask)
             }
         }
-        item(key = "reminders") {
-            RefreshSkeletonContent(isRefreshing = remindersRefreshing) {
+        item(key = "tasks") {
+            RefreshSkeletonContent(isRefreshing = tasksRefreshing) {
                 Column(
                     Modifier.padding(horizontal = LoomSpacing.content),
                     verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
                 ) {
                     SectionTitle(
-                        title = stringResource(Res.string.home_reminders),
-                        action = stringResource(Res.string.home_all_reminders),
-                        onAction = onReminders,
+                        title = stringResource(Res.string.home_tasks),
+                        action = stringResource(Res.string.home_all_tasks),
+                        onAction = onTasks,
                     )
-                    if (remindersLoading) LoadingRows()
-                    else if (reminders.isNotEmpty())
+                    if (tasksLoading) LoadingRows()
+                    else if (tasks.isNotEmpty())
                         GroupedSurface {
-                            reminders.forEachIndexed { index, reminder ->
-                                HomeReminderRow(reminder = reminder, onClick = onReminders)
-                                if (index < reminders.lastIndex)
+                            tasks.forEachIndexed { index, task ->
+                                HomeTaskRow(task = task, onClick = onTasks)
+                                if (index < tasks.lastIndex)
                                     HorizontalDivider(
                                         color = MaterialTheme.colorScheme.outlineVariant,
                                     )
                             }
                         }
-                    else if (hasReminders && remindersError == null)
+                    else if (hasTasks && tasksError == null)
                         IllustratedEmptyState(
                             title = stringResource(Res.string.home_nothing_due),
                             glyph = Glyph.CHECK,
-                            modifier = Modifier.testTag("home_reminders_empty"),
+                            modifier = Modifier.testTag("home_tasks_empty"),
                         )
-                    remindersError?.let {
+                    tasksError?.let {
                         HomeSectionError(
                             message = it,
-                            onDismiss = if (hasReminders) onDismissRemindersError else null,
+                            onDismiss = if (hasTasks) onDismissTasksError else null,
                             onRetry = onRetry,
                         )
                     }

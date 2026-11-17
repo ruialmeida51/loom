@@ -10,9 +10,9 @@ Application ID and iOS bundle ID: **`com.eyther.lumbridge`**.
 
 Current refinements: [Expense capture](docs/screenshots/expense-form-light.png), [Split editor with larger text](docs/screenshots/split-shares-narrow.png), [Home news preview](docs/screenshots/home-news-light.png), and [implementation audit](docs/usability-redesign-audit.md).
 
-Flows: [More](docs/screenshots/more-light.png), [All reminders](docs/screenshots/reminders-light.png), [Shopping checklist](docs/screenshots/shopping-light.png), [Trip balances](docs/screenshots/trip-balances-light.png), [Unequal split](docs/screenshots/split-shares-light.png), and [Repayment](docs/screenshots/repayment-light.png).
+Flows: [More](docs/screenshots/more-light.png), [Tasks](docs/screenshots/tasks-light.png), [Quick task capture](docs/screenshots/task-quick-add-light.png), [Shopping checklist](docs/screenshots/shopping-light.png), [Trip balances](docs/screenshots/trip-balances-light.png), [Unequal split](docs/screenshots/split-shares-light.png), and [Repayment](docs/screenshots/repayment-light.png).
 
-Refinements: [Completed grocery selection](docs/screenshots/shopping-completed-selection.png), [Reminder feedback on a narrow screen](docs/screenshots/reminder-completion-narrow.png), and [Account group spacing](docs/screenshots/account-group-spacing.png).
+Refinements: [Completed grocery selection](docs/screenshots/shopping-completed-selection.png), [Tasks on a narrow screen](docs/screenshots/tasks-dark-narrow.png), and [Account group spacing](docs/screenshots/account-group-spacing.png).
 
 Editing sheets: [Shopping on a short screen](docs/screenshots/shopping-sheet-narrow.png), [Nickname](docs/screenshots/nickname-sheet-light.png), and [dark mode](docs/screenshots/nickname-sheet-dark.png).
 
@@ -24,10 +24,10 @@ Latest polish: [News](docs/screenshots/feed-light.png), [dark news](docs/screens
 
 - Google sign-in, separate email login/registration/verification screens, password visibility controls, and code resend with a cooldown. Existing accounts can also request an email sign-in code.
 - Separate household selection, creation and invitation-joining screens, each with its own ViewModel.
-- Home, Shopping, Balances and More tabs, with compact Home quick actions and full Reminders/Feed destinations under More and secondary news previews on Home. Household selection and global My account follow Plannot’s portal pattern.
+- Home, Shopping, Money, Tasks and More tabs, with compact Home quick actions, a full Tasks list and secondary News under More and on Home. Household selection and global My account follow Plannot’s portal pattern.
 - Multiple households, owner invitations, quick switching, and restoring the last accessible household. My account is available before the first household exists.
 - Named shared shopping lists with aligned Enter-to-add, completed-item selection and bulk deletion, optional editing, undo, favorites, moving items, and list rename/archive/restore/delete.
-- Household reminders, daily/weekly repeats, clear relative/absolute dates and completion feedback.
+- Household tasks with optional dates/notifications, daily/weekly repeats and completion feedback.
 - Short skeleton transitions for first loads and pull-to-refresh, preserving drafts and scroll underneath, compact Home shopping previews and six-character household invitations.
 - Independent Everyday and trip/event accounts with one currency each and household-member participants.
 - Dedicated expense entry/detail/editing, equal/weighted-share/exact-amount/percentage splits with steppers, who-pays-whom balances and repayments.
@@ -69,7 +69,7 @@ shared/
     household/               domain/ · data/ · presentation/
     home/                    domain/ · presentation/
     shopping/                domain/ · data/ · presentation/
-    reminders/               domain/ · data/ · presentation/
+    tasks/               domain/ · data/ · presentation/
     expenses/                domain/ · data/ · presentation/
     feed/                    domain/ · data/ · presentation/
     insights/                domain/ · data/ · presentation/
@@ -122,7 +122,7 @@ For the desktop development preview, `desktopApp` starts the dedicated `LoomDemo
   :shared:features:settings:jvmTest \
   :shared:features:household:jvmTest :shared:features:shopping:jvmTest \
   :shared:features:expenses:jvmTest :shared:features:feed:jvmTest \
-  :shared:features:insights:jvmTest :shared:features:reminders:jvmTest \
+  :shared:features:insights:jvmTest :shared:features:tasks:jvmTest \
   :shared:entrypoint:jvmTest :androidApp:assembleDebug
 python3 tools/audit_project.py
 python3 -m unittest discover -s tools/tests -p 'test_*.py'

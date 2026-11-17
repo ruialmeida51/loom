@@ -8,6 +8,7 @@ enum class Glyph {
     SHOPPING,
     MONEY,
     BELL,
+    TASKS,
     SETTINGS,
     PERSON,
     SHIELD,

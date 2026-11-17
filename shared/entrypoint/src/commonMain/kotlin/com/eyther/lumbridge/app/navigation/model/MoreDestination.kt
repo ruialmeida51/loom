@@ -1,15 +1,22 @@
 package com.eyther.lumbridge.app.navigation.model
 
+import androidx.compose.runtime.Stable
 import com.eyther.lumbridge.core.navigation.model.NavDestination
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Stable
 @Serializable
 internal sealed interface MoreDestination : NavDestination {
-    @Serializable data object Overview : MoreDestination
+    @Stable @Serializable data object Overview : MoreDestination
 
-    @Serializable data object Reminders : MoreDestination
+    /** Compatibility for saved More navigation from builds before the Tasks tab. */
+    @Stable
+    @Serializable
+    @SerialName("com.eyther.lumbridge.app.navigation.model.MoreDestination.Reminders")
+    data object LegacyReminders : MoreDestination
 
-    @Serializable data object Feed : MoreDestination
+    @Stable @Serializable data object Feed : MoreDestination
 
-    @Serializable data object HouseholdDetails : MoreDestination
+    @Stable @Serializable data object HouseholdDetails : MoreDestination
 }

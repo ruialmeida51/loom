@@ -21,7 +21,7 @@ Run one pass per relevant group; independent groups may be reviewed in parallel:
 
 1. Shared components, theme, inputs and dialogs.
 2. Authentication, registration and account.
-3. Home, Shopping and Reminders.
+3. Home, Shopping and Tasks.
 4. Households, invitation codes and member details.
 5. Balances, recurring bills, statements and settings.
 6. Navigation, data, DI and platform integration.

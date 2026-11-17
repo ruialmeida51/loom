@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Tasks replaces reminders: optional dates/alerts and a dedicated tab beside Money.
 - Smooth loading and refresh skeletons while retaining drafts, focus and scroll.
 - Recover household reads after session or connection interruptions.
 - Compact dated expenses, current balances and simpler completed-grocery controls.

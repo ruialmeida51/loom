@@ -17,9 +17,9 @@ import kotlinx.coroutines.cancel
 @OptIn(ExperimentalTestApi::class)
 class HomeLoadingUiTest {
     @Test
-    fun slowShoppingAndNewsDoNotHideRemindersDuringLoadOrRefresh() =
+    fun slowShoppingAndNewsDoNotHideTasksDuringLoadOrRefresh() =
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
-            val fixture = HomeRetryFixture(failFirstReminder = false, blockSecondaryReads = true)
+            val fixture = HomeRetryFixture(failFirstTask = false, blockSecondaryReads = true)
             val viewModel = fixture.viewModel()
             try {
                 setContent {
@@ -27,18 +27,18 @@ class HomeLoadingUiTest {
                         HomeScreen(
                             viewModel = viewModel,
                             onShopping = {},
-                            onReminders = {},
+                            onTasks = {},
                             onAddExpense = {},
-                            onAddReminder = {},
+                            onAddTask = {},
                             onFeed = {},
                             onOpenStory = {},
                         )
                     }
                 }
-                waitUntil(timeoutMillis = 5000) { viewModel.state.value.reminderItems != null }
+                waitUntil(timeoutMillis = 5000) { viewModel.state.value.taskItems != null }
                 onNodeWithText("Water the plants").assertIsDisplayed()
                 viewModel.onRetry()
-                waitUntil(timeoutMillis = 5000) { !viewModel.state.value.remindersRefreshing }
+                waitUntil(timeoutMillis = 5000) { !viewModel.state.value.tasksRefreshing }
                 onNodeWithText("Water the plants").assertIsDisplayed()
                 fixture.releaseSecondaryReads()
                 waitUntil(timeoutMillis = 5000) { !viewModel.state.value.refreshing }

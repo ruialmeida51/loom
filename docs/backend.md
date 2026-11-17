@@ -80,3 +80,17 @@ The default allowlist includes BBC, The Guardian, Hacker News, Ars Technica, Fee
 `shopping_lists_and_recurring_controls` creates per-household lists, backfills existing items into Groceries, and creates a default list for new households. Shopping writes use membership-checked RPCs and server-owned versions so stale edits/undo cannot overwrite an intervening change. Batch insertion is transactional and retry-safe. Archived lists keep their items; at least one list must remain active.
 
 Recurring schedules are readable by household members and manageable by their payer, creator, or the household owner. Pause/cancel stop future entries, resuming schedules the next future monthly occurrence, and cancellation retains expense history. Recorded-payment dates use the household timezone and cannot be in the future. Schedule changes increment a version only when values change, preserving compatibility with the minute worker.
+
+## Tasks and existing reminder clients
+
+Apply the household-tasks migration before distributing a build with the Tasks tab. The migration
+renames the existing table to `public.tasks`, retaining its row policies, scope trigger, grants and
+realtime publication. Existing records keep notifications enabled. New tasks may omit a date, and
+Loom explicitly disables notifications by default. A notification or repeat requires a date.
+
+`public.reminders` remains a security-invoker compatibility view restricted to dated, notifying
+tasks. Existing mobile clients and push queue workers continue to use that view; legacy realtime
+subscriptions fall back to the existing polling path. `complete_reminder` delegates to the new
+locked/expected-date `complete_task` RPC. Keep both compatibility endpoints until old builds are
+retired. The local SQL suite tests old/new completion, membership isolation, daylight saving and
+notification queue cancellation using disposable fixtures, never hosted household records.

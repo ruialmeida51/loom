@@ -15,10 +15,11 @@ import com.eyther.lumbridge.features.feed.domain.model.FeedSubscriptionDomain
 import com.eyther.lumbridge.features.feed.domain.model.FeedSubscriptionStatusDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
-import com.eyther.lumbridge.features.reminders.domain.model.ReminderDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingSnapshotDomain
+import com.eyther.lumbridge.features.tasks.domain.model.TaskDomain
+import com.eyther.lumbridge.features.tasks.domain.model.TaskRecurrenceDomain
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -193,29 +194,38 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 ),
             ),
         )
-    val reminders =
+    val tasks =
         MutableStateFlow(
             listOf(
-                ReminderDomain(
-                    newId(),
-                    "Water the plants",
-                    (Clock.System.now() + 2.hours).toString(),
-                    "weekly",
-                    false,
+                TaskDomain(
+                    id = newId(),
+                    title = "Water the plants",
+                    dueAt = Clock.System.now() + 2.hours,
+                    recurrence = TaskRecurrenceDomain.DAILY,
+                    completed = false,
+                    notificationEnabled = true,
                 ),
-                ReminderDomain(
-                    newId(),
-                    "Take the recycling out",
-                    (Clock.System.now() + 7.hours).toString(),
-                    "weekly",
-                    false,
+                TaskDomain(
+                    id = newId(),
+                    title = "Take the recycling out",
+                    dueAt = Clock.System.now() + 7.hours,
+                    recurrence = TaskRecurrenceDomain.WEEKLY,
+                    completed = false,
+                    notificationEnabled = true,
                 ),
-                ReminderDomain(
-                    newId(),
-                    "Book the boiler service",
-                    (Clock.System.now() + 30.hours).toString(),
-                    "none",
-                    false,
+                TaskDomain(
+                    id = newId(),
+                    title = "Book the boiler service",
+                    dueAt = Clock.System.now() + 30.hours,
+                    recurrence = TaskRecurrenceDomain.NONE,
+                    completed = false,
+                ),
+                TaskDomain(
+                    id = newId(),
+                    title = "Fix the kitchen shelf",
+                    dueAt = null,
+                    recurrence = TaskRecurrenceDomain.NONE,
+                    completed = false,
                 ),
             ),
         )

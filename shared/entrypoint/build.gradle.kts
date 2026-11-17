@@ -36,7 +36,7 @@ kotlin {
             implementation(projects.shared.features.account)
             implementation(projects.shared.features.household)
             implementation(projects.shared.features.shopping)
-            implementation(projects.shared.features.reminders)
+            implementation(projects.shared.features.tasks)
             implementation(projects.shared.features.expenses)
             implementation(projects.shared.features.feed)
             implementation(projects.shared.features.insights)

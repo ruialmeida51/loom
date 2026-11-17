@@ -9,13 +9,13 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.presentation.mapper.toFeedTextResource
-import com.eyther.lumbridge.features.home.domain.usecase.GetHomeRemindersStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCase
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeState
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
-import com.eyther.lumbridge.features.reminders.presentation.mapper.toRemindersTextResource
 import com.eyther.lumbridge.features.shopping.presentation.mapper.toShoppingTextResource
+import com.eyther.lumbridge.features.tasks.presentation.mapper.toTasksTextResource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.update
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeScreenViewModel(
-    private val getHomeRemindersStreamUseCase: GetHomeRemindersStreamUseCase,
+    private val getHomeTasksStreamUseCase: GetHomeTasksStreamUseCase,
     private val getHomeShoppingStreamUseCase: GetHomeShoppingStreamUseCase,
     private val getFeedStreamUseCase: GetFeedStreamUseCase,
     private val markArticleReadUseCase: MarkArticleReadUseCase,
@@ -36,27 +36,26 @@ class HomeScreenViewModel(
             .observeWith(viewModelScope) { state ->
                 refreshRequests
                     .flatMapLatest {
-                        getHomeRemindersStreamUseCase()
+                        getHomeTasksStreamUseCase()
                             .delayFirstAtLeast(
-                                enabled =
-                                    state.value.remindersLoading || state.value.remindersRefreshing,
+                                enabled = state.value.tasksLoading || state.value.tasksRefreshing,
                             )
                     }
                     .updateState(state) { result ->
                         when (result) {
                             is AppResult.Success ->
                                 copy(
-                                    reminderItems = result.value.reminders,
+                                    taskItems = result.value.tasks,
                                     today = result.value.today,
-                                    remindersLoading = false,
-                                    remindersRefreshing = false,
-                                    remindersError = null,
+                                    tasksLoading = false,
+                                    tasksRefreshing = false,
+                                    tasksError = null,
                                 )
                             is AppResult.Failure ->
                                 copy(
-                                    remindersLoading = false,
-                                    remindersRefreshing = false,
-                                    remindersError = result.error.toRemindersTextResource(),
+                                    tasksLoading = false,
+                                    tasksRefreshing = false,
+                                    tasksError = result.error.toTasksTextResource(),
                                 )
                         }
                     }
@@ -120,13 +119,13 @@ class HomeScreenViewModel(
         if (state.value.refreshing) return
         mutableState.update { oldState ->
             oldState.copy(
-                remindersRefreshing = true,
+                tasksRefreshing = true,
                 shoppingRefreshing = true,
                 feedRefreshing = true,
-                remindersLoading = oldState.reminderItems == null,
+                tasksLoading = oldState.taskItems == null,
                 shoppingLoading = oldState.shoppingPreview == null,
                 feedLoading = oldState.feedItems == null,
-                remindersError = null,
+                tasksError = null,
                 shoppingError = null,
                 feedError = null,
             )
@@ -146,8 +145,8 @@ class HomeScreenViewModel(
         }
     }
 
-    override fun onRemindersErrorDismissed() {
-        mutableState.update { oldState -> oldState.copy(remindersError = null) }
+    override fun onTasksErrorDismissed() {
+        mutableState.update { oldState -> oldState.copy(tasksError = null) }
     }
 
     override fun onShoppingErrorDismissed() {
