@@ -10,4 +10,5 @@ collect_device_evidence() {
     exit "$usability_status"
 }
 trap collect_device_evidence EXIT
+adb shell setprop log.tag.WindowOnBackDispatcher DEBUG
 ./gradlew :androidApp:connectedDebugAndroidTest --no-parallel --max-workers=1 '-Dorg.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8'

@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -21,13 +22,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
-/** The caret hugs short labels and stays visible when a long label is ellipsized. */
+/**
+ * The caret hugs short labels and remains visible beside ellipsized text. [expanded] rotates it
+ * for disclosure rows; callers own the open state and its localized accessibility description.
+ */
 @Composable
 fun SelectorButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    expanded: Boolean = false,
     textStyle: TextStyle = MaterialTheme.typography.titleLarge,
 ) {
     val caretColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -50,7 +55,7 @@ fun SelectorButton(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false),
             )
-            Canvas(Modifier.size(18.dp)) {
+            Canvas(Modifier.size(18.dp).rotate(if (expanded) 180f else 0f)) {
                 val width = size.width
                 val height = size.height
                 drawLine(

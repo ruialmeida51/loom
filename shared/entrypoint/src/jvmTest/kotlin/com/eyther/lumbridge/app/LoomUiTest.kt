@@ -139,6 +139,7 @@ class LoomUiTest {
             onNodeWithTag("account_content").performScrollToNode(hasText("Dark"))
             onNodeWithText("Dark", useUnmergedTree = true).performClick()
             onNodeWithContentDescription("Back").performClick()
+            onNodeWithTag("balances_view_expenses").performClick()
             capture("money-dark")
             onNodeWithTag("navigation_home").performClick()
             capture("home-dark")

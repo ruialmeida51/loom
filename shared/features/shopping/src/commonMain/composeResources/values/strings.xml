@@ -81,6 +81,9 @@
     <string name="list_delete_title">Delete this list?</string>
     <string name="list_delete_message">“%1$s” and all its items will be permanently deleted for everyone in this household.</string>
     <string name="completed_select">Select completed</string>
+    <string name="completed_select_short">Select</string>
+    <string name="completed_expanded">Expanded</string>
+    <string name="completed_collapsed">Collapsed</string>
     <string name="completed_cancel_selection">Cancel selection</string>
     <string name="completed_select_all">Select all</string>
     <string name="completed_deselect_all">Deselect all</string>

@@ -15,6 +15,9 @@ Statuses distinguish triage, implementation and verified checks. The implementat
 - Prefer proper buttons and Plannot/feed-selector style grouped navigation rows throughout profile/settings. The user dislikes text buttons. Privacy and terms need a discoverable settings entry and brief introduction.
 - Feed management must be obvious. A followed feed must remain discoverable even if its first refresh fails.
 - Preserve every input, research source and unfinished task here. Do not mark research, speculation or a mockup as implemented.
+- Follow-up: completed groceries should be a compact collapsible section, with selection alongside it.
+- Follow-up: remove daily headings from expense history; show each record's actual date on a more compact card.
+- The shopping list selector/manager already has no Cancel/Done footer. Create/rename forms retain draft cancellation.
 
 ## Active work
 
@@ -33,6 +36,10 @@ Statuses distinguish triage, implementation and verified checks. The implementat
 | FEED-01 | No clear way to manage followed feeds | Dedicated Manage feeds entry; list subscriptions independently of articles, including pending/failed/empty feeds. Retry, edit and remove with visible status. Do not require an article to exist before a source is visible. | Verified ViewModel and add/edit/remove UI flows |
 | FEED-02 | Expresso is saved, fails refresh, then cannot be found | Reproduction URL: `https://rss.impresa.pt/feed/latest/expresso.rss`. Public endpoint returned HTTP 200 RSS on 17 Nov. Server default publisher allowlist omits `rss.impresa.pt`; deployed overrides have not been inspected. Current app inserts before refresh, wraps every refresh failure as `FeedError.RefreshFailed`, and streams articles only. Validate transport/parser separately, distinguish unsupported publisher from transient failure, preserve SSRF protection and subscription visibility. | Backend v3 deployed; parser and policy checks pass |
 | FEED-03 | News cards lack useful structure | Readable headline, source/date hierarchy, useful article affordance; image only if supported by actual feed data. Home remains a secondary preview, full News and Manage feeds stay reachable. | Implemented; light/dark news and management captures |
+| SHOPPING-01 | Completed controls look detached from the checklist | One compact collapsible section header, with a small Select action; show bulk controls only in selection mode. Keep individual selection, Select all and household-wide deletion. | Verified shared UI flow and renders |
+| MONEY-04 | Date headings add clutter; expense cards are too large | Remove daily section headings. Show the actual occurrence date on each compact expense/repayment row, retaining newest-first order and full dates across years. | Verified shared UI flow and renders |
+| SHEET-01 | Confirm shopping-list manager has no redundant Cancel | Source inspection confirms its footer contains New list only. Cancel remains in create/rename draft forms. | Verified source |
+| NAV-01 | Native Back is intermittently ignored | PR emulator passes while its independent push run fails. Require repeatable sheet/nested Back behavior, preserve failure captures and investigate before release. | Blocking verification; investigating |
 | AUDIT-01 | Final architecture, copy, usability and regression audit | Review final diff with `ai/agents/AGENTS_REVIEWER.agent.md` after fixes/checks. Typed errors, feature-owned packages, resources, stable collections/keys, central annotated DI, demo separation. Record limitations honestly. | Final local audit complete; CI/platform checks required before delivery |
 
 ## Research notebook
@@ -155,3 +162,15 @@ enabled. The application now explicitly opts into Android's Back-invoked integra
 the native predictive-back path used by Navigation3/Material sheets. This is a production manifest
 change; its native checks remain a gate, rather than dismissing these results as test flakiness.
 [Android Back integration guidance](https://developer.android.com/guide/navigation/custom-back/predictive-back-gesture).
+
+The manifest change removes the disabled-callback warnings and the PR emulator run passes all four
+native checks, but the independent push run still fails at sheet/nested Back. This is not considered
+resolved. Native checks now preserve a screenshot and window hierarchy on failure, and the runner
+enables Android's Back-dispatch diagnostic log. App delivery remains blocked on this investigation.
+
+The manifest change passed the full PR run (Android/shared/device/iOS), but its parallel push run
+still failed the same two native Back checks. The explicit integration removes the disabled-callback
+warning but is not established as the complete fix. The merge remains blocked on this intermittent
+case. Native failure capture now preserves the failing screen and accessibility hierarchy before
+activity teardown; Back dispatcher debug logs and foreground-package markers distinguish missing
+native input from an incorrect route pop. The four assertions remain intact.

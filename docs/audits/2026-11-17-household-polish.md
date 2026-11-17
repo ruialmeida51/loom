@@ -4,7 +4,8 @@ Final source review against `origin/main` at `f8cfbb6d4d294601d0b3ed41670dc6f393
 using the Plannot-derived `ai/agents/AGENTS_REVIEWER.agent.md` checklist after fixes and validation.
 The feedback/decision/source ledger is [here](../plans/2026-11-17-polish-ledger.md).
 
-**Verdict: pass for source and local validation.** No outstanding blocking findings in this change.
+**Verdict: source/local validation passes; release verification needs revision.** The intermittent
+native Back checks still block delivery. The ledger records the independent passing/failing runs.
 Android device execution and iOS compilation remain release gates in CI. A build is not an upload receipt.
 
 ## Resolved findings

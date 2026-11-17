@@ -32,7 +32,6 @@ import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
-import com.eyther.lumbridge.core.presentation.resources.calendarDateText
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
@@ -59,7 +58,7 @@ import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseHis
 import com.eyther.lumbridge.features.expenses.presentation.components.SettlementSuggestionCard
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
 import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
-import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistorySectionUi
+import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import com.eyther.lumbridge.features.expenses.presentation.model.MemberBalanceUi
 import com.eyther.lumbridge.features.expenses.presentation.model.SuggestedRepaymentUi
@@ -105,7 +104,7 @@ fun ExpensesScreen(
 @Composable
 private fun InnerExpensesScreen(
     account: ExpenseAccountDomain?,
-    history: ImmutableList<ExpenseHistorySectionUi>,
+    history: ImmutableList<ExpenseHistoryItemUi>,
     selectedView: ExpensesViewUi,
     memberBalances: ImmutableList<MemberBalanceUi>,
     suggestions: ImmutableList<SuggestedRepaymentUi>,
@@ -198,20 +197,11 @@ private fun InnerExpensesScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                history.forEach { section ->
-                    item(key = section.date) {
-                        Text(
-                            calendarDateText(section.calendarDate),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    items(section.items, key = { it.key }) { item ->
-                        ExpenseHistoryRow(
-                            item = item,
-                            onOpen = onOpenExpense,
-                        )
-                    }
+                items(history, key = { it.key }) { item ->
+                    ExpenseHistoryRow(
+                        item = item,
+                        onOpen = onOpenExpense,
+                    )
                 }
             } else if (account != null) {
                 item(key = "current_position") {

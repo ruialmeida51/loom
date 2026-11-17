@@ -15,7 +15,6 @@ import com.eyther.lumbridge.features.expenses.generated.resources.account_delete
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
-import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistorySectionUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import com.eyther.lumbridge.features.expenses.presentation.model.MemberBalanceUi
 import com.eyther.lumbridge.features.expenses.presentation.model.SuggestedRepaymentUi
@@ -119,7 +118,7 @@ data class ExpensesState(
                 )
             }
             .toImmutableList()
-    val history: ImmutableList<ExpenseHistorySectionUi> =
+    val history: ImmutableList<ExpenseHistoryItemUi> =
         (expenses.map {
                 ExpenseHistoryItemUi.Purchase(
                     expense = it,
@@ -136,9 +135,5 @@ data class ExpensesState(
                     )
                 })
             .sortedWith(compareByDescending<ExpenseHistoryItemUi> { it.date }.thenBy { it.key })
-            .groupBy { it.date }
-            .map { (date, items) ->
-                ExpenseHistorySectionUi(date = date, items = items.toImmutableList())
-            }
             .toImmutableList()
 }

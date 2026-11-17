@@ -3,6 +3,7 @@ package com.eyther.lumbridge.demo
 import android.content.ContentValues
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -29,17 +30,36 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
+import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.math.abs
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
 
 /** These checks exercise Android's actual window/IME and Back dispatch, not desktop substitutes. */
 class UsabilityDeviceTest {
-    @get:Rule val compose = createAndroidComposeRule<UsabilityTestActivity>()
+    @get:Rule(order = 0) val compose = createAndroidComposeRule<UsabilityTestActivity>()
     private val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+
+    @get:Rule(order = 1)
+    val failureEvidence =
+        object : TestWatcher() {
+            override fun failed(error: Throwable, description: Description) {
+                runCatching { capture(name = "failure-${description.methodName}") }
+                    .onFailure { Log.e("LoomTestFailure", "Failure capture unavailable", it) }
+                runCatching {
+                    val hierarchy = ByteArrayOutputStream()
+                    device.dumpWindowHierarchy(hierarchy)
+                    hierarchy.toString(Charsets.UTF_8.name()).chunked(3000).forEach {
+                        Log.e("LoomTestFailure", it)
+                    }
+                }
+            }
+        }
 
     @Before
     fun awaitHome() {
@@ -89,11 +109,11 @@ class UsabilityDeviceTest {
                 inputBottom <= decor.height - keyboard + 2f,
             )
         }
-        device.pressBack() // The keyboard consumes the first Back.
+        pressSystemBack() // The keyboard consumes the first Back.
         compose.waitUntil(timeoutMillis = 5_000) { !keyboardVisible() }
         device.waitForIdle()
         awaitDestination(tag = "shopping_content")
-        device.pressBack() // Then the peer tab returns Home.
+        pressSystemBack() // Then the peer tab returns Home.
         awaitDestination(tag = "home_content")
     }
 
@@ -115,7 +135,7 @@ class UsabilityDeviceTest {
         compose.onNodeWithContentDescription("Decrease share for You").performClick()
         compose.onNodeWithContentDescription("Share for You").assertTextContains("1")
         capture(name = "expense-split-sheet")
-        device.pressBack()
+        pressSystemBack()
         compose.waitUntil(timeoutMillis = 5_000) {
             compose.onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()
         }
@@ -125,10 +145,10 @@ class UsabilityDeviceTest {
         awaitActivityWindowFocus()
         compose.onNodeWithTag("expense_amount").assertTextContains("30.00")
         hideKeyboard()
-        device.pressBack()
+        pressSystemBack()
         awaitDestination(tag = "expenses_content")
         compose.onNodeWithTag("expense_title").assertDoesNotExist()
-        device.pressBack()
+        pressSystemBack()
         awaitDestination(tag = "home_content")
     }
 
@@ -197,12 +217,12 @@ class UsabilityDeviceTest {
         }
         compose.onNodeWithTag("manage_feeds").performClick()
         awaitDestination(tag = "feed_subscriptions")
-        device.pressBack()
+        pressSystemBack()
         awaitDestination(tag = "manage_feeds")
         compose.onNodeWithText("The reading corner").assertIsDisplayed()
-        device.pressBack()
+        pressSystemBack()
         awaitDestination(tag = "more_content")
-        device.pressBack()
+        pressSystemBack()
         awaitDestination(tag = "home_content")
     }
 
@@ -231,6 +251,11 @@ class UsabilityDeviceTest {
         values.put(MediaStore.Images.Media.IS_PENDING, 0)
         resolver.update(uri, values, null, null)
         file.delete()
+    }
+
+    private fun pressSystemBack() {
+        Log.d("LoomUsabilityBack", "Pressing Back; foreground=${device.currentPackageName}")
+        device.pressBack()
     }
 
     private fun awaitDestination(tag: String) {

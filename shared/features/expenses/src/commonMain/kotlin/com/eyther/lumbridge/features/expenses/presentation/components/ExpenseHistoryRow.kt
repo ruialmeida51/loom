@@ -13,16 +13,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
+import com.eyther.lumbridge.core.presentation.resources.calendarDateText
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.former_member
-import com.eyther.lumbridge.features.expenses.generated.resources.history_paid_by
+import com.eyther.lumbridge.features.expenses.generated.resources.history_paid_on
 import com.eyther.lumbridge.features.expenses.generated.resources.history_repayment
-import com.eyther.lumbridge.features.expenses.generated.resources.history_transfer
+import com.eyther.lumbridge.features.expenses.generated.resources.history_transfer_on
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import org.jetbrains.compose.resources.stringResource
 
@@ -40,15 +43,15 @@ internal fun ExpenseHistoryRow(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
-                    verticalAlignment = Alignment.Top,
+                    modifier = Modifier.fillMaxWidth().padding(LoomSpacing.medium),
+                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
                 ) {
                     Surface(
                         shape = MaterialTheme.shapes.medium,
                         color = MaterialTheme.colorScheme.secondaryContainer,
                     ) {
-                        Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                        Box(Modifier.size(ExpenseIconSize), contentAlignment = Alignment.Center) {
                             LoomIcon(
                                 glyph = Glyph.MONEY,
                                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -58,28 +61,32 @@ internal fun ExpenseHistoryRow(
                     }
                     Column(
                         Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+                        verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
                     ) {
                         Row(horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small)) {
                             Text(
                                 item.expense.title,
                                 style = MaterialTheme.typography.titleMedium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f),
                             )
                             Text(
                                 item.amount,
                                 style =
-                                    MaterialTheme.typography.titleLarge.copy(
+                                    MaterialTheme.typography.titleMedium.copy(
                                         fontFeatureSettings = "tnum",
+                                        fontWeight = FontWeight.SemiBold,
                                     ),
                             )
                         }
                         Text(
                             stringResource(
-                                Res.string.history_paid_by,
+                                Res.string.history_paid_on,
                                 item.payerName ?: stringResource(Res.string.former_member),
+                                calendarDateText(item.calendarDate),
                             ),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
@@ -87,9 +94,7 @@ internal fun ExpenseHistoryRow(
             }
         is ExpenseHistoryItemUi.Repayment ->
             Row(
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(horizontal = LoomSpacing.content, vertical = LoomSpacing.medium),
+                modifier = Modifier.fillMaxWidth().padding(LoomSpacing.medium),
                 horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -105,11 +110,12 @@ internal fun ExpenseHistoryRow(
                     )
                     Text(
                         stringResource(
-                            Res.string.history_transfer,
+                            Res.string.history_transfer_on,
                             item.fromName ?: stringResource(Res.string.former_member),
                             item.toName ?: stringResource(Res.string.former_member),
+                            calendarDateText(item.calendarDate),
                         ),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -117,3 +123,5 @@ internal fun ExpenseHistoryRow(
             }
     }
 }
+
+private val ExpenseIconSize = 32.dp // A small badge leaves the two-line expense summary dominant.

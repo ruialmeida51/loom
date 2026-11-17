@@ -4,7 +4,7 @@
 
 - Smooth loading and refresh skeletons while retaining drafts, focus and scroll.
 - Recover household reads after session or connection interruptions.
-- Clearer expense cards, current balances and account selection.
+- Compact dated expenses, current balances and simpler completed-grocery controls.
 - Manage feeds, retry updates, edit addresses and remove sources; support Expresso.
 - Edge-to-edge Home news, illustrated empty states and clearer settings/privacy buttons.
 

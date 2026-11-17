@@ -10,56 +10,38 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.DestructiveButton
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
-import com.eyther.lumbridge.features.shopping.generated.resources.completed_cancel_selection
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_selected
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_deselect_all
-import com.eyther.lumbridge.features.shopping.generated.resources.completed_select
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_select_all
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun CompletedShoppingActions(
-    selecting: Boolean,
     selectedCount: Int,
     allSelected: Boolean,
     busy: Boolean,
-    onSelecting: (Boolean) -> Unit,
     onSelectAll: () -> Unit,
     onDelete: () -> Unit,
 ) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedButton(
-            onClick = { onSelecting(!selecting) },
+            onClick = onSelectAll,
             enabled = !busy,
-            modifier = Modifier.testTag("select_completed"),
+            modifier = Modifier.testTag("select_all_completed"),
         ) {
             Text(
                 stringResource(
-                    if (selecting) Res.string.completed_cancel_selection
-                    else Res.string.completed_select,
+                    if (allSelected) Res.string.completed_deselect_all
+                    else Res.string.completed_select_all,
                 ),
             )
         }
-        if (selecting) {
-            OutlinedButton(
-                onClick = onSelectAll,
-                enabled = !busy,
-                modifier = Modifier.testTag("select_all_completed"),
-            ) {
-                Text(
-                    stringResource(
-                        if (allSelected) Res.string.completed_deselect_all
-                        else Res.string.completed_select_all,
-                    ),
-                )
-            }
-            DestructiveButton(
-                text = stringResource(Res.string.completed_delete_selected, selectedCount),
-                onClick = onDelete,
-                enabled = selectedCount > 0,
-                loading = busy,
-                modifier = Modifier.testTag("delete_completed"),
-            )
-        }
+        DestructiveButton(
+            text = stringResource(Res.string.completed_delete_selected, selectedCount),
+            onClick = onDelete,
+            enabled = selectedCount > 0,
+            loading = busy,
+            modifier = Modifier.testTag("delete_completed"),
+        )
     }
 }
