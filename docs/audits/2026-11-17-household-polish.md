@@ -49,6 +49,9 @@ Android device execution and iOS compilation remain release gates in CI. A build
 - Android debug app and instrumentation APK assemble successfully. Native device tests cover keyboard
   entry/alignment, refresh draft retention, lifecycle/Back and the added nested feed-management Back path.
   Building the test APK does not claim those device tests ran locally.
+  The initial CI run passed all four native checks and iOS/Xcode; a parallel PR run exposed native
+  test synchronization gaps. Follow-up checks await sheet removal, restored window focus and the
+  returned destination instead of treating semantic existence or `RESUMED` as native readiness.
 - Disposable PostgreSQL: **16 migrations** and integration tests pass. New cases verify stale edit refusal,
   household isolation, atomic article removal, anonymous denial and rejection of late old-worker inserts.
 - Deno checks pass; **6 RSS parsing/security/configuration tests** pass. The actual Expresso URL returned

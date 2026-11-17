@@ -138,3 +138,13 @@ separation without adding the folders/rules/workspace complexity of a dedicated 
 The final review procedure and validation limits are in `docs/audits/2026-11-17-household-polish.md`.
 Release completion must be taken from the matching Firebase workflow/deployment and changelog, not
 inferred from a successful build.
+
+### Platform CI follow-up
+
+The first CI run passed Android/shared/database/RSS checks, all four native Android checks and the
+complete iOS/Xcode build. The parallel PR emulator run exposed two missing synchronization checks:
+it did not wait for the split sheet to leave composition before backgrounding, and asserted the
+news title immediately after an asynchronous native Back event. The lifecycle log also shows
+`RESUMED` preceding input focus returning from ActivityScenario's helper window. Native checks now
+wait for sheet removal, actual window focus and the returned destination, with one Back event and
+the same route/draft assertions. The corrected checks must pass before delivery.

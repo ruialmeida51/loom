@@ -116,9 +116,13 @@ class UsabilityDeviceTest {
         compose.onNodeWithContentDescription("Share for You").assertTextContains("1")
         capture(name = "expense-split-sheet")
         device.pressBack()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()
+        }
         compose.onNodeWithTag("expense_title").assertTextContains("Holiday groceries")
         compose.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
         compose.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+        awaitActivityWindowFocus()
         compose.onNodeWithTag("expense_amount").assertTextContains("30.00")
         hideKeyboard()
         device.pressBack()
@@ -194,6 +198,7 @@ class UsabilityDeviceTest {
         compose.onNodeWithTag("manage_feeds").performClick()
         awaitDestination(tag = "feed_subscriptions")
         device.pressBack()
+        awaitDestination(tag = "manage_feeds")
         compose.onNodeWithText("The reading corner").assertIsDisplayed()
         device.pressBack()
         awaitDestination(tag = "more_content")
@@ -231,6 +236,15 @@ class UsabilityDeviceTest {
     private fun awaitDestination(tag: String) {
         compose.waitUntil(timeoutMillis = 5_000) { compose.onNodeWithTag(tag).isDisplayed() }
         compose.waitForIdle()
+    }
+
+    private fun awaitActivityWindowFocus() {
+        // RESUMED can arrive before Android returns input focus from the scenario's helper window.
+        compose.waitUntil(timeoutMillis = 5_000) {
+            var focused = false
+            compose.runOnUiThread { focused = compose.activity.hasWindowFocus() }
+            focused
+        }
     }
 
     private fun keyboardVisible(): Boolean {
