@@ -13,10 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 
 @Composable
 internal fun AccountPreferenceRow(
     title: String,
+    glyph: Glyph,
     description: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
@@ -28,8 +31,9 @@ internal fun AccountPreferenceRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        LoomIcon(glyph = glyph, tint = MaterialTheme.colorScheme.primary, decorative = true)
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Text(text = title, style = MaterialTheme.typography.titleSmall)
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,

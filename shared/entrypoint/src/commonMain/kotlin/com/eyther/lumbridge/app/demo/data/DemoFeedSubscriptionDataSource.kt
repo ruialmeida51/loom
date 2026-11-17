@@ -44,15 +44,14 @@ class DemoFeedSubscriptionDataSource(private val store: DemoHouseholdStore) :
             }
         }
         store.articles.update { articles ->
-            articles.filterNot { it.source == subscription.publisher }
+            articles.filterNot { it.subscriptionId == subscription.id }
         }
         id
     }
 
     override suspend fun remove(id: String) = safeCall {
-        val source = store.feedSubscriptions.value.firstOrNull { it.id == id }?.publisher
         store.feedSubscriptions.update { subscriptions -> subscriptions.filterNot { it.id == id } }
-        store.articles.update { articles -> articles.filterNot { it.source == source } }
+        store.articles.update { articles -> articles.filterNot { it.subscriptionId == id } }
         Unit
     }
 }

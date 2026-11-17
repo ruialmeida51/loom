@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.core.presentation.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButtonDefaults
@@ -27,6 +28,7 @@ fun DestructiveIconButton(
         onClick = onClick,
         enabled = enabled && !loading,
         modifier = modifier.size(48.dp).semantics { contentDescription = description },
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         colors =
             IconButtonDefaults.outlinedIconButtonColors(
                 contentColor = MaterialTheme.colorScheme.error,

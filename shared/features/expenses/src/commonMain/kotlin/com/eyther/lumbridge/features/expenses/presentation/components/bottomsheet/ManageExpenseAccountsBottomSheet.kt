@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -10,8 +11,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.resources.TextResource
@@ -55,45 +58,50 @@ fun ManageExpenseAccountsBottomSheet(
             stringResource(Res.string.account_manage_hint),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        accounts.forEach { account ->
-            key(account.id) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    NavigationRow(
-                        title = accountLabel(account),
-                        description =
-                            if (account.archived) stringResource(Res.string.account_archived)
-                            else account.currency,
-                        onClick = { onSelect(account.id) },
-                        enabled = !busy,
-                        modifier = Modifier.weight(1f).testTag("manage_account_${account.id}"),
-                    )
-                    if (account.canManage(userId = userId, isOwner = isOwner))
-                        ActionMenu(
-                            modifier = Modifier.testTag("account_actions_${account.name}"),
-                            items =
-                                listOf(
-                                    ActionMenuItem(
-                                        text = TextResource.Resource(Res.string.account_rename),
-                                        onClick = { onEdit(account) },
-                                        enabled = !busy,
-                                    ),
-                                    ActionMenuItem(
-                                        text =
-                                            TextResource.Resource(
-                                                if (account.archived) Res.string.account_restore
-                                                else Res.string.account_archive,
-                                            ),
-                                        onClick = { onArchive(account) },
-                                        enabled = !busy,
-                                    ),
-                                    ActionMenuItem(
-                                        text = TextResource.Resource(Res.string.account_delete),
-                                        onClick = { onDelete(account) },
-                                        enabled = !busy,
-                                        destructive = true,
-                                    ),
-                                ),
+        GroupedSurface {
+            accounts.forEachIndexed { index, account ->
+                key(account.id) {
+                    if (index > 0)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        NavigationRow(
+                            title = accountLabel(account),
+                            glyph = Glyph.MONEY,
+                            description =
+                                if (account.archived) stringResource(Res.string.account_archived)
+                                else account.currency,
+                            onClick = { onSelect(account.id) },
+                            enabled = !busy,
+                            modifier = Modifier.weight(1f).testTag("manage_account_${account.id}"),
                         )
+                        if (account.canManage(userId = userId, isOwner = isOwner))
+                            ActionMenu(
+                                modifier = Modifier.testTag("account_actions_${account.name}"),
+                                items =
+                                    listOf(
+                                        ActionMenuItem(
+                                            text = TextResource.Resource(Res.string.account_rename),
+                                            onClick = { onEdit(account) },
+                                            enabled = !busy,
+                                        ),
+                                        ActionMenuItem(
+                                            text =
+                                                TextResource.Resource(
+                                                    if (account.archived) Res.string.account_restore
+                                                    else Res.string.account_archive,
+                                                ),
+                                            onClick = { onArchive(account) },
+                                            enabled = !busy,
+                                        ),
+                                        ActionMenuItem(
+                                            text = TextResource.Resource(Res.string.account_delete),
+                                            onClick = { onDelete(account) },
+                                            enabled = !busy,
+                                            destructive = true,
+                                        ),
+                                    ),
+                            )
+                    }
                 }
             }
         }

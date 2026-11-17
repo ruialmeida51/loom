@@ -28,6 +28,7 @@ fun PullToRefreshContentContainer(
     modifier: Modifier = Modifier,
     coverContentOnRefresh: Boolean = true,
     snackbarHost: @Composable () -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
     content: @Composable BoxScope.() -> Unit,
 ) {
     val refreshState = rememberPullToRefreshState()
@@ -35,6 +36,7 @@ fun PullToRefreshContentContainer(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = snackbarHost,
+        floatingActionButton = floatingActionButton,
     ) {
         PullToRefreshBox(
             modifier = Modifier.fillMaxSize().testTag("pull_to_refresh"),

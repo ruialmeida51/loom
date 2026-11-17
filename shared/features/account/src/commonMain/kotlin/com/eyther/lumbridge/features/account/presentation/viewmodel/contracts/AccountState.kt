@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.account.presentation.viewmodel.contracts
 
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.account.domain.model.ProfileDomain
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsPreferencesDomain
 import com.eyther.lumbridge.features.settings.domain.model.SettingsDomain
@@ -18,6 +19,8 @@ data class AccountState(
     val error: TextResource? = null,
     val loadError: TextResource? = null,
 ) {
+    val theme: ThemeMode =
+        ThemeMode.entries.firstOrNull { it.name == preferences.theme } ?: ThemeMode.SYSTEM
     val displayError: TextResource? = error ?: loadError
     val canEditNickname: Boolean = profile != null && !busy
     val canSaveNickname: Boolean =

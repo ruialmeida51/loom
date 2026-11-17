@@ -24,6 +24,7 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccoun
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedPageUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
@@ -153,6 +154,10 @@ class HouseholdUseCaseModule {
         FollowFeedUseCase(
             feedDataSource = feedDataSource,
         )
+
+    @Single
+    fun provideGetFeedPageUseCase(feedDataSource: FeedDataSource): GetFeedPageUseCase =
+        GetFeedPageUseCase(feedDataSource = feedDataSource)
 
     @Single
     fun provideGetFeedStreamUseCase(

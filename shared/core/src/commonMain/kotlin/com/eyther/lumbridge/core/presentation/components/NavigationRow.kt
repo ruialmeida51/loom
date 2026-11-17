@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -22,6 +23,10 @@ import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 private val MinimumRowHeight = 56.dp // Compact single-line rows retain a full touch target.
 private val MaximumSummaryWidth = 180.dp // Keep the row title readable on a compact phone.
 
+/**
+ * Compact navigation/action row; emphasisColor can identify a destructive action without relying on
+ * colour alone.
+ */
 @Composable
 fun NavigationRow(
     title: String,
@@ -32,7 +37,13 @@ fun NavigationRow(
     value: String? = null,
     glyph: Glyph? = null,
     trailingGlyph: Glyph = Glyph.ARROW,
+    emphasisColor: Color = Color.Unspecified,
 ) {
+    val titleColor =
+        if (emphasisColor == Color.Unspecified) MaterialTheme.colorScheme.onSurface
+        else emphasisColor
+    val iconColor =
+        if (emphasisColor == Color.Unspecified) MaterialTheme.colorScheme.primary else emphasisColor
     Row(
         modifier =
             modifier
@@ -44,13 +55,13 @@ fun NavigationRow(
         horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
     ) {
         glyph?.let {
-            LoomIcon(glyph = it, tint = MaterialTheme.colorScheme.primary, decorative = true)
+            LoomIcon(glyph = it, tint = iconColor, decorative = true)
         }
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
         ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Text(text = title, style = MaterialTheme.typography.titleSmall, color = titleColor)
             if (description != null) {
                 Text(
                     text = description,

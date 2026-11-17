@@ -258,8 +258,9 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     "Small rituals for a weekend that feels like your own.",
                     "https://www.theguardian.com/lifeandstyle",
                     "The weekend edit",
-                    nowIso(),
+                    Clock.System.now(),
                     false,
+                    subscriptionId = "weekend",
                 ),
                 ArticleDomain(
                     newId(),
@@ -267,8 +268,9 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     "Making the most of what is already in your fridge.",
                     "https://www.bbcgoodfood.com/",
                     "Around the table",
-                    nowIso(),
+                    Clock.System.now(),
                     false,
+                    subscriptionId = "table",
                 ),
             ),
         )

@@ -1,5 +1,7 @@
 package com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet
 
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoomButton
@@ -36,9 +38,11 @@ fun ExpenseAccountsBottomSheet(
         dismissAction = {},
     ) {
         GroupedSurface {
-            active.forEach { account ->
+            active.forEachIndexed { index, account ->
+                if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 NavigationRow(
                     title = accountLabel(account),
+                    glyph = Glyph.MONEY,
                     description = account.currency,
                     value =
                         if (account.id == selectedId) stringResource(Res.string.account_selected)
@@ -49,10 +53,13 @@ fun ExpenseAccountsBottomSheet(
                 )
             }
         }
-        NavigationRow(
-            title = stringResource(Res.string.account_manage),
-            onClick = onManage,
-            enabled = !busy,
-        )
+        GroupedSurface {
+            NavigationRow(
+                title = stringResource(Res.string.account_manage),
+                glyph = Glyph.SETTINGS,
+                onClick = onManage,
+                enabled = !busy,
+            )
+        }
     }
 }

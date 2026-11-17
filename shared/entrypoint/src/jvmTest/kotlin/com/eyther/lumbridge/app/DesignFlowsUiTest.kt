@@ -105,7 +105,7 @@ class DesignFlowsUiTest {
             onNodeWithTag("edit_nickname").performScrollTo().performClick()
             onNodeWithTag("nickname_input").assertTextContains("Rui")
             onNodeWithText("Cancel").performClick()
-            onNodeWithTag("account_content").performScrollToNode(hasText("Dark"))
+            onNodeWithTag("appearance_preference").performScrollTo().performClick()
             onNodeWithText("Dark", useUnmergedTree = true).performClick()
             onNodeWithTag("edit_nickname").performScrollTo().performClick()
             captureNode(tag = "modal_sheet", name = "nickname-sheet-dark")

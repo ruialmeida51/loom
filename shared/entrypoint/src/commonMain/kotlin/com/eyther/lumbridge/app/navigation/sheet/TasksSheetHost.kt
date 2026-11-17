@@ -2,11 +2,14 @@ package com.eyther.lumbridge.app.navigation.sheet
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.app.navigation.model.sheet.TasksSheets
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.BottomSheetLayout
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.rememberBottomSheetController
@@ -19,6 +22,7 @@ import com.eyther.lumbridge.features.tasks.presentation.viewmodel.contracts.Task
 internal fun TasksSheetHost(
     viewModel: TasksScreenViewModelContract,
     timeZone: String,
+    snackbarBottomPadding: Dp = 0.dp,
     content: @Composable () -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
@@ -63,7 +67,9 @@ internal fun TasksSheetHost(
                 content()
                 SuccessSnackbar(
                     message = state.successMessage,
-                    modifier = Modifier.align(Alignment.BottomCenter),
+                    modifier =
+                        Modifier.align(Alignment.BottomCenter)
+                            .padding(bottom = snackbarBottomPadding),
                 )
             }
         },

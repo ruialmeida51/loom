@@ -22,9 +22,9 @@ import com.eyther.lumbridge.features.home.generated.resources.home_add_expense
 import com.eyther.lumbridge.features.home.generated.resources.home_add_task
 import org.jetbrains.compose.resources.stringResource
 
-private val QuickActionIconSize = 24.dp // Standard icon size inside the square action area.
+private val QuickActionIconSize = 20.dp // Standard icon size inside the square action area.
 private val MinimumQuickActionHeight =
-    88.dp // Keep a square icon and readable label inside a compact action.
+    64.dp // Keep the icon and label compact while preserving a generous touch target.
 
 @Composable
 internal fun HomeQuickActions(onAddExpense: () -> Unit, onAddTask: () -> Unit) {
@@ -64,11 +64,12 @@ private fun QuickActionTile(title: String, glyph: Glyph, onClick: () -> Unit, mo
             ) {
                 LoomIcon(
                     glyph = glyph,
-                    modifier = Modifier.padding(LoomSpacing.medium).size(QuickActionIconSize),
+                    decorative = true,
+                    modifier = Modifier.padding(LoomSpacing.small).size(QuickActionIconSize),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
-            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(title, style = MaterialTheme.typography.titleSmall)
         }
     }
 }

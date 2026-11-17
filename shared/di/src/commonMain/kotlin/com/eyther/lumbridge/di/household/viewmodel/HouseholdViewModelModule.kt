@@ -27,6 +27,7 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.E
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedPageUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
@@ -118,7 +119,8 @@ class HouseholdViewModelModule {
     @KoinViewModel(binds = [FeedScreenViewModelContract::class])
     fun provideFeedScreenViewModel(
         context: HouseholdContextDomain,
-        getFeedStreamUseCase: GetFeedStreamUseCase,
+        getFeedPageUseCase: GetFeedPageUseCase,
+        getFeedSubscriptionsStreamUseCase: GetFeedSubscriptionsStreamUseCase,
         getStarterFeedsUseCase: GetStarterFeedsUseCase,
         refreshFeedsUseCase: RefreshFeedsUseCase,
         followFeedUseCase: FollowFeedUseCase,
@@ -126,7 +128,8 @@ class HouseholdViewModelModule {
     ): FeedScreenViewModelContract =
         FeedScreenViewModel(
             timeZone = context.timeZone,
-            getFeedStreamUseCase = getFeedStreamUseCase,
+            getFeedPageUseCase = getFeedPageUseCase,
+            getFeedSubscriptionsStreamUseCase = getFeedSubscriptionsStreamUseCase,
             getStarterFeedsUseCase = getStarterFeedsUseCase,
             refreshFeedsUseCase = refreshFeedsUseCase,
             followFeedUseCase = followFeedUseCase,

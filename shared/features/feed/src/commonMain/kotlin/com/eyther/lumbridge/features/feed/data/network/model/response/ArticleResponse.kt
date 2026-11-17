@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal data class ArticleResponse(
     @SerialName("id") val id: String,
+    @SerialName("subscription_id") val subscriptionId: String,
     @SerialName("title") val title: String,
     @SerialName("summary") val summary: String,
     @SerialName("url") val url: String,

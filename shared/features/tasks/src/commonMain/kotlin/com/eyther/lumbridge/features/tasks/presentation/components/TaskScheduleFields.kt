@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.tasks.presentation.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.DestructiveIconButton
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.resources.calendarDateText
@@ -70,11 +72,15 @@ internal fun TaskScheduleFields(
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+    ) {
         OutlinedButton(
             onClick = { showDatePicker = true },
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             enabled = !busy,
-            modifier = Modifier.weight(1f).testTag("task_date"),
+            modifier = Modifier.weight(1f, fill = false).testTag("task_date"),
         ) {
             Text(
                 if (hasDueDate) calendarDateText(date)

@@ -260,6 +260,41 @@ class UsabilityDeviceTest {
         awaitDestination(tag = "home_content")
     }
 
+    @Test
+    fun taskFabKeepsSubmitReachableWithTheRealKeyboardAndReturnsToTheList() {
+        val title = "Book an annual boiler inspection"
+        compose.onNodeWithTag("navigation_tasks").performClick()
+        awaitDestination(tag = "tasks_content")
+        compose.onNodeWithTag("add_task").assertIsDisplayed().performClick()
+        compose.onNodeWithTag("task_title").performClick().performTextInput(title)
+        compose.waitUntil(timeoutMillis = 5_000) { keyboardVisible() }
+        val submit = compose.onNodeWithTag("save_task").assertIsDisplayed()
+        val submitBottom = submit.fetchSemanticsNode().boundsInWindow.bottom
+        compose.runOnUiThread {
+            val decor = compose.activity.window.decorView
+            val keyboard =
+                requireNotNull(ViewCompat.getRootWindowInsets(decor))
+                    .getInsets(WindowInsetsCompat.Type.ime())
+                    .bottom
+            assertTrue(
+                "Save stays above the keyboard",
+                submitBottom <= decor.height - keyboard + 2f,
+            )
+        }
+        capture(name = "task-fab-keyboard")
+        submit.performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()
+        }
+        hideKeyboard()
+        awaitDestination(tag = "tasks_content")
+        compose.onNodeWithTag("tasks_content").performScrollToNode(hasContentDescription(title))
+        compose.onNodeWithContentDescription(title).assertIsDisplayed()
+        compose.onNodeWithTag("add_task").assertIsDisplayed()
+        pressSystemBack()
+        awaitDestination(tag = "home_content")
+    }
+
     private fun capture(name: String) {
         compose.waitForIdle()
         val file = File(compose.activity.cacheDir, "$name.png")

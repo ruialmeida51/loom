@@ -49,11 +49,11 @@
   <string name="ui_repeat_this_bill_monthly">Repeat this bill monthly</string>
   <string name="ui_save_expense">Save expense</string>
   <string name="ui_cancel">Cancel</string>
-  <string name="ui_record_a_repayment">Record a repayment</string>
-  <string name="ui_money_sent_by">Money sent by</string>
+  <string name="ui_record_a_repayment">Record payment</string>
+  <string name="ui_money_sent_by">Paid by</string>
   <string name="ui_received_by">Received by</string>
-  <string name="ui_this_records_a_payment_you_ve_already_made_or">This records a payment you’ve already made or received.</string>
-  <string name="ui_record_repayment">Record repayment</string>
+  <string name="ui_this_records_a_payment_you_ve_already_made_or">Record a payment already made.</string>
+  <string name="ui_record_repayment">Save payment</string>
   <string name="ui_every_month_sorted">EVERY MONTH, SORTED</string>
   <string name="ui_manage_the_fixed_expenses_you_share_at_home">Manage the fixed expenses you share at home.</string>
   <string name="ui_add_an_expense_in_money_and_choose_monthly_repeat">Add an expense in Money and choose monthly repeat to create a schedule.</string>
@@ -168,4 +168,9 @@
   <string name="account_selected">Current</string>
   <string name="balance_you_settled">You’re settled up</string>
   <string name="balance_everyone">Everyone’s balance</string>
+    <string name="balance_you_owe_person">You owe %1$s</string>
+    <string name="balance_person_owes_you">%1$s owes you</string>
+    <string name="payment_i_paid_person">I paid %1$s</string>
+    <string name="payment_person_paid_me">%1$s paid me</string>
+    <string name="split_total">Total</string>
 </resources>

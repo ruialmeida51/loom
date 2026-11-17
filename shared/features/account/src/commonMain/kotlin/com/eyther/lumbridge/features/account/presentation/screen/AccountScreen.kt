@@ -2,13 +2,10 @@ package com.eyther.lumbridge.features.account.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -29,9 +26,10 @@ import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateO
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.account.generated.resources.Res
+import com.eyther.lumbridge.features.account.generated.resources.account_deletion_description
 import com.eyther.lumbridge.features.account.generated.resources.analytics_description
 import com.eyther.lumbridge.features.account.generated.resources.analytics_title
-import com.eyther.lumbridge.features.account.generated.resources.appearance_title
+import com.eyther.lumbridge.features.account.generated.resources.delete_account
 import com.eyther.lumbridge.features.account.generated.resources.nickname_description
 import com.eyther.lumbridge.features.account.generated.resources.notifications_description
 import com.eyther.lumbridge.features.account.generated.resources.notifications_title
@@ -41,7 +39,7 @@ import com.eyther.lumbridge.features.account.generated.resources.retry
 import com.eyther.lumbridge.features.account.generated.resources.sign_out
 import com.eyther.lumbridge.features.account.generated.resources.ui_nickname_title
 import com.eyther.lumbridge.features.account.presentation.components.AccountPreferenceRow
-import com.eyther.lumbridge.features.account.presentation.mapper.themeLabel
+import com.eyther.lumbridge.features.account.presentation.components.AppearancePreferenceRow
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsPreferencesDomain
 import com.eyther.lumbridge.features.legal.domain.model.LegalDocumentDomain
@@ -62,6 +60,7 @@ fun AccountScreen(
             canEditNickname = state.canEditNickname,
             loading = state.loading,
             preferences = state.preferences,
+            theme = state.theme,
             analytics = state.analytics,
             busy = state.busy,
             error = state.displayError,
@@ -83,6 +82,7 @@ private fun InnerAccountScreen(
     canEditNickname: Boolean,
     loading: Boolean,
     preferences: SettingsDomain,
+    theme: ThemeMode,
     analytics: AnalyticsPreferencesDomain,
     busy: Boolean,
     error: TextResource?,
@@ -128,24 +128,11 @@ private fun InnerAccountScreen(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionTitle(title = stringResource(Res.string.preferences_title))
                 GroupedSurface {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            stringResource(Res.string.appearance_title),
-                            style = MaterialTheme.typography.titleSmall,
-                        )
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            ThemeMode.entries.forEach { theme ->
-                                FilterChip(
-                                    selected = preferences.theme == theme.name,
-                                    onClick = { onTheme(theme.name) },
-                                    label = { Text(themeLabel(theme)) },
-                                )
-                            }
-                        }
-                    }
+                    AppearancePreferenceRow(theme = theme, enabled = !busy, onSelected = onTheme)
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     AccountPreferenceRow(
                         title = stringResource(Res.string.notifications_title),
+                        glyph = Glyph.BELL,
                         description = stringResource(Res.string.notifications_description),
                         checked = preferences.notifications,
                         onCheckedChange = onNotifications,
@@ -155,6 +142,7 @@ private fun InnerAccountScreen(
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         AccountPreferenceRow(
                             title = stringResource(Res.string.analytics_title),
+                            glyph = Glyph.SHIELD,
                             description = stringResource(Res.string.analytics_description),
                             checked = analytics.enabled,
                             onCheckedChange = onAnalyticsConsent,
@@ -168,17 +156,33 @@ private fun InnerAccountScreen(
         item {
             LegalLinks(
                 onOpenDocument = onOpenLegalDocument,
-                showAccountDeletion = true,
+                showAccountDeletion = false,
                 showIntroduction = true,
             )
         }
         item {
-            OutlinedButton(
-                onClick = onSignOut,
-                enabled = !busy,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(Res.string.sign_out))
+            GroupedSurface {
+                NavigationRow(
+                    title = stringResource(Res.string.sign_out),
+                    glyph = Glyph.LOG_OUT,
+                    emphasisColor = MaterialTheme.colorScheme.error,
+                    onClick = onSignOut,
+                    enabled = !busy,
+                    modifier = Modifier.testTag("sign_out"),
+                )
+            }
+        }
+        item {
+            GroupedSurface {
+                NavigationRow(
+                    title = stringResource(Res.string.delete_account),
+                    description = stringResource(Res.string.account_deletion_description),
+                    glyph = Glyph.DELETE,
+                    emphasisColor = MaterialTheme.colorScheme.error,
+                    onClick = { onOpenLegalDocument(LegalDocumentDomain.ACCOUNT_DELETION) },
+                    enabled = !busy,
+                    modifier = Modifier.testTag("delete_account"),
+                )
             }
         }
     }

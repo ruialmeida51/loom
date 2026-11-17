@@ -9,8 +9,10 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 
 - Use a complete semantic Material color scheme in light and dark. Loom adapts the original
   Lumbridge warm palette; use surface-container roles for grouped content rather than ad hoc fills.
-- Use Material typography roles with a clear amount/title/metadata hierarchy. Money uses tabular
-  numerals where supported. Text scales and wraps; never give copy a fixed height.
+- Use bundled Inter for body/controls and Space Grotesk for headings, following Plannot. The shared
+  scale uses 20sp sheet titles, 16sp item titles, 14–15sp body copy and 12sp metadata; headings are
+  22–28sp. Money uses tabular numerals. Text scales and wraps; never give copy a fixed height.
+  Bundled fonts retain their OFL notices under core composeResources/files/font-licenses.
 - Use the named 4/8/12/16/24/32dp spacing scale. Working lists use 16dp phone gutters; related rows
   have compact internal spacing and unrelated sections have 24dp separation where appropriate.
 - Shared surfaces use Material shapes, with large shapes for groups/cards and medium shapes for
@@ -19,6 +21,12 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
   Density comes from hierarchy and grouping, not smaller hit areas.
 - Use resource strings/plurals for UI copy, errors, dates and accessibility. Publisher names and
   user content remain data. Keep useful phrases without repeating the page title or instructions.
+- Use the Privacy & Legal compact icon-led row pattern for account actions, preferences and
+  list/account/feed management. Group related rows with dividers and a selected/status cue. Keep one
+  clear row action; overflow menus hold secondary actions. Sign out and Delete account have separate
+  red rows. Inputs remain inputs rather than being disguised as navigation.
+- Debt amounts/status use Material error roles; money owed back uses Loom's semantic green roles in
+  light and dark. Keep personal names and textual cues so colour is never the only distinction.
 
 ## Navigation and editing
 
@@ -34,6 +42,8 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 - Use one sheet for a short contextual task: split editing, shopping edits, task creation,
   feed subscription, repayment or nickname editing. Fields scroll above a fixed action footer.
   Close or replace a sheet rather than stacking sheets.
+- Task/payment sheets put full-width primary and Cancel buttons in a vertical footer. Optional task
+  date controls stay compact, with a gap before the consistently outlined 48dp remove-date control.
 - Use full destinations for expense capture/details, account creation and browsing full history.
   Dialogs are for brief confirmations. Disable competing dismissal/actions during a save.
 - Cancel, swipe and Back discard only an unapplied sheet draft; they do not discard the parent form.
@@ -63,7 +73,15 @@ section with up to three pending items, a three-item preview of the selected sho
 secondary News preview. Each section has an explicit route to the full destination. Optional task dates
 combine localized relative and absolute dates in the household zone. Empty tasks/shopping use a compact illustrated state without duplicate add actions; errors remain distinct.
 Tasks allows title-only capture. Date, repeat and household notification are optional progressive controls; removing the date also removes repeat and notification intent. A dated task does not imply a notification. Existing reminders retain their schedule and notification behavior. Completed tasks remain collapsed and can be reopened.
+Tasks and Money share one labelled add FAB outside the skeleton overlay, with matching list clearance.
 News is manually scrolled, never auto-advances, and does not gate household content.
+
+The full reader offers multi-select source pills (empty selection means All feeds) and Unread.
+Read 20 articles per page with an explicit Load more action; append failures retain existing rows
+and retry the same cursor. Fetch source/unread filters before pagination. Reading is a stable snapshot
+until refresh or returning from Manage feeds, while Home keeps a live three-article preview.
+Feed management uses compact publisher/status rows with an edit action and overflow Refresh/Remove;
+pending or failed subscriptions remain visible even without articles.
 
 Expense capture shows amount and description first, even while a new form's reference data loads.
 Loading/retry never overwrites early typing. Keep payer/date/equal-split defaults and one compact
@@ -82,9 +100,12 @@ Balances owns separate Everyday/trip/event accounts and who-pays-whom views. Nev
 or debts across accounts. The active picker stays simple; Manage accounts owns archived history,
 Reopen and Delete. A trip/event deletion removes its records for everyone and requires its creator or
 household owner; Everyday remains the built-in account. Contextual actions expose recurring bills
-and statements. Expense rows prioritize title and total, then payer and personal share, grouped by date.
+and current balances. Expense rows prioritize title and total, then payer, personal share and the actual
+expense date, without redundant Today or daily section headings.
+Expense details expose Edit/Delete in their Host toolbar menu; the brief destructive confirmation
+uses a full-width button. Repayments use personal wording and named Paid by/Received by selection rows.
 
-More retains full Reminders, Feed and household details. Profile/preferences have explicit section
+More retains Feed and household details. Profile/preferences have explicit section
 spacing. Avoid importing unrelated personal-finance calculators while daily usability is the priority.
 
 ## Components, ownership and review

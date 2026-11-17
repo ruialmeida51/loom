@@ -3,7 +3,7 @@
   <string name="ui_a_moment_for_you">A MOMENT FOR YOU</string>
   <string name="ui_the_reading_corner">The reading corner</string>
   <string name="ui_your_favourite_corners_of_the_internet_in_one_quiet">Your favourite corners of the internet, in one quiet place.</string>
-  <string name="ui_unread_only">Unread only</string>
+  <string name="ui_unread_only">Unread</string>
   <string name="ui_follow_a_feed">+ Follow a feed</string>
   <string name="ui_a_fresh_page">A fresh page.</string>
   <string name="ui_follow_an_rss_or_atom_feed_to_bring_your">Follow an RSS or Atom feed to bring your favourite stories here.</string>
@@ -44,4 +44,6 @@
   <string name="feed_empty_description">Add a source or check its update status in Manage feeds.</string>
   <string name="feed_caught_up">You’re all caught up</string>
   <string name="feed_caught_up_description">Turn off Unread only to see the stories you’ve already read.</string>
+    <string name="feed_all_sources">All feeds</string>
+    <string name="feed_load_more">Load more stories</string>
 </resources>

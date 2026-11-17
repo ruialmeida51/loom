@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import com.eyther.lumbridge.app.navigation.components.ScreenAnalyticsEffect
 import com.eyther.lumbridge.app.navigation.sheet.TasksSheetHost
+import com.eyther.lumbridge.core.presentation.components.FloatingActionContentPadding
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.tasks.presentation.screen.TasksScreen
@@ -26,7 +27,11 @@ internal fun TasksHost(
     ScreenAnalyticsEffect(screen = AnalyticsScreenDomain.TASKS)
     Scaffold(topBar = portalToolbar) { padding ->
         Box(Modifier.padding(padding).consumeWindowInsets(padding)) {
-            TasksSheetHost(viewModel = viewModel, timeZone = context.timeZone) {
+            TasksSheetHost(
+                viewModel = viewModel,
+                timeZone = context.timeZone,
+                snackbarBottomPadding = FloatingActionContentPadding,
+            ) {
                 TasksScreen(viewModel = viewModel)
             }
         }
