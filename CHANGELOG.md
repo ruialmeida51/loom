@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.5] - 2026-11-17
+
 - Tasks replaces reminders: optional dates/alerts and a dedicated tab beside Money.
 - Smooth loading and refresh skeletons while retaining drafts, focus and scroll.
 - Recover household reads after session or connection interruptions.
