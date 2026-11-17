@@ -204,3 +204,11 @@ Checked 17 Nov: [Google Tasks Android capture](https://support.google.com/tasks/
 - Captured native Back failures show a foreign Quickstep launcher ANR. The runner now prebuilds APKs before boot, provides 3 GB/two cores, and starts a clean launcher at a software-rendering-friendly phone resolution. Animations, real keyboard/Back and all assertions remain enabled; failure captures remain available. Exact-head native/iOS CI gates and Firebase upload still determine delivery.
 
 Final spacing review also applies the extra divider clearance to the Shopping list-manager footer (not only the completed-items header). The existing group-management flow passes and captures the selector with New list only; Cancel and Done are absent.
+
+### Native Tasks fixture correction
+
+[Final-source native run 44090457092](https://github.com/ruialmeida51/loom/actions/runs/44090457092) passed the four original IME/checkbox/refresh/split-resume/nested-Back checks without a launcher ANR. The added Tasks check failed because its task title duplicated the existing sample “Fix the kitchen shelf”, so the selector correctly matched two rows. The test now creates a distinct “Check hallway smoke alarm” task; app behavior and all five assertions are preserved. A corrected native run remains required before merge.
+
+The independent PR run 44090465557 also passed all four original native checks. Its new Tasks case selected the list before the deliberate first-load skeleton finished. The test now waits for content readiness, scrolls by the unique task description and awaits completion feedback. It still asserts title-only save, completion, completed visibility and one system Back to Home. Production code and the original four assertions are unchanged by this fixture correction.
+
+The independent PR run 44090465557 also passes all four original native checks. Its new Tasks check selected before the 300 ms skeleton finished; the fixture now waits for loaded content, scrolls the lazy list to its uniquely named task, and awaits completion feedback before asserting. The behavior assertions and actual system Back remain intact.

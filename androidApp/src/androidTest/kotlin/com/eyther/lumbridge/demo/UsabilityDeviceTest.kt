@@ -10,9 +10,11 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -20,6 +22,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
@@ -228,8 +231,9 @@ class UsabilityDeviceTest {
 
     @Test
     fun titleOnlyTaskSavesFromHomeAndSystemBackFromTasksReturnsHome() {
+        val taskTitle = "Check hallway smoke alarm"
         compose.onNodeWithTag("home_add_task").performClick()
-        compose.onNodeWithTag("task_title").performTextInput("Fix the kitchen shelf")
+        compose.onNodeWithTag("task_title").performTextInput(taskTitle)
         compose.onNodeWithTag("task_notification").assertDoesNotExist()
         hideKeyboard()
         compose.onNodeWithTag("save_task").performClick()
@@ -239,16 +243,18 @@ class UsabilityDeviceTest {
         awaitDestination(tag = "home_content")
         compose.onNodeWithTag("navigation_tasks").performClick()
         awaitDestination(tag = "tasks_content")
-        compose
-            .onNodeWithContentDescription("Fix the kitchen shelf")
-            .performScrollTo()
-            .performClick()
-        compose.onNodeWithText("Fix the kitchen shelf completed").assertIsDisplayed()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
+        }
+        compose.onNodeWithTag("tasks_content").performScrollToNode(hasContentDescription(taskTitle))
+        compose.onNodeWithContentDescription(taskTitle).performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithText("$taskTitle completed").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("$taskTitle completed").assertIsDisplayed()
         compose.onNodeWithTag("tasks_completed").performScrollTo().performClick()
-        compose
-            .onNodeWithContentDescription("Fix the kitchen shelf")
-            .performScrollTo()
-            .assertIsDisplayed()
+        compose.onNodeWithTag("tasks_content").performScrollToNode(hasContentDescription(taskTitle))
+        compose.onNodeWithContentDescription(taskTitle).assertIsDisplayed()
         capture(name = "tasks-completed")
         pressSystemBack()
         awaitDestination(tag = "home_content")
