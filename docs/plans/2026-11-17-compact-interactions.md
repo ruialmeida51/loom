@@ -7,23 +7,23 @@ This ledger preserves the whole request and records validation separately from i
 
 | ID | Request | Implementation direction | Status |
 | --- | --- | --- | --- |
-| HOME-01 | Home glyphs take too much space | Smaller quick-action icons/tiles and compact illustrated empty cards; retain touch targets | Implemented; validation in progress |
-| FEED-01 | Filter one or several feeds with pills | Multi-select subscription chips, All feeds reset, retain unread filter; filter by subscription ID | Implemented; validation in progress |
-| FEED-02 | Too much feed information at once | Bounded server pages, stable date/ID cursor, explicit Load more, independent page retry; Home preview stays short | Implemented; validation in progress |
-| TASK-01 | Add task should be a FAB like Add expense | Shared labelled add FAB and matching bottom content clearance | Implemented; validation in progress |
-| MONEY-01 | Recording who pays whom is jarring | Compact named sender/receiver selection rows with clear direction and personal labels | Implemented; validation in progress |
-| MONEY-02 | Owes red, gets back green; more personal | Accessible semantic status colours with text cues, You labels and personal payment actions | Implemented; validation in progress |
-| MONEY-03 | Expense edit/delete buttons are too large | Toolbar overflow menu; preserve ownership/busy rules and destructive confirmation | Implemented; validation in progress |
-| MONEY-04 | Delete expense should be full width | Full-width destructive confirmation action; no duplicate large details-page buttons | Implemented; validation in progress |
-| MONEY-05 | More space after Expenses/Balances tabs | Clear content gap before the first row/card without enlarging each row | Implemented; validation in progress |
-| TYPE-01 | Change typography and audit sizes/hierarchy | Bundle Plannot's licensed Inter/Space Grotesk fonts; define one restrained Material type scale and remove local size overrides | Implemented; validation in progress |
-| TYPE-02 | Split sheet too big, hard to scan | Compact total/method header, smaller consistent participant type and spacing; preserve +/- and direct entry | Implemented; validation in progress |
-| TASK-02 | Task form has tiny footer actions and huge date button | Stacked full-width primary/secondary buttons and compact optional date control | Implemented; validation in progress |
-| TASK-03 | Space between date and trash; mismatching white trash border | Explicit gap, consistent outline role in both themes, retain 48 dp hit areas | Implemented; validation in progress |
-| ACCOUNT-01 | Use compact icon/colour menu rows like Privacy & Legal | Reuse NavigationRow/GroupedSurface for settings and account actions | Implemented; validation in progress |
-| ACCOUNT-02 | Separate red Delete account row | Separate destructive navigation row preserving the existing deletion-information destination | Implemented; validation in progress |
-| ACCOUNT-03 | Separate red Sign out row | Separate destructive action row; sign-out remains only in My account | Implemented; validation in progress |
-| AUDIT-01 | Consistent components, typography, feature/package ownership | Final Plannot-derived source review after fixes and validation; resources, typed errors, DI and demo isolation remain required | Implemented; validation in progress |
+| HOME-01 | Home glyphs take too much space | Smaller quick-action icons/tiles and compact illustrated empty cards; retain touch targets | Verified locally; final CI pending |
+| FEED-01 | Filter one or several feeds with pills | Multi-select subscription chips, All feeds reset, retain unread filter; filter by subscription ID | Verified locally; final CI pending |
+| FEED-02 | Too much feed information at once | Bounded server pages, stable date/ID cursor, explicit Load more, independent page retry; Home preview stays short | Verified locally; final CI pending |
+| TASK-01 | Add task should be a FAB like Add expense | Shared labelled add FAB and matching bottom content clearance | Verified locally; final CI pending |
+| MONEY-01 | Recording who pays whom is jarring | Compact named sender/receiver selection rows with clear direction and personal labels | Verified locally; final CI pending |
+| MONEY-02 | Owes red, gets back green; more personal | Accessible semantic status colours with text cues, You labels and personal payment actions | Verified locally; final CI pending |
+| MONEY-03 | Expense edit/delete buttons are too large | Toolbar overflow menu; preserve ownership/busy rules and destructive confirmation | Verified locally; final CI pending |
+| MONEY-04 | Delete expense should be full width | Full-width destructive confirmation action; no duplicate large details-page buttons | Verified locally; final CI pending |
+| MONEY-05 | More space after Expenses/Balances tabs | Clear content gap before the first row/card without enlarging each row | Verified locally; final CI pending |
+| TYPE-01 | Change typography and audit sizes/hierarchy | Bundle Plannot's licensed Inter/Space Grotesk fonts; define one restrained Material type scale and remove local size overrides | Verified locally; final CI pending |
+| TYPE-02 | Split sheet too big, hard to scan | Compact total/method header, smaller consistent participant type and spacing; preserve +/- and direct entry | Verified locally; final CI pending |
+| TASK-02 | Task form has tiny footer actions and huge date button | Stacked full-width primary/secondary buttons and compact optional date control | Verified locally; final CI pending |
+| TASK-03 | Space between date and trash; mismatching white trash border | Explicit gap, consistent outline role in both themes, retain 48 dp hit areas | Verified locally; final CI pending |
+| ACCOUNT-01 | Use compact icon/colour menu rows like Privacy & Legal | Reuse NavigationRow/GroupedSurface for settings and account actions | Verified locally; final CI pending |
+| ACCOUNT-02 | Separate red Delete account row | Separate destructive navigation row preserving the existing deletion-information destination | Verified locally; final CI pending |
+| ACCOUNT-03 | Separate red Sign out row | Separate destructive action row; sign-out remains only in My account | Verified locally; final CI pending |
+| AUDIT-01 | Consistent components, typography, feature/package ownership | Final Plannot-derived source review after fixes and validation; resources, typed errors, DI and demo isolation remain required | Verified locally; final CI pending |
 
 ## Defaults used
 
@@ -48,10 +48,12 @@ explicitly the user's preferred reference. Existing research remains in
 
 ## Validation and delivery
 
-Shared compilation, 43 Compose flow checks and 18 feed checks pass. Disposable PostgreSQL passes
+Shared compilation, 43 Compose flow checks and 19 feed checks pass. Disposable PostgreSQL passes
 18 migrations and its integration suites, including equal-date cursors, source/unread filtering,
-publisher labels and outsider denial. Final all-feature/native build checks and the reviewer audit
-are in progress. A compiled preview is not native-device verification.
+publisher labels and outsider denial. The full 189-test JVM suite, both Android APK builds and final reviewer audit pass.
+Two independent CI runs also pass shared/database/RSS checks and all six native Android flows.
+The final selection-accessibility patch passes the relevant existing UI regressions; its final
+CI and Firebase delivery are pending. See the [audit](../audits/2026-11-17-compact-interactions.md). A compiled preview is not native-device verification.
 
 Applied `20261117174412_feed_reading_pagination` to the existing project; metadata confirms an
 invoker view, authenticated SELECT and anonymous denial. Security advisors have no new findings;

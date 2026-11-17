@@ -11,6 +11,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
@@ -41,6 +43,7 @@ internal fun AppearancePreferenceRow(
         DropdownMenu(expanded = expanded && enabled, onDismissRequest = { expanded = false }) {
             ThemeMode.entries.forEach { choice ->
                 DropdownMenuItem(
+                    modifier = Modifier.semantics { selected = theme == choice },
                     text = { Text(themeLabel(choice)) },
                     trailingIcon = {
                         if (theme == choice) LoomIcon(glyph = Glyph.CHECK, decorative = true)

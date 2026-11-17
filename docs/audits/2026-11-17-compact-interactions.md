@@ -28,6 +28,7 @@ already uses the preferred grouped rows. Ordinary text/amount fields remain inpu
 | Mock cursor test expected a timestamp without PostgREST logical-filter quoting | Checked the installed SDK's escaping implementation and assert the exact quoted date/ID expression. The app uses typed query builders; no raw OR string construction was introduced. |
 | Old follow-button UI regression targeted removed duplicate navigation | The flow now opens Manage feeds → Add a feed and retains the original validation/error-lifetime assertions. |
 | Source controls would remain a separate three-button card style | Reused grouped icon rows plus overflow; the existing add/edit/remove UI flow passes. Pending/failure copy remains visible. |
+| New selected checkmarks lacked an accessibility state | Added selected semantics to shopping-list rows and theme/member choices; existing group-management UI checks verify selected groceries. |
 | Extracted money/account components left obsolete imports | Removed unused imports, callbacks and the unused new You resource; static audit and compilation pass. |
 
 No unresolved blocking or should-fix findings remain in the scoped local diff.
@@ -71,8 +72,15 @@ remains outside this UX change.
 
 ## CI and delivery
 
-Pending branch CI: shared/Android, six native Android flows and iOS Kotlin/Xcode checks. Merge and
-Firebase distribution to the configured `internal-testers` group follow passing checks. The release
+On app commit `0729740`, both independent CI runs passed shared/Android, all database and RSS checks,
+and all six native Android flows: [push run](https://github.com/ruialmeida51/loom/actions/runs/44141737857)
+and [PR run](https://github.com/ruialmeida51/loom/actions/runs/44141850069). Native result XML confirms
+six checks with no failures/skips; the task-keyboard screenshot confirms both stacked actions remain
+above the real IME. Kotlin iOS compilation also passed. Xcode was still building when the final
+selection-semantics patch was prepared; that patch passes the relevant local UI regressions and the
+static audit. Final-head CI must pass before merge.
+
+Merge and Firebase distribution to the configured `internal-testers` group follow passing checks. The release
 allocator assigns the next patch/build; Firebase-only delivery creates no Play release or tag.
 
 Final local reviewer result: **pass**, with native Android/iOS execution limits stated above.

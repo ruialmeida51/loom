@@ -12,6 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
@@ -33,13 +35,13 @@ fun MemberPickerRow(
     emphasisColor: Color = Color.Unspecified,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val selected = members.firstOrNull { it.id == selectedId }
+    val selectedMember = members.firstOrNull { it.id == selectedId }
     val you = stringResource(Res.string.member_selector_you)
     Box(modifier = modifier.fillMaxWidth()) {
         NavigationRow(
             title =
-                if (selected != null && selected.id == currentUserId) you
-                else selected?.name ?: stringResource(Res.string.member_selector_choose),
+                if (selectedMember != null && selectedMember.id == currentUserId) you
+                else selectedMember?.name ?: stringResource(Res.string.member_selector_choose),
             description = label,
             glyph = Glyph.PERSON,
             trailingGlyph = Glyph.CHEVRON_DOWN,
@@ -50,6 +52,7 @@ fun MemberPickerRow(
         DropdownMenu(expanded = expanded && enabled, onDismissRequest = { expanded = false }) {
             members.forEach { member ->
                 DropdownMenuItem(
+                    modifier = Modifier.semantics { selected = member.id == selectedId },
                     text = { Text(if (member.id == currentUserId) you else member.name) },
                     onClick = {
                         expanded = false

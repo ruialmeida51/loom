@@ -10,6 +10,8 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoomButton
@@ -73,7 +75,10 @@ fun ShoppingListsBottomSheet(
                                 if (list.archived) stringResource(Res.string.ui_archive) else null,
                             onClick = { onSelect(list.id) },
                             enabled = !busy && !list.archived,
-                            modifier = Modifier.weight(1f).testTag("list_${list.name}"),
+                            modifier =
+                                Modifier.weight(1f).testTag("list_${list.name}").semantics {
+                                    selected = list.id == selectedListId
+                                },
                         )
                         ActionMenu(
                             modifier = Modifier.testTag("list_actions_${list.name}"),
