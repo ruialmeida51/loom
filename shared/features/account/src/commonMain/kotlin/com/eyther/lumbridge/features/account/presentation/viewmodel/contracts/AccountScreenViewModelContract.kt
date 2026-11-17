@@ -8,6 +8,10 @@ abstract class AccountScreenViewModelContract : LoomViewModel() {
 
     abstract val state: StateFlow<AccountState>
 
+    abstract fun onSignOutRequested()
+
+    abstract fun onSignOutCancelled()
+
     abstract fun onEditNickname()
 
     abstract fun onNicknameChanged(value: String)

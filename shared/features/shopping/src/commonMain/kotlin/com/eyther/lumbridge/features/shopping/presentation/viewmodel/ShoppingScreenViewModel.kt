@@ -541,6 +541,21 @@ class ShoppingScreenViewModel(
     }
 
     override fun onRemoveItem(item: ShoppingItemDomain) {
+        if (state.value.busy || item.id in state.value.savingItemIds) return
+        mutableState.update { oldState ->
+            oldState.copy(deletingItem = item, itemDeleteError = null)
+        }
+    }
+
+    override fun onRemoveItemCancelled() {
+        if (state.value.deletingSingleItem) return
+        mutableState.update { oldState ->
+            oldState.copy(deletingItem = null, itemDeleteError = null)
+        }
+    }
+
+    override fun onRemoveItemConfirmed() {
+        val item = state.value.deletingItem ?: return
         saveItem(
             item = item.copy(removed = true),
             message = TextResource.Resource(Res.string.item_removed),
@@ -734,6 +749,7 @@ class ShoppingScreenViewModel(
                 error = null,
                 formError = null,
                 undoMessage = null,
+                itemDeleteError = null,
                 snapshot =
                     oldState.snapshot.copy(
                         items =
@@ -756,6 +772,9 @@ class ShoppingScreenViewModel(
                             savingItemIds = oldState.savingItemIds.remove(item.id),
                             showAdd = if (closeForm) false else oldState.showAdd,
                             undoMessage = message,
+                            deletingItem =
+                                if (item.removed && oldState.deletingItem?.id == item.id) null
+                                else oldState.deletingItem,
                             snapshot =
                                 oldState.snapshot.copy(
                                     items =
@@ -777,8 +796,13 @@ class ShoppingScreenViewModel(
                             busy = if (closeForm) false else oldState.busy,
                             savingItemIds = oldState.savingItemIds.remove(item.id),
                             error =
-                                if (closeForm) oldState.error
+                                if (closeForm || oldState.deletingItem?.id == item.id)
+                                    oldState.error
                                 else result.error.toShoppingTextResource(),
+                            itemDeleteError =
+                                if (oldState.deletingItem?.id == item.id)
+                                    result.error.toShoppingTextResource()
+                                else oldState.itemDeleteError,
                             formError =
                                 if (closeForm) result.error.toShoppingTextResource()
                                 else oldState.formError,

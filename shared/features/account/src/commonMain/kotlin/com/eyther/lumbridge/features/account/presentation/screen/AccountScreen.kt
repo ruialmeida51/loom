@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
@@ -70,8 +71,20 @@ fun AccountScreen(
             onAnalyticsConsent = viewModel::onAnalyticsConsentChanged,
             onRetry = viewModel::onRetry,
             onDismiss = viewModel::onDismissError,
-            onSignOut = onSignOut,
+            onSignOut = viewModel::onSignOutRequested,
             onOpenLegalDocument = onOpenLegalDocument,
+        )
+    }
+    state.signOutConfirmation?.let { confirmation ->
+        DestructiveConfirmation(
+            confirmation = confirmation,
+            busy = state.busy,
+            confirmationTag = "confirm_sign_out",
+            onConfirm = {
+                viewModel.onSignOutCancelled()
+                onSignOut()
+            },
+            onDismiss = viewModel::onSignOutCancelled,
         )
     }
 }

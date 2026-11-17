@@ -38,4 +38,6 @@
     <string name="icon_tasks">Tasks</string>
     <string name="icon_log_out">Sign out</string>
     <string name="icon_expand">Choose</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
 </resources>

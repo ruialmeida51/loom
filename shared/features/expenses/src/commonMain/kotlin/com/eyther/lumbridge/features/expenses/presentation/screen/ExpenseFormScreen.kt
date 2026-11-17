@@ -248,6 +248,7 @@ private fun InnerExpenseFormScreen(
             loading = busy,
             modifier =
                 Modifier.fillMaxWidth()
+                    .testTag("save_expense")
                     .padding(horizontal = LoomSpacing.content, vertical = LoomSpacing.medium),
         )
     }

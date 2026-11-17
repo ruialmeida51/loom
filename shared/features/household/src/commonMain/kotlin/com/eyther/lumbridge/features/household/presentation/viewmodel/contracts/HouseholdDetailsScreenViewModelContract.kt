@@ -12,6 +12,10 @@ abstract class HouseholdDetailsScreenViewModelContract : LoomViewModel() {
 
     abstract fun onRevokeInvitation()
 
+    abstract fun onRevokeInvitationCancelled()
+
+    abstract fun onRevokeInvitationConfirmed()
+
     abstract fun onCloseInvitation()
 
     abstract fun onDismissError()

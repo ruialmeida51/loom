@@ -132,6 +132,16 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
             onConfirm = viewModel::onDeleteCompletedConfirmed,
             onDismiss = viewModel::onDeleteCompletedCancelled,
         )
+    state.itemDeleteConfirmation?.let { confirmation ->
+        DestructiveConfirmation(
+            confirmation = confirmation,
+            busy = state.deletingSingleItem,
+            error = state.itemDeleteError,
+            confirmationTag = "confirm_delete_grocery",
+            onConfirm = viewModel::onRemoveItemConfirmed,
+            onDismiss = viewModel::onRemoveItemCancelled,
+        )
+    }
 }
 
 @Composable

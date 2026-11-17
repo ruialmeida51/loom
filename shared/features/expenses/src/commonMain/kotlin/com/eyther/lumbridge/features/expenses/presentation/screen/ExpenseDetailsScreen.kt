@@ -1,47 +1,48 @@
 package com.eyther.lumbridge.features.expenses.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.components.DestructiveButton
+import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
-import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.InfoRow
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
+import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
-import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
-import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
+import com.eyther.lumbridge.core.presentation.resources.calendarDateText
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
+import com.eyther.lumbridge.features.expenses.generated.resources.account_everyday
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_retry
-import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete
-import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete_message
-import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete_title
+import com.eyther.lumbridge.features.expenses.generated.resources.detail_account
+import com.eyther.lumbridge.features.expenses.generated.resources.detail_date
+import com.eyther.lumbridge.features.expenses.generated.resources.detail_paid_by
+import com.eyther.lumbridge.features.expenses.generated.resources.form_split
 import com.eyther.lumbridge.features.expenses.generated.resources.former_member
-import com.eyther.lumbridge.features.expenses.generated.resources.history_paid_by
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
+import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseDetailsLoading
+import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseDetailsSummaryCard
+import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseShareRow
+import com.eyther.lumbridge.features.expenses.presentation.mapper.splitMethodLabel
+import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseDetailsUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseDetailsScreenViewModelContract
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun ExpenseDetailsScreen(
-    viewModel: ExpenseDetailsScreenViewModelContract,
-    onDeleted: () -> Unit,
-) {
+fun ExpenseDetailsScreen(viewModel: ExpenseDetailsScreenViewModelContract, onDeleted: () -> Unit) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     LaunchedEffect(Unit) { viewModel.onRefresh() }
     LaunchedEffect(state.deleted) { if (state.deleted) onDeleted() }
@@ -50,80 +51,92 @@ fun ExpenseDetailsScreen(
         onRefresh = viewModel::onRefresh,
     ) {
         InnerExpenseDetailsScreen(
-            expense = state.expense,
-            currency = state.account?.currency.orEmpty(),
-            memberNames = state.memberNames,
+            details = state.details,
             loading = state.loading,
             error = state.error,
             onRetry = viewModel::onRefresh,
             onDismiss = viewModel::onDismissError,
         )
     }
-    if (state.showDeleteConfirmation)
-        AlertDialog(
-            onDismissRequest = viewModel::onDeleteCancelled,
-            title = { Text(stringResource(Res.string.detail_delete_title)) },
-            text = { Text(stringResource(Res.string.detail_delete_message)) },
-            confirmButton = {
-                DestructiveButton(
-                    text = stringResource(Res.string.detail_delete),
-                    onClick = viewModel::onDeleteConfirmed,
-                    loading = state.busy,
-                    modifier = Modifier.fillMaxWidth().testTag("confirm_delete_expense"),
-                )
-            },
-            dismissButton = {
-                OutlinedButton(onClick = viewModel::onDeleteCancelled, enabled = !state.busy) {
-                    Text(stringResource(Res.string.ui_cancel))
-                }
-            },
+    state.deleteConfirmation?.let { confirmation ->
+        DestructiveConfirmation(
+            confirmation = confirmation,
+            busy = state.busy,
+            confirmationTag = "confirm_delete_expense",
+            onConfirm = viewModel::onDeleteConfirmed,
+            onDismiss = viewModel::onDeleteCancelled,
         )
+    }
 }
 
 @Composable
 private fun InnerExpenseDetailsScreen(
-    expense: ExpenseDomain?,
-    currency: String,
-    memberNames: Map<String, String>,
+    details: ExpenseDetailsUi?,
     loading: Boolean,
     error: TextResource?,
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    Column(
-        Modifier.fillMaxSize()
-            .testTag("expense_details_content")
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().testTag("expense_details_content"),
+        contentPadding = PaddingValues(LoomSpacing.content),
+        verticalArrangement = Arrangement.spacedBy(LoomSpacing.content),
     ) {
-        if (loading) LoadingRows()
         error?.let { message ->
-            ErrorNotice(message = message, onDismiss = onDismiss)
-            OutlinedButton(onClick = onRetry) { Text(stringResource(Res.string.balance_retry)) }
-        }
-        if (expense != null && !loading) {
-            Text(expense.title, style = MaterialTheme.typography.titleLarge)
-            Text(
-                MoneyDomain(expense.amountMinor, currency).formatted(),
-                style = MaterialTheme.typography.headlineLarge,
-            )
-            Text(
-                stringResource(
-                    Res.string.history_paid_by,
-                    memberNames[expense.paidBy] ?: stringResource(Res.string.former_member),
-                ),
-            )
-            Text(expense.occurredOn, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            expense.shares.forEach { (id, amount) ->
-                Row {
-                    Text(
-                        memberNames[id] ?: stringResource(Res.string.former_member),
-                        modifier = Modifier.weight(1f),
-                    )
-                    Text(MoneyDomain(amount, currency).formatted())
-                }
+            item(key = "error") {
+                ErrorNotice(message = message, onDismiss = onDismiss)
+                LoomSecondaryButton(
+                    text = stringResource(Res.string.balance_retry),
+                    onClick = onRetry,
+                )
             }
         }
+        if (loading) item(key = "loading") { ExpenseDetailsLoading() }
+        else
+            details?.let { expense ->
+                item(key = "summary") { ExpenseDetailsSummaryCard(details = expense) }
+                item(key = "context") {
+                    GroupedSurface {
+                        InfoRow(
+                            label = stringResource(Res.string.detail_paid_by),
+                            value = expense.payerName ?: stringResource(Res.string.former_member),
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        InfoRow(
+                            label = stringResource(Res.string.detail_date),
+                            value = calendarDateText(expense.occurredOn),
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        InfoRow(
+                            label = stringResource(Res.string.detail_account),
+                            value =
+                                if (expense.isEveryday) stringResource(Res.string.account_everyday)
+                                else expense.accountName,
+                        )
+                    }
+                }
+                item(key = "split_header") {
+                    SectionTitle(title = stringResource(Res.string.form_split))
+                }
+                item(key = "shares") {
+                    GroupedSurface {
+                        Text(
+                            text = splitMethodLabel(expense.splitMethod),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(LoomSpacing.content),
+                        )
+                        expense.shares.forEachIndexed { index, share ->
+                            key(share.id) {
+                                if (index > 0)
+                                    HorizontalDivider(
+                                        color = MaterialTheme.colorScheme.outlineVariant,
+                                    )
+                                ExpenseShareRow(share = share)
+                            }
+                        }
+                    }
+                }
+            }
     }
 }

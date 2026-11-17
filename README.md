@@ -22,6 +22,8 @@ Latest polish: [News](docs/screenshots/feed-light.png), [dark news](docs/screens
 
 Current interaction pass: [Paginated news](docs/screenshots/feed-paged-light.png), [multi-feed unread filters](docs/screenshots/feed-filtered-dark-narrow.png), [task sheet at larger text](docs/screenshots/task-sheet-dark-narrow.png), [account actions](docs/screenshots/account-actions-light.png), [request ledger](docs/plans/2026-11-17-compact-interactions.md) and [final audit](docs/audits/2026-11-17-compact-interactions.md).
 
+Confirmation/detail pass: [Expense details](docs/screenshots/expense-details-light.png), [household details](docs/screenshots/household-details-light.png), [invitation](docs/screenshots/household-invitation-light.png), [split actions at larger text](docs/screenshots/split-actions-modern-narrow.png), [anchored settings menu](docs/screenshots/theme-menu-anchored-light.png), [request ledger](docs/plans/2026-11-17-confirmations-and-details.md) and [audit](docs/audits/2026-11-17-confirmations-and-details.md).
+
 ## What’s included
 
 - Google sign-in, separate email login/registration/verification screens, password visibility controls, and code resend with a cooldown. Existing accounts can also request an email sign-in code.

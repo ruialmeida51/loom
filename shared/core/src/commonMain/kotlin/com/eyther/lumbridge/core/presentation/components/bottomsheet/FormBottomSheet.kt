@@ -1,10 +1,14 @@
 package com.eyther.lumbridge.core.presentation.components.bottomsheet
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,18 +19,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
+import com.eyther.lumbridge.core.generated.resources.Res
+import com.eyther.lumbridge.core.generated.resources.action_cancel
+import com.eyther.lumbridge.core.generated.resources.action_save
+import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
+import org.jetbrains.compose.resources.stringResource
 
 /**
- * Scroll fields above fixed actions. verticalActions places the full-width primary action before
- * Cancel.
+ * Scroll fields above a fixed, equal-width action footer. Omit onDismiss for immediate-action
+ * sheets.
  */
 @Composable
 fun FormBottomSheet(
     title: String,
-    action: @Composable () -> Unit,
-    dismissAction: @Composable () -> Unit,
-    verticalActions: Boolean = false,
+    onAction: () -> Unit,
+    onDismiss: (() -> Unit)? = null,
+    actionLabel: String = stringResource(Res.string.action_save),
+    actionEnabled: Boolean = true,
+    busy: Boolean = false,
+    actionModifier: Modifier = Modifier,
     contentSpacing: Dp = LoomSpacing.content,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -47,21 +60,31 @@ fun FormBottomSheet(
             content = content,
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        if (verticalActions) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
-                verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
-            ) {
-                action()
-                dismissAction()
+        Row(
+            modifier =
+                Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(LoomSpacing.content),
+            horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+        ) {
+            onDismiss?.let { dismiss ->
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    propagateMinConstraints = true,
+                ) {
+                    LoomSecondaryButton(
+                        text = stringResource(Res.string.action_cancel),
+                        onClick = dismiss,
+                        enabled = !busy,
+                    )
+                }
             }
-        } else {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
-                horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
-            ) {
-                dismissAction()
-                Column(modifier = Modifier.weight(1f)) { action() }
+            Box(modifier = Modifier.weight(1f).fillMaxHeight(), propagateMinConstraints = true) {
+                LoomButton(
+                    text = actionLabel,
+                    onClick = onAction,
+                    loading = busy,
+                    enabled = actionEnabled,
+                    modifier = actionModifier.fillMaxWidth(),
+                )
             }
         }
     }

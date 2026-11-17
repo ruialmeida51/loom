@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,18 +12,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
-import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
-import com.eyther.lumbridge.features.shopping.generated.resources.ui_add_item
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_add_to_the_list
-import com.eyther.lumbridge.features.shopping.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_category
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_edit_item
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_one_item_per_line_for_quick_entry
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_quantity_or_note
-import com.eyther.lumbridge.features.shopping.generated.resources.ui_save_item
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_what_do_we_need
 import com.eyther.lumbridge.features.shopping.presentation.mapper.shoppingCategoryLabel
 import org.jetbrains.compose.resources.stringResource
@@ -46,21 +41,11 @@ fun ShoppingItemBottomSheet(
 ) {
     FormBottomSheet(
         title =
-            if (editing) stringResource(Res.string.ui_edit_item)
-            else stringResource(Res.string.ui_add_to_the_list),
-        action = {
-            LoomButton(
-                if (editing) stringResource(Res.string.ui_save_item)
-                else stringResource(Res.string.ui_add_item),
-                onSave,
-                loading = busy,
-            )
-        },
-        dismissAction = {
-            OutlinedButton(onClick = { onShowAdd(false) }, enabled = !busy) {
-                Text(stringResource(Res.string.ui_cancel))
-            }
-        },
+            stringResource(if (editing) Res.string.ui_edit_item else Res.string.ui_add_to_the_list),
+        onAction = onSave,
+        onDismiss = { onShowAdd(false) },
+        busy = busy,
+        actionModifier = Modifier.testTag("save_shopping_item"),
     ) {
         OutlinedTextField(
             name,

@@ -1,8 +1,16 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
+import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.generated.resources.Res
+import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete
+import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete_message
+import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete_title
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
+import com.eyther.lumbridge.features.expenses.presentation.mapper.toDetailsUi
+import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseDetailsUi
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 
 data class ExpenseDetailsState(
@@ -17,10 +25,28 @@ data class ExpenseDetailsState(
     val showDeleteConfirmation: Boolean = false,
     val deleted: Boolean = false,
 ) {
+    val deleteConfirmation: DestructiveConfirmationUi? =
+        if (showDeleteConfirmation) {
+            DestructiveConfirmationUi(
+                title = TextResource.Resource(Res.string.detail_delete_title),
+                message = TextResource.Resource(Res.string.detail_delete_message),
+                confirmText = TextResource.Resource(Res.string.detail_delete),
+                cancelText = TextResource.Resource(Res.string.ui_cancel),
+            )
+        } else null
+
+    val memberNames: Map<String, String> = members.associate { it.id to it.name }
+    val details: ExpenseDetailsUi? = account?.let {
+        expense?.toDetailsUi(
+            account = it,
+            userId = userId,
+            memberNames = memberNames,
+        )
+    }
+
     val isOwner: Boolean = members.firstOrNull { it.id == userId }?.role == "owner"
     val canEdit: Boolean =
         !busy &&
             account?.canAddExpense(userId = userId) == true &&
             expense?.canManage(userId = userId, isOwner = isOwner) == true
-    val memberNames: Map<String, String> = members.associate { it.id to it.name }
 }

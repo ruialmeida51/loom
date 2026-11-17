@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Confirm sign out, task/grocery deletion and invitation revocation before changes are made.
+- Consistent side-by-side Cancel/Save sheet actions and modern split controls.
+- Clearer expense totals, payer/date/account details and each person's share.
+- Refined household details and invitation codes, with useful role and success colours.
+- Selector menus now open beside their arrows.
+
 ## [4.0.6] - 2026-11-17
 
 - Smaller Home actions and clearer Inter/Space Grotesk typography.

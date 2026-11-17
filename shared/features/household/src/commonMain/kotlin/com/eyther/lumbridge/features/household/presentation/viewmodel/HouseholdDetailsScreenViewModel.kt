@@ -77,13 +77,25 @@ class HouseholdDetailsScreenViewModel(
     }
 
     override fun onRevokeInvitation() {
+        if (state.value.busy || state.value.invitation == null) return
+        mutableState.update { oldState -> oldState.copy(confirmingRevoke = true, error = null) }
+    }
+
+    override fun onRevokeInvitationCancelled() {
+        if (state.value.busy) return
+        mutableState.update { oldState -> oldState.copy(confirmingRevoke = false, error = null) }
+    }
+
+    override fun onRevokeInvitationConfirmed() {
+        if (!state.value.confirmingRevoke || state.value.invitation == null) return
         if (state.value.busy) return
         mutableState.update { oldState -> oldState.copy(busy = true, error = null) }
         launch {
             val result = revokeInvitationUseCase(householdId = context.id)
             mutableState.update { oldState ->
                 when (result) {
-                    is AppResult.Success -> oldState.copy(busy = false, invitation = null)
+                    is AppResult.Success ->
+                        oldState.copy(busy = false, invitation = null, confirmingRevoke = false)
                     is AppResult.Failure ->
                         oldState.copy(busy = false, error = result.error.toHouseholdTextResource())
                 }
@@ -92,7 +104,10 @@ class HouseholdDetailsScreenViewModel(
     }
 
     override fun onCloseInvitation() {
-        mutableState.update { oldState -> oldState.copy(invitation = null) }
+        if (state.value.busy) return
+        mutableState.update { oldState ->
+            oldState.copy(invitation = null, confirmingRevoke = false)
+        }
     }
 
     override fun onDismissError() {

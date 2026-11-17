@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,6 +23,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.DestructiveIconButton
+import com.eyther.lumbridge.core.presentation.theme.LoomColors
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.tasks.domain.model.TaskDomain
 import com.eyther.lumbridge.features.tasks.domain.model.TaskRecurrenceDomain
@@ -59,7 +61,12 @@ internal fun TaskListRow(
         Box(modifier = Modifier.size(TaskCheckboxSlot), contentAlignment = Alignment.Center) {
             if (completing)
                 CircularProgressIndicator(Modifier.size(TaskProgressSize), strokeWidth = 2.dp)
-            else Checkbox(checked = task.completed, onCheckedChange = null)
+            else
+                Checkbox(
+                    checked = task.completed,
+                    onCheckedChange = null,
+                    colors = CheckboxDefaults.colors(checkedColor = LoomColors.positive),
+                )
         }
         Column(
             modifier = Modifier.weight(1f),

@@ -7,18 +7,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.DestructiveButton
+import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
@@ -34,12 +32,9 @@ import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_1_s_monthly
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_active
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel_schedule
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel_this_schedule
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancelled
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_each_active_schedule_records_an_expense_on_its_due
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_former_member
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_future_entries_will_stop_expenses_already_recorded_stay_in
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_keep_schedule
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_monthly_day
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_next_entry_1_s
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_no_recurring_expenses_yet
@@ -67,13 +62,19 @@ fun RecurringExpensesScreen(
             busy = state.busy,
             error = state.displayError,
             currency = state.currency,
-            cancellation = state.cancellation,
             onCancelRequested = viewModel::onCancelRequested,
-            onCancelDismissed = viewModel::onCancelDismissed,
-            onCancelConfirmed = viewModel::onCancelConfirmed,
             onControl = viewModel::onControlSchedule,
             onRetry = viewModel::onRetry,
             onDismiss = viewModel::onDismissError,
+        )
+    }
+    state.cancellationConfirmation?.let { confirmation ->
+        DestructiveConfirmation(
+            confirmation = confirmation,
+            busy = state.busy,
+            confirmationTag = "confirm_cancel_recurring",
+            onConfirm = viewModel::onCancelConfirmed,
+            onDismiss = viewModel::onCancelDismissed,
         )
     }
 }
@@ -86,10 +87,7 @@ private fun InnerRecurringExpensesScreen(
     busy: Boolean,
     error: TextResource?,
     currency: String,
-    cancellation: RecurringExpenseDomain?,
     onCancelRequested: (RecurringExpenseDomain) -> Unit,
-    onCancelDismissed: () -> Unit,
-    onCancelConfirmed: () -> Unit,
     onControl: (RecurringExpenseDomain, RecurringExpenseActionDomain) -> Unit,
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
@@ -189,31 +187,5 @@ private fun InnerRecurringExpensesScreen(
                         )
                 }
             }
-    }
-    cancellation?.let { rule ->
-        AlertDialog(
-            onDismissRequest = onCancelDismissed,
-            title = { Text(stringResource(Res.string.ui_cancel_this_schedule)) },
-            text = {
-                Text(
-                    stringResource(
-                        Res.string.ui_future_entries_will_stop_expenses_already_recorded_stay_in,
-                    ),
-                )
-            },
-            confirmButton = {
-                DestructiveButton(
-                    text = stringResource(Res.string.ui_cancel_schedule),
-                    onClick = onCancelConfirmed,
-                    loading = busy,
-                    modifier = Modifier.testTag("confirm_cancel_recurring"),
-                )
-            },
-            dismissButton = {
-                OutlinedButton(onClick = onCancelDismissed, enabled = !busy) {
-                    Text(stringResource(Res.string.ui_keep_schedule))
-                }
-            },
-        )
     }
 }

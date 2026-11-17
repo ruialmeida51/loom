@@ -6,6 +6,9 @@ import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingSnapshotDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
+import com.eyther.lumbridge.features.shopping.generated.resources.item_delete_confirm
+import com.eyther.lumbridge.features.shopping.generated.resources.item_delete_message
+import com.eyther.lumbridge.features.shopping.generated.resources.item_delete_title
 import com.eyther.lumbridge.features.shopping.generated.resources.list_delete
 import com.eyther.lumbridge.features.shopping.generated.resources.list_delete_message
 import com.eyther.lumbridge.features.shopping.generated.resources.list_delete_title
@@ -32,6 +35,8 @@ data class ShoppingState(
     val deletingCompleted: Boolean = false,
     val successMessage: TextResource? = null,
     val deletingList: ShoppingListDomain? = null,
+    val deletingItem: ShoppingItemDomain? = null,
+    val itemDeleteError: TextResource? = null,
     val inlineError: TextResource? = null,
     val loading: Boolean = true,
     val refreshing: Boolean = false,
@@ -49,6 +54,17 @@ data class ShoppingState(
     val formError: TextResource? = null,
     val undoMessage: TextResource? = null,
 ) {
+
+    val itemDeleteConfirmation: DestructiveConfirmationUi? = deletingItem?.let { item ->
+        DestructiveConfirmationUi(
+            title = TextResource.Resource(Res.string.item_delete_title),
+            message =
+                TextResource.Resource(Res.string.item_delete_message, args = listOf(item.name)),
+            confirmText = TextResource.Resource(Res.string.item_delete_confirm),
+            cancelText = TextResource.Resource(Res.string.ui_cancel),
+        )
+    }
+    val deletingSingleItem: Boolean = deletingItem?.id in savingItemIds
 
     val deleteConfirmation: DestructiveConfirmationUi? = deletingList?.let { target ->
         DestructiveConfirmationUi(

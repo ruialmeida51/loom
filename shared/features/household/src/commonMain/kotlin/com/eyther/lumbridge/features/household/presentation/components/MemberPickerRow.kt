@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.household.presentation.components
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
@@ -12,10 +11,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.household.generated.resources.Res
 import com.eyther.lumbridge.features.household.generated.resources.member_selector_choose
@@ -37,29 +38,40 @@ fun MemberPickerRow(
     var expanded by remember { mutableStateOf(false) }
     val selectedMember = members.firstOrNull { it.id == selectedId }
     val you = stringResource(Res.string.member_selector_you)
-    Box(modifier = modifier.fillMaxWidth()) {
-        NavigationRow(
-            title =
-                if (selectedMember != null && selectedMember.id == currentUserId) you
-                else selectedMember?.name ?: stringResource(Res.string.member_selector_choose),
-            description = label,
-            glyph = Glyph.PERSON,
-            trailingGlyph = Glyph.CHEVRON_DOWN,
-            onClick = { expanded = true },
-            enabled = enabled,
-            emphasisColor = emphasisColor,
-        )
-        DropdownMenu(expanded = expanded && enabled, onDismissRequest = { expanded = false }) {
-            members.forEach { member ->
-                DropdownMenuItem(
-                    modifier = Modifier.semantics { selected = member.id == selectedId },
-                    text = { Text(if (member.id == currentUserId) you else member.name) },
-                    onClick = {
-                        expanded = false
-                        onSelected(member.id)
-                    },
-                )
+    NavigationRow(
+        title =
+            if (selectedMember != null && selectedMember.id == currentUserId) you
+            else selectedMember?.name ?: stringResource(Res.string.member_selector_choose),
+        description = label,
+        glyph = Glyph.PERSON,
+        onClick = { expanded = true },
+        enabled = enabled,
+        emphasisColor = emphasisColor,
+        modifier = modifier,
+        trailingContent = {
+            Box(modifier = Modifier.testTag("member_menu_anchor")) {
+                LoomIcon(glyph = Glyph.CHEVRON_DOWN, decorative = true)
+                DropdownMenu(
+                    expanded = expanded && enabled,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.testTag("member_menu"),
+                ) {
+                    members.forEach { member ->
+                        DropdownMenuItem(
+                            modifier = Modifier.semantics { selected = member.id == selectedId },
+                            text = { Text(if (member.id == currentUserId) you else member.name) },
+                            trailingIcon = {
+                                if (member.id == selectedId)
+                                    LoomIcon(glyph = Glyph.CHECK, decorative = true)
+                            },
+                            onClick = {
+                                expanded = false
+                                onSelected(member.id)
+                            },
+                        )
+                    }
+                }
             }
-        }
-    }
+        },
+    )
 }

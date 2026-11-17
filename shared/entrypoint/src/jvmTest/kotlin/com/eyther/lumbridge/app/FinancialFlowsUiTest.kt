@@ -48,7 +48,7 @@ class FinancialFlowsUiTest {
             onNodeWithText("New trip or event").performClick()
             onNodeWithText("Account name").performTextInput("Lisbon weekend")
             onNodeWithText("GBP").performClick()
-            onNodeWithText("Save account").performClick()
+            onNodeWithTag("save_expense_account").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Lisbon weekend").fetchSemanticsNodes().isNotEmpty()
             }
@@ -61,8 +61,8 @@ class FinancialFlowsUiTest {
             onNodeWithText("By shares").performClick()
             onNodeWithContentDescription("Share for You").performTextReplacement("2")
             capture("split-shares-light")
-            onNodeWithText("Done").performClick()
-            onNodeWithText("Save expense").performClick()
+            onNodeWithTag("confirm_expense_split").performClick()
+            onNodeWithTag("save_expense").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Beach groceries").fetchSemanticsNodes().isNotEmpty()
             }
@@ -90,7 +90,7 @@ class FinancialFlowsUiTest {
             onNodeWithText("Add expense").performScrollTo().performClick()
             onNodeWithTag("expense_title").performTextInput("Electrician")
             onNodeWithTag("expense_amount").performTextInput("12.00")
-            onNodeWithText("Save expense").performClick()
+            onNodeWithTag("save_expense").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
                     onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
@@ -104,7 +104,7 @@ class FinancialFlowsUiTest {
             onNodeWithText("Edit expense").performClick()
             onNodeWithTag("expense_title").performTextReplacement("Electrician final")
             onNodeWithTag("expense_amount").performTextReplacement("18.00")
-            onNodeWithText("Save expense").performClick()
+            onNodeWithTag("save_expense").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Expense details").fetchSemanticsNodes().isNotEmpty()
             }
@@ -136,7 +136,7 @@ class FinancialFlowsUiTest {
             onNodeWithContentDescription("Share for You").performTextReplacement("60")
             onNodeWithContentDescription("Share for Alex").performTextReplacement("40")
             onNodeWithContentDescription("Share for Sam").performTextReplacement("0")
-            onNodeWithText("Done").performClick()
+            onNodeWithTag("confirm_expense_split").performClick()
             onNodeWithText("Percentages", substring = true).assertExists()
             onNodeWithText("Split").performClick()
             onNodeWithText("€7.20").assertExists()
@@ -146,13 +146,13 @@ class FinancialFlowsUiTest {
             onNodeWithContentDescription("Share for You").performTextReplacement("6.00")
             onNodeWithContentDescription("Share for Alex").performTextReplacement("6.00")
             onNodeWithContentDescription("Share for Sam").performTextReplacement("0.00")
-            onNodeWithText("Done").performClick()
+            onNodeWithTag("confirm_expense_split").performClick()
             onNodeWithTag("expense_title").assertTextContains("Shared dinner")
             onNodeWithText("More details").performClick()
             onNodeWithText("Date").performScrollTo().performClick()
             onNodeWithTag("form_sheet").assertIsDisplayed()
             capture("expense-date-light")
-            onNodeWithText("Done").performClick()
+            onNodeWithTag("confirm_expense_date").performClick()
             onNodeWithTag("expense_amount").assertTextContains("12.00")
         }
 
@@ -173,7 +173,7 @@ class FinancialFlowsUiTest {
             capture("split-shares-narrow")
             onNodeWithTag("confirm_expense_split").performClick()
             onNodeWithTag("expense_title").assertTextContains("Weekend food")
-            onNodeWithText("Save expense").assertIsDisplayed()
+            onNodeWithTag("save_expense").assertIsDisplayed()
         }
 
     @Test
@@ -186,7 +186,7 @@ class FinancialFlowsUiTest {
             onNodeWithText("New trip or event").performClick()
             onNodeWithText("Account name").performTextInput("Summer rental")
             onNodeWithText("GBP").performClick()
-            onNodeWithText("Save account").performClick()
+            onNodeWithTag("save_expense_account").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Summer rental").fetchSemanticsNodes().isNotEmpty()
             }
@@ -196,7 +196,7 @@ class FinancialFlowsUiTest {
             onNodeWithTag("expense_amount").performTextInput("90.00")
             onNodeWithText("More details").performClick()
             onNodeWithTag("expense_recurring").performScrollTo().performClick()
-            onNodeWithText("Save expense").performClick()
+            onNodeWithTag("save_expense").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Cottage rent").fetchSemanticsNodes().isNotEmpty()
             }

@@ -7,7 +7,6 @@
     <string name="ui_a_little_task">New task</string>
     <string name="ui_what_needs_doing">What needs doing?</string>
     <string name="ui_times_are_in_1_s">Times are in %1$s</string>
-    <string name="ui_save_task">Save task</string>
     <string name="ui_cancel">Cancel</string>
     <string name="token_no_repeat">No repeat</string>
     <string name="token_daily">Daily</string>
@@ -29,9 +28,13 @@
     <string name="task_notify_household">Notify the household</string>
     <string name="task_notification_time">Notification time</string>
     <string name="task_at_time">At %1$s</string>
-    <string name="task_picker_done">Done</string>
+    <string name="task_picker_done">Save</string>
     <string name="task_date_required">Choose a date before adding a repeat or notification.</string>
     <string name="date_label_without_time">%1$s · %2$s</string>
     <string name="tasks_title">Tasks</string>
     <plurals name="tasks_completed"><item quantity="one">Completed (%1$d)</item><item quantity="other">Completed (%1$d)</item></plurals>
+    <string name="task_delete_title">Delete task?</string>
+    <string name="task_delete_message">Delete “%1$s” for everyone in this household?</string>
+    <string name="task_delete_recurring_message">Delete “%1$s” for everyone in this household? Future repetitions will also stop.</string>
+    <string name="task_delete_confirm">Delete task</string>
 </resources>

@@ -82,6 +82,16 @@ class AccountScreenViewModel(
 
     override val state = mutableState.asStateFlow()
 
+    override fun onSignOutRequested() {
+        if (state.value.busy) return
+        mutableState.update { oldState -> oldState.copy(showSignOutConfirmation = true) }
+    }
+
+    override fun onSignOutCancelled() {
+        if (state.value.busy) return
+        mutableState.update { oldState -> oldState.copy(showSignOutConfirmation = false) }
+    }
+
     override fun onEditNickname() {
         if (!state.value.canEditNickname) return
         inputState.value = InnerInputState(nickname = state.value.profile?.nickname.orEmpty())

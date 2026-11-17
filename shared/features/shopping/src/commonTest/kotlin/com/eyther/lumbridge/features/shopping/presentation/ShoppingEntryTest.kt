@@ -406,6 +406,70 @@ class ShoppingEntryTest {
         }
     }
 
+    @Test
+    fun groceryRemovalRequiresConfirmationAndFailurePreservesTheOriginalVersionForRetry() =
+        runTest {
+            Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+            val source = ShoppingEntryFixtureDataSource().also { it.deferItemWrites = true }
+            val grocery =
+                ShoppingItemDomain(
+                    id = "milk",
+                    name = "Milk",
+                    quantity = "",
+                    category = "Other",
+                    listId = "groceries",
+                    checked = false,
+                    version = 4,
+                )
+            val original = (source.snapshot.value as AppResult.Success).value
+            source.snapshot.value = AppResult.Success(original.copy(items = listOf(grocery)))
+            val store = ViewModelStore()
+            val viewModel = createViewModel(source).also { store.put("shopping", it) }
+            try {
+                backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                    viewModel.state.collect()
+                }
+                runCurrent()
+                advanceTimeBy(300)
+                runCurrent()
+                viewModel.onRemoveItemConfirmed()
+                runCurrent()
+                assertTrue(source.itemWrites.isEmpty())
+                viewModel.onRemoveItem(grocery)
+                runCurrent()
+                assertNotNull(viewModel.state.value.itemDeleteConfirmation)
+                assertTrue(source.itemWrites.isEmpty())
+                viewModel.onRemoveItemCancelled()
+                assertEquals(null, viewModel.state.value.itemDeleteConfirmation)
+                assertEquals(grocery, viewModel.state.value.items.single())
+                viewModel.onRemoveItem(grocery)
+                viewModel.onRemoveItemConfirmed()
+                runCurrent()
+                val first = source.itemWrites.getValue(grocery.id)
+                viewModel.onRemoveItemConfirmed()
+                viewModel.onRemoveItemCancelled()
+                runCurrent()
+                assertTrue(viewModel.state.value.deletingSingleItem)
+                assertEquals(first, source.itemWrites.getValue(grocery.id))
+                first.complete(AppResult.Failure(CommonError.NoConnection()))
+                runCurrent()
+                assertNotNull(viewModel.state.value.itemDeleteError)
+                assertEquals(grocery, viewModel.state.value.items.single())
+                viewModel.onRemoveItemConfirmed()
+                runCurrent()
+                source.itemWrites
+                    .getValue(grocery.id)
+                    .complete(AppResult.Success(grocery.copy(removed = true, version = 5)))
+                runCurrent()
+                assertEquals(null, viewModel.state.value.itemDeleteConfirmation)
+                assertTrue(viewModel.state.value.items.isEmpty())
+                assertNotNull(viewModel.state.value.undoMessage)
+            } finally {
+                store.clear()
+                Dispatchers.resetMain()
+            }
+        }
+
     private fun createViewModel(
         source: ShoppingEntryFixtureDataSource,
         selection: ShoppingSelectionFixtureDataSource = ShoppingSelectionFixtureDataSource(),

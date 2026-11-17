@@ -55,7 +55,7 @@ class GroupManagementUiTest {
             onNodeWithTag("shopping_inline_input").assertDoesNotExist()
             onNodeWithText("Create list").performClick()
             onNodeWithText("List name").performTextInput("Weekend groceries")
-            onNodeWithText("Save list").performClick()
+            onNodeWithTag("save_shopping_list").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Weekend groceries").fetchSemanticsNodes().isNotEmpty()
             }
@@ -71,7 +71,7 @@ class GroupManagementUiTest {
             onNodeWithTag("expense_accounts").performClick()
             onNodeWithText("New trip or event").performClick()
             onNodeWithText("Account name").performTextInput("Finished holiday")
-            onNodeWithText("Save account").performClick()
+            onNodeWithTag("save_expense_account").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Finished holiday").fetchSemanticsNodes().isNotEmpty()
             }
@@ -82,7 +82,7 @@ class GroupManagementUiTest {
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Archived").fetchSemanticsNodes().isNotEmpty()
             }
-            onNode(hasText("Done") and hasAnyAncestor(hasTestTag("modal_sheet"))).performClick()
+            onNode(hasText("Close") and hasAnyAncestor(hasTestTag("modal_sheet"))).performClick()
             onNodeWithTag("expense_accounts").performClick()
             onNode(hasText("Finished holiday") and hasAnyAncestor(hasTestTag("modal_sheet")))
                 .assertDoesNotExist()

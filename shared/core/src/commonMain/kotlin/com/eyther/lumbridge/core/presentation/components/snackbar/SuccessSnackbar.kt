@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.theme.LoomColors
 
 const val DEFAULT_ALERT_DURATION: Long = 4_000L
 
@@ -43,8 +44,8 @@ fun SuccessSnackbar(message: TextResource?, modifier: Modifier = Modifier) {
                     }
                     .testTag("success_snackbar"),
             shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.inverseSurface,
-            contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+            color = LoomColors.positiveContainer,
+            contentColor = LoomColors.onPositiveContainer,
             shadowElevation = 4.dp,
         ) {
             Row(

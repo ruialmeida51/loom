@@ -256,8 +256,20 @@ class TasksScreenViewModel(
 
     override fun onRemoveTask(id: String) {
         if (id in state.value.completingIds || id in state.value.removingIds) return
+        val task = state.value.items.firstOrNull { it.id == id } ?: return
+        mutableState.update { oldState -> oldState.copy(deletingTask = task, deleteError = null) }
+    }
+
+    override fun onRemoveTaskCancelled() {
+        if (state.value.deleting) return
+        mutableState.update { oldState -> oldState.copy(deletingTask = null, deleteError = null) }
+    }
+
+    override fun onRemoveTaskConfirmed() {
+        val id = state.value.deletingTask?.id ?: return
+        if (id in state.value.completingIds || id in state.value.removingIds) return
         mutableState.update { oldState ->
-            oldState.copy(removingIds = oldState.removingIds.add(id), error = null)
+            oldState.copy(removingIds = oldState.removingIds.add(id), deleteError = null)
         }
         launch {
             val result = removeTaskUseCase(id)
@@ -267,11 +279,12 @@ class TasksScreenViewModel(
                         oldState.copy(
                             items = oldState.items.filterNot { it.id == id },
                             removingIds = oldState.removingIds.remove(id),
+                            deletingTask = null,
                         )
                     is AppResult.Failure ->
                         oldState.copy(
                             removingIds = oldState.removingIds.remove(id),
-                            error = result.error.toTasksTextResource(),
+                            deleteError = result.error.toTasksTextResource(),
                         )
                 }
             }

@@ -33,8 +33,6 @@
   <string name="ui_one_item_per_line_for_quick_entry">One item per line for quick entry.</string>
   <string name="ui_quantity_or_note">Quantity or note</string>
   <string name="ui_category">Category</string>
-  <string name="ui_save_item">Save item</string>
-  <string name="ui_add_item">Add item</string>
   <string name="ui_cancel">Cancel</string>
   <string name="ui_shopping_lists">Shopping lists</string>
   <string name="ui_rename">Rename</string>
@@ -44,7 +42,6 @@
   <string name="ui_done">Done</string>
   <string name="ui_name_your_list">Name your list</string>
   <string name="ui_list_name">List name</string>
-  <string name="ui_save_list">Save list</string>
   <string name="error_active_list_required">Choose an active shopping list in this household.</string>
   <string name="error_access_denied">Household access denied.</string>
   <string name="error_list_changed">This list changed. Refresh and try again.</string>
@@ -93,4 +90,7 @@
     <string name="completed_deleted">Completed groceries deleted: %1$d</string>
     <string name="entry_discard_description">Discard unsaved grocery: %1$s</string>
     <string name="completed_invalid_selection">Select up to 1,000 completed groceries from one list.</string>
+    <string name="item_delete_title">Delete grocery?</string>
+    <string name="item_delete_message">Delete “%1$s” from this shared shopping list?</string>
+    <string name="item_delete_confirm">Delete grocery</string>
 </resources>

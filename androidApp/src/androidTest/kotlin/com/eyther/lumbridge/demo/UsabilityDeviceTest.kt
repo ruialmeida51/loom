@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -293,6 +294,35 @@ class UsabilityDeviceTest {
         compose.onNodeWithTag("add_task").assertIsDisplayed()
         pressSystemBack()
         awaitDestination(tag = "home_content")
+    }
+
+    @Test
+    fun systemBackCancelsDangerousActionsWithoutLeavingTheCurrentScreen() {
+        compose.onNodeWithTag("navigation_tasks").performClick()
+        awaitDestination(tag = "tasks_content")
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
+        }
+        compose
+            .onNodeWithContentDescription("Delete task: Water the plants")
+            .performScrollTo()
+            .performClick()
+        compose.onNodeWithTag("confirm_delete_task").assertIsDisplayed()
+        capture(name = "task-delete-confirmation")
+        pressSystemBack()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("confirm_delete_task").fetchSemanticsNodes().isEmpty()
+        }
+        compose.onNodeWithContentDescription("Water the plants").assertIsDisplayed()
+        compose.onNodeWithTag("open_my_account").performClick()
+        compose.onNodeWithTag("account_content").performScrollToNode(hasTestTag("sign_out"))
+        compose.onNodeWithTag("sign_out").performClick()
+        compose.onNodeWithTag("confirm_sign_out").assertIsDisplayed()
+        pressSystemBack()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("confirm_sign_out").fetchSemanticsNodes().isEmpty()
+        }
+        compose.onNodeWithTag("account_content").assertIsDisplayed()
     }
 
     private fun capture(name: String) {

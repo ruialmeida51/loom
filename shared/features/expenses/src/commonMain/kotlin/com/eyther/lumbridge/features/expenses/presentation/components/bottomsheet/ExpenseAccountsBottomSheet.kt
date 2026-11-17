@@ -4,7 +4,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
-import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -28,14 +27,9 @@ fun ExpenseAccountsBottomSheet(
 ) {
     FormBottomSheet(
         title = stringResource(Res.string.account_accounts),
-        action = {
-            LoomButton(
-                text = stringResource(Res.string.account_new),
-                onClick = onCreate,
-                enabled = !busy,
-            )
-        },
-        dismissAction = {},
+        onAction = onCreate,
+        actionLabel = stringResource(Res.string.account_new),
+        busy = busy,
     ) {
         GroupedSurface {
             active.forEachIndexed { index, account ->

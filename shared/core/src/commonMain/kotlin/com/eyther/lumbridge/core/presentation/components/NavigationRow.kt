@@ -25,7 +25,8 @@ private val MaximumSummaryWidth = 180.dp // Keep the row title readable on a com
 
 /**
  * Compact navigation/action row; emphasisColor can identify a destructive action without relying on
- * colour alone.
+ * colour alone. [trailingContent] keeps a popup's anchor beside its caret, or shows action
+ * progress.
  */
 @Composable
 fun NavigationRow(
@@ -38,6 +39,7 @@ fun NavigationRow(
     glyph: Glyph? = null,
     trailingGlyph: Glyph = Glyph.ARROW,
     emphasisColor: Color = Color.Unspecified,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     val titleColor =
         if (emphasisColor == Color.Unspecified) MaterialTheme.colorScheme.onSurface
@@ -78,10 +80,12 @@ fun NavigationRow(
                 modifier = Modifier.widthIn(max = MaximumSummaryWidth),
             )
         }
-        LoomIcon(
-            glyph = trailingGlyph,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            decorative = true,
-        )
+        if (trailingContent != null) trailingContent()
+        else
+            LoomIcon(
+                glyph = trailingGlyph,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                decorative = true,
+            )
     }
 }

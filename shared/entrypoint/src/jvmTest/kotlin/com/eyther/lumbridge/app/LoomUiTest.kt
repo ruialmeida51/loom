@@ -58,7 +58,7 @@ class LoomUiTest {
             awaitLoadedDestination(tag = "feed_subscriptions")
             onNodeWithText("Add a feed").performClick()
             onNodeWithText("https://…").performTextInput("https://")
-            onNodeWithText("Save feed").performClick()
+            onNodeWithTag("save_feed_subscription").performClick()
 
             val invalidUrlMessage = "Enter a secure RSS or Atom feed URL beginning with https://."
             waitUntil(timeoutMillis = 5_000) {
@@ -66,9 +66,9 @@ class LoomUiTest {
             }
             onAllNodesWithText(invalidUrlMessage).assertCountEquals(1)
             onNodeWithText("https://…").performTextReplacement("https://example.com/feed")
-            onNodeWithText("Save feed").performClick()
+            onNodeWithTag("save_feed_subscription").performClick()
             waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Save feed").fetchSemanticsNodes().isEmpty()
+                onAllNodesWithTag("save_feed_subscription").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithText(invalidUrlMessage).assertDoesNotExist()
             onNodeWithText("Dismiss").assertDoesNotExist()
@@ -119,7 +119,7 @@ class LoomUiTest {
             onNodeWithTag("expense_title").performTextInput("Streaming service")
             onNodeWithTag("expense_amount").performTextInput("15.00")
             capture("expense-form-light")
-            onNodeWithText("Save expense").performClick()
+            onNodeWithTag("save_expense").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
                     onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()

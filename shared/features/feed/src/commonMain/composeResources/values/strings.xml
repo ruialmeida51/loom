@@ -12,7 +12,6 @@
   <string name="ui_read_story">Read story</string>
   <string name="ui_follow_a_feed_a533eb8">Follow a feed</string>
   <string name="ui_paste_an_rss_or_atom_feed_url_articles_will">Paste an RSS or Atom feed URL. Articles will refresh automatically.</string>
-  <string name="ui_follow_feed">Follow feed</string>
   <string name="ui_cancel">Cancel</string>
   <string name="ui_feed_url_hint" translatable="false">https://…</string>
     <string name="error_already_followed">Your household already follows this feed.</string>
@@ -23,7 +22,6 @@
   <string name="feed_manage_description">Your subscriptions, updates and source settings</string>
   <string name="feed_add">Add a feed</string>
   <string name="feed_edit">Edit address</string>
-  <string name="feed_save">Save feed</string>
   <string name="feed_refresh">Refresh</string>
   <string name="feed_remove">Remove</string>
   <string name="feed_remove_title">Remove this feed?</string>

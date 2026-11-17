@@ -42,10 +42,14 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 - Use one sheet for a short contextual task: split editing, shopping edits, task creation,
   feed subscription, repayment or nickname editing. Fields scroll above a fixed action footer.
   Close or replace a sheet rather than stacking sheets.
-- Task/payment sheets put full-width primary and Cancel buttons in a vertical footer. Optional task
-  date controls stay compact, with a gap before the consistently outlined 48dp remove-date control.
+- All form sheets use equal-width outlined Cancel and primary Save buttons side by side. Labels may
+  wrap at larger text sizes; actions share one height. Read-only sheets say Close; immediate-selection
+  managers omit Cancel/Done. Optional task date controls stay compact, with a gap before the consistently
+  outlined 48dp remove-date control. Menus anchor to their caret or overflow icon, not the full row.
 - Use full destinations for expense capture/details, account creation and browsing full history.
-  Dialogs are for brief confirmations. Disable competing dismissal/actions during a save.
+  Dialogs are for brief confirmations. Confirm sign out, destructive shared deletes and invitation
+  revocation. Keep retryable failures in context and disable competing dismissal/actions during a write.
+  Routine task/checklist completion and reversible archive/restore stay direct.
 - Cancel, swipe and Back discard only an unapplied sheet draft; they do not discard the parent form.
   Preserve inputs, focus and scroll on resume, identity refresh and retry.
 - Login, registration, verification and household selection/create/join remain separate workflows.
@@ -102,8 +106,14 @@ Reopen and Delete. A trip/event deletion removes its records for everyone and re
 household owner; Everyday remains the built-in account. Contextual actions expose recurring bills
 and current balances. Expense rows prioritize title and total, then payer, personal share and the actual
 expense date, without redundant Today or daily section headings.
-Expense details expose Edit/Delete in their Host toolbar menu; the brief destructive confirmation
-uses a full-width button. Repayments use personal wording and named Paid by/Received by selection rows.
+Expense details expose Edit/Delete in their Host toolbar menu. Prioritize total/title and personal
+share, then grouped payer/date/account metadata and named participant shares. Green payer/owner cues
+include labels; an expense allocation is not an outstanding debt. Confirmations pair outlined Cancel
+with a filled destructive action. Repayments use personal wording and named Paid by/Received by rows.
+
+Household details use read-only currency/time-zone rows, named members with owner/current-user cues and
+one contextual invitation action. Display the six-character code clearly with its actual one-use,
+24-hour lifetime; require confirmation before revoking active codes.
 
 More retains Feed and household details. Profile/preferences have explicit section
 spacing. Avoid importing unrelated personal-finance calculators while daily usability is the priority.
