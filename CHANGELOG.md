@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.6] - 2026-11-17
+
 - Smaller Home actions and clearer Inter/Space Grotesk typography.
 - Filter news by several feeds or unread stories; load more as you read.
 - Add tasks with a floating button and clearer stacked form actions.
