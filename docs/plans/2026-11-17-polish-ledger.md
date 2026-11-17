@@ -148,3 +148,10 @@ news title immediately after an asynchronous native Back event. The lifecycle lo
 `RESUMED` preceding input focus returning from ActivityScenario's helper window. Native checks now
 wait for sheet removal, actual window focus and the returned destination, with one Back event and
 the same route/draft assertions. The corrected checks must pass before delivery.
+
+The stricter rerun still failed at sheet dismissal and nested Back, before the resumed-window step.
+Waiting alone was insufficient. Android logs explicitly report that `OnBackInvokedCallback` is not
+enabled. The application now explicitly opts into Android's Back-invoked integration, as required by
+the native predictive-back path used by Navigation3/Material sheets. This is a production manifest
+change; its native checks remain a gate, rather than dismissing these results as test flakiness.
+[Android Back integration guidance](https://developer.android.com/guide/navigation/custom-back/predictive-back-gesture).

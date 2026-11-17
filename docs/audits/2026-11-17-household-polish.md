@@ -52,6 +52,9 @@ Android device execution and iOS compilation remain release gates in CI. A build
   The initial CI run passed all four native checks and iOS/Xcode; a parallel PR run exposed native
   test synchronization gaps. Follow-up checks await sheet removal, restored window focus and the
   returned destination instead of treating semantic existence or `RESUMED` as native readiness.
+  Stricter runs still failed to dismiss the sheet/pop the nested route. Android reported Back-invoked
+  callbacks disabled, so the production manifest now explicitly enables that integration; native
+  execution must validate this fix before merge.
 - Disposable PostgreSQL: **16 migrations** and integration tests pass. New cases verify stale edit refusal,
   household isolation, atomic article removal, anonymous denial and rejection of late old-worker inserts.
 - Deno checks pass; **6 RSS parsing/security/configuration tests** pass. The actual Expresso URL returned
