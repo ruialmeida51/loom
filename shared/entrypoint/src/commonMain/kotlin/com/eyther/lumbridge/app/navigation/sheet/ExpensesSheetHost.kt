@@ -36,6 +36,7 @@ internal fun ExpensesSheetHost(
     }
     controller.registerBottomSheet<ExpensesSheets.Settlement> {
         SettlementBottomSheet(
+            currentUserId = state.userId,
             members = state.accountMembers,
             from = state.from,
             to = state.to,

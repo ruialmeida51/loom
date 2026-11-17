@@ -23,6 +23,7 @@ import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
@@ -90,6 +91,7 @@ private fun InnerHouseholdScreen(
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     NavigationRow(
                         title = household.name,
+                        glyph = Glyph.HOME,
                         description = household.currency,
                         onClick = { onSelect(household) },
                         enabled = !busy,

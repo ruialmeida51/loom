@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 internal data class FeedSubscriptionResponse(
     @SerialName("id") val id: String,
     @SerialName("url") val url: String,
+    @SerialName("publisher") val publisher: String? = null,
     @SerialName("last_fetched_at") val lastFetchedAt: String? = null,
     @SerialName("last_error") val lastError: String? = null,
 )

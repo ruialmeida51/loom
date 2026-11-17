@@ -30,7 +30,7 @@ class CommonFeedSubscriptionDataSource(
             .watch(table = "feed_subscriptions", scopeId = context.id) {
                 access
                     .selectHouseholdRows<FeedSubscriptionResponse>(
-                        table = "feed_subscriptions",
+                        table = "feed_subscriptions_with_publisher",
                         householdId = context.id,
                     )
                     .map { it.toDomain() }

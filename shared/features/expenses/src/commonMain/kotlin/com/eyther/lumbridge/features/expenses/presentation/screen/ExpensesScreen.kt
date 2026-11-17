@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Tab
@@ -21,17 +20,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.ActionFab
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.FloatingActionContentPadding
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
-import com.eyther.lumbridge.core.presentation.components.LoomCard
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
-import com.eyther.lumbridge.core.presentation.components.icon.Glyph
-import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
@@ -39,22 +38,17 @@ import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_accounts
 import com.eyther.lumbridge.features.expenses.generated.resources.account_archived
 import com.eyther.lumbridge.features.expenses.generated.resources.account_manage
-import com.eyther.lumbridge.features.expenses.generated.resources.balance_all_settled
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_everyone
-import com.eyther.lumbridge.features.expenses.generated.resources.balance_gets_back
-import com.eyther.lumbridge.features.expenses.generated.resources.balance_owes
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_retry
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_who_pays
-import com.eyther.lumbridge.features.expenses.generated.resources.balance_you_settled
-import com.eyther.lumbridge.features.expenses.generated.resources.former_member
 import com.eyther.lumbridge.features.expenses.generated.resources.history_balances
 import com.eyther.lumbridge.features.expenses.generated.resources.history_empty
 import com.eyther.lumbridge.features.expenses.generated.resources.history_expenses
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_add_expense
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_recurring_expenses
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_you_owe
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_you_re_owed
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseHistoryRow
+import com.eyther.lumbridge.features.expenses.presentation.components.MemberBalanceRow
+import com.eyther.lumbridge.features.expenses.presentation.components.PersonalBalanceCard
 import com.eyther.lumbridge.features.expenses.presentation.components.SettlementSuggestionCard
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
 import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
@@ -77,6 +71,14 @@ fun ExpensesScreen(
     PullToRefreshContentContainer(
         isRefreshing = state.refreshing,
         onRefresh = viewModel::onRefresh,
+        floatingActionButton = {
+            if (state.canCreateExpense)
+                ActionFab(
+                    text = stringResource(Res.string.ui_add_expense),
+                    onClick = onAddExpense,
+                    modifier = Modifier.testTag("add_expense"),
+                )
+        },
     ) {
         InnerExpensesScreen(
             account = state.account,
@@ -86,10 +88,8 @@ fun ExpensesScreen(
             suggestions = state.suggestedRepayments,
             ownBalance = state.ownBalance,
             loading = state.loading,
-            canCreate = state.canCreateExpense,
             error = state.displayError,
             onAccounts = { viewModel.onAccountsVisibilityChanged(true) },
-            onAddExpense = onAddExpense,
             onOpenExpense = onOpenExpense,
             onManage = { viewModel.onManageAccountsVisibilityChanged(true) },
             onView = viewModel::onViewChanged,
@@ -110,10 +110,8 @@ private fun InnerExpensesScreen(
     suggestions: ImmutableList<SuggestedRepaymentUi>,
     ownBalance: BalanceSummaryUi,
     loading: Boolean,
-    canCreate: Boolean,
     error: TextResource?,
     onAccounts: () -> Unit,
-    onAddExpense: () -> Unit,
     onOpenExpense: (ExpenseDomain) -> Unit,
     onManage: () -> Unit,
     onView: (ExpensesViewUi) -> Unit,
@@ -126,7 +124,8 @@ private fun InnerExpensesScreen(
         LazyColumn(
             modifier =
                 Modifier.fillMaxSize().padding(horizontal = 16.dp).testTag("expenses_content"),
-            contentPadding = PaddingValues(top = 8.dp, bottom = 88.dp),
+            contentPadding =
+                PaddingValues(top = LoomSpacing.small, bottom = FloatingActionContentPadding),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
@@ -165,19 +164,21 @@ private fun InnerExpensesScreen(
                     )
             }
             item {
-                TabRow(selectedTabIndex = selectedView.ordinal) {
-                    Tab(
-                        modifier = Modifier.testTag("balances_view_expenses"),
-                        selected = selectedView == ExpensesViewUi.EXPENSES,
-                        onClick = { onView(ExpensesViewUi.EXPENSES) },
-                        text = { Text(stringResource(Res.string.history_expenses)) },
-                    )
-                    Tab(
-                        modifier = Modifier.testTag("balances_view_balances"),
-                        selected = selectedView == ExpensesViewUi.BALANCES,
-                        onClick = { onView(ExpensesViewUi.BALANCES) },
-                        text = { Text(stringResource(Res.string.history_balances)) },
-                    )
+                Column(modifier = Modifier.padding(bottom = LoomSpacing.medium)) {
+                    TabRow(selectedTabIndex = selectedView.ordinal) {
+                        Tab(
+                            modifier = Modifier.testTag("balances_view_expenses"),
+                            selected = selectedView == ExpensesViewUi.EXPENSES,
+                            onClick = { onView(ExpensesViewUi.EXPENSES) },
+                            text = { Text(stringResource(Res.string.history_expenses)) },
+                        )
+                        Tab(
+                            modifier = Modifier.testTag("balances_view_balances"),
+                            selected = selectedView == ExpensesViewUi.BALANCES,
+                            onClick = { onView(ExpensesViewUi.BALANCES) },
+                            text = { Text(stringResource(Res.string.history_balances)) },
+                        )
+                    }
                 }
             }
             error?.let { message ->
@@ -205,29 +206,10 @@ private fun InnerExpensesScreen(
                 }
             } else if (account != null) {
                 item(key = "current_position") {
-                    LoomCard {
-                        Text(
-                            stringResource(
-                                when {
-                                    ownBalance.isSettled && suggestions.isEmpty() ->
-                                        Res.string.balance_all_settled
-                                    ownBalance.isSettled -> Res.string.balance_you_settled
-                                    ownBalance.isOwed -> Res.string.ui_you_re_owed
-                                    else -> Res.string.ui_you_owe
-                                },
-                            ),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (!ownBalance.isSettled)
-                            Text(
-                                ownBalance.amount,
-                                style =
-                                    MaterialTheme.typography.displaySmall.copy(
-                                        fontFeatureSettings = "tnum",
-                                    ),
-                            )
-                    }
+                    PersonalBalanceCard(
+                        balance = ownBalance,
+                        everyoneSettled = suggestions.isEmpty(),
+                    )
                 }
                 if (suggestions.isNotEmpty())
                     item {
@@ -250,45 +232,9 @@ private fun InnerExpensesScreen(
                     )
                 }
                 items(memberBalances, key = { it.member.id }) { member ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 8.dp),
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                member.member.name.ifBlank {
-                                    stringResource(Res.string.former_member)
-                                },
-                            )
-                            if (!member.balance.isSettled)
-                                Text(
-                                    stringResource(
-                                        if (member.balance.isOwed) Res.string.balance_gets_back
-                                        else Res.string.balance_owes,
-                                    ),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                        }
-                        Text(member.balance.amount, style = MaterialTheme.typography.titleSmall)
-                    }
+                    MemberBalanceRow(member = member)
                 }
             }
         }
-        if (canCreate)
-            FloatingActionButton(
-                onClick = onAddExpense,
-                modifier =
-                    Modifier.align(Alignment.BottomEnd).padding(16.dp).testTag("add_expense"),
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    LoomIcon(glyph = Glyph.PLUS)
-                    Text(stringResource(Res.string.ui_add_expense))
-                }
-            }
     }
 }

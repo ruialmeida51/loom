@@ -10,6 +10,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
@@ -50,14 +51,16 @@ class FeedManagementUiTest {
             onNodeWithText("rss.impresa.pt").assertExists()
             val originalCard =
                 hasTestTag("feed_subscription_card") and hasAnyDescendant(hasText("rss.impresa.pt"))
-            onNode(hasText("Edit address") and hasAnyAncestor(originalCard)).performClick()
+            onNode(hasText("rss.impresa.pt") and hasAnyAncestor(originalCard)).performClick()
             onNodeWithText("https://…").performTextReplacement("https://www.nasa.gov/feed/")
             onNodeWithText("Save feed").performClick()
             onNodeWithTag("feed_subscriptions").performScrollToNode(hasText("www.nasa.gov"))
             onNodeWithText("www.nasa.gov").assertExists()
             val editedCard =
                 hasTestTag("feed_subscription_card") and hasAnyDescendant(hasText("www.nasa.gov"))
-            onNode(hasText("Remove") and hasAnyAncestor(editedCard)).performClick()
+            onNode(hasContentDescription("More actions") and hasAnyAncestor(editedCard))
+                .performClick()
+            onNodeWithText("Remove").performClick()
             onNodeWithTag("confirm_remove_feed").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("www.nasa.gov").fetchSemanticsNodes().isEmpty()

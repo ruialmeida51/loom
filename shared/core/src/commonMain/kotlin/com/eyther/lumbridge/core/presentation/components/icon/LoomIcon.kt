@@ -20,8 +20,10 @@ import com.eyther.lumbridge.core.generated.resources.icon_add
 import com.eyther.lumbridge.core.generated.resources.icon_bell
 import com.eyther.lumbridge.core.generated.resources.icon_delete
 import com.eyther.lumbridge.core.generated.resources.icon_done
+import com.eyther.lumbridge.core.generated.resources.icon_expand
 import com.eyther.lumbridge.core.generated.resources.icon_feed
 import com.eyther.lumbridge.core.generated.resources.icon_home
+import com.eyther.lumbridge.core.generated.resources.icon_log_out
 import com.eyther.lumbridge.core.generated.resources.icon_money
 import com.eyther.lumbridge.core.generated.resources.icon_more
 import com.eyther.lumbridge.core.generated.resources.icon_next
@@ -56,6 +58,8 @@ fun LoomIcon(
                 Glyph.ARROW -> Res.string.icon_next
                 Glyph.CHECK -> Res.string.icon_done
                 Glyph.DELETE -> Res.string.icon_delete
+                Glyph.LOG_OUT -> Res.string.icon_log_out
+                Glyph.CHEVRON_DOWN -> Res.string.icon_expand
             },
         )
     Canvas(
@@ -108,6 +112,18 @@ fun LoomIcon(
                         close()
                     }
                 drawPath(outline, tint, style = Stroke(1.7f * s))
+            }
+            Glyph.CHEVRON_DOWN -> {
+                line(7f, 10f, 12f, 15f)
+                line(12f, 15f, 17f, 10f)
+            }
+            Glyph.LOG_OUT -> {
+                line(10f, 4f, 4f, 4f)
+                line(4f, 4f, 4f, 20f)
+                line(4f, 20f, 10f, 20f)
+                line(10f, 12f, 21f, 12f)
+                line(17f, 8f, 21f, 12f)
+                line(21f, 12f, 17f, 16f)
             }
             Glyph.DELETE -> {
                 line(5f, 6f, 19f, 6f)

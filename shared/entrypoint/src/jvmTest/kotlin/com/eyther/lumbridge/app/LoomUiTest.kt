@@ -53,9 +53,12 @@ class LoomUiTest {
             onNodeWithTag("navigation_more").performClick()
             onNodeWithText("Feed").performClick()
             onNodeWithText("Dismiss").assertDoesNotExist()
-            onNodeWithText("+ Follow a feed").performClick()
+            awaitLoadedDestination(tag = "manage_feeds")
+            onNodeWithTag("manage_feeds").performClick()
+            awaitLoadedDestination(tag = "feed_subscriptions")
+            onNodeWithText("Add a feed").performClick()
             onNodeWithText("https://…").performTextInput("https://")
-            onNodeWithText("Follow feed").performClick()
+            onNodeWithText("Save feed").performClick()
 
             val invalidUrlMessage = "Enter a secure RSS or Atom feed URL beginning with https://."
             waitUntil(timeoutMillis = 5_000) {
@@ -63,9 +66,9 @@ class LoomUiTest {
             }
             onAllNodesWithText(invalidUrlMessage).assertCountEquals(1)
             onNodeWithText("https://…").performTextReplacement("https://example.com/feed")
-            onNodeWithText("Follow feed").performClick()
+            onNodeWithText("Save feed").performClick()
             waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Follow feed").fetchSemanticsNodes().isEmpty()
+                onAllNodesWithText("Save feed").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithText(invalidUrlMessage).assertDoesNotExist()
             onNodeWithText("Dismiss").assertDoesNotExist()
@@ -136,7 +139,11 @@ class LoomUiTest {
             onNodeWithTag("analytics_consent").performClick().assertIsOn()
             onNodeWithTag("analytics_consent").performClick().assertIsOff()
             capture("settings-privacy")
-            onNodeWithTag("account_content").performScrollToNode(hasText("Dark"))
+            onNodeWithTag("account_content").performScrollToNode(hasTestTag("delete_account"))
+            onNodeWithTag("sign_out").assertExists()
+            onNodeWithTag("delete_account").assertExists()
+            capture("account-actions-light")
+            onNodeWithTag("appearance_preference").performScrollTo().performClick()
             onNodeWithText("Dark", useUnmergedTree = true).performClick()
             onNodeWithContentDescription("Back").performClick()
             onNodeWithTag("balances_view_expenses").performClick()

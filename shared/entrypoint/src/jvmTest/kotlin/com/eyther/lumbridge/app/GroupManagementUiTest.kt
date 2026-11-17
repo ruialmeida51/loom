@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
@@ -36,6 +37,7 @@ class GroupManagementUiTest {
             onNodeWithText("New list").assertIsDisplayed()
             onNodeWithText("Cancel").assertDoesNotExist()
             onNodeWithText("Done").assertDoesNotExist()
+            onNodeWithTag("list_Groceries").assertIsSelected()
             waitForIdle()
             val screenshot = Image.makeFromBitmap(captureToImage().asSkiaBitmap())
             File(

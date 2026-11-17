@@ -72,12 +72,12 @@ class FinancialFlowsUiTest {
             onNodeWithText("Beach groceries").assertExists()
             onNodeWithTag("balances_view_balances").performClick()
             capture("trip-balances-light")
-            onAllNodesWithText("Record repayment").onFirst().performClick()
+            onAllNodesWithTag("record_payment").onFirst().performClick()
             onNodeWithTag("repayment_amount").assertTextContains("7.50")
             capture("repayment-light")
             onNodeWithTag("record_repayment_submit").performClick()
             waitUntil(timeoutMillis = 5000) {
-                onAllNodesWithText("Record a repayment").fetchSemanticsNodes().isEmpty()
+                onAllNodesWithText("Record payment").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithTag("expense_accounts").performClick()
             capture("trip-accounts-light")
@@ -100,6 +100,7 @@ class FinancialFlowsUiTest {
             onNodeWithTag("expenses_content").performScrollToNode(hasText("Electrician"))
             onNodeWithText("Electrician").performClick()
             awaitLoadedDestination(tag = "expense_details_content")
+            onNodeWithTag("expense_actions").performClick()
             onNodeWithText("Edit expense").performClick()
             onNodeWithTag("expense_title").performTextReplacement("Electrician final")
             onNodeWithTag("expense_amount").performTextReplacement("18.00")
@@ -111,6 +112,7 @@ class FinancialFlowsUiTest {
             onNodeWithText("Electrician final").assertExists()
             onNodeWithText("€18.00").assertExists()
             capture("expense-details-light")
+            onNodeWithTag("expense_actions").performClick()
             onNodeWithText("Delete expense").performClick()
             onNodeWithTag("confirm_delete_expense").performClick()
             waitUntil(timeoutMillis = 5000) {

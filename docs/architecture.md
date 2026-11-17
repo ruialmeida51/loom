@@ -120,6 +120,16 @@ Back. Subscription rows exist without articles. A transactional address replacem
 checks the expected old address and cascades old articles, preventing an in-flight old worker from
 publishing under the new source. All SQL mutation checks remain server-side and household scoped.
 
+Full reading uses feature-owned FeedQueryDomain/FeedCursorDomain/FeedPageDomain and a separate
+GetFeedPageUseCase. Source IDs and unread status filter server-side before a 20-row page; the
+published-at/ID cursor has matching indexes and avoids OFFSET. The data adapter parses timestamps
+to Instant and reads one extra row to determine whether another page exists. Request generations
+discard stale filter/page results; append errors retain existing rows and cursor. The reader is a
+stable snapshot refreshed explicitly or on return from management, and Home retains a bounded live
+three-article stream. Both reads use the existing authenticated session/recovery gate. A
+security-invoker subscription view obtains publisher titles under existing household RLS; no
+privileged function, new writes or customer data duplication is introduced.
+
 The current account position is the financial overview. Monthly statement navigation is retired; old
 saved routes/push links redirect to balances. Historical statement storage/export code remains in its
 own insights feature for compatibility, and existing records are not rewritten.

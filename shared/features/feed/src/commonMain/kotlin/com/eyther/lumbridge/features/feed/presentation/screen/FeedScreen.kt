@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.feed.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,11 +8,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -21,6 +18,7 @@ import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
@@ -32,16 +30,18 @@ import com.eyther.lumbridge.features.feed.generated.resources.Res
 import com.eyther.lumbridge.features.feed.generated.resources.feed_caught_up
 import com.eyther.lumbridge.features.feed.generated.resources.feed_caught_up_description
 import com.eyther.lumbridge.features.feed.generated.resources.feed_empty_description
+import com.eyther.lumbridge.features.feed.generated.resources.feed_load_more
 import com.eyther.lumbridge.features.feed.generated.resources.feed_manage
 import com.eyther.lumbridge.features.feed.generated.resources.feed_no_articles
 import com.eyther.lumbridge.features.feed.generated.resources.feed_retry
 import com.eyther.lumbridge.features.feed.generated.resources.feed_starter_sources
-import com.eyther.lumbridge.features.feed.generated.resources.ui_follow_a_feed
-import com.eyther.lumbridge.features.feed.generated.resources.ui_unread_only
 import com.eyther.lumbridge.features.feed.presentation.components.ArticleCard
+import com.eyther.lumbridge.features.feed.presentation.components.FeedSourceFilters
 import com.eyther.lumbridge.features.feed.presentation.model.ArticlePreviewUi
+import com.eyther.lumbridge.features.feed.presentation.model.FeedSourceFilterUi
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -56,12 +56,19 @@ fun FeedScreen(
             items = state.articleCards,
             suggestions = state.suggestions,
             onStarterFeed = viewModel::onStarterFeedSelected,
+            sources = state.sourceFilters,
+            selectedSourceIds = state.selectedSourceIds,
+            onSource = viewModel::onSourceSelected,
+            onAllSources = viewModel::onAllSourcesSelected,
+            hasMore = state.nextCursor != null,
+            loadingMore = state.loadingMore,
+            pageError = state.pageError,
+            onLoadMore = viewModel::onLoadMore,
             unreadOnly = state.unreadOnly,
             loading = state.loading,
             hasLoaded = state.hasLoaded,
             error = state.displayError,
             onOpen = onOpen,
-            onShowFollow = viewModel::onFollowSheetVisibilityChanged,
             onUnreadOnly = viewModel::onUnreadOnlyChanged,
             onDismiss = viewModel::onDismissError,
             onRetry = viewModel::onRetry,
@@ -73,15 +80,22 @@ fun FeedScreen(
 
 @Composable
 private fun InnerFeedScreen(
-    items: List<ArticlePreviewUi>,
+    items: ImmutableList<ArticlePreviewUi>,
     suggestions: ImmutableList<StarterFeedDomain>,
     onStarterFeed: (StarterFeedDomain) -> Unit,
+    sources: ImmutableList<FeedSourceFilterUi>,
+    selectedSourceIds: ImmutableSet<String>,
+    onSource: (String) -> Unit,
+    onAllSources: () -> Unit,
+    hasMore: Boolean,
+    loadingMore: Boolean,
+    pageError: TextResource?,
+    onLoadMore: () -> Unit,
     unreadOnly: Boolean,
     loading: Boolean,
     hasLoaded: Boolean,
     error: TextResource?,
     onOpen: (String) -> Unit,
-    onShowFollow: (Boolean) -> Unit,
     onUnreadOnly: (Boolean) -> Unit,
     onDismiss: () -> Unit,
     onRetry: () -> Unit,
@@ -89,7 +103,7 @@ private fun InnerFeedScreen(
     onManageFeeds: () -> Unit,
 ) {
     LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        Modifier.fillMaxSize().padding(horizontal = 16.dp).testTag("feed_content"),
         contentPadding = PaddingValues(vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -110,21 +124,15 @@ private fun InnerFeedScreen(
                 FilledTonalButton(onClick = onRetry) { Text(stringResource(Res.string.feed_retry)) }
             }
         }
-        item {
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                FilterChip(
-                    unreadOnly,
-                    { onUnreadOnly(!unreadOnly) },
-                    label = { Text(stringResource(Res.string.ui_unread_only)) },
-                )
-                FilledTonalButton(onClick = { onShowFollow(true) }) {
-                    Text(stringResource(Res.string.ui_follow_a_feed))
-                }
-            }
+        item(key = "source_filters") {
+            FeedSourceFilters(
+                sources = sources,
+                selectedIds = selectedSourceIds,
+                unreadOnly = unreadOnly,
+                onSource = onSource,
+                onAll = onAllSources,
+                onUnreadOnly = onUnreadOnly,
+            )
         }
         if (loading) item { LoadingRows() }
         if (hasLoaded && !loading && error == null && items.isEmpty())
@@ -139,7 +147,14 @@ private fun InnerFeedScreen(
                     ),
                 )
             }
-        if (hasLoaded && !loading && items.isEmpty() && !unreadOnly && suggestions.isNotEmpty())
+        if (
+            hasLoaded &&
+                !loading &&
+                items.isEmpty() &&
+                !unreadOnly &&
+                selectedSourceIds.isEmpty() &&
+                suggestions.isNotEmpty()
+        )
             item {
                 SectionTitle(title = stringResource(Res.string.feed_starter_sources))
                 GroupedSurface {
@@ -157,6 +172,20 @@ private fun InnerFeedScreen(
                         onOpen(article.url)
                     },
                     onReadChanged = { onMarkRead(article.id, !article.read) },
+                )
+            }
+        if (!loading && hasMore)
+            item(key = "pagination") {
+                pageError?.let { message -> ErrorNotice(message = message, onDismiss = onDismiss) }
+                LoomButton(
+                    text =
+                        stringResource(
+                            if (pageError == null) Res.string.feed_load_more
+                            else Res.string.feed_retry,
+                        ),
+                    onClick = onLoadMore,
+                    loading = loadingMore,
+                    modifier = Modifier.fillMaxWidth().testTag("feed_load_more"),
                 )
             }
     }

@@ -2,7 +2,7 @@ package com.eyther.lumbridge.core.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,25 +25,25 @@ fun IllustratedEmptyState(title: String, glyph: Glyph, modifier: Modifier = Modi
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        Column(
-            modifier = Modifier.padding(LoomSpacing.section),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
+        Row(
+            modifier = Modifier.padding(LoomSpacing.content),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
         ) {
             Surface(
                 shape = MaterialTheme.shapes.extraLarge,
                 color = MaterialTheme.colorScheme.secondaryContainer,
             ) {
-                Box(modifier = Modifier.size(64.dp), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.size(36.dp), contentAlignment = Alignment.Center) {
                     LoomIcon(
                         glyph = glyph,
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(20.dp),
                         tint = MaterialTheme.colorScheme.onSecondaryContainer,
                         decorative = true,
                     )
                 }
             }
-            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(title, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
         }
     }
 }

@@ -19,4 +19,6 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="delete_account">Delete account</string>
+    <string name="account_deletion_description">Account and data deletion options</string>
 </resources>

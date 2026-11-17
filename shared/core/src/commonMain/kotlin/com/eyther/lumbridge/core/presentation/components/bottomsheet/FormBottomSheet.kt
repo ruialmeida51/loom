@@ -14,14 +14,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.Dp
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 
-/** Scroll the fields, keeping the primary action reachable with a keyboard or larger text. */
+/**
+ * Scroll fields above fixed actions. verticalActions places the full-width primary action before
+ * Cancel.
+ */
 @Composable
 fun FormBottomSheet(
     title: String,
     action: @Composable () -> Unit,
     dismissAction: @Composable () -> Unit,
+    verticalActions: Boolean = false,
+    contentSpacing: Dp = LoomSpacing.content,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth().testTag("form_sheet")) {
@@ -37,16 +43,26 @@ fun FormBottomSheet(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = LoomSpacing.content, vertical = LoomSpacing.medium),
-            verticalArrangement = Arrangement.spacedBy(LoomSpacing.content),
+            verticalArrangement = Arrangement.spacedBy(contentSpacing),
             content = content,
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
-            horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
-        ) {
-            dismissAction()
-            Column(modifier = Modifier.weight(1f)) { action() }
+        if (verticalActions) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
+                verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+            ) {
+                action()
+                dismissAction()
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
+                horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
+            ) {
+                dismissAction()
+                Column(modifier = Modifier.weight(1f)) { action() }
+            }
         }
     }
 }

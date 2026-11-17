@@ -9,5 +9,8 @@ data class SuggestedRepaymentUi(
     val fromName: String?,
     val toName: String?,
     val amount: String,
-    val isPersonal: Boolean,
-)
+    val isCurrentUserSender: Boolean,
+    val isCurrentUserRecipient: Boolean,
+) {
+    val isPersonal: Boolean = isCurrentUserSender || isCurrentUserRecipient
+}

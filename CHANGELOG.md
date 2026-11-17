@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Smaller Home actions and clearer Inter/Space Grotesk typography.
+- Filter news by several feeds or unread stories; load more as you read.
+- Add tasks with a floating button and clearer stacked form actions.
+- Personal payment flows with red debts and green money owed back.
+- Compact split controls, expense action menus and consistent settings/list/feed rows.
+
 ## [4.0.5] - 2026-11-17
 
 - Tasks replaces reminders: optional dates/alerts and a dedicated tab beside Money.

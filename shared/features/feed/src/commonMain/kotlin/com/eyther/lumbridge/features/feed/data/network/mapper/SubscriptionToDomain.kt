@@ -9,7 +9,7 @@ internal fun FeedSubscriptionResponse.toDomain(): FeedSubscriptionDomain =
     FeedSubscriptionDomain(
         id = id,
         url = url,
-        publisher = Url(url).host,
+        publisher = publisher?.takeIf { it.isNotBlank() } ?: Url(url).host,
         lastFetchedAt = lastFetchedAt,
         status =
             when {

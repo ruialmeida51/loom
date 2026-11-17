@@ -21,6 +21,7 @@ import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
+import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseDetailsActions
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpenseAccountFormScreen
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpenseDetailsScreen
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpensesScreen
@@ -149,17 +150,24 @@ internal fun BalancesHost(
                     title = stringResource(Res.string.flow_expense_details),
                     onBack = navigator::goBack,
                     backEnabled = !detailsState.busy,
+                    actions = {
+                        ExpenseDetailsActions(
+                            canEdit = detailsState.canEdit,
+                            busy = detailsState.busy,
+                            onEdit = {
+                                navigator.navigateTo(
+                                    BalancesDestination.Form(
+                                        accountId = key.accountId,
+                                        expenseId = key.expenseId,
+                                    ),
+                                )
+                            },
+                            onDelete = viewModel::onDeleteRequested,
+                        )
+                    },
                 ) {
                     ExpenseDetailsScreen(
                         viewModel = viewModel,
-                        onEdit = {
-                            navigator.navigateTo(
-                                BalancesDestination.Form(
-                                    accountId = key.accountId,
-                                    expenseId = key.expenseId,
-                                ),
-                            )
-                        },
                         onDeleted = {
                             overviewViewModel.onContentChanged()
                             navigator.goBack()

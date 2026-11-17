@@ -7,8 +7,12 @@ import com.eyther.lumbridge.features.feed.data.local.CommonFeedCatalogDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.errors.FeedError
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
+import com.eyther.lumbridge.features.feed.domain.model.FeedCursorDomain
+import com.eyther.lumbridge.features.feed.domain.model.FeedPageDomain
+import com.eyther.lumbridge.features.feed.domain.model.FeedQueryDomain
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
-import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedPageUseCase
+import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
@@ -19,6 +23,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -42,7 +47,8 @@ class FeedStateTest {
             summary = "",
             url = "https://example.com/$id",
             source = "Example",
-            publishedAt = "2026-11-14T00:00:00Z",
+            publishedAt = Instant.parse("2026-11-14T00:00:00Z"),
+            subscriptionId = "expresso",
             read = read,
         )
 
@@ -69,6 +75,18 @@ class FeedStateTest {
             object : FeedDataSource {
                 override fun stream() = articles
 
+                override suspend fun getPage(
+                    query: FeedQueryDomain,
+                    after: FeedCursorDomain?,
+                ): AppResult<FeedPageDomain> =
+                    when (val result = articles.value) {
+                        is AppResult.Success ->
+                            AppResult.Success(
+                                FeedPageDomain(items = result.value, nextCursor = null),
+                            )
+                        is AppResult.Failure -> result
+                    }
+
                 override suspend fun followFeed(url: String): AppResult<Unit> {
                     followRequests++
                     return AppResult.Failure(FeedError.InvalidUrl())
@@ -81,7 +99,11 @@ class FeedStateTest {
             FeedScreenViewModel(
                 getStarterFeedsUseCase =
                     GetStarterFeedsUseCase(feedCatalogDataSource = CommonFeedCatalogDataSource()),
-                getFeedStreamUseCase = GetFeedStreamUseCase(feedDataSource = source),
+                getFeedPageUseCase = GetFeedPageUseCase(feedDataSource = source),
+                getFeedSubscriptionsStreamUseCase =
+                    GetFeedSubscriptionsStreamUseCase(
+                        feedSubscriptionDataSource = FeedSubscriptionFixture(),
+                    ),
                 followFeedUseCase = FollowFeedUseCase(feedDataSource = source),
                 markArticleReadUseCase = MarkArticleReadUseCase(feedDataSource = source),
                 refreshFeedsUseCase =
@@ -93,9 +115,11 @@ class FeedStateTest {
             advanceTimeBy(300)
             runCurrent()
             articles.value = AppResult.Failure(FeedError.RefreshFailed())
+            viewModel.onSourcesChanged()
             runCurrent()
             assertNotNull(viewModel.state.value.loadError)
             articles.value = AppResult.Success(emptyList())
+            viewModel.onSourcesChanged()
             runCurrent()
             assertNull(viewModel.state.value.displayError)
 
@@ -113,6 +137,7 @@ class FeedStateTest {
             val formError = assertNotNull(viewModel.state.value.formError)
 
             articles.value = AppResult.Success(listOf(article(id = "fresh", read = false)))
+            viewModel.onSourcesChanged()
             runCurrent()
             assertEquals("fresh", viewModel.state.value.items.single().id)
             assertEquals(formError, viewModel.state.value.formError)
@@ -122,6 +147,7 @@ class FeedStateTest {
             runCurrent()
             val actionError = assertNotNull(viewModel.state.value.displayError)
             articles.value = AppResult.Success(listOf(article(id = "newer", read = false)))
+            viewModel.onSourcesChanged()
             runCurrent()
             assertEquals("newer", viewModel.state.value.items.single().id)
             assertEquals(actionError, viewModel.state.value.displayError)

@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -14,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.LoomButton
@@ -21,11 +23,13 @@ import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelectionDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.form_split
 import com.eyther.lumbridge.features.expenses.generated.resources.split_done
+import com.eyther.lumbridge.features.expenses.generated.resources.split_total
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseSplitParticipantRow
 import com.eyther.lumbridge.features.expenses.presentation.mapper.splitMethodLabel
@@ -88,6 +92,7 @@ private fun InnerExpenseSplitBottomSheet(
 ) {
     FormBottomSheet(
         title = stringResource(Res.string.form_split),
+        contentSpacing = LoomSpacing.small,
         action = {
             LoomButton(
                 text = stringResource(Res.string.split_done),
@@ -100,11 +105,20 @@ private fun InnerExpenseSplitBottomSheet(
             OutlinedButton(onClick = onClose) { Text(stringResource(Res.string.ui_cancel)) }
         },
     ) {
-        Text(total, style = MaterialTheme.typography.headlineMedium)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(Res.string.split_total),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            Text(total, style = MaterialTheme.typography.titleLarge)
+        }
         Box {
             var expanded by remember { mutableStateOf(false) }
             SelectorButton(
                 text = splitMethodLabel(method),
+                textStyle = MaterialTheme.typography.titleSmall,
                 onClick = { expanded = true },
                 modifier = Modifier.fillMaxWidth().testTag("split_method"),
             )

@@ -95,7 +95,8 @@ data class ExpensesState(
                     fromName = memberNames[settlement.from],
                     toName = memberNames[settlement.to],
                     amount = MoneyDomain(settlement.amountMinor, currency).formatted(),
-                    isPersonal = userId == settlement.from || userId == settlement.to,
+                    isCurrentUserSender = userId == settlement.from,
+                    isCurrentUserRecipient = userId == settlement.to,
                 )
             }
             .toImmutableList()

@@ -68,7 +68,7 @@ internal fun ExpenseSplitParticipantRow(
             amount?.let {
                 Text(
                     it,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -86,6 +86,7 @@ internal fun ExpenseSplitParticipantRow(
                 value = value,
                 onValueChange = onValue,
                 singleLine = true,
+                textStyle = MaterialTheme.typography.bodyMedium,
                 keyboardOptions =
                     KeyboardOptions(
                         keyboardType =

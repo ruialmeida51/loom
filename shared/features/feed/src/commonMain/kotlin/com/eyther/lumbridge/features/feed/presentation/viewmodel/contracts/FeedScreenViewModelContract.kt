@@ -14,6 +14,12 @@ abstract class FeedScreenViewModelContract : LoomViewModel() {
 
     abstract fun onSourcesChanged()
 
+    abstract fun onSourceSelected(id: String)
+
+    abstract fun onAllSourcesSelected()
+
+    abstract fun onLoadMore()
+
     abstract fun onUrlChanged(value: String)
 
     abstract fun onFollowSheetVisibilityChanged(value: Boolean)

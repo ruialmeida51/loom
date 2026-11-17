@@ -2,21 +2,20 @@ package com.eyther.lumbridge.features.tasks.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import com.eyther.lumbridge.core.presentation.components.ActionFab
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.FloatingActionContentPadding
 import com.eyther.lumbridge.core.presentation.components.IllustratedEmptyState
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
@@ -45,6 +44,13 @@ fun TasksScreen(viewModel: TasksScreenViewModelContract) {
     PullToRefreshContentContainer(
         isRefreshing = state.refreshing,
         onRefresh = viewModel::onRefresh,
+        floatingActionButton = {
+            ActionFab(
+                text = stringResource(Res.string.ui_add_a_task),
+                onClick = { viewModel.onAddSheetVisibilityChanged(true) },
+                modifier = Modifier.testTag("add_task"),
+            )
+        },
     ) {
         InnerTasksScreen(
             openRows = state.openRows,
@@ -55,7 +61,6 @@ fun TasksScreen(viewModel: TasksScreenViewModelContract) {
             loading = state.loading,
             showEmpty = state.showEmpty,
             error = state.displayError,
-            onShowAdd = viewModel::onAddSheetVisibilityChanged,
             onShowCompleted = viewModel::onCompletedVisibilityChanged,
             onDismiss = viewModel::onDismissError,
             onComplete = viewModel::onCompleteTask,
@@ -74,7 +79,6 @@ private fun InnerTasksScreen(
     loading: Boolean,
     showEmpty: Boolean,
     error: TextResource?,
-    onShowAdd: (Boolean) -> Unit,
     onShowCompleted: (Boolean) -> Unit,
     onDismiss: () -> Unit,
     onComplete: (TaskDomain) -> Unit,
@@ -85,23 +89,15 @@ private fun InnerTasksScreen(
             Modifier.fillMaxSize()
                 .padding(horizontal = LoomSpacing.content)
                 .testTag("tasks_content"),
-        contentPadding = PaddingValues(vertical = LoomSpacing.medium),
+        contentPadding =
+            PaddingValues(top = LoomSpacing.medium, bottom = FloatingActionContentPadding),
         verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
     ) {
         item(key = "header") {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(Res.string.tasks_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f),
-                )
-                FilledTonalButton(
-                    onClick = { onShowAdd(true) },
-                    modifier = Modifier.testTag("add_task"),
-                ) {
-                    Text(stringResource(Res.string.ui_add_a_task))
-                }
-            }
+            Text(
+                stringResource(Res.string.tasks_title),
+                style = MaterialTheme.typography.titleLarge,
+            )
         }
         error?.let { message ->
             item(key = "error") { ErrorNotice(message = message, onDismiss = onDismiss) }

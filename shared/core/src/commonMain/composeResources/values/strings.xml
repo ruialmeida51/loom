@@ -36,4 +36,6 @@
   <string name="icon_person">Profile</string>
   <string name="icon_privacy">Privacy</string>
     <string name="icon_tasks">Tasks</string>
+    <string name="icon_log_out">Sign out</string>
+    <string name="icon_expand">Choose</string>
 </resources>

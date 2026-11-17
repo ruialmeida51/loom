@@ -32,6 +32,14 @@ class SupabaseAccess(
         requireClient().auth.currentUserOrNull()?.id ?: throw CommonError.NotAuthenticated()
 
     /**
+     * A scoped read waits for SDK recovery; only the existing narrow read-recovery race may retry.
+     */
+    suspend fun <T> read(action: suspend (SupabaseClient) -> T): T {
+        val client = requireClient()
+        return client.readAuthenticated { action(client) }
+    }
+
+    /**
      * RLS authorizes rows. Realtime invalidates this query; periodic reload also repairs missed
      * events.
      */

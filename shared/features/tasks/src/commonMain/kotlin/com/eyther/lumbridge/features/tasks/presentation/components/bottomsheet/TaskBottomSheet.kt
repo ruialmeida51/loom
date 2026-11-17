@@ -46,16 +46,21 @@ fun TaskBottomSheet(
 ) {
     FormBottomSheet(
         title = stringResource(Res.string.ui_a_little_task),
+        verticalActions = true,
         action = {
             LoomButton(
                 text = stringResource(Res.string.ui_save_task),
                 onClick = onAdd,
                 loading = busy,
-                modifier = Modifier.testTag("save_task"),
+                modifier = Modifier.fillMaxWidth().testTag("save_task"),
             )
         },
         dismissAction = {
-            OutlinedButton(onClick = { onShowAdd(false) }, enabled = !busy) {
+            OutlinedButton(
+                onClick = { onShowAdd(false) },
+                enabled = !busy,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 Text(stringResource(Res.string.ui_cancel))
             }
         },
