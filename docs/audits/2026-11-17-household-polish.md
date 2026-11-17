@@ -50,7 +50,7 @@ Back assertions and preserve failure evidence rather than suppressing the dialog
 
 ## Verification
 
-- Full local run: **165 JVM tests, zero failures/skips**, including shared Compose UI flows. Subsequent
+- Full local run: **178 JVM tests, zero failures/skips**, including shared Compose UI flows. Subsequent
   focused captures exercise the same source-management and news-navigation assertions.
 - Android debug app and instrumentation APK assemble successfully. Native device tests cover keyboard
   entry/alignment, refresh draft retention, lifecycle/Back and the added nested feed-management Back path.
@@ -60,7 +60,9 @@ Back assertions and preserve failure evidence rather than suppressing the dialog
   returned destination instead of treating semantic existence or `RESUMED` as native readiness.
   Stricter runs still failed to dismiss the sheet/pop the nested route. Android reported Back-invoked
   callbacks disabled, so the production manifest now explicitly enables that integration; native
-  execution must validate this fix before merge.
+  execution must validate this fix before merge. The final runner provides 3 GB/two cores and a clean
+  launcher at 720×1600 while keeping animations and all assertions enabled. Five native checks now
+  include title-only task saving, completed-task visibility and system Back from Tasks to Home.
 - Disposable PostgreSQL: **17 migrations** and integration tests pass. New cases verify stale edit refusal,
   household isolation, atomic article removal, anonymous denial and rejection of late old-worker inserts.
 - Deno checks pass; **6 RSS parsing/security/configuration tests** pass. The actual Expresso URL returned
