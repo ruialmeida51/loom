@@ -39,7 +39,7 @@ Statuses distinguish triage, implementation and verified checks. The implementat
 | SHOPPING-01 | Completed controls look detached from the checklist | One compact collapsible section header, with a small Select action; show bulk controls only in selection mode. Keep individual selection, Select all and household-wide deletion. | Verified shared UI flow and renders |
 | MONEY-04 | Date headings add clutter; expense cards are too large | Remove daily section headings. Show the actual occurrence date on each compact expense/repayment row, retaining newest-first order and full dates across years. | Verified shared UI flow and renders |
 | SHEET-01 | Confirm shopping-list manager has no redundant Cancel | Source inspection confirms its footer contains New list only. Cancel remains in create/rename draft forms. | Verified source |
-| NAV-01 | Native Back is intermittently ignored | PR emulator passes while its independent push run fails. Require repeatable sheet/nested Back behavior, preserve failure captures and investigate before release. | Blocking verification; investigating |
+| NAV-01 | Native Back is intermittently ignored | PR emulator passes while its independent push run fails. Failure captures show a foreign Quickstep launcher ANR intercepting input. Build APKs before emulator boot, then verify native behavior without hiding failures. | Environment fix awaiting repeat verification |
 | AUDIT-01 | Final architecture, copy, usability and regression audit | Review final diff with `ai/agents/AGENTS_REVIEWER.agent.md` after fixes/checks. Typed errors, feature-owned packages, resources, stable collections/keys, central annotated DI, demo separation. Record limitations honestly. | Final local audit complete; CI/platform checks required before delivery |
 
 ## Research notebook
@@ -167,6 +167,22 @@ The manifest change removes the disabled-callback warnings and the PR emulator r
 native checks, but the independent push run still fails at sheet/nested Back. This is not considered
 resolved. Native checks now preserve a screenshot and window hierarchy on failure, and the runner
 enables Android's Back-dispatch diagnostic log. App delivery remains blocked on this investigation.
+
+The failure artifacts from [run 44074698729](https://github.com/ruialmeida51/loom/actions/runs/44074698729)
+show an Android-owned **“Quickstep isn't responding”** dialog over both the split sheet and Manage
+feeds. The system launcher is intercepting Back, rather than the event reaching Loom. CI now builds
+the two APKs before booting the emulator, releases that build JVM, and waits for the launcher's first
+draw before instrumentation. The runtime Gradle JVM is smaller; animations remain enabled and native
+route/draft assertions are unchanged. No app/launcher ANR is automatically dismissed during tests.
+
+## Accepted Tasks follow-up
+
+The user selected **Home · Shopping · Money · Tasks · More**. Tasks becomes the single feature for
+household to-dos and reminders. A task can have only a title; dates and notifications are optional.
+Keep existing dated/repeating reminders and their notification behavior, a small task preview and
+quick add on Home, and move the full list into its own tab. More retains secondary tools/News.
+Feature models, packages, DI and resources must follow Tasks ownership. Apply the backward-compatible
+backend migration and include this change in the final audit. This work is accepted, not yet implemented.
 
 The manifest change passed the full PR run (Android/shared/device/iOS), but its parallel push run
 still failed the same two native Back checks. The explicit integration removes the disabled-callback

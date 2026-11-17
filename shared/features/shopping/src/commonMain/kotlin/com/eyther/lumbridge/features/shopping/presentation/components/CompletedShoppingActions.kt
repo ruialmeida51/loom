@@ -2,6 +2,7 @@ package com.eyther.lumbridge.features.shopping.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -9,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.DestructiveButton
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_selected
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_deselect_all
@@ -23,7 +25,10 @@ internal fun CompletedShoppingActions(
     onSelectAll: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    FlowRow(
+        modifier = Modifier.padding(top = LoomSpacing.extraSmall, bottom = LoomSpacing.small),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         OutlinedButton(
             onClick = onSelectAll,
             enabled = !busy,

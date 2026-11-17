@@ -11,4 +11,6 @@ collect_device_evidence() {
 }
 trap collect_device_evidence EXIT
 adb shell setprop log.tag.WindowOnBackDispatcher DEBUG
-./gradlew :androidApp:connectedDebugAndroidTest --no-parallel --max-workers=1 '-Dorg.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8'
+# Wait for the launcher's first draw; compiling before boot avoids starving its startup on CI.
+timeout 45s adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.HOME > /dev/null
+./gradlew :androidApp:connectedDebugAndroidTest --no-daemon --no-parallel --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process '-Dorg.gradle.jvmargs=-Xmx2g -Dfile.encoding=UTF-8'

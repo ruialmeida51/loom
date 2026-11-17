@@ -5,7 +5,8 @@ using the Plannot-derived `ai/agents/AGENTS_REVIEWER.agent.md` checklist after f
 The feedback/decision/source ledger is [here](../plans/2026-11-17-polish-ledger.md).
 
 **Verdict: source/local validation passes; release verification needs revision.** The intermittent
-native Back checks still block delivery. The ledger records the independent passing/failing runs.
+native Back verification remains a release gate. Failure captures identify a foreign Quickstep
+launcher ANR stealing input; the CI resource/startup change must pass repeat verification.
 Android device execution and iOS compilation remain release gates in CI. A build is not an upload receipt.
 
 ## Resolved findings
