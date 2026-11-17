@@ -22,7 +22,7 @@ Back assertions and preserve failure evidence rather than suppressing the dialog
 | Statement navigation | Monthly navigation is removed. Saved legacy routes and push links redirect to current balances. The existing insights compatibility code and historical database records are retained deliberately; no financial history is rewritten. |
 | Account picker | Immediate selection closes the picker, current selection is marked, and Cancel is removed. New account and Manage accounts remain meaningful actions. |
 | Tasks | `features/tasks` replaces the reminders module, including domain/data/presentation, DI and named Gradle references. Five peer tabs are Home, Shopping, Money, Tasks and More. Title-only capture stays on Home; date, repeat and household notification are optional. Existing reminders retain alerts; completion/reopen and creation show feedback. Picker drafts remain transient, confirmed inputs remain VM-owned. |
-| Shopping controls | Completed items use a compact disclosure header; selection actions appear only while selecting. The divider has breathing room. Immediate list selection has no Cancel/Done; draft create/rename forms keep Cancel. |
+| Shopping controls | Completed items use a compact disclosure header; selection actions appear only while selecting. The completed divider and Shopping manager action footer have breathing room. Immediate list selection has no Cancel/Done; draft create/rename forms keep Cancel. |
 | Home | The news viewport reaches both screen edges; headers/items retain content gutters. Empty reminders/shopping use illustrated cards without duplicate add actions. Errors do not become empty success states. |
 | Feed management | Subscriptions are independent of articles. Reading and management have separate Screen/contract/ViewModel/routes. Pending, failed and empty sources remain visible. Add/edit/refresh/remove support progress, typed errors and feedback. Returning to reading reloads quietly. |
 | Feed refresh/edit | Manual News refresh fetches publishers with at most three concurrent requests; recent-source throttles do not block other sources. A transactional address replacement prevents stale editors and an old worker from attaching the previous publisher's articles. |
@@ -51,7 +51,8 @@ Back assertions and preserve failure evidence rather than suppressing the dialog
 ## Verification
 
 - Full local run: **178 JVM tests, zero failures/skips**, including shared Compose UI flows. Subsequent
-  focused captures exercise the same source-management and news-navigation assertions.
+  focused captures exercise the same source-management and news-navigation assertions. A final small
+  Shopping footer-spacing change passes the two existing group-management flows and refreshes its capture.
 - Android debug app and instrumentation APK assemble successfully. Native device tests cover keyboard
   entry/alignment, refresh draft retention, lifecycle/Back and the added nested feed-management Back path.
   Building the test APK does not claim those device tests ran locally.

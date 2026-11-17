@@ -2,7 +2,7 @@ package com.eyther.lumbridge.features.shopping.presentation.components.bottomshe
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,6 +14,7 @@ import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomS
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.list_delete
@@ -45,6 +46,7 @@ fun ShoppingListsBottomSheet(
                 text = stringResource(Res.string.ui_new_list),
                 onClick = { onListForm(null) },
                 enabled = !busy,
+                modifier = Modifier.padding(top = LoomSpacing.small),
             )
         },
     ) {
