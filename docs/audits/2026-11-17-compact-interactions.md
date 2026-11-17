@@ -45,7 +45,7 @@ No unresolved blocking or should-fix findings remain in the scoped local diff.
 - Android debug app and instrumentation APK build. The six native checks include the new task FAB
   capture/save with the actual keyboard, alongside existing keyboard geometry, continuous entry,
   refresh retention, split draft/resume, nested Back and task-completion checks.
-  Device execution is required in CI; no local emulator or macOS/Xcode is available here.
+  All six native checks passed twice in final-revision CI; no local emulator or macOS/Xcode was available here.
 - Disposable PostgreSQL: **18 migrations** and integration suites pass, including 20/20 cursor pages
   at equal timestamps, source/unread filters before pagination, publisher names from two sources on
   the same host, security-invoker metadata and outsider denial.
@@ -72,15 +72,22 @@ remains outside this UX change.
 
 ## CI and delivery
 
-On app commit `0729740`, both independent CI runs passed shared/Android, all database and RSS checks,
-and all six native Android flows: [push run](https://github.com/ruialmeida51/loom/actions/runs/44141737857)
-and [PR run](https://github.com/ruialmeida51/loom/actions/runs/44141850069). Native result XML confirms
-six checks with no failures/skips; the task-keyboard screenshot confirms both stacked actions remain
-above the real IME. Kotlin iOS compilation also passed. Xcode was still building when the final
-selection-semantics patch was prepared; that patch passes the relevant local UI regressions and the
-static audit. Final-head CI must pass before merge.
+Final app revision `a8fcb51` passed [the complete CI run](https://github.com/ruialmeida51/loom/actions/runs/44143887878):
+shared/Android, disposable PostgreSQL/RSS checks, all six native Android flows and iOS Kotlin/Xcode
+builds. The [independent PR run](https://github.com/ruialmeida51/loom/actions/runs/44143903388) also
+passed all six native Android flows and iOS Kotlin/Xcode. Both use the final selection-accessibility
+patch; its relevant local UI regressions and static audit pass too.
 
-Merge and Firebase distribution to the configured `internal-testers` group follow passing checks. The release
-allocator assigns the next patch/build; Firebase-only delivery creates no Play release or tag.
+Merged [PR #15](https://github.com/ruialmeida51/loom/pull/15) as
+`db7719e1e629ba43a194492bff529e3e20029ef3`.
 
-Final local reviewer result: **pass**, with native Android/iOS execution limits stated above.
+**Loom 4.0.6 (56)** uploaded and distributed to the configured **internal-testers** Firebase group.
+The [release workflow](https://github.com/ruialmeida51/loom/actions/runs/44147168578) completed
+successfully, including pre-package tests, signing, Firebase upload/distribution, durable release
+history and changelog archival. Its planner log confirms `Next Loom release: 4.0.6 (56)`; the
+versioned release artifact is `loom-changelog-56`. The workflow summary contains the direct Firebase
+release URL. The allocator assigned the version; no Play release or Git tag was created.
+
+Final reviewer result: **pass**, with no unresolved scoped findings. Native Android runs use demo
+ports; real-provider session expiry still needs an installed-account check as recorded in the
+earlier audit. iOS Kotlin/Xcode build verification does not claim physical-device gesture testing.
