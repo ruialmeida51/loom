@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.8] - 2026-11-18
+
 - Group groceries with a right swipe; swipe left to move them out. Parent completion includes its children, with Undo and accessible menu actions.
 - Attach one receipt photo from the camera or gallery, zoom to read it, replace it or confirm deletion. Failed uploads keep your expense and photo draft for retry.
 - Private household receipt access, automatic cleanup and updated privacy information.
