@@ -42,9 +42,14 @@ primary Save above outlined Cancel. The shared component covers all form sheets;
 checklist and geometry checks follow that decision. Narrow/large-text geometry and all shared UI checks pass; native IME flows are
 required again in CI. Native screenshot review also corrected the receipt row's RSS glyph to a photo icon.
 
+Receipt attachment/removal explicitly requests a single PostgREST object to match its typed
+decoder; transport coverage checks the representation header, explicit null removal path and
+monotonic version through a successful save/remove pair. The final diff was reviewed again after
+this protocol check passed.
+
 ## Validation
 
-- **206 JVM tests pass**, including **49 shared Compose flows**. New coverage exercises real horizontal
+- **207 JVM tests pass**, including **49 shared Compose flows**. New coverage exercises real horizontal
   gestures, Undo/outdent, grouped domain rules, receipt viewer/removal, failed upload retry without
   duplicate expense writes, original version conflicts and authenticated immutable Storage requests.
 - Android app and instrumentation APKs build. Native CI adds actual swipe geometry and Android system

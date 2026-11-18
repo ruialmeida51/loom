@@ -102,7 +102,9 @@ class CommonExpenseReceiptDataSource(
                         objectPath = path,
                         version = receipt.version,
                     ),
-                )
+                ) {
+                    single()
+                }
                 .decodeAs<ExpenseReceiptResponse>()
                 .toDomain()
         }
@@ -123,7 +125,9 @@ class CommonExpenseReceiptDataSource(
                         objectPath = null,
                         version = receipt.version,
                     ),
-                )
+                ) {
+                    single()
+                }
                 .decodeAs<ExpenseReceiptResponse>()
                 .toDomain()
         }

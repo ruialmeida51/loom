@@ -29,11 +29,88 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.bytestring.ByteString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @OptIn(SupabaseInternal::class)
 class ExpenseReceiptDataSourceTest {
+    @Test
+    fun attachmentAndRemovalRequestOneObjectAndPreserveTheRemovalVersion() = runTest {
+        val versions = mutableListOf<String>()
+        val path = "home/account/expense/photo.jpg"
+        val client =
+            createSupabaseClient("https://loom.test", "test-key") {
+                install(Postgrest)
+                install(Storage)
+                httpEngine = MockEngine { request ->
+                    when {
+                        request.url.encodedPath == "/rest/v1/expense_receipts" ->
+                            respond(
+                                "[]",
+                                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                            )
+                        request.method == HttpMethod.Head -> respond("")
+                        request.url.encodedPath == "/rest/v1/rpc/save_expense_receipt" -> {
+                            assertEquals(
+                                "application/vnd.pgrst.object+json",
+                                request.headers[HttpHeaders.Accept],
+                            )
+                            val body =
+                                Json.parseToJsonElement(request.body.toByteArray().decodeToString())
+                                    .jsonObject
+                            versions += body.getValue("p_version").jsonPrimitive.content
+                            val removal = body.getValue("p_object_path") == JsonNull
+                            val objectPath = if (removal) "null" else "\"$path\""
+                            respond(
+                                """{"expense_id":"expense","account_id":"account","object_path":$objectPath,"version":${if (removal) 2 else 1}}""",
+                                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                            )
+                        }
+                        else -> error("Unexpected receipt request")
+                    }
+                }
+            }
+        try {
+            val source =
+                CommonExpenseReceiptDataSource(
+                    access = SupabaseAccess(client),
+                    context =
+                        HouseholdContextDomain(
+                            id = "home",
+                            userId = "alice",
+                            name = "Home",
+                            currency = "EUR",
+                            timeZone = "Europe/Lisbon",
+                        ),
+                )
+            val saved =
+                assertIs<AppResult.Success<ExpenseReceiptDomain>>(
+                        source.savePhoto(
+                            receipt =
+                                ExpenseReceiptDomain(expenseId = "expense", accountId = "account"),
+                            photo =
+                                ReceiptPhotoDomain(
+                                    data = ByteString(byteArrayOf(1, 2, 3)),
+                                    id = "photo",
+                                ),
+                        ),
+                    )
+                    .value
+            assertEquals(path, saved.objectPath)
+            val removed =
+                assertIs<AppResult.Success<ExpenseReceiptDomain>>(
+                        source.removePhoto(receipt = saved),
+                    )
+                    .value
+            assertEquals(null, removed.objectPath)
+            assertEquals(2L, removed.version)
+            assertEquals(listOf("0", "1"), versions)
+        } finally {
+            client.close()
+        }
+    }
+
     @Test
     fun uploadsAreAuthenticatedAndImmutableAndKeepTheOriginalExpectedVersion() = runTest {
         val calls = mutableListOf<String>()

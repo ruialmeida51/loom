@@ -27,7 +27,7 @@ household records. Every schema change is additive; do not rewrite an applied mi
 
 ## Verification and backend
 
-206 JVM tests pass, including 49 shared Compose flows. Android app and instrumentation APKs build.
+207 JVM tests pass, including 49 shared Compose flows. Android app and instrumentation APKs build.
 The disposable PostgreSQL suite applies all 19 migrations and tests nesting, atomic conflicts, bulk
 parent removal/promotion, private photo access, tombstones and queued cleanup. 7 Python, 28 Node
 and 9 Deno tests pass; source ownership audit and legal build/check pass. Android emulator and
