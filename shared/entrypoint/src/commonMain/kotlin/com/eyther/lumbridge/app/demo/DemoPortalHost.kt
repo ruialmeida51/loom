@@ -35,6 +35,7 @@ import com.eyther.lumbridge.app.navigation.push.PendingPush
 import com.eyther.lumbridge.core.navigation.composables.navigation3.DefaultNavDisplay
 import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
+import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.viewmodel.rememberHostViewModelStoreOwner
 import com.eyther.lumbridge.di.providedAccountModules
 import com.eyther.lumbridge.di.providedHouseholdModules
@@ -55,6 +56,9 @@ internal fun DemoPortalHost(
     selectedId: String,
     onSelect: (String) -> Unit,
     onSignOut: () -> Unit,
+    signingOut: Boolean = false,
+    signOutError: TextResource? = null,
+    onSignOutDismissed: () -> Unit = {},
 ) {
     val settings = remember { DemoSettingsDataSource() }
     val analytics = remember { DemoAnalyticsDataSource() }
@@ -145,6 +149,9 @@ internal fun DemoPortalHost(
                         viewModel = accountViewModel,
                         onBack = navigator::goBack,
                         onSignOut = onSignOut,
+                        signingOut = signingOut,
+                        signOutError = signOutError,
+                        onSignOutDismissed = onSignOutDismissed,
                     )
                 PortalDestination.Households ->
                     FlowScaffold(

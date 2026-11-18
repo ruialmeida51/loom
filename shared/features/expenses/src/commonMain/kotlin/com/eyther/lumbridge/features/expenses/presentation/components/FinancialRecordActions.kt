@@ -8,11 +8,12 @@ import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuIt
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete
-import com.eyther.lumbridge.features.expenses.generated.resources.detail_edit
+import com.eyther.lumbridge.features.expenses.generated.resources.history_edit
 
 /** The owning Host supplies navigation; the feature retains permission and confirmation state. */
 @Composable
-fun ExpenseDetailsActions(
+fun FinancialRecordActions(
+    testTag: String,
     canEdit: Boolean,
     busy: Boolean,
     onEdit: () -> Unit,
@@ -20,11 +21,11 @@ fun ExpenseDetailsActions(
 ) {
     if (canEdit)
         ActionMenu(
-            modifier = Modifier.testTag("expense_actions"),
+            modifier = Modifier.testTag(testTag),
             items =
                 listOf(
                     ActionMenuItem(
-                        text = TextResource.Resource(Res.string.detail_edit),
+                        text = TextResource.Resource(Res.string.history_edit),
                         onClick = onEdit,
                         enabled = !busy,
                     ),

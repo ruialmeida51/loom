@@ -26,8 +26,10 @@ import com.eyther.lumbridge.features.expenses.presentation.model.SuggestedRepaym
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.collections.immutable.toImmutableSet
 
 data class ExpensesState(
     val userId: String = "",
@@ -41,23 +43,15 @@ data class ExpensesState(
     val showAccounts: Boolean = false,
     val showManageAccounts: Boolean = false,
     val deletingAccount: ExpenseAccountDomain? = null,
-    val showSettle: Boolean = false,
-    val editingSettlement: Boolean = false,
-    val settlementDate: String = "",
-    val showSettlementDate: Boolean = false,
     val deletingExpense: ExpenseDomain? = null,
     val deletingSettlement: SettlementDomain? = null,
     val entryDeleteError: TextResource? = null,
     val successMessage: TextResource? = null,
-    val from: String = "",
-    val to: String = "",
-    val settleAmount: String = "",
     val loading: Boolean = true,
     val refreshing: Boolean = false,
     val busy: Boolean = false,
     val error: TextResource? = null,
     val loadError: TextResource? = null,
-    val formError: TextResource? = null,
 ) {
     val currency: String = account?.currency ?: "EUR"
     val role: String? = members.firstOrNull { it.id == userId }?.role
@@ -76,7 +70,6 @@ data class ExpensesState(
             accountMembers.size > 1 &&
             !busy &&
             !loading
-    val canManageAccount: Boolean = account?.canManage(userId = userId, isOwner = isOwner) == true
     val deleteConfirmation: DestructiveConfirmationUi? = deletingAccount?.let { target ->
         DestructiveConfirmationUi(
             title = TextResource.Resource(Res.string.account_delete_title),
@@ -129,6 +122,15 @@ data class ExpensesState(
             )
     val archivedAccounts: List<ExpenseAccountDomain> =
         accounts.filter { it.archived }.sortedBy { it.name.lowercase() }
+    val manageableAccountIds: ImmutableSet<String> =
+        accounts
+            .filter {
+                it.canManage(userId = userId, isOwner = isOwner)
+            }
+            .map { it.id }
+            .toImmutableSet()
+    val managedAccounts: ImmutableList<ExpenseAccountDomain> =
+        (activeAccounts + archivedAccounts).toImmutableList()
     val memberNames: ImmutableMap<String, String> =
         members.associate { it.id to it.name }.toImmutableMap()
     val suggestions: ImmutableList<SuggestedSettlementDomain> =
@@ -143,6 +145,9 @@ data class ExpensesState(
                     amount = MoneyDomain(settlement.amountMinor, currency).formatted(),
                     isCurrentUserSender = userId == settlement.from,
                     isCurrentUserRecipient = userId == settlement.to,
+                    canRecord =
+                        canRecordSettlement &&
+                            (userId == settlement.from || userId == settlement.to),
                 )
             }
             .toImmutableList()

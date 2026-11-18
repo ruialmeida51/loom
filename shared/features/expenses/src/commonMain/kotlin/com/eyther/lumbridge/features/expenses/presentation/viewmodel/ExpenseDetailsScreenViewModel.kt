@@ -7,6 +7,7 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.presentation.components.snackbar.DEFAULT_ALERT_DURATION
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseReceiptDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
@@ -37,6 +38,10 @@ class ExpenseDetailsScreenViewModel(
     private val deleteExpenseUseCase: DeleteExpenseUseCase,
     context: HouseholdContextDomain,
 ) : ExpenseDetailsScreenViewModelContract() {
+    private var expenseToDelete: ExpenseDomain? = null
+    private var reading: Boolean = false
+    private var contentRefreshPending: Boolean = false
+    private var receiptReadRevision: Long = 0
     private var receiptAtDraft: ExpenseReceiptDomain? = null
     private var receiptToDelete: ExpenseReceiptDomain? = null
     private var successJob: Job? = null
@@ -94,7 +99,10 @@ class ExpenseDetailsScreenViewModel(
         val photo = state.value.receiptPhoto ?: return
         val receipt = receiptAtDraft ?: return
         if (!state.value.canEdit || state.value.receiptPreparing) return
-        mutableState.update { oldState -> oldState.copy(busy = true, receiptError = null) }
+        mutableState.update { oldState ->
+            oldState.copy(busy = true, receiptError = null, receiptLoading = false)
+        }
+        receiptReadRevision++
         launch {
             val result = saveExpenseReceiptUseCase(receipt = receipt, photo = photo)
             mutableState.update { oldState ->
@@ -132,7 +140,10 @@ class ExpenseDetailsScreenViewModel(
     override fun onReceiptDeleteConfirmed() {
         val receipt = receiptToDelete ?: return
         if (!state.value.showReceiptDeletion || !state.value.canEdit) return
-        mutableState.update { oldState -> oldState.copy(busy = true, receiptError = null) }
+        mutableState.update { oldState ->
+            oldState.copy(busy = true, receiptError = null, receiptLoading = false)
+        }
+        receiptReadRevision++
         launch {
             val result = removeExpenseReceiptUseCase(receipt = receipt)
             mutableState.update { oldState ->
@@ -165,8 +176,10 @@ class ExpenseDetailsScreenViewModel(
     }
 
     private suspend fun loadReceipt() {
+        val revision = ++receiptReadRevision
         val result =
             getExpenseReceiptUseCase(expenseId = params.expenseId, accountId = params.accountId)
+        if (revision != receiptReadRevision) return
         mutableState.update { oldState ->
             when (result) {
                 is AppResult.Success ->
@@ -187,39 +200,68 @@ class ExpenseDetailsScreenViewModel(
     }
 
     override fun onRefresh() {
-        if (state.value.loading || state.value.refreshing || state.value.busy) return
+        if (
+            reading ||
+                state.value.loading ||
+                state.value.refreshing ||
+                state.value.busy ||
+                state.value.showDeleteConfirmation ||
+                state.value.showReceiptDeletion ||
+                state.value.receiptPhoto != null ||
+                state.value.receiptPreparing
+        )
+            return
         mutableState.update { oldState -> oldState.copy(refreshing = true, error = null) }
         launch { loadDetails(state = mutableState) }
     }
 
+    override fun onContentChanged() {
+        if (
+            state.value.loading ||
+                state.value.busy ||
+                state.value.deleted ||
+                state.value.receiptPhoto != null ||
+                state.value.showDeleteConfirmation ||
+                state.value.showReceiptDeletion
+        )
+            return
+        if (reading || state.value.refreshing) {
+            contentRefreshPending = true
+            return
+        }
+        launch { loadDetails(state = mutableState) }
+    }
+
     override fun onDeleteRequested() {
-        if (state.value.canEdit)
-            mutableState.update { oldState ->
-                oldState.copy(showDeleteConfirmation = true, error = null)
-            }
+        if (!state.value.canEdit || state.value.showDeleteConfirmation) return
+        expenseToDelete = state.value.expense ?: return
+        mutableState.update { oldState ->
+            oldState.copy(showDeleteConfirmation = true, deleteError = null)
+        }
     }
 
     override fun onDeleteCancelled() {
-        if (!state.value.busy)
-            mutableState.update { oldState -> oldState.copy(showDeleteConfirmation = false) }
+        if (state.value.busy) return
+        expenseToDelete = null
+        mutableState.update { oldState ->
+            oldState.copy(showDeleteConfirmation = false, deleteError = null)
+        }
     }
 
     override fun onDeleteConfirmed() {
-        if (!state.value.showDeleteConfirmation || !state.value.canEdit) return
-        val expense = state.value.expense ?: return
-        mutableState.update { oldState ->
-            oldState.copy(busy = true, error = null)
-        }
+        if (!state.value.showDeleteConfirmation || state.value.busy) return
+        val expense = expenseToDelete ?: return
+        mutableState.update { oldState -> oldState.copy(busy = true, deleteError = null) }
         launch {
             val result = deleteExpenseUseCase(expense = expense)
             mutableState.update { oldState ->
                 when (result) {
-                    is AppResult.Success -> oldState.copy(busy = false, deleted = true)
+                    is AppResult.Success ->
+                        oldState.copy(busy = false, deleted = true, showDeleteConfirmation = false)
                     is AppResult.Failure ->
                         oldState.copy(
                             busy = false,
-                            showDeleteConfirmation = false,
-                            error = result.error.toExpensesTextResource(),
+                            deleteError = result.error.toExpensesTextResource(),
                         )
                 }
             }
@@ -231,36 +273,49 @@ class ExpenseDetailsScreenViewModel(
     }
 
     private suspend fun loadDetails(state: MutableStateFlow<ExpenseDetailsState>) {
-        when (
-            val result = delayAtLeast {
-                getExpenseFormUseCase(
-                    accountId = params.accountId,
-                    expenseId = params.expenseId,
-                    refreshReferences = true,
-                )
-            }
-        ) {
-            is AppResult.Success -> {
-                state.update { oldState ->
-                    oldState.copy(
-                        account = result.value.account,
-                        expense = result.value.expense,
-                        members = result.value.members,
-                        loading = false,
-                        refreshing = false,
-                        error = null,
-                    )
+        reading = true
+        try {
+            when (
+                val result =
+                    delayAtLeast(
+                        timeToWaitInMillis =
+                            if (state.value.loading || state.value.refreshing) 300L else 0L,
+                    ) {
+                        getExpenseFormUseCase(
+                            accountId = params.accountId,
+                            expenseId = params.expenseId,
+                            refreshReferences = true,
+                        )
+                    }
+            ) {
+                is AppResult.Success -> {
+                    state.update { oldState ->
+                        oldState.copy(
+                            account = result.value.account,
+                            expense = result.value.expense,
+                            members = result.value.members,
+                            loading = false,
+                            refreshing = false,
+                            error = null,
+                        )
+                    }
+                    loadReceipt()
                 }
-                loadReceipt()
+                is AppResult.Failure ->
+                    state.update { oldState ->
+                        oldState.copy(
+                            loading = false,
+                            refreshing = false,
+                            error = result.error.toExpensesTextResource(),
+                        )
+                    }
             }
-            is AppResult.Failure ->
-                state.update { oldState ->
-                    oldState.copy(
-                        loading = false,
-                        refreshing = false,
-                        error = result.error.toExpensesTextResource(),
-                    )
-                }
+        } finally {
+            reading = false
+            if (contentRefreshPending) {
+                contentRefreshPending = false
+                onContentChanged()
+            }
         }
     }
 }

@@ -11,6 +11,5 @@ data class SuggestedRepaymentUi(
     val amount: String,
     val isCurrentUserSender: Boolean,
     val isCurrentUserRecipient: Boolean,
-) {
-    val isPersonal: Boolean = isCurrentUserSender || isCurrentUserRecipient
-}
+    val canRecord: Boolean = false,
+)

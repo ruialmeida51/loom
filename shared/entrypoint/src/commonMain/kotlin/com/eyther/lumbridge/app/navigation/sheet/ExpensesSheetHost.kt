@@ -15,9 +15,7 @@ import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackba
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.ExpenseAccountsBottomSheet
-import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.ExpenseDateBottomSheet
 import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.ManageExpenseAccountsBottomSheet
-import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.SettlementBottomSheet
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 
 @Composable
@@ -31,8 +29,6 @@ internal fun ExpensesSheetHost(
     val controller = rememberBottomSheetController()
     val requested =
         when {
-            state.showSettlementDate -> ExpensesSheets.SettlementDate
-            state.showSettle -> ExpensesSheets.Settlement
             state.showAccounts -> ExpensesSheets.Accounts
             state.showManageAccounts -> ExpensesSheets.ManageAccounts
             else -> null
@@ -40,34 +36,6 @@ internal fun ExpensesSheetHost(
     LaunchedEffect(requested) {
         if (requested == null) controller.hideBottomSheet()
         else controller.showBottomSheet(requested)
-    }
-    controller.registerBottomSheet<ExpensesSheets.Settlement> {
-        SettlementBottomSheet(
-            currentUserId = state.userId,
-            editing = state.editingSettlement,
-            date = state.settlementDate,
-            onDate = { viewModel.onSettlementDateVisibilityChanged(true) },
-            members = state.accountMembers,
-            from = state.from,
-            to = state.to,
-            settleAmount = state.settleAmount,
-            busy = state.busy,
-            formError = state.formError,
-            currency = state.currency,
-            onShowSettle = viewModel::onSettlementSheetVisibilityChanged,
-            onFrom = viewModel::onFromMemberChanged,
-            onTo = viewModel::onToMemberChanged,
-            onSettleAmount = viewModel::onSettlementAmountChanged,
-            onSettle = viewModel::onRecordSettlement,
-            onDismiss = viewModel::onDismissError,
-        )
-    }
-    controller.registerBottomSheet<ExpensesSheets.SettlementDate> {
-        ExpenseDateBottomSheet(
-            date = state.settlementDate,
-            onSelected = viewModel::onSettlementDateChanged,
-            onClose = { viewModel.onSettlementDateVisibilityChanged(false) },
-        )
     }
     controller.registerBottomSheet<ExpensesSheets.Accounts> {
         ExpenseAccountsBottomSheet(
@@ -84,9 +52,8 @@ internal fun ExpensesSheetHost(
     }
     controller.registerBottomSheet<ExpensesSheets.ManageAccounts> {
         ManageExpenseAccountsBottomSheet(
-            accounts = state.activeAccounts + state.archivedAccounts,
-            userId = state.userId,
-            isOwner = state.isOwner,
+            accounts = state.managedAccounts,
+            manageableAccountIds = state.manageableAccountIds,
             busy = state.busy,
             error = state.error,
             onSelect = viewModel::onAccountSelected,
@@ -104,9 +71,7 @@ internal fun ExpensesSheetHost(
         controller = controller,
         dismissEnabled = !state.busy,
         onDismissed = {
-            if (state.showSettlementDate) viewModel.onSettlementDateVisibilityChanged(false)
-            else if (state.showSettle) viewModel.onSettlementSheetVisibilityChanged(false)
-            else if (state.showManageAccounts) viewModel.onManageAccountsVisibilityChanged(false)
+            if (state.showManageAccounts) viewModel.onManageAccountsVisibilityChanged(false)
             else viewModel.onAccountsVisibilityChanged(false)
         },
         content = {
@@ -124,6 +89,7 @@ internal fun ExpensesSheetHost(
             confirmation = confirmation,
             busy = state.busy,
             confirmationTag = "confirm_delete_account",
+            error = state.error,
             onConfirm = viewModel::onConfirmDeleteAccount,
             onDismiss = viewModel::onCancelDeleteAccount,
         )

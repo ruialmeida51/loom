@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.expenses.data.fixtures
 
+import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
@@ -10,13 +11,17 @@ import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSourc
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
+import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseDetailsScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseFormScreenViewModel
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseDetailsScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
@@ -57,8 +62,11 @@ class ExpenseFormFixture {
     var accountRequests = 0
     var memberRequests = 0
     var saved: ExpenseDomain? = null
+    var loadedExpense: ExpenseDomain? = null
+    var deleteResult: AppResult<Unit> = AppResult.Success(Unit)
+    val deletedExpenses = mutableListOf<ExpenseDomain>()
 
-    private val accounts =
+    val accounts: ExpenseAccountDataSource =
         object : ExpenseAccountDataSource {
             override fun stream(): Flow<AppResult<List<ExpenseAccountDomain>>> = error("Not used")
 
@@ -83,7 +91,7 @@ class ExpenseFormFixture {
             override suspend fun deleteAccount(account: ExpenseAccountDomain): AppResult<Unit> =
                 error("Not used")
         }
-    private val household =
+    val household: HouseholdDataSource =
         object : HouseholdDataSource {
             override suspend fun getMemberReferences(
                 householdId: String,
@@ -125,10 +133,17 @@ class ExpenseFormFixture {
                 return saveResult
             }
 
+            override suspend fun getSettlement(
+                id: String,
+                accountId: String,
+            ): AppResult<SettlementDomain> = error("Not used")
+
             override suspend fun getExpense(
                 id: String,
                 accountId: String,
-            ): AppResult<ExpenseDomain> = error("Not used")
+            ): AppResult<ExpenseDomain> =
+                loadedExpense?.let { AppResult.Success(it) }
+                    ?: AppResult.Failure(CommonError.NotFound())
 
             override fun streamExpenses(accountId: String): Flow<AppResult<List<ExpenseDomain>>> =
                 error("Not used")
@@ -137,8 +152,10 @@ class ExpenseFormFixture {
                 accountId: String,
             ): Flow<AppResult<List<SettlementDomain>>> = error("Not used")
 
-            override suspend fun deleteExpense(expense: ExpenseDomain): AppResult<Unit> =
-                error("Not used")
+            override suspend fun deleteExpense(expense: ExpenseDomain): AppResult<Unit> {
+                deletedExpenses += expense
+                return deleteResult
+            }
 
             override suspend fun saveSettlement(
                 settlement: SettlementDomain,
@@ -190,5 +207,31 @@ class ExpenseFormFixture {
             context = context,
             trackAnalyticsEventUseCase =
                 TrackAnalyticsEventUseCase(analyticsDataSource = analytics),
+        )
+
+    fun detailsViewModel(): ExpenseDetailsScreenViewModel =
+        ExpenseDetailsScreenViewModel(
+            getExpenseReceiptUseCase =
+                GetExpenseReceiptUseCase(expenseReceiptDataSource = receipts),
+            prepareReceiptPhotoUseCase =
+                PrepareReceiptPhotoUseCase(expenseReceiptDataSource = receipts),
+            saveExpenseReceiptUseCase =
+                SaveExpenseReceiptUseCase(expenseReceiptDataSource = receipts),
+            removeExpenseReceiptUseCase =
+                RemoveExpenseReceiptUseCase(expenseReceiptDataSource = receipts),
+            params =
+                ExpenseDetailsScreenViewModelContract.Params(
+                    accountId = account.id,
+                    expenseId = "expense",
+                ),
+            getExpenseFormUseCase =
+                GetExpenseFormUseCase(
+                    expenseAccountDataSource = accounts,
+                    getExpenseUseCase = GetExpenseUseCase(expenseDataSource = expenses),
+                    householdDataSource = household,
+                    context = context,
+                ),
+            deleteExpenseUseCase = DeleteExpenseUseCase(expenseDataSource = expenses),
+            context = context,
         )
 }

@@ -14,6 +14,7 @@ import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.navigation.composables.navigation3.DefaultNavDisplay
 import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
+import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.viewmodel.rememberHostViewModelStoreOwner
 import com.eyther.lumbridge.di.accountModules
 import com.eyther.lumbridge.di.householdModules
@@ -43,6 +44,9 @@ internal fun PortalHost(
     diagnosticsDataSource: DiagnosticsDataSource,
     onSelect: (HouseholdDomain) -> Unit,
     onSignOut: () -> Unit,
+    signingOut: Boolean = false,
+    signOutError: TextResource? = null,
+    onSignOutDismissed: () -> Unit = {},
 ) {
     val accountGraph =
         remember(userId) {
@@ -138,6 +142,9 @@ internal fun PortalHost(
                         viewModel = accountViewModel,
                         onBack = navigator::goBack,
                         onSignOut = onSignOut,
+                        signingOut = signingOut,
+                        signOutError = signOutError,
+                        onSignOutDismissed = onSignOutDismissed,
                     )
             }
         }

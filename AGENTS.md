@@ -13,6 +13,7 @@ Follow the Plannot-derived architecture described in `docs/architecture.md` and 
 - Data destinations use the shared pull-to-refresh container. First loads and explicit pull-to-refresh use matching skeletons with one approximately 300 ms minimum transition, as requested by the user. Preserve loaded data beneath this temporary presentation. Resume/realtime/polling updates remain silent and have no minimum delay. Keep drafts, scroll, focus and selections across refresh and lifecycle events. Forms and static destinations do not have a cosmetic refresh gesture.
 - Successful mutations need visible feedback appropriate to the action. Task completion, including a recurring occurrence, shows action progress and a transient success snackbar. Never use skeletons for writes.
 
+- Expenses and payments share full-screen details and create/edit flows, with Edit/Delete in the details toolbar. Focused date/split pickers stay in sheets. Keep each form draft in its own feature ViewModel, separate from the overview.
 - Keep sheet controllers and registrations in entrypoint Hosts, their typed navigation models in separate navigation/model/sheet files, and pure form content in the owning feature presentation package. Core owns only generic sheet/layout infrastructure. Use grouped rows for related content and dialogs only for brief confirmations.
 
 - One Gradle module per feature; domain/data/presentation are Kotlin packages.

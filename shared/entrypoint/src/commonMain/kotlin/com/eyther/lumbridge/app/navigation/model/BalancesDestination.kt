@@ -27,5 +27,19 @@ internal sealed interface BalancesDestination : NavDestination {
 
     @Stable
     @Serializable
+    data class Payment(val accountId: String, val paymentId: String) : BalancesDestination
+
+    @Stable
+    @Serializable
+    data class PaymentForm(
+        val accountId: String,
+        val paymentId: String? = null,
+        val suggestedFrom: String? = null,
+        val suggestedTo: String? = null,
+        val suggestedAmountMinor: Long? = null,
+    ) : BalancesDestination
+
+    @Stable
+    @Serializable
     data class AccountForm(val accountId: String? = null) : BalancesDestination
 }

@@ -58,7 +58,6 @@ fun ExpenseDetailsScreen(
             onPicked = viewModel::onReceiptPicked,
             onError = viewModel::onReceiptPickFailed,
         )
-    LaunchedEffect(Unit) { viewModel.onRefresh() }
     LaunchedEffect(state.deleted) { if (state.deleted) onDeleted() }
     PullToRefreshContentContainer(
         isRefreshing = state.refreshing,
@@ -104,6 +103,7 @@ fun ExpenseDetailsScreen(
             confirmation = confirmation,
             busy = state.busy,
             confirmationTag = "confirm_delete_expense",
+            error = state.deleteError,
             onConfirm = viewModel::onDeleteConfirmed,
             onDismiss = viewModel::onDeleteCancelled,
         )

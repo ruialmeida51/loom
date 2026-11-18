@@ -62,7 +62,7 @@ All provider declarations live in `shared/di`, organized by application/account/
 
 `PortalHost` retains the selected household graph while My account or the household chooser is open. Its user graph provides profile, preferences and notification registration even before the first household exists. A Host-owned ViewModel store scopes the account ViewModel to that authenticated user. The nickname editor belongs to account; membership and invitations belong to household.
 
-`HouseholdHost` owns five peer tabs: Home, Shopping, Money, Tasks and More. Each has a feature Host that owns its toolbar and child stack. Tab roots render a compact portal toolbar with household selector and profile avatar; child destinations replace it with Back/title/actions. Home opens task creation in place and its expense shortcut within its own stack. TasksHost owns the full task list; MoreHost is a navigation hub for Feed and household details; it introduces no shared feature models or domain module. Balances owns account management, expense details/editing, recurrence and insights. `ExpenseFormHost` owns split and date sheets. Each split opening gets a scoped ViewModel store; dismissing it destroys only the unconfirmed split draft. Core owns only generic toolbar, sheet and navigation infrastructure.
+`HouseholdHost` owns five peer tabs: Home, Shopping, Money, Tasks and More. Each has a feature Host that owns its toolbar and child stack. Tab roots render a compact portal toolbar with household selector and profile avatar; child destinations replace it with Back/title/actions. Home opens task creation in place and its expense shortcut within its own stack. TasksHost owns the full task list; MoreHost is a navigation hub for Feed and household details; it introduces no shared feature models or domain module. Balances owns account management, expense details/editing, recurrence and insights. `ExpenseFormHost` owns split and date sheets. Payment details and create/edit forms have their own Hosts and expenses-feature Screen/contract/ViewModel; the overview owns neither payment inputs nor payment sheets. Both record details refresh silently when returning from a child form. Each split opening gets a scoped ViewModel store; dismissing it destroys only the unconfirmed split draft. Core owns only generic toolbar, sheet and navigation infrastructure.
 
 Android Back pops a child first, then returns Shopping/Money/Tasks/More roots to Home. Only Home root leaves the app. Tab transitions fade; child transitions slide in the appropriate forward/back direction. Navigation decorators retain per-tab stores, and the household graph stays alive through account/chooser visits. Safe-area padding is applied and consumed once by the owning scaffold.
 
@@ -160,3 +160,12 @@ UseCases. Its data adapter re-encodes bounded JPEGs and uses private authenticat
 with unique, non-upsert paths. DTOs and mappers remain separate. Central annotated DI supplies both
 production and isolated demo ports. The dedicated viewer owns a route; the image component owns
 only transient zoom/pan. See the backend guide for RLS, version checks and Storage cleanup.
+
+
+Session presentation belongs to authentication. `SessionScreenViewModel` coordinates the existing
+household restore/selection UseCases and authentication stream; `LauncherHost` composes navigation
+graphs and platform legal links. Authentication depends explicitly on household; household domain
+models remain in household. Same-user refresh/reconnection keeps the portal and its drafts alive.
+An identity change cancels the old restoration and persistence work. Failed restoration has explicit
+Retry/Choose household states, persistence failures keep the active in-memory household, and
+sign-out progress/errors stay in the existing account confirmation until success or cancellation.

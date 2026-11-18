@@ -87,6 +87,15 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
         store.expenses.update { expenses -> expenses.filterNot { it.id == expense.id } }
     }
 
+    override suspend fun getSettlement(id: String, accountId: String): AppResult<SettlementDomain> =
+        safeCall {
+            store.settlements.value
+                .first {
+                    it.id == id && it.accountId.ifBlank { store.context.id } == accountId
+                }
+                .copy(accountId = accountId)
+        }
+
     override suspend fun saveSettlement(settlement: SettlementDomain) = safeCall {
         val before = store.settlements.value.first { it.id == settlement.id }
         requireDomain(before.version == settlement.version) { SettlementError.Changed() }

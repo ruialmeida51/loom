@@ -70,7 +70,7 @@ internal fun SettlementSuggestionCard(repayment: SuggestedRepaymentUi, onRecord:
                         },
                 )
             }
-            if (repayment.isPersonal)
+            if (repayment.canRecord)
                 FilledTonalButton(
                     onClick = onRecord,
                     modifier = Modifier.testTag("record_payment"),

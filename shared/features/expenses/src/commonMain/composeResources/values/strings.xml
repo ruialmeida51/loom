@@ -48,7 +48,6 @@
   <string name="ui_category">Category</string>
   <string name="ui_repeat_this_bill_monthly">Repeat this bill monthly</string>
   <string name="ui_cancel">Cancel</string>
-  <string name="ui_record_a_repayment">Record payment</string>
   <string name="ui_money_sent_by">Paid by</string>
   <string name="ui_received_by">Received by</string>
   <string name="ui_this_records_a_payment_you_ve_already_made_or">Record a payment already made.</string>
@@ -135,7 +134,6 @@
     <string name="form_monthly">Repeat monthly</string>
     <string name="form_recurring_unchanged">Edits apply to this expense. Upcoming bills keep their existing schedule.</string>
     <string name="form_save">Save</string>
-    <string name="detail_edit">Edit expense</string>
     <string name="detail_delete">Delete</string>
     <string name="detail_delete_title">Delete this expense?</string>
     <string name="detail_delete_message">It will be removed from the balances. Upcoming recurring bills remain scheduled.</string>
@@ -213,4 +211,5 @@
     <string name="payment_personal_title">%1$s paid %2$s</string>
     <string name="history_edit">Edit</string>
     <string name="history_delete_message">“%1$s” will be removed from balances for everyone. Upcoming recurring bills remain scheduled.</string>
+    <string name="payment_label">Payment</string>
 </resources>

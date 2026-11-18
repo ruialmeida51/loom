@@ -32,9 +32,6 @@ import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete
 import com.eyther.lumbridge.features.expenses.generated.resources.former_member
 import com.eyther.lumbridge.features.expenses.generated.resources.history_edit
 import com.eyther.lumbridge.features.expenses.generated.resources.history_paid_on
-import com.eyther.lumbridge.features.expenses.generated.resources.payment_i_paid_person
-import com.eyther.lumbridge.features.expenses.generated.resources.payment_person_paid_me
-import com.eyther.lumbridge.features.expenses.generated.resources.payment_personal_title
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import org.jetbrains.compose.resources.stringResource
 
@@ -45,6 +42,7 @@ internal fun ExpenseHistoryRow(
     item: ExpenseHistoryItemUi,
     enabled: Boolean,
     onOpen: (ExpenseDomain) -> Unit,
+    onOpenPayment: (SettlementDomain) -> Unit,
     onEditExpense: (ExpenseDomain) -> Unit,
     onDeleteExpense: (ExpenseDomain) -> Unit,
     onEditSettlement: (SettlementDomain) -> Unit,
@@ -66,6 +64,7 @@ internal fun ExpenseHistoryRow(
                 canManage = item.canManage,
                 enabled = enabled,
                 tag = "expense_actions_${item.expense.id}",
+                cardTag = "expense_card_${item.expense.id}",
                 onOpen = { onOpen(item.expense) },
                 onEdit = { onEditExpense(item.expense) },
                 onDelete = { onDeleteExpense(item.expense) },
@@ -73,24 +72,12 @@ internal fun ExpenseHistoryRow(
         is ExpenseHistoryItemUi.Repayment ->
             HistoryCard(
                 title =
-                    when {
-                        item.isUserSender ->
-                            stringResource(
-                                Res.string.payment_i_paid_person,
-                                item.toName ?: stringResource(Res.string.former_member),
-                            )
-                        item.isUserRecipient ->
-                            stringResource(
-                                Res.string.payment_person_paid_me,
-                                item.fromName ?: stringResource(Res.string.former_member),
-                            )
-                        else ->
-                            stringResource(
-                                Res.string.payment_personal_title,
-                                item.fromName ?: stringResource(Res.string.former_member),
-                                item.toName ?: stringResource(Res.string.former_member),
-                            )
-                    },
+                    paymentTitle(
+                        fromName = item.fromName,
+                        toName = item.toName,
+                        isUserSender = item.isUserSender,
+                        isUserRecipient = item.isUserRecipient,
+                    ),
                 subtitle = calendarDateText(item.calendarDate),
                 amount = item.amount,
                 glyph = Glyph.CHECK,
@@ -99,9 +86,10 @@ internal fun ExpenseHistoryRow(
                     else if (item.isUserRecipient) LoomColors.positive
                     else MaterialTheme.colorScheme.primary,
                 canManage = item.canManage,
-                enabled = enabled && item.canManage,
+                enabled = enabled,
                 tag = "payment_actions_${item.settlement.id}",
-                onOpen = { onEditSettlement(item.settlement) },
+                cardTag = "payment_card_${item.settlement.id}",
+                onOpen = { onOpenPayment(item.settlement) },
                 onEdit = { onEditSettlement(item.settlement) },
                 onDelete = { onDeleteSettlement(item.settlement) },
             )
@@ -119,6 +107,7 @@ private fun HistoryCard(
     canManage: Boolean,
     enabled: Boolean,
     tag: String,
+    cardTag: String,
     onOpen: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -128,7 +117,7 @@ private fun HistoryCard(
         enabled = enabled,
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().testTag(cardTag),
     ) {
         Row(
             Modifier.fillMaxWidth().padding(LoomSpacing.medium),

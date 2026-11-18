@@ -11,6 +11,7 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCa
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpensesStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveExpenseReceiptUseCase
@@ -26,6 +27,8 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseDeta
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseFormScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseSplitViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpensesScreenViewModel
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.PaymentDetailsScreenViewModel
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.PaymentFormScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ReceiptViewerScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.RecurringExpensesScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseAccountFormScreenViewModelContract
@@ -33,6 +36,8 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.E
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseSplitViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentDetailsScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentFormScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ReceiptViewerScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
@@ -94,8 +99,6 @@ class HouseholdViewModelModule {
         selectExpenseAccountUseCase: SelectExpenseAccountUseCase,
         saveExpenseAccountUseCase: SaveExpenseAccountUseCase,
         deleteExpenseAccountUseCase: DeleteExpenseAccountUseCase,
-        recordSettlementUseCase: RecordSettlementUseCase,
-        saveSettlementUseCase: SaveSettlementUseCase,
         removeSettlementUseCase: RemoveSettlementUseCase,
         deleteExpenseUseCase: DeleteExpenseUseCase,
         getMembersStreamUseCase: GetMembersStreamUseCase,
@@ -107,8 +110,6 @@ class HouseholdViewModelModule {
             selectExpenseAccountUseCase = selectExpenseAccountUseCase,
             saveExpenseAccountUseCase = saveExpenseAccountUseCase,
             deleteExpenseAccountUseCase = deleteExpenseAccountUseCase,
-            recordSettlementUseCase = recordSettlementUseCase,
-            saveSettlementUseCase = saveSettlementUseCase,
             removeSettlementUseCase = removeSettlementUseCase,
             deleteExpenseUseCase = deleteExpenseUseCase,
             getMembersStreamUseCase = getMembersStreamUseCase,
@@ -331,5 +332,35 @@ class HouseholdViewModelModule {
             params = params,
             getExpenseReceiptUseCase = getExpenseReceiptUseCase,
             downloadReceiptPhotoUseCase = downloadReceiptPhotoUseCase,
+        )
+
+    @KoinViewModel(binds = [PaymentFormScreenViewModelContract::class])
+    fun providePaymentFormScreenViewModel(
+        @InjectedParam params: PaymentFormScreenViewModelContract.Params,
+        getSettlementFormUseCase: GetSettlementFormUseCase,
+        recordSettlementUseCase: RecordSettlementUseCase,
+        saveSettlementUseCase: SaveSettlementUseCase,
+        context: HouseholdContextDomain,
+    ): PaymentFormScreenViewModelContract =
+        PaymentFormScreenViewModel(
+            params = params,
+            getSettlementFormUseCase = getSettlementFormUseCase,
+            recordSettlementUseCase = recordSettlementUseCase,
+            saveSettlementUseCase = saveSettlementUseCase,
+            context = context,
+        )
+
+    @KoinViewModel(binds = [PaymentDetailsScreenViewModelContract::class])
+    fun providePaymentDetailsScreenViewModel(
+        @InjectedParam params: PaymentDetailsScreenViewModelContract.Params,
+        getSettlementFormUseCase: GetSettlementFormUseCase,
+        removeSettlementUseCase: RemoveSettlementUseCase,
+        context: HouseholdContextDomain,
+    ): PaymentDetailsScreenViewModelContract =
+        PaymentDetailsScreenViewModel(
+            params = params,
+            getSettlementFormUseCase = getSettlementFormUseCase,
+            removeSettlementUseCase = removeSettlementUseCase,
+            context = context,
         )
 }

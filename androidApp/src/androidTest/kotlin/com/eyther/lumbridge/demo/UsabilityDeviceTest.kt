@@ -4,12 +4,16 @@ import android.content.ContentValues
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isDisplayed
@@ -25,6 +29,7 @@ import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
@@ -160,6 +165,92 @@ class UsabilityDeviceTest {
         pressSystemBack()
         awaitDestination(tag = "expenses_content")
         compose.onNodeWithTag("expense_title").assertDoesNotExist()
+        pressSystemBack()
+        awaitDestination(tag = "home_content")
+    }
+
+    @Test
+    fun paymentFormKeepsItsDraftAcrossDateBackAndResumeThenOpensConsistentDetails() {
+        compose.onNodeWithTag("navigation_money").performClick()
+        awaitDestination(tag = "expenses_content")
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
+        }
+        compose.onNodeWithTag("balances_view_balances").performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("record_payment").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onAllNodesWithTag("record_payment")[0].performScrollTo().performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("repayment_amount").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag("modal_sheet").assertDoesNotExist()
+        compose.onNodeWithTag("repayment_amount").performClick()
+        compose.onNodeWithTag("repayment_amount").performTextClearance()
+        compose.onNodeWithTag("repayment_amount").performTextInput("1.00")
+        compose.waitUntil(timeoutMillis = 5_000) { keyboardVisible() }
+        val submitBottom =
+            compose
+                .onNodeWithTag("record_repayment_submit")
+                .fetchSemanticsNode()
+                .boundsInWindow
+                .bottom
+        compose.runOnUiThread {
+            val decor = compose.activity.window.decorView
+            val keyboard =
+                requireNotNull(ViewCompat.getRootWindowInsets(decor))
+                    .getInsets(WindowInsetsCompat.Type.ime())
+                    .bottom
+            assertTrue(
+                "Payment Save must stay above the keyboard",
+                submitBottom <= decor.height - keyboard + 2f,
+            )
+        }
+        capture(name = "payment-form-keyboard")
+        hideKeyboard()
+        compose.onNodeWithTag("repayment_date").performScrollTo().performClick()
+        compose.onNodeWithTag("form_sheet").assertIsDisplayed()
+        pressSystemBack()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()
+        }
+        compose.onNodeWithTag("repayment_amount").assertTextContains("1.00")
+        compose.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
+        compose.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+        awaitActivityWindowFocus()
+        hideKeyboard()
+        compose.onNodeWithTag("repayment_amount").assertTextContains("1.00")
+        compose.onNodeWithTag("record_repayment_submit").performClick()
+        awaitDestination(tag = "expenses_content")
+        compose.onNodeWithTag("balances_view_expenses").performClick()
+        val paymentCard =
+            SemanticsMatcher("Recorded payment card") { node ->
+                node.config.getOrNull(SemanticsProperties.TestTag)?.startsWith("payment_card_") ==
+                    true
+            }
+        compose.onNodeWithTag("expenses_content").performScrollToNode(paymentCard)
+        compose.onNode(paymentCard).performTouchInput {
+            click(Offset(x = width * .1f, y = height / 2f))
+        }
+        awaitDestination(tag = "payment_details_content")
+        compose.onNodeWithText("€1.00").assertIsDisplayed()
+        compose.onNodeWithTag("payment_details_actions").performClick()
+        compose.onNodeWithText("Edit").performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("repayment_amount").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag("repayment_amount").performClick()
+        compose.onNodeWithTag("repayment_amount").performTextClearance()
+        compose.onNodeWithTag("repayment_amount").performTextInput("2.00")
+        hideKeyboard()
+        compose.onNodeWithTag("record_repayment_submit").performClick()
+        awaitDestination(tag = "payment_details_content")
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithText("€2.00").fetchSemanticsNodes().isNotEmpty()
+        }
+        capture(name = "payment-details")
+        pressSystemBack()
+        awaitDestination(tag = "expenses_content")
         pressSystemBack()
         awaitDestination(tag = "home_content")
     }
@@ -480,7 +571,13 @@ class UsabilityDeviceTest {
     }
 
     private fun awaitDestination(tag: String) {
-        compose.waitUntil(timeoutMillis = 5_000) { compose.onNodeWithTag(tag).isDisplayed() }
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onNodeWithTag(tag).isDisplayed() &&
+                compose
+                    .onAllNodes(hasTestTag("loading_rows") and hasAnyAncestor(hasTestTag(tag)))
+                    .fetchSemanticsNodes()
+                    .isEmpty()
+        }
         compose.waitForIdle()
     }
 

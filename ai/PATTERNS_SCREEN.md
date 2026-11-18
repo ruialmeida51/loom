@@ -17,6 +17,7 @@ Background realtime updates do not remove content. Actions show button/row progr
 Transient success uses SuccessSnackbar in the container's snackbarHost; the VM owns its lifetime.
 Existing actionable Undo snackbars retain their action and lifecycle. Persistent errors remain dismissible/retryable.
 
-Use sheets for forms/pickers and dialogs only for brief destructive confirmations. Delete is a filled or
+Use full-screen details and create/edit forms for expenses and payments. Keep focused date/split
+pickers and small settings forms in sheets, and dialogs for brief destructive confirmations. Delete is a filled or
 outlined button, including confirmations, with progress and sibling disabling. List selectors dismiss on
 selection; no redundant Done when there is no draft to commit.

@@ -4,7 +4,6 @@ import com.eyther.lumbridge.core.viewmodel.LoomViewModel
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
-import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import kotlinx.coroutines.flow.StateFlow
 
@@ -26,24 +25,6 @@ abstract class ExpensesScreenViewModelContract : LoomViewModel() {
     abstract fun onCancelDeleteAccount()
 
     abstract fun onConfirmDeleteAccount()
-
-    abstract fun onSuggestedRepayment(suggestion: SuggestedSettlementDomain)
-
-    abstract fun onSettlementSheetVisibilityChanged(value: Boolean)
-
-    abstract fun onFromMemberChanged(value: String)
-
-    abstract fun onToMemberChanged(value: String)
-
-    abstract fun onSettlementAmountChanged(value: String)
-
-    abstract fun onRecordSettlement()
-
-    abstract fun onEditSettlement(settlement: SettlementDomain)
-
-    abstract fun onSettlementDateVisibilityChanged(value: Boolean)
-
-    abstract fun onSettlementDateChanged(value: String)
 
     abstract fun onDeleteExpenseRequested(expense: ExpenseDomain)
 

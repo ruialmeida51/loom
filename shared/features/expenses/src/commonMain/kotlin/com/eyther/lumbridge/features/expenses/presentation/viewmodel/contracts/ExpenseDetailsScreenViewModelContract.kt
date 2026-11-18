@@ -25,6 +25,8 @@ abstract class ExpenseDetailsScreenViewModelContract : LoomViewModel() {
 
     abstract fun onReceiptDeleteConfirmed()
 
+    abstract fun onContentChanged()
+
     abstract fun onRefresh()
 
     abstract fun onDeleteRequested()

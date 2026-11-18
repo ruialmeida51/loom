@@ -15,6 +15,7 @@ class ReceiptFixtureDataSource : ExpenseReceiptDataSource {
     var saveError: AppError? = null
     var saveGate: CompletableDeferred<AppResult<ExpenseReceiptDomain>>? = null
     var receipt: ExpenseReceiptDomain? = null
+    var readGate: CompletableDeferred<AppResult<ExpenseReceiptDomain>>? = null
     var photo: ReceiptPhotoDomain? = null
 
     override suspend fun preparePhoto(bytes: ByteArray): AppResult<ReceiptPhotoDomain> =
@@ -25,9 +26,10 @@ class ReceiptFixtureDataSource : ExpenseReceiptDataSource {
         expenseId: String,
         accountId: String,
     ): AppResult<ExpenseReceiptDomain> =
-        AppResult.Success(
-            receipt ?: ExpenseReceiptDomain(expenseId = expenseId, accountId = accountId),
-        )
+        readGate?.await()
+            ?: AppResult.Success(
+                receipt ?: ExpenseReceiptDomain(expenseId = expenseId, accountId = accountId),
+            )
 
     override suspend fun downloadPhoto(
         receipt: ExpenseReceiptDomain,
