@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.9] - 2026-11-18
+
 - Shorter contextual action buttons: Delete, Revoke and Discard, with clear Cancel/Keep choices for recurring bills.
 
 ## [4.0.8] - 2026-11-18
