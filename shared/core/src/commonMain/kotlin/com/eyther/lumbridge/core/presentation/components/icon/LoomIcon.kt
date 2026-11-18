@@ -28,6 +28,7 @@ import com.eyther.lumbridge.core.generated.resources.icon_money
 import com.eyther.lumbridge.core.generated.resources.icon_more
 import com.eyther.lumbridge.core.generated.resources.icon_next
 import com.eyther.lumbridge.core.generated.resources.icon_person
+import com.eyther.lumbridge.core.generated.resources.icon_photo
 import com.eyther.lumbridge.core.generated.resources.icon_privacy
 import com.eyther.lumbridge.core.generated.resources.icon_settings
 import com.eyther.lumbridge.core.generated.resources.icon_shopping
@@ -47,6 +48,7 @@ fun LoomIcon(
                 Glyph.MORE -> Res.string.icon_more
                 Glyph.HOME -> Res.string.icon_home
                 Glyph.FEED -> Res.string.icon_feed
+                Glyph.PHOTO -> Res.string.icon_photo
                 Glyph.SHOPPING -> Res.string.icon_shopping
                 Glyph.MONEY -> Res.string.icon_money
                 Glyph.BELL -> Res.string.icon_bell
@@ -165,6 +167,20 @@ fun LoomIcon(
                     Size(8 * s, 10 * s),
                     style = Stroke(1.7f * s),
                 )
+            }
+            Glyph.PHOTO -> {
+                drawRoundRect(
+                    tint,
+                    Offset(3 * s, 3 * s),
+                    Size(18 * s, 18 * s),
+                    androidx.compose.ui.geometry.CornerRadius(2 * s),
+                    style = Stroke(1.7f * s),
+                )
+                drawCircle(tint, 1.5f * s, Offset(8 * s, 8 * s))
+                line(4f, 18f, 10f, 12f)
+                line(10f, 12f, 14f, 16f)
+                line(14f, 16f, 17f, 13f)
+                line(17f, 13f, 21f, 17f)
             }
             Glyph.FEED -> {
                 drawCircle(tint, 1.5f * s, Offset(5 * s, 19 * s))

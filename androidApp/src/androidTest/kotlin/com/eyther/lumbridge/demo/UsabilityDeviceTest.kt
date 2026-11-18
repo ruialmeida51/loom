@@ -431,6 +431,12 @@ class UsabilityDeviceTest {
             compose.waitUntil(timeoutMillis = 10_000) {
                 compose.onAllNodesWithTag("receipt_zoom_reset").fetchSemanticsNodes().isNotEmpty()
             }
+            compose.waitUntil(timeoutMillis = 5_000) {
+                compose
+                    .onAllNodesWithContentDescription("Receipt photo")
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            }
             compose.onNodeWithContentDescription("Receipt photo").assertIsDisplayed()
             capture(name = "receipt-gallery-viewer")
             pressSystemBack()

@@ -88,7 +88,7 @@ internal fun ExpenseReceiptSection(
                     description =
                         if (photo != null) stringResource(Res.string.receipt_ready)
                         else if (attached) stringResource(Res.string.receipt_view) else null,
-                    glyph = Glyph.FEED,
+                    glyph = Glyph.PHOTO,
                     onClick = if (attached && photo == null) onView else menu::show,
                     enabled = !busy && (canManage || attached),
                     modifier = Modifier.testTag("expense_receipt"),

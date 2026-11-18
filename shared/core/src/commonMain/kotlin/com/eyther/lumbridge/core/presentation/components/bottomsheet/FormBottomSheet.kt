@@ -1,14 +1,9 @@
 package com.eyther.lumbridge.core.presentation.components.bottomsheet
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -28,8 +23,8 @@ import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Scroll fields above a fixed, equal-width action footer. Omit onDismiss for immediate-action
- * sheets.
+ * Scroll fields above full-width, stacked actions: primary first, optional Cancel below. Omit
+ * onDismiss for immediate-action sheets.
  */
 @Composable
 fun FormBottomSheet(
@@ -60,30 +55,23 @@ fun FormBottomSheet(
             content = content,
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        Row(
-            modifier =
-                Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(LoomSpacing.content),
-            horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
+            verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
         ) {
+            LoomButton(
+                text = actionLabel,
+                onClick = onAction,
+                loading = busy,
+                enabled = actionEnabled,
+                modifier = actionModifier.fillMaxWidth(),
+            )
             onDismiss?.let { dismiss ->
-                Box(
-                    modifier = Modifier.weight(1f).fillMaxHeight(),
-                    propagateMinConstraints = true,
-                ) {
-                    LoomSecondaryButton(
-                        text = stringResource(Res.string.action_cancel),
-                        onClick = dismiss,
-                        enabled = !busy,
-                    )
-                }
-            }
-            Box(modifier = Modifier.weight(1f).fillMaxHeight(), propagateMinConstraints = true) {
-                LoomButton(
-                    text = actionLabel,
-                    onClick = onAction,
-                    loading = busy,
-                    enabled = actionEnabled,
-                    modifier = actionModifier.fillMaxWidth(),
+                LoomSecondaryButton(
+                    text = stringResource(Res.string.action_cancel),
+                    onClick = dismiss,
+                    enabled = !busy,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }

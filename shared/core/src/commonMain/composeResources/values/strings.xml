@@ -40,4 +40,5 @@
     <string name="icon_expand">Choose</string>
     <string name="action_save">Save</string>
     <string name="action_cancel">Cancel</string>
+    <string name="icon_photo">Photo</string>
 </resources>

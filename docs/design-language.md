@@ -42,8 +42,8 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 - Use one sheet for a short contextual task: split editing, shopping edits, task creation,
   feed subscription, repayment or nickname editing. Fields scroll above a fixed action footer.
   Close or replace a sheet rather than stacking sheets.
-- All form sheets use equal-width outlined Cancel and primary Save buttons side by side. Labels may
-  wrap at larger text sizes; actions share one height. Read-only sheets say Close; immediate-selection
+- All form sheets stack full-width primary Save above full-width outlined Cancel, with consistent
+  spacing. Labels may wrap at larger text sizes; fields scroll above this fixed footer. Read-only sheets say Close; immediate-selection
   managers omit Cancel/Done. Optional task date controls stay compact, with a gap before the consistently
   outlined 48dp remove-date control. Menus anchor to their caret or overflow icon, not the full row.
 - Use full destinations for expense capture/details, account creation and browsing full history.

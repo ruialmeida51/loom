@@ -148,7 +148,7 @@ Read [PATTERNS_COMPONENTS](../PATTERNS_COMPONENTS.md) and [PATTERNS_UI](../PATTE
 - Confirm sign out and destructive shared actions before writing. Check Cancel, busy dismissal,
   duplicate confirmation and typed failure/retry. Routine completion and reversible archive/restore
   stay direct.
-- Form sheets use equal-width horizontal Cancel/Save actions with matching heights when labels wrap;
+- Form sheets stack full-width primary Save above full-width outlined Cancel with consistent spacing;
   read-only sheets use Close, and immediate-selection managers omit Cancel/Done. Popup menus anchor
   to their caret/overflow icon rather than a full-width row.
 - Check shopping selection against restored/changed rows, short-invitation rate-limit persistence,

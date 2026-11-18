@@ -37,6 +37,11 @@ window. The former now waits for content; the latter verifies the visible sheet 
 with the keyboard open. The real photo picker, normalized draft preview and swipe gesture succeeded.
 These test fixes were compiled and the final source audit was repeated before the CI rerun.
 
+The latest user correction replaces horizontal sheet footers with full-width vertical actions,
+primary Save above outlined Cancel. The shared component covers all form sheets; rules, reviewer
+checklist and geometry checks follow that decision. Narrow/large-text geometry and all shared UI checks pass; native IME flows are
+required again in CI. Native screenshot review also corrected the receipt row's RSS glyph to a photo icon.
+
 ## Validation
 
 - **206 JVM tests pass**, including **49 shared Compose flows**. New coverage exercises real horizontal

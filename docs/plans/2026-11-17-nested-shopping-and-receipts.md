@@ -12,6 +12,7 @@ Baseline: main fb13e69 / Loom 4.0.7 (57). Offline support remains deferred.
 | PHOTO-02 | Private household/account-authorized Storage, atomic attachment/replacement, confirmed removal | Complete |
 | PHOTO-03 | Upload progress/retry retains the draft; financial save is not duplicated; full-photo zoom | Complete |
 | PHOTO-04 | Remove replaced/deleted/orphaned objects through Storage API cleanup, including expense/account deletion | Complete |
+| SHEET-01 | Latest user correction: full-width vertical sheet actions, Save above Cancel; shared component/rules and narrow/IME checks | Shared/JVM/APK checks complete; native CI pending |
 | AUDIT-01 | Resources, typed errors, feature packages, annotated DI, isolated demo ports, final Plannot review | Complete |
 | DELIVERY-01 | Disposable SQL/RLS, feature/UI/native/platform checks, deploy additive migration/worker and Firebase release | CI and Firebase pending; local checks/backend complete |
 
@@ -40,3 +41,5 @@ No customer household content was read or changed for verification.
 
 See the final audit. Delivery status and exact Firebase version will be recorded on the PR after
 CI passes and the release workflow completes; no Play upload is part of this default release.
+
+Latest steering, 18 November: vertical bottom-sheet actions supersede the prior side-by-side footer decision. Read-only Close and immediate-selection manager behaviour remain as specified. Native screenshot review also replaced the misleading RSS receipt glyph with a generic photo icon.
