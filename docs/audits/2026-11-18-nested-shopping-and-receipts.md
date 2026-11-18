@@ -31,6 +31,12 @@ The accepted scope and references are preserved in the
   adapters stay in their feature packages; registration remains in annotated central DI. Sample data
   and image fixtures remain in `entrypoint/app/demo` or tests.
 
+The initial native run found test synchronization issues: the receipt test searched Money before its
+initial skeleton finished, and a task test tried to hide a dialog's IME using the underlying Activity
+window. The former now waits for content; the latter verifies the visible sheet Save button directly
+with the keyboard open. The real photo picker, normalized draft preview and swipe gesture succeeded.
+These test fixes were compiled and the final source audit was repeated before the CI rerun.
+
 ## Validation
 
 - **206 JVM tests pass**, including **49 shared Compose flows**. New coverage exercises real horizontal

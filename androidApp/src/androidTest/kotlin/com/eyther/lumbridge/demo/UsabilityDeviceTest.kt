@@ -243,8 +243,8 @@ class UsabilityDeviceTest {
         compose.onNodeWithTag("home_add_task").performClick()
         compose.onNodeWithTag("task_title").performTextInput(taskTitle)
         compose.onNodeWithTag("task_notification").assertDoesNotExist()
-        hideKeyboard()
-        compose.onNodeWithTag("save_task").performClick()
+        // The sheet footer remains usable while its own window holds the IME.
+        compose.onNodeWithTag("save_task").assertIsDisplayed().performClick()
         compose.waitUntil(timeoutMillis = 5_000) {
             compose.onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()
         }
@@ -419,6 +419,9 @@ class UsabilityDeviceTest {
             awaitDestination(tag = "home_content")
             compose.onNodeWithTag("navigation_money").performClick()
             awaitDestination(tag = "expenses_content")
+            compose.waitUntil(timeoutMillis = 5_000) {
+                compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
+            }
             compose.onNodeWithText(title).performScrollTo().performClick()
             awaitDestination(tag = "expense_details_content")
             compose.waitUntil(timeoutMillis = 5_000) {
