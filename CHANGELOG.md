@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.10] - 2026-11-18
+
 - Added edit/delete menus to expense and repayment cards.
 - Added startup privacy choices and opt-in crash reporting on Android and iOS.
 - Explain notification permissions when creating/viewing reminders or enabling them in My account.
