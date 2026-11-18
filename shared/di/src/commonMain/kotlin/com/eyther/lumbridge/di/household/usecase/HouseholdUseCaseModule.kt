@@ -22,10 +22,12 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementsStrea
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveExpenseReceiptUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplitUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccountUseCase
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
@@ -501,4 +503,13 @@ class HouseholdUseCaseModule {
         expenseReceiptDataSource: ExpenseReceiptDataSource,
     ): RemoveExpenseReceiptUseCase =
         RemoveExpenseReceiptUseCase(expenseReceiptDataSource = expenseReceiptDataSource)
+
+    @Single
+    fun provideSaveSettlementUseCase(expenseDataSource: ExpenseDataSource): SaveSettlementUseCase =
+        SaveSettlementUseCase(expenseDataSource)
+
+    @Single
+    fun provideRemoveSettlementUseCase(
+        expenseDataSource: ExpenseDataSource,
+    ): RemoveSettlementUseCase = RemoveSettlementUseCase(expenseDataSource)
 }

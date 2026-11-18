@@ -3,7 +3,10 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-if (file("google-services.json").exists()) apply(plugin = "com.google.gms.google-services")
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
+}
 
 val releaseVersionCode = providers.gradleProperty("loomVersionCode").orElse("1").get().toInt()
 val releaseVersionName = providers.gradleProperty("loomVersionName").get()
@@ -64,6 +67,7 @@ dependencies {
     implementation(projects.shared.features.settings)
     implementation(libs.activity.compose)
     androidTestImplementation("org.jetbrains.compose.ui:ui-test-junit4:1.12.1")
+    androidTestImplementation(projects.shared.features.expenses)
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")

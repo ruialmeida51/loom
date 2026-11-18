@@ -13,110 +13,171 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
+import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
+import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
+import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.resources.calendarDateText
+import com.eyther.lumbridge.core.presentation.theme.LoomColors
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
+import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete
 import com.eyther.lumbridge.features.expenses.generated.resources.former_member
+import com.eyther.lumbridge.features.expenses.generated.resources.history_edit
 import com.eyther.lumbridge.features.expenses.generated.resources.history_paid_on
-import com.eyther.lumbridge.features.expenses.generated.resources.history_repayment
-import com.eyther.lumbridge.features.expenses.generated.resources.history_transfer_on
+import com.eyther.lumbridge.features.expenses.generated.resources.payment_i_paid_person
+import com.eyther.lumbridge.features.expenses.generated.resources.payment_person_paid_me
+import com.eyther.lumbridge.features.expenses.generated.resources.payment_personal_title
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import org.jetbrains.compose.resources.stringResource
+
+private val EntryIconSize = 32.dp // Compact badge, shared by expenses and recorded payments.
 
 @Composable
 internal fun ExpenseHistoryRow(
     item: ExpenseHistoryItemUi,
+    enabled: Boolean,
     onOpen: (ExpenseDomain) -> Unit,
+    onEditExpense: (ExpenseDomain) -> Unit,
+    onDeleteExpense: (ExpenseDomain) -> Unit,
+    onEditSettlement: (SettlementDomain) -> Unit,
+    onDeleteSettlement: (SettlementDomain) -> Unit,
 ) {
     when (item) {
         is ExpenseHistoryItemUi.Purchase ->
-            Surface(
-                onClick = { onOpen(item.expense) },
-                shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(LoomSpacing.medium),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
-                ) {
-                    Surface(
-                        shape = MaterialTheme.shapes.medium,
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                    ) {
-                        Box(Modifier.size(ExpenseIconSize), contentAlignment = Alignment.Center) {
-                            LoomIcon(
-                                glyph = Glyph.MONEY,
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                decorative = true,
-                            )
-                        }
-                    }
-                    Column(
-                        Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
-                    ) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small)) {
-                            Text(
-                                item.expense.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f),
-                            )
-                            Text(
-                                item.amount,
-                                style = MaterialTheme.typography.titleMedium,
-                            )
-                        }
-                        Text(
-                            stringResource(
-                                Res.string.history_paid_on,
-                                item.payerName ?: stringResource(Res.string.former_member),
-                                calendarDateText(item.calendarDate),
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-            }
+            HistoryCard(
+                title = item.expense.title,
+                subtitle =
+                    stringResource(
+                        Res.string.history_paid_on,
+                        item.payerName ?: stringResource(Res.string.former_member),
+                        calendarDateText(item.calendarDate),
+                    ),
+                amount = item.amount,
+                glyph = Glyph.MONEY,
+                emphasis = MaterialTheme.colorScheme.primary,
+                canManage = item.canManage,
+                enabled = enabled,
+                tag = "expense_actions_${item.expense.id}",
+                onOpen = { onOpen(item.expense) },
+                onEdit = { onEditExpense(item.expense) },
+                onDelete = { onDeleteExpense(item.expense) },
+            )
         is ExpenseHistoryItemUi.Repayment ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(LoomSpacing.medium),
-                horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                LoomIcon(
-                    glyph = Glyph.CHECK,
-                    tint = MaterialTheme.colorScheme.primary,
-                    decorative = true,
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        stringResource(Res.string.history_repayment),
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
-                    Text(
-                        stringResource(
-                            Res.string.history_transfer_on,
-                            item.fromName ?: stringResource(Res.string.former_member),
-                            item.toName ?: stringResource(Res.string.former_member),
-                            calendarDateText(item.calendarDate),
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Text(item.amount, style = MaterialTheme.typography.titleSmall)
-            }
+            HistoryCard(
+                title =
+                    when {
+                        item.isUserSender ->
+                            stringResource(
+                                Res.string.payment_i_paid_person,
+                                item.toName ?: stringResource(Res.string.former_member),
+                            )
+                        item.isUserRecipient ->
+                            stringResource(
+                                Res.string.payment_person_paid_me,
+                                item.fromName ?: stringResource(Res.string.former_member),
+                            )
+                        else ->
+                            stringResource(
+                                Res.string.payment_personal_title,
+                                item.fromName ?: stringResource(Res.string.former_member),
+                                item.toName ?: stringResource(Res.string.former_member),
+                            )
+                    },
+                subtitle = calendarDateText(item.calendarDate),
+                amount = item.amount,
+                glyph = Glyph.CHECK,
+                emphasis =
+                    if (item.isUserSender) MaterialTheme.colorScheme.error
+                    else if (item.isUserRecipient) LoomColors.positive
+                    else MaterialTheme.colorScheme.primary,
+                canManage = item.canManage,
+                enabled = enabled && item.canManage,
+                tag = "payment_actions_${item.settlement.id}",
+                onOpen = { onEditSettlement(item.settlement) },
+                onEdit = { onEditSettlement(item.settlement) },
+                onDelete = { onDeleteSettlement(item.settlement) },
+            )
     }
 }
 
-private val ExpenseIconSize = 32.dp // A small badge leaves the two-line expense summary dominant.
+/** One compact geometry and anchored overflow for both kinds of ledger record. */
+@Composable
+private fun HistoryCard(
+    title: String,
+    subtitle: String,
+    amount: String,
+    glyph: Glyph,
+    emphasis: Color,
+    canManage: Boolean,
+    enabled: Boolean,
+    tag: String,
+    onOpen: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    Surface(
+        onClick = onOpen,
+        enabled = enabled,
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            Modifier.fillMaxWidth().padding(LoomSpacing.medium),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+        ) {
+            Surface(shape = MaterialTheme.shapes.medium, color = emphasis.copy(alpha = .12f)) {
+                Box(Modifier.size(EntryIconSize), contentAlignment = Alignment.Center) {
+                    LoomIcon(glyph = glyph, tint = emphasis, decorative = true)
+                }
+            }
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small)) {
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(amount, style = MaterialTheme.typography.titleMedium, color = emphasis)
+                }
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (canManage)
+                ActionMenu(
+                    modifier = Modifier.testTag(tag),
+                    items =
+                        listOf(
+                            ActionMenuItem(
+                                text = TextResource.Resource(Res.string.history_edit),
+                                onClick = onEdit,
+                                enabled = enabled,
+                            ),
+                            ActionMenuItem(
+                                text = TextResource.Resource(Res.string.detail_delete),
+                                onClick = onDelete,
+                                enabled = enabled,
+                                destructive = true,
+                            ),
+                        ),
+                )
+        }
+    }
+}

@@ -22,6 +22,7 @@ import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEven
 import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
+import com.eyther.lumbridge.features.diagnostics.domain.datasource.DiagnosticsDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.RememberHouseholdUseCase
@@ -38,6 +39,7 @@ fun LauncherHost() {
     val authentication by getSessionStreamUseCase().collectAsState()
     val session = (authentication as? AuthenticationStateDomain.Authenticated)?.session
     val analyticsDataSource: AnalyticsDataSource = koinInject()
+    val diagnosticsDataSource: DiagnosticsDataSource = koinInject()
     val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase = koinInject()
     val getAnalyticsPreferencesStreamUseCase: GetAnalyticsPreferencesStreamUseCase = koinInject()
     val analyticsPreferences by getAnalyticsPreferencesStreamUseCase().collectAsState()
@@ -103,6 +105,7 @@ fun LauncherHost() {
                     householdDataSource = source,
                     profileDataSource = profileDataSource,
                     analyticsDataSource = analyticsDataSource,
+                    diagnosticsDataSource = diagnosticsDataSource,
                     onSelect = { household ->
                         scope.launch {
                             rememberSelection(userId = user.userId, householdId = household.id)

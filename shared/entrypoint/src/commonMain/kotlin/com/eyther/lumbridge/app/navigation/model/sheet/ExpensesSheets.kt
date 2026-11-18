@@ -10,4 +10,6 @@ internal sealed interface ExpensesSheets : BottomSheetType {
     @Stable data object ManageAccounts : ExpensesSheets
 
     @Stable data object Settlement : ExpensesSheets
+
+    @Stable data object SettlementDate : ExpensesSheets
 }

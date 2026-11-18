@@ -16,6 +16,7 @@ sealed interface ExpenseHistoryItemUi {
     data class Purchase(
         val expense: ExpenseDomain,
         val payerName: String?,
+        val canManage: Boolean = false,
         override val amount: String,
     ) : ExpenseHistoryItemUi {
         override val key: String = "expense-${expense.id}"
@@ -28,6 +29,9 @@ sealed interface ExpenseHistoryItemUi {
         val settlement: SettlementDomain,
         val fromName: String?,
         val toName: String?,
+        val canManage: Boolean = false,
+        val isUserSender: Boolean = false,
+        val isUserRecipient: Boolean = false,
         override val amount: String,
     ) : ExpenseHistoryItemUi {
         override val key: String = "settlement-${settlement.id}"

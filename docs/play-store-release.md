@@ -114,3 +114,21 @@ Edit user-facing bullets under `[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md)
 The workflow freezes these notes from the release source commit, uses them for Firebase and Play, and saves a versioned Markdown snapshot as an artifact. Successful deployment history also retains the notes. After upload, the bot archives the actual allocated version in CHANGELOG.md through a file-SHA-protected update. New bullets merged while the build ran stay Unreleased. Changelog-only commits do not start another release. Promotions or rebuilds with no new bullets reuse the latest released notes.
 
 Version allocation remains automatic across both destinations. Do not manually bump the bootstrap `loomVersionName` for each patch, duplicate notes in a distribution file, or add a Firebase Git tag. Failed uploads and connection checks do not archive the changelog.
+
+
+### iOS Firebase and crash diagnostics
+
+Loom iOS is registered in Firebase project `lumbridge-app` with bundle ID `com.eyther.lumbridge`.
+`iosApp/iosApp/GoogleService-Info.plist` is the matching ignored mobile client configuration.
+CI fetches the existing client with the service account already configured for releases; it never
+prints credentials or requires another repository secret. Local builds can download the matching
+Apple configuration from Firebase Console. Without it, Firebase remains unavailable in that build. Firebase Apple SDK 12.9.0 is pinned through Swift Package Manager. Collection defaults
+off in Info.plist; Swift bridges expose consent and Kotlin fatal frames without setting a user ID.
+Release device builds upload dSYMs through the Firebase SDK script. Android applies Crashlytics's
+Gradle plugin when its Firebase configuration exists and uploads release mapping files.
+
+The idempotent Configure Loom iOS Firebase workflow can retrieve the client configuration again
+using the existing service account. It does not upload a build, consume a version or change consent.
+Confirm symbolicated reports in Firebase after a consenting test installation reports a crash;
+compilation alone does not prove crash-event delivery. Physical iOS permission and resume behaviour
+still needs Apple hardware. APNs delivery continues to use the existing Supabase push setup.

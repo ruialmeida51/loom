@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.IllustratedEmptyState
-import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.RefreshSkeletonContent
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
@@ -42,7 +41,10 @@ import com.eyther.lumbridge.features.home.generated.resources.home_shopping_view
 import com.eyther.lumbridge.features.home.generated.resources.home_tasks
 import com.eyther.lumbridge.features.home.generated.resources.ui_try_again
 import com.eyther.lumbridge.features.home.presentation.components.HomeQuickActions
+import com.eyther.lumbridge.features.home.presentation.components.HomeRefreshLoading
+import com.eyther.lumbridge.features.home.presentation.components.HomeShoppingLoading
 import com.eyther.lumbridge.features.home.presentation.components.HomeTaskRow
+import com.eyther.lumbridge.features.home.presentation.components.HomeTasksLoading
 import com.eyther.lumbridge.features.home.presentation.model.HomeTaskUi
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
@@ -138,7 +140,10 @@ private fun InnerHomeScreen(
             }
         }
         item(key = "tasks") {
-            RefreshSkeletonContent(isRefreshing = tasksRefreshing) {
+            RefreshSkeletonContent(
+                isRefreshing = tasksRefreshing,
+                skeleton = { HomeRefreshLoading() },
+            ) {
                 Column(
                     Modifier.padding(horizontal = LoomSpacing.content),
                     verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
@@ -148,7 +153,7 @@ private fun InnerHomeScreen(
                         action = stringResource(Res.string.home_all_tasks),
                         onAction = onTasks,
                     )
-                    if (tasksLoading) LoadingRows()
+                    if (tasksLoading) HomeTasksLoading()
                     else if (tasks.isNotEmpty())
                         GroupedSurface {
                             tasks.forEachIndexed { index, task ->
@@ -177,7 +182,10 @@ private fun InnerHomeScreen(
         }
         if (shoppingLoading || hasShopping || shoppingError != null)
             item(key = "shopping_preview") {
-                RefreshSkeletonContent(isRefreshing = shoppingRefreshing) {
+                RefreshSkeletonContent(
+                    isRefreshing = shoppingRefreshing,
+                    skeleton = { HomeRefreshLoading() },
+                ) {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
                         modifier =
@@ -189,7 +197,7 @@ private fun InnerHomeScreen(
                             action = stringResource(Res.string.home_shopping_view_all),
                             onAction = onShopping,
                         )
-                        if (shoppingLoading) LoadingRows()
+                        if (shoppingLoading) HomeShoppingLoading()
                         else if (shoppingItems.isNotEmpty())
                             ShoppingPreview(items = shoppingItems, onOpen = onShopping)
                         else if (hasShopping && shoppingError == null)
@@ -208,7 +216,20 @@ private fun InnerHomeScreen(
                 }
             }
         item(key = "news") {
-            RefreshSkeletonContent(isRefreshing = feedRefreshing) {
+            RefreshSkeletonContent(
+                isRefreshing = feedRefreshing,
+                skeleton = {
+                    Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.small)) {
+                        SectionTitle(
+                            title = stringResource(Res.string.home_news),
+                            action = stringResource(Res.string.home_all_news),
+                            onAction = onFeed,
+                            modifier = Modifier.padding(horizontal = LoomSpacing.content),
+                        )
+                        FeedPreviewLoading()
+                    }
+                },
+            ) {
                 Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.small)) {
                     SectionTitle(
                         title = stringResource(Res.string.home_news),

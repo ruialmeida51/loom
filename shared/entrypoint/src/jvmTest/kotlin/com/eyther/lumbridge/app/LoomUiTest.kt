@@ -134,10 +134,18 @@ class LoomUiTest {
             capture("balances-light")
             onNodeWithContentDescription("Back").assertDoesNotExist()
             onNodeWithTag("open_my_account").performClick()
-            onNodeWithTag("account_content").performScrollToNode(hasTestTag("analytics_consent"))
-            onNodeWithTag("analytics_consent").assertIsOff()
-            onNodeWithTag("analytics_consent").performClick().assertIsOn()
-            onNodeWithTag("analytics_consent").performClick().assertIsOff()
+            onNodeWithTag("account_content").performScrollToNode(hasTestTag("usage_data_settings"))
+            onNodeWithTag("usage_data_settings").performClick()
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodesWithTag("consent_analytics").fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithTag("consent_analytics").assertIsOff()
+            onNodeWithTag("consent_analytics").performClick().assertIsOn()
+            onNodeWithTag("consent_analytics").performClick().assertIsOff()
+            onNodeWithTag("consent_save").performClick()
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodesWithTag("usage_data_consent").fetchSemanticsNodes().isEmpty()
+            }
             capture("settings-privacy")
             onNodeWithTag("account_content").performScrollToNode(hasTestTag("delete_account"))
             onNodeWithTag("sign_out").assertExists()

@@ -1,9 +1,11 @@
 package com.eyther.lumbridge.app.demo.data
 
+import com.eyther.lumbridge.core.domain.errors.requireDomain
 import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
+import com.eyther.lumbridge.features.expenses.domain.errors.SettlementError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MonthlyRecurrenceDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
@@ -85,8 +87,27 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
         store.expenses.update { expenses -> expenses.filterNot { it.id == expense.id } }
     }
 
+    override suspend fun saveSettlement(settlement: SettlementDomain) = safeCall {
+        val before = store.settlements.value.first { it.id == settlement.id }
+        requireDomain(before.version == settlement.version) { SettlementError.Changed() }
+        val saved = settlement.copy(version = before.version + 1, createdBy = before.createdBy)
+        store.settlements.update { values -> values.map { if (it.id == saved.id) saved else it } }
+        saved
+    }
+
+    override suspend fun removeSettlement(settlement: SettlementDomain) = safeCall {
+        val before = store.settlements.value.firstOrNull { it.id == settlement.id }
+        requireDomain(before == null || before.version == settlement.version) {
+            SettlementError.Changed()
+        }
+        store.settlements.update { values -> values.filterNot { it.id == settlement.id } }
+    }
+
     override suspend fun recordSettlement(settlement: SettlementDomain) = safeCall {
-        store.settlements.update { it.filterNot { row -> row.id == settlement.id } + settlement }
+        store.settlements.update {
+            it.filterNot { row -> row.id == settlement.id } +
+                settlement.copy(version = 1, createdBy = store.context.userId)
+        }
         Unit
     }
 }

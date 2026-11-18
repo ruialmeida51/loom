@@ -31,6 +31,7 @@ internal fun TasksHost(
                 viewModel = viewModel,
                 timeZone = context.timeZone,
                 snackbarBottomPadding = FloatingActionContentPadding,
+                primeOnOpen = true,
             ) {
                 TasksScreen(viewModel = viewModel)
             }

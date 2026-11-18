@@ -12,6 +12,8 @@ import com.eyther.lumbridge.features.authentication.data.network.config.configur
 import com.eyther.lumbridge.features.authentication.data.network.datasource.CommonAuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.data.platform.NativeAuthenticationBridge
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
+import com.eyther.lumbridge.features.diagnostics.data.local.datasource.CommonDiagnosticsDataSource
+import com.eyther.lumbridge.features.diagnostics.domain.datasource.DiagnosticsDataSource
 import com.eyther.lumbridge.features.household.data.local.CommonHouseholdSelectionDataSource
 import com.eyther.lumbridge.features.household.data.network.datasource.CommonHouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
@@ -23,6 +25,8 @@ import org.koin.core.annotation.Single
 
 @Module
 class ApplicationDataSourceModule {
+    @Single
+    fun provideDiagnosticsDataSource(): DiagnosticsDataSource = CommonDiagnosticsDataSource()
 
     @Single
     fun provideProfileDataSource(access: SupabaseAccess): ProfileDataSource =

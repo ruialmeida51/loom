@@ -12,6 +12,11 @@ import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_delete
 import com.eyther.lumbridge.features.expenses.generated.resources.account_delete_message
 import com.eyther.lumbridge.features.expenses.generated.resources.account_delete_title
+import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete
+import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete_title
+import com.eyther.lumbridge.features.expenses.generated.resources.history_delete_message
+import com.eyther.lumbridge.features.expenses.generated.resources.payment_delete_message
+import com.eyther.lumbridge.features.expenses.generated.resources.payment_delete_title
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
@@ -37,6 +42,13 @@ data class ExpensesState(
     val showManageAccounts: Boolean = false,
     val deletingAccount: ExpenseAccountDomain? = null,
     val showSettle: Boolean = false,
+    val editingSettlement: Boolean = false,
+    val settlementDate: String = "",
+    val showSettlementDate: Boolean = false,
+    val deletingExpense: ExpenseDomain? = null,
+    val deletingSettlement: SettlementDomain? = null,
+    val entryDeleteError: TextResource? = null,
+    val successMessage: TextResource? = null,
     val from: String = "",
     val to: String = "",
     val settleAmount: String = "",
@@ -59,7 +71,11 @@ data class ExpensesState(
             !busy &&
             !loading
     val canRecordSettlement: Boolean =
-        userId in account?.memberIds.orEmpty() && accountMembers.size > 1 && !busy && !loading
+        userId in account?.memberIds.orEmpty() &&
+            account?.archived == false &&
+            accountMembers.size > 1 &&
+            !busy &&
+            !loading
     val canManageAccount: Boolean = account?.canManage(userId = userId, isOwner = isOwner) == true
     val deleteConfirmation: DestructiveConfirmationUi? = deletingAccount?.let { target ->
         DestructiveConfirmationUi(
@@ -73,6 +89,36 @@ data class ExpensesState(
             cancelText = TextResource.Resource(Res.string.ui_cancel),
         )
     }
+    val entryDeleteConfirmation: DestructiveConfirmationUi? =
+        when {
+            deletingExpense != null ->
+                DestructiveConfirmationUi(
+                    title = TextResource.Resource(Res.string.detail_delete_title),
+                    message =
+                        TextResource.Resource(
+                            Res.string.history_delete_message,
+                            args = listOf(deletingExpense.title),
+                        ),
+                    confirmText = TextResource.Resource(Res.string.detail_delete),
+                    cancelText = TextResource.Resource(Res.string.ui_cancel),
+                )
+            deletingSettlement != null ->
+                DestructiveConfirmationUi(
+                    title = TextResource.Resource(Res.string.payment_delete_title),
+                    message =
+                        TextResource.Resource(
+                            Res.string.payment_delete_message,
+                            args =
+                                listOf(
+                                    MoneyDomain(deletingSettlement.amountMinor, currency)
+                                        .formatted(),
+                                ),
+                        ),
+                    confirmText = TextResource.Resource(Res.string.detail_delete),
+                    cancelText = TextResource.Resource(Res.string.ui_cancel),
+                )
+            else -> null
+        }
     val displayError: TextResource? = error ?: loadError
     val activeAccounts: List<ExpenseAccountDomain> =
         accounts
@@ -124,6 +170,9 @@ data class ExpensesState(
                 ExpenseHistoryItemUi.Purchase(
                     expense = it,
                     payerName = memberNames[it.paidBy],
+                    canManage =
+                        account?.canAddExpense(userId = userId) == true &&
+                            it.canManage(userId = userId, isOwner = isOwner),
                     amount = MoneyDomain(it.amountMinor, currency).formatted(),
                 )
             } +
@@ -132,6 +181,11 @@ data class ExpensesState(
                         settlement = it,
                         fromName = memberNames[it.from],
                         toName = memberNames[it.to],
+                        canManage =
+                            account?.archived == false &&
+                                it.canManage(userId = userId, isOwner = isOwner),
+                        isUserSender = it.from == userId,
+                        isUserRecipient = it.to == userId,
                         amount = MoneyDomain(it.amountMinor, currency).formatted(),
                     )
                 })

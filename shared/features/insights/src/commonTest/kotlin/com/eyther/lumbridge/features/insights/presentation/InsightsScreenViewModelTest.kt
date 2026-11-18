@@ -72,6 +72,14 @@ class InsightsScreenViewModelTest {
                 override suspend fun deleteExpense(expense: ExpenseDomain): AppResult<Unit> =
                     error("Not used by statement reads")
 
+                override suspend fun saveSettlement(
+                    settlement: SettlementDomain,
+                ): AppResult<SettlementDomain> = AppResult.Success(settlement)
+
+                override suspend fun removeSettlement(
+                    settlement: SettlementDomain,
+                ): AppResult<Unit> = AppResult.Success(Unit)
+
                 override suspend fun recordSettlement(
                     settlement: SettlementDomain,
                 ): AppResult<Unit> = AppResult.Success(Unit)

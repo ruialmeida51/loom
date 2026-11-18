@@ -7,7 +7,7 @@ const BUNDLE = 'com.eyther.lumbridge';
 const API = 'https://firebase.googleapis.com/v1beta1/';
 
 /** Idempotently register Loom's Apple client; never modify or reuse another app's configuration. */
-export async function configureFirebaseIos(token, request = fetch, sleep = ms => new Promise(resolve => setTimeout(resolve, ms))) {
+export async function configureFirebaseIos(token, request = fetch, sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), allowCreate = true) {
   async function call(path, options = {}) {
     const response = await request(`${API}${path}`, {
       ...options,
@@ -29,6 +29,7 @@ export async function configureFirebaseIos(token, request = fetch, sleep = ms =>
     pageToken = page.nextPageToken ?? '';
   } while (!app && pageToken);
   if (!app) {
+    if (!allowCreate) throw new Error('Firebase iOS client is missing. Run Configure Loom iOS Firebase before this build.');
     let operation = await call(`projects/${PROJECT}/iosApps`, {
       method: 'POST', body: JSON.stringify({ displayName: 'Loom iOS', bundleId: BUNDLE }),
     });
@@ -51,10 +52,10 @@ export async function configureFirebaseIos(token, request = fetch, sleep = ms =>
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    const [credentialPath, outputPath] = process.argv.slice(2);
+    const [credentialPath, outputPath, mode] = process.argv.slice(2);
     const account = JSON.parse(readFileSync(credentialPath, 'utf8'));
     const token = await authorizeGoogle(account, CLOUD_SCOPE);
-    const result = await configureFirebaseIos(token);
+    const result = await configureFirebaseIos(token, fetch, undefined, mode !== '--existing-only');
     writeFileSync(outputPath, result.plist, { mode: 0o600 });
     if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `Registered or found Loom iOS in Firebase project ${PROJECT}: ${result.appId}.\n`);
     process.stdout.write(`Firebase iOS configuration prepared for ${BUNDLE}.\n`);

@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 import UserNotifications
 import LoomFoundation
+import FirebaseCore
 
 @main
 struct LoomNativeApp: App {
@@ -22,6 +23,12 @@ struct ComposeView: UIViewControllerRepresentable {
 }
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        if let path = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist"),
+           let options = FirebaseOptions(contentsOfFile: path) {
+            FirebaseApp.configure(options: options)
+            NativeDiagnosticsBridge.shared.initialize(reporter: FirebaseCrashReporter())
+            NativeAnalyticsBridge.shared.initialize(reporter: FirebaseAnalyticsReporter())
+        }
         UNUserNotificationCenter.current().delegate = self
         return true
     }

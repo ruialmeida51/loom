@@ -1,15 +1,21 @@
 package com.eyther.lumbridge.app.navigation.sheet
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import com.eyther.lumbridge.app.navigation.model.sheet.ExpensesSheets
 import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.BottomSheetLayout
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.rememberBottomSheetController
+import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackbar
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.ExpenseAccountsBottomSheet
+import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.ExpenseDateBottomSheet
 import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.ManageExpenseAccountsBottomSheet
 import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.SettlementBottomSheet
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
@@ -25,6 +31,7 @@ internal fun ExpensesSheetHost(
     val controller = rememberBottomSheetController()
     val requested =
         when {
+            state.showSettlementDate -> ExpensesSheets.SettlementDate
             state.showSettle -> ExpensesSheets.Settlement
             state.showAccounts -> ExpensesSheets.Accounts
             state.showManageAccounts -> ExpensesSheets.ManageAccounts
@@ -37,6 +44,9 @@ internal fun ExpensesSheetHost(
     controller.registerBottomSheet<ExpensesSheets.Settlement> {
         SettlementBottomSheet(
             currentUserId = state.userId,
+            editing = state.editingSettlement,
+            date = state.settlementDate,
+            onDate = { viewModel.onSettlementDateVisibilityChanged(true) },
             members = state.accountMembers,
             from = state.from,
             to = state.to,
@@ -50,6 +60,13 @@ internal fun ExpensesSheetHost(
             onSettleAmount = viewModel::onSettlementAmountChanged,
             onSettle = viewModel::onRecordSettlement,
             onDismiss = viewModel::onDismissError,
+        )
+    }
+    controller.registerBottomSheet<ExpensesSheets.SettlementDate> {
+        ExpenseDateBottomSheet(
+            date = state.settlementDate,
+            onSelected = viewModel::onSettlementDateChanged,
+            onClose = { viewModel.onSettlementDateVisibilityChanged(false) },
         )
     }
     controller.registerBottomSheet<ExpensesSheets.Accounts> {
@@ -87,11 +104,20 @@ internal fun ExpensesSheetHost(
         controller = controller,
         dismissEnabled = !state.busy,
         onDismissed = {
-            if (state.showSettle) viewModel.onSettlementSheetVisibilityChanged(false)
+            if (state.showSettlementDate) viewModel.onSettlementDateVisibilityChanged(false)
+            else if (state.showSettle) viewModel.onSettlementSheetVisibilityChanged(false)
             else if (state.showManageAccounts) viewModel.onManageAccountsVisibilityChanged(false)
             else viewModel.onAccountsVisibilityChanged(false)
         },
-        content = content,
+        content = {
+            Box(Modifier.fillMaxSize()) {
+                content()
+                SuccessSnackbar(
+                    message = state.successMessage,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+        },
     )
     state.deleteConfirmation?.let { confirmation ->
         DestructiveConfirmation(

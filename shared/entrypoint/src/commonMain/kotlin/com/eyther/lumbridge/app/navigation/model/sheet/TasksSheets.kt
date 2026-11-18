@@ -6,4 +6,6 @@ import com.eyther.lumbridge.core.presentation.components.bottomsheet.model.Botto
 @Stable
 internal sealed interface TasksSheets : BottomSheetType {
     @Stable data object Task : TasksSheets
+
+    @Stable data object Notifications : TasksSheets
 }

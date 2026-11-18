@@ -12,9 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.household_details
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.tab_more
@@ -31,16 +32,21 @@ internal fun MoreOverviewContent(
         modifier =
             Modifier.fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(LoomSpacing.content)
                 .testTag("more_content"),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(LoomSpacing.content),
     ) {
         Text(stringResource(Res.string.tab_more), style = MaterialTheme.typography.titleLarge)
         GroupedSurface {
-            NavigationRow(title = stringResource(Res.string.ui_feed), onClick = onFeed)
+            NavigationRow(
+                title = stringResource(Res.string.ui_feed),
+                glyph = Glyph.FEED,
+                onClick = onFeed,
+            )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             NavigationRow(
                 title = stringResource(Res.string.household_details),
+                glyph = Glyph.HOME,
                 onClick = onHouseholdDetails,
             )
         }

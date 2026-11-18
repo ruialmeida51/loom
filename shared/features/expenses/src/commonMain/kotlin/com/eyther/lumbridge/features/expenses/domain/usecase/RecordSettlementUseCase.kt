@@ -31,7 +31,11 @@ class RecordSettlementUseCase(
         requireDomain(context.userId == settlement.from || context.userId == settlement.to) {
             ExpenseError.SettlementNotPermitted()
         }
-        LocalDate.parse(settlement.occurredOn)
+        try {
+            LocalDate.parse(settlement.occurredOn)
+        } catch (cause: IllegalArgumentException) {
+            throw ExpenseError.InvalidPaymentDate(cause = cause)
+        }
         val memberIds = members(context.id).getOrThrow().map { it.id }
         requireDomain(settlement.from in memberIds && settlement.to in memberIds) {
             ExpenseError.InvalidSettlementMembers()

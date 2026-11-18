@@ -14,10 +14,12 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpense
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveExpenseReceiptUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplitUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseAccountFormScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseDetailsScreenViewModel
@@ -93,6 +95,9 @@ class HouseholdViewModelModule {
         saveExpenseAccountUseCase: SaveExpenseAccountUseCase,
         deleteExpenseAccountUseCase: DeleteExpenseAccountUseCase,
         recordSettlementUseCase: RecordSettlementUseCase,
+        saveSettlementUseCase: SaveSettlementUseCase,
+        removeSettlementUseCase: RemoveSettlementUseCase,
+        deleteExpenseUseCase: DeleteExpenseUseCase,
         getMembersStreamUseCase: GetMembersStreamUseCase,
         context: HouseholdContextDomain,
     ): ExpensesScreenViewModelContract =
@@ -103,6 +108,9 @@ class HouseholdViewModelModule {
             saveExpenseAccountUseCase = saveExpenseAccountUseCase,
             deleteExpenseAccountUseCase = deleteExpenseAccountUseCase,
             recordSettlementUseCase = recordSettlementUseCase,
+            saveSettlementUseCase = saveSettlementUseCase,
+            removeSettlementUseCase = removeSettlementUseCase,
+            deleteExpenseUseCase = deleteExpenseUseCase,
             getMembersStreamUseCase = getMembersStreamUseCase,
             context = context,
         )

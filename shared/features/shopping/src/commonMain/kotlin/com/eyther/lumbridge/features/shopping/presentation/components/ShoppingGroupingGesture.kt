@@ -1,23 +1,24 @@
 package com.eyther.lumbridge.features.shopping.presentation.components
 
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.group_nest
@@ -40,9 +41,17 @@ internal fun ShoppingGroupingGesture(
     onUnnest: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    val indentation by animateDpAsState(if (indented) Indentation else 0.dp)
-    val threshold = with(LocalDensity.current) { SwipeThreshold.toPx() }
-    var distance by remember(id) { mutableFloatStateOf(0f) }
+    val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    val width = with(density) { Indentation.toPx() }
+    val threshold = with(density) { SwipeThreshold.toPx() }
+    val direction = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1f else 1f
+    val committed = if (indented) width else 0f
+    val gesture =
+        remember(id, density) {
+            ShoppingGroupingState(scope = scope, initialIndentation = committed)
+        }
+    LaunchedEffect(indented, width) { gesture.onCommitted(committed) }
     val nest by rememberUpdatedState(onNest)
     val unnest by rememberUpdatedState(onUnnest)
     val nestLabel = stringResource(Res.string.group_nest)
@@ -50,8 +59,8 @@ internal fun ShoppingGroupingGesture(
     Box(
         modifier =
             Modifier.testTag("shopping_group_$id")
-                .padding(start = indentation)
-                .graphicsLayer { translationX = distance }
+                .padding(start = if (indented) Indentation else 0.dp)
+                .graphicsLayer { translationX = direction * (gesture.position - committed) }
                 .semantics {
                     customActions = buildList {
                         if (enabled && canNest)
@@ -70,23 +79,33 @@ internal fun ShoppingGroupingGesture(
                             )
                     }
                 }
-                .pointerInput(id, enabled, canNest, canUnnest) {
+                .pointerInput(id, enabled, canNest, canUnnest, direction) {
                     if (!enabled || (!canNest && !canUnnest)) return@pointerInput
                     detectHorizontalDragGestures(
-                        onDragStart = { distance = 0f },
+                        onDragStart = { gesture.onStart() },
                         onHorizontalDrag = { change, amount ->
                             change.consume()
-                            distance =
-                                (distance + amount).coerceIn(
-                                    if (canUnnest) -threshold * 1.5f else 0f,
-                                    if (canNest) threshold * 1.5f else 0f,
-                                )
+                            gesture.onDrag(
+                                amount = amount * direction,
+                                width = width,
+                                canNest = canNest,
+                                canUnnest = canUnnest,
+                            )
                         },
-                        onDragCancel = { distance = 0f },
+                        onDragCancel = gesture::onCancel,
                         onDragEnd = {
-                            if (distance >= threshold && canNest) nest()
-                            else if (distance <= -threshold && canUnnest) unnest()
-                            distance = 0f
+                            when (
+                                gesture.onFinish(
+                                    threshold = threshold,
+                                    width = width,
+                                    canNest = canNest,
+                                    canUnnest = canUnnest,
+                                )
+                            ) {
+                                true -> nest()
+                                false -> unnest()
+                                null -> Unit
+                            }
                         },
                     )
                 },

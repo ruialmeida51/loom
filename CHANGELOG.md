@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- Added edit/delete menus to expense and repayment cards.
+- Added startup privacy choices and opt-in crash reporting on Android and iOS.
+- Explain notification permissions when creating/viewing reminders or enabling them in My account.
+- Smoother shopping grouping, card-shaped Home loading and icons in More.
+
 ## [4.0.9] - 2026-11-18
 
 - Shorter contextual action buttons: Delete, Revoke and Discard, with clear Cancel/Keep choices for recurring bills.

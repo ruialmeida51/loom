@@ -11,4 +11,6 @@ internal data class SettlementResponse(
     @SerialName("to_user") val to: String,
     @SerialName("amount_minor") val amountMinor: Long,
     @SerialName("occurred_on") val occurredOn: String,
+    @SerialName("created_by") val createdBy: String = "",
+    @SerialName("version") val version: Long = 1,
 )

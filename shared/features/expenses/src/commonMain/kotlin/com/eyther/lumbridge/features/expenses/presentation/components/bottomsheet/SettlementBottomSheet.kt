@@ -12,10 +12,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.resources.calendarDateText
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
+import com.eyther.lumbridge.features.expenses.generated.resources.form_date
+import com.eyther.lumbridge.features.expenses.generated.resources.payment_edit_title
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_amount_1_s
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_money_sent_by
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_received_by
@@ -23,12 +28,16 @@ import com.eyther.lumbridge.features.expenses.generated.resources.ui_record_a_re
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_this_records_a_payment_you_ve_already_made_or
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.household.presentation.components.MemberPickerRow
+import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SettlementBottomSheet(
     members: List<MemberDomain>,
     currentUserId: String,
+    editing: Boolean,
+    date: String,
+    onDate: () -> Unit,
     from: String,
     to: String,
     settleAmount: String,
@@ -43,7 +52,10 @@ fun SettlementBottomSheet(
     onDismiss: () -> Unit,
 ) {
     FormBottomSheet(
-        title = stringResource(Res.string.ui_record_a_repayment),
+        title =
+            stringResource(
+                if (editing) Res.string.payment_edit_title else Res.string.ui_record_a_repayment,
+            ),
         onAction = onSettle,
         onDismiss = { onShowSettle(false) },
         busy = busy,
@@ -84,6 +96,15 @@ fun SettlementBottomSheet(
                 modifier = Modifier.testTag("payment_recipient"),
             )
         }
+        NavigationRow(
+            title = stringResource(Res.string.form_date),
+            description =
+                date.takeIf { it.isNotBlank() }?.let { calendarDateText(LocalDate.parse(it)) },
+            glyph = Glyph.CALENDAR,
+            onClick = onDate,
+            enabled = !busy,
+            modifier = Modifier.testTag("repayment_date"),
+        )
         Text(
             stringResource(Res.string.ui_this_records_a_payment_you_ve_already_made_or),
             style = MaterialTheme.typography.bodySmall,

@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import com.eyther.lumbridge.app.demo.data.DemoAnalyticsDataSource
+import com.eyther.lumbridge.app.demo.data.DemoDiagnosticsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseAccountDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseReceiptDataSource
@@ -57,6 +58,7 @@ internal fun DemoPortalHost(
 ) {
     val settings = remember { DemoSettingsDataSource() }
     val analytics = remember { DemoAnalyticsDataSource() }
+    val diagnostics = remember { DemoDiagnosticsDataSource() }
     val profile = remember(stores) { DemoProfileDataSource(stores = stores.values) }
     val accountGraph = remember {
         koinApplication {
@@ -65,6 +67,7 @@ internal fun DemoPortalHost(
                     profileDataSource = profile,
                     householdDataSource = DemoHouseholdDataSource(store = stores.values.first()),
                     analyticsDataSource = analytics,
+                    diagnosticsDataSource = diagnostics,
                     settingsDataSource = settings,
                 ),
             )

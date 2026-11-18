@@ -10,6 +10,7 @@ import com.eyther.lumbridge.features.settings.data.network.model.request.PushDev
 import com.eyther.lumbridge.features.settings.data.network.model.request.RegisterPushDeviceRequest
 import com.eyther.lumbridge.features.settings.data.notifications.PushPlatform
 import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
+import com.eyther.lumbridge.features.settings.domain.model.NotificationPermissionDomain
 import com.eyther.lumbridge.features.settings.domain.model.SettingsDomain
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
@@ -28,6 +29,8 @@ class CommonSettingsDataSource(
             SettingsDomain(
                 theme = ThemePreferences.mode.value,
                 notifications = PlatformStorage.get("notifications-${userId}") == "true",
+                notificationPrimeAnswered =
+                    PlatformStorage.get("notification-prime-${userId}") == "true",
             ),
         )
 
@@ -67,6 +70,30 @@ class CommonSettingsDataSource(
                 oldPreferences.copy(notifications = enabled)
             }
         }
+    }
+
+    override suspend fun getNotificationPermission() = safeApiCall {
+        val permission = PushPlatform.getPermission()
+        if (
+            permission == NotificationPermissionDomain.DENIED ||
+                permission == NotificationPermissionDomain.UNAVAILABLE
+        ) {
+            mutablePreferences.update { oldPreferences ->
+                oldPreferences.copy(notifications = false)
+            }
+        }
+        permission
+    }
+
+    override suspend fun markNotificationPrimeAnswered(): AppResult<Unit> = safeApiCall {
+        PlatformStorage.put("notification-prime-${userId}", "true")
+        mutablePreferences.update { oldPreferences ->
+            oldPreferences.copy(notificationPrimeAnswered = true)
+        }
+    }
+
+    override suspend fun openNotificationSettings(): AppResult<Unit> = safeApiCall {
+        PushPlatform.openSettings()
     }
 
     private fun getDeviceId(): String {
