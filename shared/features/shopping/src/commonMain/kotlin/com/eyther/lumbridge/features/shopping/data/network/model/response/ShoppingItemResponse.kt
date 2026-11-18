@@ -15,4 +15,5 @@ internal data class ShoppingItemResponse(
     @SerialName("removed") val removed: Boolean,
     @SerialName("favorite") val favorite: Boolean,
     @SerialName("position") val position: Long = 0,
+    @SerialName("parent_id") val parentId: String? = null,
 )

@@ -94,3 +94,23 @@ subscriptions fall back to the existing polling path. `complete_reminder` delega
 locked/expected-date `complete_task` RPC. Keep both compatibility endpoints until old builds are
 retired. The local SQL suite tests old/new completion, membership isolation, daylight saving and
 notification queue cancellation using disposable fixtures, never hosted household records.
+
+## Shopping groups and receipts
+
+`shopping_items.parent_id` supports one same-household/list nesting level. The group RPC freezes all
+affected versions before applying parent/child changes; legacy single-item writes are reconciled by
+triggers. Bulk completed removal returns the current list rows, including children promoted by parent
+deletion, so clients adopt the trigger-generated versions immediately.
+
+Receipt metadata is owned by expenses. `expense_receipts` keeps a versioned private object link (or
+a tombstone after removal). `save_expense_receipt` accepts the original expected version and a
+validated household/account/expense/photo UUID path. The `expense-receipts` bucket is private, accepts
+JPEG only and limits each object to 5 MiB. Current members with expense access can read; the expense
+creator, payer or household owner can manage where account access permits. No public URLs or service
+credentials are included in the app. Uploads use unique immutable paths without upsert.
+
+The existing authenticated `household-worker` also drains a server-only cleanup queue through the
+Storage API. Replaced/deleted photos are queued immediately; unattached uploads are collected after
+24 hours. Cleanup leases and link commits coordinate in short database transactions; the lock does
+not cover network I/O. Failed deletions remain retryable. Preserve the existing worker authentication
+and schedule when deploying this update. Storage metadata deletion alone does not remove a blob.

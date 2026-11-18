@@ -2,6 +2,8 @@ package com.eyther.lumbridge.features.shopping.data.fixtures
 
 import com.eyther.lumbridge.core.domain.errors.AppError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
+import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
@@ -46,6 +48,12 @@ class ShoppingEntryFixtureDataSource : ShoppingDataSource {
                 .also { itemWrites[item.id] = it }
                 .await()
         } else AppResult.Success(item)
+
+    override suspend fun saveGroup(
+        items: List<ShoppingItemDomain>,
+    ): AppResult<List<ShoppingItemDomain>> = safeCall {
+        items.map { saveItem(it).getOrThrow() }
+    }
 
     override suspend fun saveList(list: ShoppingListDomain): AppResult<ShoppingListDomain> =
         AppResult.Success(list)

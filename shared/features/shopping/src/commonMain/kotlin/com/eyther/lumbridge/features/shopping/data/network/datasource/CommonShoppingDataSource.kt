@@ -8,11 +8,13 @@ import com.eyther.lumbridge.features.household.data.network.selectHouseholdRows
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.shopping.data.network.mapper.toAddRequest
 import com.eyther.lumbridge.features.shopping.data.network.mapper.toDomain
+import com.eyther.lumbridge.features.shopping.data.network.mapper.toGroupRequest
 import com.eyther.lumbridge.features.shopping.data.network.mapper.toRequest
 import com.eyther.lumbridge.features.shopping.data.network.mapper.toShoppingError
 import com.eyther.lumbridge.features.shopping.data.network.model.request.AddShoppingItemsRequest
 import com.eyther.lumbridge.features.shopping.data.network.model.request.DeleteShoppingListRequest
 import com.eyther.lumbridge.features.shopping.data.network.model.request.RemoveCompletedShoppingItemsRequest
+import com.eyther.lumbridge.features.shopping.data.network.model.request.SaveShoppingGroupRequest
 import com.eyther.lumbridge.features.shopping.data.network.model.response.ShoppingItemResponse
 import com.eyther.lumbridge.features.shopping.data.network.model.response.ShoppingListResponse
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
@@ -83,6 +85,24 @@ class CommonShoppingDataSource(
         }
     }
 
+    override suspend fun saveGroup(
+        items: List<ShoppingItemDomain>,
+    ): AppResult<List<ShoppingItemDomain>> =
+        safeApiCall(mapError = Exception::toShoppingError) {
+            access
+                .requireClient()
+                .postgrest
+                .rpc(
+                    "save_shopping_group",
+                    SaveShoppingGroupRequest(
+                        householdId = context.id,
+                        items = items.map { it.toGroupRequest() },
+                    ),
+                )
+                .decodeList<ShoppingItemResponse>()
+                .map { it.toDomain() }
+        }
+
     override suspend fun saveList(list: ShoppingListDomain): AppResult<ShoppingListDomain> {
         return safeApiCall(
             mapError = Exception::toShoppingError,
@@ -111,7 +131,7 @@ class CommonShoppingDataSource(
             access
                 .requireClient()
                 .postgrest
-                .rpc("remove_completed_shopping_items", request)
+                .rpc("remove_completed_shopping_group", request)
                 .decodeList<ShoppingItemResponse>()
                 .map { it.toDomain() }
         }

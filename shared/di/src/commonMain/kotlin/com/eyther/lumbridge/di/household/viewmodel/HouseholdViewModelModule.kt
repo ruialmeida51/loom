@@ -4,14 +4,19 @@ import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEven
 import com.eyther.lumbridge.features.expenses.domain.usecase.ControlRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpensesStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplitUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseAccountFormScreenViewModel
@@ -19,12 +24,14 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseDeta
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseFormScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseSplitViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpensesScreenViewModel
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ReceiptViewerScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.RecurringExpensesScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseAccountFormScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseDetailsScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseSplitViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ReceiptViewerScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedPageUseCase
@@ -222,6 +229,9 @@ class HouseholdViewModelModule {
 
     @KoinViewModel(binds = [ExpenseFormScreenViewModelContract::class])
     fun provideExpenseFormScreenViewModel(
+        getExpenseReceiptUseCase: GetExpenseReceiptUseCase,
+        prepareReceiptPhotoUseCase: PrepareReceiptPhotoUseCase,
+        saveExpenseReceiptUseCase: SaveExpenseReceiptUseCase,
         @InjectedParam params: ExpenseFormScreenViewModelContract.Params,
         getExpenseFormUseCase: GetExpenseFormUseCase,
         saveExpenseUseCase: SaveExpenseUseCase,
@@ -229,6 +239,9 @@ class HouseholdViewModelModule {
         trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
     ): ExpenseFormScreenViewModelContract =
         ExpenseFormScreenViewModel(
+            getExpenseReceiptUseCase = getExpenseReceiptUseCase,
+            prepareReceiptPhotoUseCase = prepareReceiptPhotoUseCase,
+            saveExpenseReceiptUseCase = saveExpenseReceiptUseCase,
             params = params,
             getExpenseFormUseCase = getExpenseFormUseCase,
             saveExpenseUseCase = saveExpenseUseCase,
@@ -238,12 +251,20 @@ class HouseholdViewModelModule {
 
     @KoinViewModel(binds = [ExpenseDetailsScreenViewModelContract::class])
     fun provideExpenseDetailsScreenViewModel(
+        getExpenseReceiptUseCase: GetExpenseReceiptUseCase,
+        prepareReceiptPhotoUseCase: PrepareReceiptPhotoUseCase,
+        saveExpenseReceiptUseCase: SaveExpenseReceiptUseCase,
+        removeExpenseReceiptUseCase: RemoveExpenseReceiptUseCase,
         @InjectedParam params: ExpenseDetailsScreenViewModelContract.Params,
         getExpenseFormUseCase: GetExpenseFormUseCase,
         deleteExpenseUseCase: DeleteExpenseUseCase,
         context: HouseholdContextDomain,
     ): ExpenseDetailsScreenViewModelContract =
         ExpenseDetailsScreenViewModel(
+            getExpenseReceiptUseCase = getExpenseReceiptUseCase,
+            prepareReceiptPhotoUseCase = prepareReceiptPhotoUseCase,
+            saveExpenseReceiptUseCase = saveExpenseReceiptUseCase,
+            removeExpenseReceiptUseCase = removeExpenseReceiptUseCase,
             params = params,
             getExpenseFormUseCase = getExpenseFormUseCase,
             deleteExpenseUseCase = deleteExpenseUseCase,
@@ -290,5 +311,17 @@ class HouseholdViewModelModule {
             refreshFeedSubscriptionUseCase = refreshFeedSubscriptionUseCase,
             updateFeedSubscriptionUseCase = updateFeedSubscriptionUseCase,
             removeFeedSubscriptionUseCase = removeFeedSubscriptionUseCase,
+        )
+
+    @KoinViewModel(binds = [ReceiptViewerScreenViewModelContract::class])
+    fun provideReceiptViewerScreenViewModel(
+        @InjectedParam params: ReceiptViewerScreenViewModelContract.Params,
+        getExpenseReceiptUseCase: GetExpenseReceiptUseCase,
+        downloadReceiptPhotoUseCase: DownloadReceiptPhotoUseCase,
+    ): ReceiptViewerScreenViewModelContract =
+        ReceiptViewerScreenViewModel(
+            params = params,
+            getExpenseReceiptUseCase = getExpenseReceiptUseCase,
+            downloadReceiptPhotoUseCase = downloadReceiptPhotoUseCase,
         )
 }

@@ -4,13 +4,19 @@ import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseReceiptDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ReceiptPhotoDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete
 import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete_message
 import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete_title
+import com.eyther.lumbridge.features.expenses.generated.resources.receipt_delete
+import com.eyther.lumbridge.features.expenses.generated.resources.receipt_delete_message
+import com.eyther.lumbridge.features.expenses.generated.resources.receipt_delete_title
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.expenses.presentation.mapper.toDetailsUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseDetailsUi
+import com.eyther.lumbridge.features.expenses.presentation.model.ReceiptPhotoUi
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 
 data class ExpenseDetailsState(
@@ -22,9 +28,31 @@ data class ExpenseDetailsState(
     val refreshing: Boolean = false,
     val busy: Boolean = false,
     val error: TextResource? = null,
+    val receipt: ExpenseReceiptDomain? = null,
+    val receiptPhoto: ReceiptPhotoDomain? = null,
+    val receiptLoading: Boolean = false,
+    val receiptReady: Boolean = false,
+    val receiptPreparing: Boolean = false,
+    val receiptError: TextResource? = null,
+    val showReceiptDeletion: Boolean = false,
+    val successMessage: TextResource? = null,
     val showDeleteConfirmation: Boolean = false,
     val deleted: Boolean = false,
 ) {
+    val receiptPhotoUi: ReceiptPhotoUi? = receiptPhoto?.let {
+        ReceiptPhotoUi(id = it.id, data = it.data)
+    }
+
+    val receiptDeleteConfirmation: DestructiveConfirmationUi? =
+        if (showReceiptDeletion)
+            DestructiveConfirmationUi(
+                title = TextResource.Resource(Res.string.receipt_delete_title),
+                message = TextResource.Resource(Res.string.receipt_delete_message),
+                confirmText = TextResource.Resource(Res.string.receipt_delete),
+                cancelText = TextResource.Resource(Res.string.ui_cancel),
+            )
+        else null
+
     val deleteConfirmation: DestructiveConfirmationUi? =
         if (showDeleteConfirmation) {
             DestructiveConfirmationUi(

@@ -16,7 +16,7 @@ Adapted from Plannot `ai/PATTERNS_COMPONENTS.md`; [design language](../docs/desi
 | Shared section layout | core GroupedSurface, NavigationRow, SectionTitle; Privacy & Legal is the preferred row reference |
 | Read-only metadata / identity | core InfoRow / PersonAvatar; feature owns labels, roles and display models |
 | Primary list creation | core ActionFab in the refresh container's Scaffold slot; matching FloatingActionContentPadding |
-| Contextual list actions | core ActionMenu; feature owns permissions, confirmation and feedback |
+| Contextual list actions | core ActionMenu + rememberActionMenuState when a related row opens it; feature owns permissions, confirmation and feedback |
 | Selector | core SelectorButton, label-adjacent caret |
 | Forms / sheets | core FormBottomSheet; feature owns pure content, Host owns controller |
 | Optional task date | tasks TaskDueDate + TaskDateUi (feature-owned) |

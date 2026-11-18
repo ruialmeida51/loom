@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import com.eyther.lumbridge.app.demo.data.DemoAnalyticsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseAccountDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseDataSource
+import com.eyther.lumbridge.app.demo.data.DemoExpenseReceiptDataSource
 import com.eyther.lumbridge.app.demo.data.DemoFeedDataSource
 import com.eyther.lumbridge.app.demo.data.DemoFeedSubscriptionDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdDataSource
@@ -85,6 +86,7 @@ internal fun DemoPortalHost(
                         taskDataSource = DemoTaskDataSource(store = store),
                         expenseAccountDataSource = DemoExpenseAccountDataSource(store = store),
                         expenseDataSource = DemoExpenseDataSource(store = store),
+                        expenseReceiptDataSource = DemoExpenseReceiptDataSource(store = store),
                         recurringExpenseDataSource = DemoRecurringExpenseDataSource(store = store),
                         feedDataSource = DemoFeedDataSource(store = store),
                         feedSubscriptionDataSource = DemoFeedSubscriptionDataSource(store = store),

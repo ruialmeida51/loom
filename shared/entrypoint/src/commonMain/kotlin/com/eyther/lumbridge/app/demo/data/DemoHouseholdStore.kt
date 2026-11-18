@@ -6,8 +6,10 @@ import com.eyther.lumbridge.core.domain.nowIso
 import com.eyther.lumbridge.core.domain.todayIso
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseReceiptDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MonthlyRecurrenceDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ReceiptPhotoDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
@@ -173,6 +175,19 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 ),
             ),
         )
+    val receiptPhotos = mutableMapOf<String, ReceiptPhotoDomain>()
+    val expenseReceipts =
+        expenses.value.first().let { expense ->
+            mutableMapOf(
+                expense.id to
+                    ExpenseReceiptDomain(
+                        expenseId = expense.id,
+                        accountId = context.id,
+                        objectPath = "demo/${expense.id}/receipt.jpg",
+                        version = 1,
+                    ),
+            )
+        }
     val settlements = MutableStateFlow<List<SettlementDomain>>(emptyList())
     private val today = LocalDate.parse(todayIso(context.timeZone))
     val recurring =

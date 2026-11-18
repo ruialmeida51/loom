@@ -30,6 +30,7 @@ internal fun ExpenseFormHost(
     expenseId: String?,
     onBack: () -> Unit,
     onSaved: () -> Unit,
+    onViewReceipt: () -> Unit = {},
 ) {
     val viewModel: ExpenseFormScreenViewModelContract = koinViewModel {
         parametersOf(
@@ -85,6 +86,7 @@ internal fun ExpenseFormHost(
             ExpenseFormScreen(
                 viewModel = viewModel,
                 onSaved = onSaved,
+                onViewReceipt = onViewReceipt,
                 onEditSplit = { amount ->
                     sheets.showBottomSheet(ExpenseFormSheets.Split(amountMinor = amount))
                 },

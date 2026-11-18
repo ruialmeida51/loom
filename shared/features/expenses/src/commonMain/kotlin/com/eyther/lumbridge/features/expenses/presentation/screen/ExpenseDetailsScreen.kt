@@ -21,10 +21,12 @@ import com.eyther.lumbridge.core.presentation.components.InfoRow
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
+import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackbar
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.resources.calendarDateText
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
+import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_everyday
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_retry
@@ -36,19 +38,32 @@ import com.eyther.lumbridge.features.expenses.generated.resources.former_member
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseDetailsLoading
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseDetailsSummaryCard
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseShareRow
+import com.eyther.lumbridge.features.expenses.presentation.components.receipt.ExpenseReceiptSection
+import com.eyther.lumbridge.features.expenses.presentation.components.receipt.rememberReceiptPickers
 import com.eyther.lumbridge.features.expenses.presentation.mapper.splitMethodLabel
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseDetailsUi
+import com.eyther.lumbridge.features.expenses.presentation.model.ReceiptPhotoUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseDetailsScreenViewModelContract
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun ExpenseDetailsScreen(viewModel: ExpenseDetailsScreenViewModelContract, onDeleted: () -> Unit) {
+fun ExpenseDetailsScreen(
+    viewModel: ExpenseDetailsScreenViewModelContract,
+    onDeleted: () -> Unit,
+    onViewReceipt: () -> Unit,
+) {
     val state by viewModel.state.platformCollectAsStateOnStart()
+    val pickers =
+        rememberReceiptPickers(
+            onPicked = viewModel::onReceiptPicked,
+            onError = viewModel::onReceiptPickFailed,
+        )
     LaunchedEffect(Unit) { viewModel.onRefresh() }
     LaunchedEffect(state.deleted) { if (state.deleted) onDeleted() }
     PullToRefreshContentContainer(
         isRefreshing = state.refreshing,
         onRefresh = viewModel::onRefresh,
+        snackbarHost = { SuccessSnackbar(message = state.successMessage) },
     ) {
         InnerExpenseDetailsScreen(
             details = state.details,
@@ -56,6 +71,32 @@ fun ExpenseDetailsScreen(viewModel: ExpenseDetailsScreenViewModelContract, onDel
             error = state.error,
             onRetry = viewModel::onRefresh,
             onDismiss = viewModel::onDismissError,
+            receiptPhoto = state.receiptPhotoUi,
+            receiptAttached = state.receipt?.objectPath != null,
+            receiptLoading = state.receiptLoading,
+            receiptPreparing = state.receiptPreparing || pickers.reading,
+            receiptCanManage = state.canEdit && state.receiptReady,
+            receiptBusy = state.busy,
+            receiptError = state.receiptError.takeUnless { state.showReceiptDeletion },
+            cameraSupported = pickers.camera.supported,
+            onReceiptGallery = pickers.gallery,
+            onReceiptCamera = pickers.camera.launch,
+            onReceiptView = onViewReceipt,
+            onReceiptSave = viewModel::onReceiptSave,
+            onReceiptDiscard = viewModel::onReceiptDiscarded,
+            onReceiptDelete = viewModel::onReceiptDeleteRequested,
+            onReceiptRetry = viewModel::onReceiptRetry,
+            onInvalidPhoto = { viewModel.onReceiptPickFailed(ReceiptError.InvalidPhoto()) },
+        )
+    }
+    state.receiptDeleteConfirmation?.let { confirmation ->
+        DestructiveConfirmation(
+            confirmation = confirmation,
+            busy = state.busy,
+            error = state.receiptError,
+            confirmationTag = "confirm_delete_receipt",
+            onConfirm = viewModel::onReceiptDeleteConfirmed,
+            onDismiss = viewModel::onReceiptDeleteCancelled,
         )
     }
     state.deleteConfirmation?.let { confirmation ->
@@ -76,6 +117,22 @@ private fun InnerExpenseDetailsScreen(
     error: TextResource?,
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
+    receiptPhoto: ReceiptPhotoUi?,
+    receiptAttached: Boolean,
+    receiptLoading: Boolean,
+    receiptPreparing: Boolean,
+    receiptCanManage: Boolean,
+    receiptBusy: Boolean,
+    receiptError: TextResource?,
+    cameraSupported: Boolean,
+    onReceiptGallery: () -> Unit,
+    onReceiptCamera: () -> Unit,
+    onReceiptView: () -> Unit,
+    onReceiptSave: () -> Unit,
+    onReceiptDiscard: () -> Unit,
+    onReceiptDelete: () -> Unit,
+    onReceiptRetry: () -> Unit,
+    onInvalidPhoto: () -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().testTag("expense_details_content"),
@@ -114,6 +171,28 @@ private fun InnerExpenseDetailsScreen(
                                 else expense.accountName,
                         )
                     }
+                }
+                item(key = "receipt") {
+                    ExpenseReceiptSection(
+                        photo = receiptPhoto,
+                        attached = receiptAttached,
+                        loading = receiptLoading,
+                        preparing = receiptPreparing,
+                        busy = receiptBusy || receiptPreparing,
+                        canManage = receiptCanManage,
+                        canDelete = true,
+                        cameraSupported = cameraSupported,
+                        showDraftActions = true,
+                        error = receiptError,
+                        onGallery = onReceiptGallery,
+                        onCamera = onReceiptCamera,
+                        onView = onReceiptView,
+                        onDiscard = onReceiptDiscard,
+                        onSave = onReceiptSave,
+                        onDelete = onReceiptDelete,
+                        onRetry = onReceiptRetry,
+                        onInvalidPhoto = onInvalidPhoto,
+                    )
                 }
                 item(key = "split_header") {
                     SectionTitle(title = stringResource(Res.string.form_split))

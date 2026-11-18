@@ -54,6 +54,7 @@ internal fun BalancesHost(
             subclass(BalancesDestination.Insights::class)
             subclass(BalancesDestination.Expense::class)
             subclass(BalancesDestination.Form::class)
+            subclass(BalancesDestination.Receipt::class)
             subclass(BalancesDestination.AccountForm::class)
         }
     val navigator = remember(state) { Navigator(state = state) }
@@ -126,11 +127,27 @@ internal fun BalancesHost(
                     }
                 }
             }
+            is BalancesDestination.Receipt ->
+                ReceiptViewerHost(
+                    accountId = key.accountId,
+                    expenseId = key.expenseId,
+                    onBack = navigator::goBack,
+                )
             is BalancesDestination.Form ->
                 ExpenseFormHost(
                     accountId = key.accountId,
                     expenseId = key.expenseId,
                     onBack = navigator::goBack,
+                    onViewReceipt = {
+                        key.expenseId?.let {
+                            navigator.navigateTo(
+                                BalancesDestination.Receipt(
+                                    accountId = key.accountId,
+                                    expenseId = it,
+                                ),
+                            )
+                        }
+                    },
                     onSaved = {
                         overviewViewModel.onContentChanged()
                         navigator.goBack()
@@ -168,6 +185,14 @@ internal fun BalancesHost(
                 ) {
                     ExpenseDetailsScreen(
                         viewModel = viewModel,
+                        onViewReceipt = {
+                            navigator.navigateTo(
+                                BalancesDestination.Receipt(
+                                    accountId = key.accountId,
+                                    expenseId = key.expenseId,
+                                ),
+                            )
+                        },
                         onDeleted = {
                             overviewViewModel.onContentChanged()
                             navigator.goBack()

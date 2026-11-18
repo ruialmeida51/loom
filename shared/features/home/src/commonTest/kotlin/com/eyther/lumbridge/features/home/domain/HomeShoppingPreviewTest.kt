@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.home.domain
 import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
+import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingSelectionDataSource
@@ -76,6 +77,12 @@ class HomeShoppingPreviewTest {
                 override suspend fun saveItem(
                     item: ShoppingItemDomain,
                 ): AppResult<ShoppingItemDomain> = error("Read-only test")
+
+                override suspend fun saveGroup(
+                    items: List<ShoppingItemDomain>,
+                ): AppResult<List<ShoppingItemDomain>> = safeCall {
+                    items.map { saveItem(it).getOrThrow() }
+                }
 
                 override suspend fun saveList(
                     list: ShoppingListDomain,

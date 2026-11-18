@@ -17,4 +17,13 @@ class SaveShoppingItemUseCase(
             requireDomain(item.version > 0) { ShoppingError.VersionRequired() }
             shoppingDataSource.saveItem(item.validated()).getOrThrow()
         }
+
+    suspend fun saveGroup(items: List<ShoppingItemDomain>): AppResult<List<ShoppingItemDomain>> =
+        safeCall {
+            requireDomain(items.isNotEmpty() && items.map { it.id }.distinct().size == items.size) {
+                ShoppingError.InvalidBatchSize()
+            }
+            items.forEach { requireDomain(it.version > 0) { ShoppingError.VersionRequired() } }
+            shoppingDataSource.saveGroup(items.map { it.validated() }).getOrThrow()
+        }
 }

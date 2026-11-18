@@ -83,7 +83,7 @@ class CommonShoppingDataSourceTest {
                         ),
                 )
                 .getOrThrow()
-            assertEquals("/rest/v1/rpc/remove_completed_shopping_items", path)
+            assertEquals("/rest/v1/rpc/remove_completed_shopping_group", path)
             assertEquals("home", body?.get("p_household_id")?.jsonPrimitive?.content)
             assertEquals("food", body?.get("p_list_id")?.jsonPrimitive?.content)
             assertEquals(7L, (body?.get("p_versions") as JsonObject)["milk"]?.jsonPrimitive?.long)

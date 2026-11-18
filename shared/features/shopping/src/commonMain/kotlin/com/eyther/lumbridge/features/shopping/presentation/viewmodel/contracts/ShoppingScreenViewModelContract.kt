@@ -61,6 +61,10 @@ abstract class ShoppingScreenViewModelContract : LoomViewModel() {
 
     abstract fun onRemoveItemConfirmed()
 
+    abstract fun onNestItem(item: ShoppingItemDomain)
+
+    abstract fun onUnnestItem(item: ShoppingItemDomain)
+
     abstract fun onToggleFavorite(item: ShoppingItemDomain)
 
     abstract fun onMoveItem(item: ShoppingItemDomain, listId: String)

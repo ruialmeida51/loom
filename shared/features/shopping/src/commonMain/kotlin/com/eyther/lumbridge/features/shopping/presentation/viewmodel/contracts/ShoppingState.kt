@@ -15,10 +15,14 @@ import com.eyther.lumbridge.features.shopping.generated.resources.list_delete_ti
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingEntryUi
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.collections.immutable.toPersistentSet
 
 data class ShoppingState(
     val snapshot: ShoppingSnapshotDomain = ShoppingSnapshotDomain(),
@@ -83,10 +87,19 @@ data class ShoppingState(
     val selectedList: ShoppingListDomain? = activeLists.firstOrNull { it.id == selectedListId }
     val items: ImmutableList<ShoppingItemDomain> =
         snapshot.activeItems.filter { it.listId == selectedListId }.toImmutableList()
+    private val itemById = items.associateBy { it.id }
+
+    private fun groupCompleted(item: ShoppingItemDomain): Boolean =
+        itemById[item.parentId]?.checked ?: item.checked
+
     val uncheckedItems: ImmutableList<ShoppingItemDomain> =
-        items.filterNot { it.checked }.toImmutableList()
+        items.filterNot(::groupCompleted).toImmutableList()
     val completedItems: ImmutableList<ShoppingItemDomain> =
-        items.filter { it.checked }.toImmutableList()
+        items.filter(::groupCompleted).toImmutableList()
+    val indentedItemIds: ImmutableSet<String> =
+        items.filter { it.parentId in itemById }.map { it.id }.toPersistentSet()
+    val nestingParentIds: ImmutableMap<String, String> =
+        snapshot.nestingParents(selectedListId).toImmutableMap()
     val addingInline: Boolean = pendingEntries.any { it.saving }
     val visiblePendingEntries: ImmutableList<ShoppingEntryUi> =
         pendingEntries

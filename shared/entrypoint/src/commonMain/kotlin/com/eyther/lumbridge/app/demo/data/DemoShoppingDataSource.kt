@@ -51,6 +51,26 @@ class DemoShoppingDataSource(private val store: DemoHouseholdStore) : ShoppingDa
         saved
     }
 
+    override suspend fun saveGroup(
+        items: List<ShoppingItemDomain>,
+    ): AppResult<List<ShoppingItemDomain>> = safeCall {
+        val existing = store.shopping.value.items.associateBy { it.id }
+        items.forEach { item ->
+            requireDomain(existing[item.id]?.version == item.version) {
+                ShoppingError.ItemChanged()
+            }
+            item.validated()
+        }
+        val saved = items.map { item ->
+            if (existing[item.id] == item) item else item.copy(version = item.version + 1)
+        }
+        val byId = saved.associateBy { it.id }
+        store.shopping.update { oldState ->
+            oldState.copy(items = oldState.items.map { byId[it.id] ?: it })
+        }
+        saved
+    }
+
     override suspend fun saveList(list: ShoppingListDomain) = safeCall {
         val before = store.shopping.value.lists.firstOrNull { it.id == list.id }
         requireDomain(before == null || before.version == list.version) {
@@ -85,12 +105,20 @@ class DemoShoppingDataSource(private val store: DemoHouseholdStore) : ShoppingDa
                 ShoppingError.ItemChanged()
             }
         }
-        val saved = items.map { it.copy(removed = true, version = it.version + 1) }
-        val byId = saved.associateBy { it.id }
-        store.shopping.update { oldState ->
-            oldState.copy(items = oldState.items.map { byId[it.id] ?: it })
+        val before = store.shopping.value
+        var snapshot = before
+        items.forEach { target ->
+            val item = snapshot.items.first { it.id == target.id }
+            val changes = snapshot.changeGroup(item.copy(removed = true)).associateBy { it.id }
+            snapshot = snapshot.copy(items = snapshot.items.map { changes[it.id] ?: it })
         }
-        saved
+        val originals = before.items.associateBy { it.id }
+        val saved =
+            snapshot.items.map { item ->
+                if (originals[item.id] == item) item else item.copy(version = item.version + 1)
+            }
+        store.shopping.value = snapshot.copy(items = saved)
+        saved.filter { it.listId == items.first().listId }
     }
 
     override suspend fun deleteList(list: ShoppingListDomain): AppResult<Unit> = safeCall {

@@ -12,6 +12,7 @@
 <key>CFBundleURLName</key><string>com.eyther.lumbridge.auth</string>
 <key>CFBundleURLSchemes</key><array><string>com.eyther.lumbridge</string></array>
 </dict></array>
+<key>NSCameraUsageDescription</key><string>Loom uses the camera to attach a receipt photo to an expense.</string>
 <key>UILaunchScreen</key><dict/>
 <key>UIApplicationSceneManifest</key><dict><key>UIApplicationSupportsMultipleScenes</key><false/></dict>
 <key>UIRequiredDeviceCapabilities</key><array><string>arm64</string></array>

@@ -27,10 +27,12 @@ import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingForm
 import com.eyther.lumbridge.core.presentation.components.LoadingRow
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
+import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
@@ -42,13 +44,18 @@ import com.eyther.lumbridge.features.expenses.generated.resources.form_more
 import com.eyther.lumbridge.features.expenses.generated.resources.form_recurring_unchanged
 import com.eyther.lumbridge.features.expenses.generated.resources.form_save
 import com.eyther.lumbridge.features.expenses.generated.resources.form_split
+import com.eyther.lumbridge.features.expenses.generated.resources.receipt_keep_expense
+import com.eyther.lumbridge.features.expenses.generated.resources.receipt_pending
 import com.eyther.lumbridge.features.expenses.generated.resources.split_participant_count
 import com.eyther.lumbridge.features.expenses.generated.resources.split_summary
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_who_paid
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseCaptureFields
+import com.eyther.lumbridge.features.expenses.presentation.components.receipt.ExpenseReceiptSection
+import com.eyther.lumbridge.features.expenses.presentation.components.receipt.rememberReceiptPickers
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
 import com.eyther.lumbridge.features.expenses.presentation.mapper.expenseCategoryLabel
 import com.eyther.lumbridge.features.expenses.presentation.mapper.splitMethodLabel
+import com.eyther.lumbridge.features.expenses.presentation.model.ReceiptPhotoUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.household.presentation.components.MemberPickerRow
@@ -61,8 +68,14 @@ fun ExpenseFormScreen(
     onSaved: () -> Unit,
     onEditSplit: (Long) -> Unit,
     onChooseDate: () -> Unit,
+    onViewReceipt: () -> Unit = {},
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
+    val pickers =
+        rememberReceiptPickers(
+            onPicked = viewModel::onReceiptPicked,
+            onError = viewModel::onReceiptPickFailed,
+        )
     LaunchedEffect(state.redirectTo) {
         when (val redirect = state.redirectTo) {
             ExpenseFormScreenViewModelContract.RedirectTo.Saved -> {
@@ -92,7 +105,7 @@ fun ExpenseFormScreen(
         readyForInput = !state.editing || state.expense != null,
         loading = state.loading,
         busy = state.busy,
-        canSave = state.canSave,
+        canSave = state.canSave && !pickers.reading,
         error = state.error,
         onTitle = viewModel::onTitleChanged,
         onAmount = viewModel::onAmountChanged,
@@ -105,6 +118,21 @@ fun ExpenseFormScreen(
         onSave = viewModel::onSave,
         onDismiss = viewModel::onDismissError,
         onRetry = viewModel::onRetry,
+        receiptPhoto = state.receiptPhotoUi,
+        receiptAttached = state.receipt?.objectPath != null,
+        receiptLoading = state.receiptLoading,
+        receiptPreparing = state.receiptPreparing || pickers.reading,
+        receiptReady = state.receiptReady,
+        receiptPending = state.receiptPending,
+        receiptError = state.receiptError,
+        cameraSupported = pickers.camera.supported,
+        onReceiptGallery = pickers.gallery,
+        onReceiptCamera = pickers.camera.launch,
+        onReceiptView = onViewReceipt,
+        onReceiptDiscard = viewModel::onReceiptDiscarded,
+        onReceiptRetry = viewModel::onReceiptRetry,
+        onKeepExpense = viewModel::onKeepExpense,
+        onInvalidPhoto = { viewModel.onReceiptPickFailed(ReceiptError.InvalidPhoto()) },
     )
 }
 
@@ -138,6 +166,21 @@ private fun InnerExpenseFormScreen(
     onSave: () -> Unit,
     onDismiss: () -> Unit,
     onRetry: () -> Unit,
+    receiptPhoto: ReceiptPhotoUi?,
+    receiptAttached: Boolean,
+    receiptLoading: Boolean,
+    receiptPreparing: Boolean,
+    receiptReady: Boolean,
+    receiptPending: Boolean,
+    receiptError: TextResource?,
+    cameraSupported: Boolean,
+    onReceiptGallery: () -> Unit,
+    onReceiptCamera: () -> Unit,
+    onReceiptView: () -> Unit,
+    onReceiptDiscard: () -> Unit,
+    onReceiptRetry: () -> Unit,
+    onKeepExpense: () -> Unit,
+    onInvalidPhoto: () -> Unit,
 ) {
     Column(Modifier.fillMaxSize().imePadding()) {
         Column(
@@ -149,7 +192,7 @@ private fun InnerExpenseFormScreen(
                     amount = amount,
                     title = title,
                     currency = account?.currency,
-                    enabled = !busy,
+                    enabled = !busy && !receiptPending,
                     onAmount = onAmount,
                     onTitle = onTitle,
                 )
@@ -174,7 +217,7 @@ private fun InnerExpenseFormScreen(
                         members = members,
                         selectedId = paidBy,
                         onSelected = onPayer,
-                        enabled = !busy,
+                        enabled = !busy && !receiptPending,
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     NavigationRow(
@@ -190,10 +233,44 @@ private fun InnerExpenseFormScreen(
                                 ),
                             ),
                         onClick = onSplit,
-                        enabled = !busy,
+                        enabled = !busy && !receiptPending,
                     )
                 }
-                OutlinedButton(onClick = { onDetails(!showDetails) }, enabled = !busy) {
+                ExpenseReceiptSection(
+                    photo = receiptPhoto,
+                    attached = receiptAttached,
+                    loading = receiptLoading,
+                    preparing = receiptPreparing,
+                    busy = busy || receiptPending || receiptPreparing,
+                    canManage = receiptReady,
+                    canDelete = false,
+                    cameraSupported = cameraSupported,
+                    showDraftActions = false,
+                    error = receiptError,
+                    onGallery = onReceiptGallery,
+                    onCamera = onReceiptCamera,
+                    onView = onReceiptView,
+                    onDiscard = onReceiptDiscard,
+                    onSave = onSave,
+                    onDelete = {},
+                    onRetry = onReceiptRetry,
+                    onInvalidPhoto = onInvalidPhoto,
+                )
+                if (receiptPending && !busy) {
+                    Text(
+                        stringResource(Res.string.receipt_pending),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    LoomSecondaryButton(
+                        text = stringResource(Res.string.receipt_keep_expense),
+                        onClick = onKeepExpense,
+                        modifier = Modifier.testTag("keep_expense"),
+                    )
+                }
+                OutlinedButton(
+                    onClick = { onDetails(!showDetails) },
+                    enabled = !busy && !receiptPending,
+                ) {
                     Text(
                         stringResource(
                             if (showDetails) Res.string.form_less else Res.string.form_more,
@@ -205,7 +282,7 @@ private fun InnerExpenseFormScreen(
                         title = stringResource(Res.string.form_date),
                         description = date,
                         onClick = onDate,
-                        enabled = !busy,
+                        enabled = !busy && !receiptPending,
                     )
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -215,7 +292,7 @@ private fun InnerExpenseFormScreen(
                             FilterChip(
                                 selected = category == choice,
                                 onClick = { onCategory(choice) },
-                                enabled = !busy,
+                                enabled = !busy && !receiptPending,
                                 label = { Text(expenseCategoryLabel(choice)) },
                             )
                         }
@@ -230,7 +307,7 @@ private fun InnerExpenseFormScreen(
                                 modifier = Modifier.testTag("expense_recurring"),
                                 checked = recurring,
                                 onCheckedChange = onRecurring,
-                                enabled = !busy,
+                                enabled = !busy && !receiptPending,
                             )
                         }
                     else if (recurring)

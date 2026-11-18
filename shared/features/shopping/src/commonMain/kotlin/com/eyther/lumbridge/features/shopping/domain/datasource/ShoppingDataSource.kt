@@ -13,6 +13,8 @@ interface ShoppingDataSource {
 
     suspend fun saveItem(item: ShoppingItemDomain): AppResult<ShoppingItemDomain>
 
+    suspend fun saveGroup(items: List<ShoppingItemDomain>): AppResult<List<ShoppingItemDomain>>
+
     suspend fun saveList(list: ShoppingListDomain): AppResult<ShoppingListDomain>
 
     suspend fun removeCompletedItems(

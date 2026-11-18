@@ -93,4 +93,7 @@
     <string name="item_delete_title">Delete grocery?</string>
     <string name="item_delete_message">Delete “%1$s” from this shared shopping list?</string>
     <string name="item_delete_confirm">Delete grocery</string>
+    <string name="group_nest">Group under previous item</string>
+    <string name="group_unnest">Move out of group</string>
+    <string name="group_invalid">Keep groups one level deep, in the same list. Refresh and try again.</string>
 </resources>

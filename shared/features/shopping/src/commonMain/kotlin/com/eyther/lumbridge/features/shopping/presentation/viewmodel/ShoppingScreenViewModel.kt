@@ -67,8 +67,8 @@ class ShoppingScreenViewModel(
     )
 
     private data class UndoChange(
-        val before: ShoppingItemDomain,
-        val afterVersion: Long,
+        val before: List<ShoppingItemDomain>,
+        val afterVersions: Map<String, Long>,
     )
 
     private val inputState = MutableStateFlow(InnerInputState())
@@ -228,6 +228,7 @@ class ShoppingScreenViewModel(
             when (val result = removeCompletedShoppingItemsUseCase(items = items)) {
                 is AppResult.Success -> {
                     val savedIds = result.value.map { it.id }.toSet()
+                    undoChange = null
                     acknowledgedItems = acknowledgedItems + result.value.associateBy { it.id }
                     mutableState.update { oldState ->
                         oldState.copy(
@@ -238,13 +239,14 @@ class ShoppingScreenViewModel(
                                             result.value,
                                 ),
                             deletingCompleted = false,
+                            undoMessage = null,
                             selectingCompleted = false,
                             confirmingCompletedDeletion = false,
                             selectedCompletedIds = persistentSetOf(),
                             successMessage =
                                 TextResource.Resource(
                                     Res.string.completed_deleted,
-                                    args = listOf(result.value.size),
+                                    args = listOf(items.size),
                                 ),
                         )
                     }
@@ -562,6 +564,22 @@ class ShoppingScreenViewModel(
         )
     }
 
+    override fun onNestItem(item: ShoppingItemDomain) {
+        val parent = state.value.snapshot.nestingParent(item) ?: return
+        saveItem(
+            item = item.copy(parentId = parent.id),
+            message = TextResource.Resource(Res.string.item_updated),
+        )
+    }
+
+    override fun onUnnestItem(item: ShoppingItemDomain) {
+        if (item.parentId == null) return
+        saveItem(
+            item = item.copy(parentId = null),
+            message = TextResource.Resource(Res.string.item_updated),
+        )
+    }
+
     override fun onToggleFavorite(item: ShoppingItemDomain) {
         saveItem(
             item = item.copy(favorite = !item.favorite),
@@ -571,38 +589,37 @@ class ShoppingScreenViewModel(
 
     override fun onMoveItem(item: ShoppingItemDomain, listId: String) {
         saveItem(
-            item = item.copy(listId = listId),
+            item = item.copy(listId = listId, parentId = null),
             message = TextResource.Resource(Res.string.item_moved),
         )
     }
 
     override fun onUndo() {
         val undo = undoChange ?: return
-        if (state.value.busy) return
-
-        mutableState.update { oldState ->
-            oldState.copy(busy = true, error = null)
-        }
-
+        if (state.value.busy || state.value.savingItemIds.isNotEmpty()) return
+        mutableState.update { oldState -> oldState.copy(busy = true, error = null) }
         launch {
-            val result = saveShoppingItemUseCase(undo.before.copy(version = undo.afterVersion))
+            val result =
+                saveShoppingItemUseCase.saveGroup(
+                    items =
+                        undo.before.map { it.copy(version = undo.afterVersions.getValue(it.id)) },
+                )
             undoChange = null
-
+            if (result is AppResult.Success)
+                acknowledgedItems = acknowledgedItems + result.value.associateBy { it.id }
             mutableState.update { oldState ->
                 when (result) {
-                    is AppResult.Success ->
+                    is AppResult.Success -> {
+                        val saved = result.value.associateBy { it.id }
                         oldState.copy(
                             busy = false,
                             undoMessage = null,
                             snapshot =
                                 oldState.snapshot.copy(
-                                    items =
-                                        oldState.snapshot.items.map { item ->
-                                            if (item.id == result.value.id) result.value else item
-                                        },
+                                    items = oldState.snapshot.items.map { saved[it.id] ?: it },
                                 ),
                         )
-
+                    }
                     is AppResult.Failure ->
                         oldState.copy(
                             busy = false,
@@ -739,37 +756,43 @@ class ShoppingScreenViewModel(
         message: TextResource,
         closeForm: Boolean = false,
     ) {
-        if (state.value.busy || item.id in state.value.savingItemIds) return
-        val before = state.value.snapshot.items.firstOrNull { it.id == item.id } ?: return
-        pendingItemUpdates = pendingItemUpdates + (item.id to item)
+        if (state.value.snapshot.items.none { it.id == item.id }) return
+        val changes = state.value.snapshot.changeGroup(item)
+        val ids = changes.map { it.id }.toSet()
+        if (state.value.busy || state.value.savingItemIds.any { it in ids }) return
+        val before = state.value.snapshot.items.filter { it.id in ids }
+        val pending = changes.associateBy { it.id }
+        pendingItemUpdates = pendingItemUpdates + pending
         mutableState.update { oldState ->
             oldState.copy(
                 busy = closeForm,
-                savingItemIds = oldState.savingItemIds.add(item.id),
+                savingItemIds = oldState.savingItemIds.addAll(ids),
                 error = null,
                 formError = null,
                 undoMessage = null,
                 itemDeleteError = null,
                 snapshot =
                     oldState.snapshot.copy(
-                        items =
-                            oldState.snapshot.items.map {
-                                if (it.id == item.id) item else it
-                            },
+                        items = oldState.snapshot.items.map { pending[it.id] ?: it },
                     ),
             )
         }
         launch {
-            val result = saveShoppingItemUseCase(item = item)
-            pendingItemUpdates = pendingItemUpdates - item.id
+            val result = saveShoppingItemUseCase.saveGroup(items = changes)
+            pendingItemUpdates = pendingItemUpdates - ids
             when (result) {
                 is AppResult.Success -> {
-                    acknowledgedItems = acknowledgedItems + (result.value.id to result.value)
-                    undoChange = UndoChange(before = before, afterVersion = result.value.version)
+                    val saved = result.value.associateBy { it.id }
+                    acknowledgedItems = acknowledgedItems + saved
+                    undoChange =
+                        UndoChange(
+                            before = before,
+                            afterVersions = saved.mapValues { it.value.version },
+                        )
                     mutableState.update { oldState ->
                         oldState.copy(
                             busy = if (closeForm) false else oldState.busy,
-                            savingItemIds = oldState.savingItemIds.remove(item.id),
+                            savingItemIds = oldState.savingItemIds.removeAll(ids),
                             showAdd = if (closeForm) false else oldState.showAdd,
                             undoMessage = message,
                             deletingItem =
@@ -779,22 +802,20 @@ class ShoppingScreenViewModel(
                                 oldState.snapshot.copy(
                                     items =
                                         oldState.snapshot.items.map { existing ->
-                                            if (
-                                                existing.id == item.id &&
-                                                    existing.version <= result.value.version
-                                            )
-                                                result.value
-                                            else existing
+                                            saved[existing.id]?.takeIf {
+                                                it.version >= existing.version
+                                            } ?: existing
                                         },
                                 ),
                         )
                     }
                 }
-                is AppResult.Failure ->
+                is AppResult.Failure -> {
+                    val original = before.associateBy { it.id }
                     mutableState.update { oldState ->
                         oldState.copy(
                             busy = if (closeForm) false else oldState.busy,
-                            savingItemIds = oldState.savingItemIds.remove(item.id),
+                            savingItemIds = oldState.savingItemIds.removeAll(ids),
                             error =
                                 if (closeForm || oldState.deletingItem?.id == item.id)
                                     oldState.error
@@ -810,16 +831,14 @@ class ShoppingScreenViewModel(
                                 oldState.snapshot.copy(
                                     items =
                                         oldState.snapshot.items.map { existing ->
-                                            if (
-                                                existing.id == item.id &&
-                                                    existing.version <= before.version
-                                            )
-                                                before
-                                            else existing
+                                            original[existing.id]?.takeIf {
+                                                existing.version <= it.version
+                                            } ?: existing
                                         },
                                 ),
                         )
                     }
+                }
             }
         }
     }

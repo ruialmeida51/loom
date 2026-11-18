@@ -9,6 +9,7 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.functions.Functions
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
+import io.github.jan.supabase.storage.Storage
 
 @OptIn(SupabaseExperimental::class)
 fun createLoomSupabaseClient(configureAuthentication: AuthConfig.() -> Unit): SupabaseClient? {
@@ -22,6 +23,7 @@ fun createLoomSupabaseClient(configureAuthentication: AuthConfig.() -> Unit): Su
         install(Auth, configureAuthentication)
         install(Postgrest) { requireValidSession = true }
         install(Realtime)
+        install(Storage) { requireValidSession = true }
         install(Functions) { requireValidSession = true }
     }
 }

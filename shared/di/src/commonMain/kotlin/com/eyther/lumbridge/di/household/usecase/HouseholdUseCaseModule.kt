@@ -2,23 +2,29 @@ package com.eyther.lumbridge.di.household.usecase
 
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.usecase.ControlRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpensesStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpensesStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSelectedExpenseAccountStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementsStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplitUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccountUseCase
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
@@ -465,4 +471,34 @@ class HouseholdUseCaseModule {
         feedSubscriptionDataSource: FeedSubscriptionDataSource,
     ): RefreshFeedsUseCase =
         RefreshFeedsUseCase(feedSubscriptionDataSource = feedSubscriptionDataSource)
+
+    @Single
+    fun providePrepareReceiptPhotoUseCase(
+        expenseReceiptDataSource: ExpenseReceiptDataSource,
+    ): PrepareReceiptPhotoUseCase =
+        PrepareReceiptPhotoUseCase(expenseReceiptDataSource = expenseReceiptDataSource)
+
+    @Single
+    fun provideGetExpenseReceiptUseCase(
+        expenseReceiptDataSource: ExpenseReceiptDataSource,
+    ): GetExpenseReceiptUseCase =
+        GetExpenseReceiptUseCase(expenseReceiptDataSource = expenseReceiptDataSource)
+
+    @Single
+    fun provideDownloadReceiptPhotoUseCase(
+        expenseReceiptDataSource: ExpenseReceiptDataSource,
+    ): DownloadReceiptPhotoUseCase =
+        DownloadReceiptPhotoUseCase(expenseReceiptDataSource = expenseReceiptDataSource)
+
+    @Single
+    fun provideSaveExpenseReceiptUseCase(
+        expenseReceiptDataSource: ExpenseReceiptDataSource,
+    ): SaveExpenseReceiptUseCase =
+        SaveExpenseReceiptUseCase(expenseReceiptDataSource = expenseReceiptDataSource)
+
+    @Single
+    fun provideRemoveExpenseReceiptUseCase(
+        expenseReceiptDataSource: ExpenseReceiptDataSource,
+    ): RemoveExpenseReceiptUseCase =
+        RemoveExpenseReceiptUseCase(expenseReceiptDataSource = expenseReceiptDataSource)
 }

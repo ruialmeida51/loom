@@ -33,6 +33,9 @@ kotlin {
             api(libs.coroutines.core)
             api(libs.serialization.json)
             api(libs.datetime)
+            api(libs.kotlinx.io.bytestring)
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

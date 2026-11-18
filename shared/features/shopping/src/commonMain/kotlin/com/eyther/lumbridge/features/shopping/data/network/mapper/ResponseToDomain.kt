@@ -17,6 +17,7 @@ internal fun ShoppingItemResponse.toDomain(): ShoppingItemDomain =
         removed = removed,
         favorite = favorite,
         position = position,
+        parentId = parentId,
     )
 
 internal fun ShoppingListResponse.toDomain(): ShoppingListDomain =
