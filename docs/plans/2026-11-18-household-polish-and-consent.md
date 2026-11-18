@@ -31,5 +31,5 @@ stack. Crashlytics will provide evidence for any remaining resume failures.
 iOS Firebase client registered through the existing service account; matching client configuration fetched.
 Both platforms default analytics/crash collection off; native Kotlin crash frames omit exception messages.
 
-Local validation: 223 JVM tests (51 UI), Android app/test APKs, SQL/Edge Function/tooling and architecture audit pass.
+Local validation: 225 JVM tests (51 UI), Android app/test APKs, SQL/Edge Function/tooling and architecture audit pass.
 Native Android, iOS/Xcode and Firebase delivery receipts will be attached to the PR.

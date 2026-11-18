@@ -72,6 +72,17 @@ class DiagnosticsConsentTest {
     }
 
     @Test
+    fun reopeningPreferencesKeepsConsentedReportsAndDoesNotToggleCollection() = runTest {
+        val platform = Platform()
+        val source =
+            CommonDiagnosticsDataSource(platform = platform, storage = Storage(enabled = true))
+        source.initialize().getOrThrow()
+        source.initialize().getOrThrow()
+        assertEquals(listOf("collect:true"), platform.calls)
+        assertTrue(source.stream().value.enabled)
+    }
+
+    @Test
     fun aFailedOptInCannotEnableTheSdkAndUnavailableBuildsRefuseIt() = runTest {
         val platform = Platform()
         val storage = Storage().apply { failWrites = true }

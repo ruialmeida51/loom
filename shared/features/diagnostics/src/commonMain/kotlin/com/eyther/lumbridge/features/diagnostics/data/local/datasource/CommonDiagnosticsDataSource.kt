@@ -24,6 +24,7 @@ internal constructor(
     constructor() : this(NativeDiagnosticsPlatform, CommonDiagnosticsConsentStorage())
 
     private val mutex = Mutex()
+    private var initialized = false
     private val preferences =
         MutableStateFlow(DiagnosticsPreferencesDomain(available = platform.available))
 
@@ -31,12 +32,19 @@ internal constructor(
 
     override suspend fun initialize(): AppResult<Unit> = safeApiCall {
         mutex.withLock {
-            platform.setCollectionEnabled(enabled = false)
-            val enabled = platform.available && storage.get()
+            if (initialized) return@withLock
+            val enabled =
+                try {
+                    platform.available && storage.get()
+                } catch (cause: Exception) {
+                    platform.setCollectionEnabled(enabled = false)
+                    throw cause
+                }
             if (!enabled) platform.deleteUnsentReports()
             platform.setCollectionEnabled(enabled = enabled)
             preferences.value =
                 DiagnosticsPreferencesDomain(available = platform.available, enabled = enabled)
+            initialized = true
         }
     }
 
@@ -52,6 +60,7 @@ internal constructor(
             platform.setCollectionEnabled(enabled = enabled)
             preferences.value =
                 DiagnosticsPreferencesDomain(available = platform.available, enabled = enabled)
+            initialized = true
         }
     }
 }

@@ -27,7 +27,8 @@ or transport models cross into presentation. Strings remain in owning resource c
 Plannot's independent optional switches and equal-emphasis Allow all/Save choices are reused.
 Collection defaults off in Android/iOS metadata. Dismissal preserves prior analytics consent and
 never grants new crash consent. Readiness/decision restore atomically; saved answers do not prompt
-again on resume. Settings opens the same choices. Withdrawal disables collection and deletes unsent
+again on resume. Settings opens the same choices. SDK restoration is idempotent; reopening
+preferences cannot revoke an existing choice or reset consented analytics state. Withdrawal disables collection and deletes unsent
 reports; opting in discards reports cached while reporting was off. Loom sets no Crashlytics user ID
 or household/custom-content keys. Apple reports include Kotlin frames without exception messages.
 Privacy pages and data-safety notes describe SDK diagnostics and independent choices.
@@ -50,7 +51,7 @@ stack was available, so the intermittent resume crash's full cause is not claime
 Crashlytics reports need a consenting installation and an actual crash before delivery/symbolication
 can be confirmed. CI compiles iOS; physical iOS permissions and lifecycle still need Apple hardware.
 
-Validation before platform CI: 223 JVM checks, including 51 shared UI flows; Android debug and test
+Validation before platform CI: 225 JVM checks, including 51 shared UI flows; Android debug and test
 APKs; all 20 migrations and database integration tests; 9 Edge Function tests; 7 Python and 32 Node
 checks; resource/package/DI audit and whitespace checks. Screenshots verify light/dark, compact cards,
 large-text consent and vertically stacked actions. Native Android and Xcode results and Firebase
