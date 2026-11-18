@@ -28,8 +28,6 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.account.generated.resources.Res
 import com.eyther.lumbridge.features.account.generated.resources.account_deletion_description
-import com.eyther.lumbridge.features.account.generated.resources.analytics_description
-import com.eyther.lumbridge.features.account.generated.resources.analytics_title
 import com.eyther.lumbridge.features.account.generated.resources.delete_account
 import com.eyther.lumbridge.features.account.generated.resources.nickname_description
 import com.eyther.lumbridge.features.account.generated.resources.notifications_description
@@ -39,10 +37,11 @@ import com.eyther.lumbridge.features.account.generated.resources.profile_title
 import com.eyther.lumbridge.features.account.generated.resources.retry
 import com.eyther.lumbridge.features.account.generated.resources.sign_out
 import com.eyther.lumbridge.features.account.generated.resources.ui_nickname_title
+import com.eyther.lumbridge.features.account.generated.resources.usage_data_description
+import com.eyther.lumbridge.features.account.generated.resources.usage_data_title
 import com.eyther.lumbridge.features.account.presentation.components.AccountPreferenceRow
 import com.eyther.lumbridge.features.account.presentation.components.AppearancePreferenceRow
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
-import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsPreferencesDomain
 import com.eyther.lumbridge.features.legal.domain.model.LegalDocumentDomain
 import com.eyther.lumbridge.features.legal.presentation.components.LegalLinks
 import com.eyther.lumbridge.features.settings.domain.model.SettingsDomain
@@ -52,6 +51,8 @@ import org.jetbrains.compose.resources.stringResource
 fun AccountScreen(
     viewModel: AccountScreenViewModelContract,
     onSignOut: () -> Unit,
+    onUsageData: () -> Unit,
+    onAllowNotifications: () -> Unit,
     onOpenLegalDocument: (LegalDocumentDomain) -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
@@ -62,13 +63,14 @@ fun AccountScreen(
             loading = state.loading,
             preferences = state.preferences,
             theme = state.theme,
-            analytics = state.analytics,
             busy = state.busy,
             error = state.displayError,
             onEditNickname = viewModel::onEditNickname,
             onTheme = viewModel::onThemeSelected,
-            onNotifications = viewModel::onNotificationsChanged,
-            onAnalyticsConsent = viewModel::onAnalyticsConsentChanged,
+            onNotifications = { enabled ->
+                if (enabled) onAllowNotifications() else viewModel.onNotificationsChanged(false)
+            },
+            onUsageData = onUsageData,
             onRetry = viewModel::onRetry,
             onDismiss = viewModel::onDismissError,
             onSignOut = viewModel::onSignOutRequested,
@@ -96,16 +98,15 @@ private fun InnerAccountScreen(
     loading: Boolean,
     preferences: SettingsDomain,
     theme: ThemeMode,
-    analytics: AnalyticsPreferencesDomain,
     busy: Boolean,
     error: TextResource?,
     onEditNickname: () -> Unit,
     onTheme: (String) -> Unit,
     onNotifications: (Boolean) -> Unit,
-    onAnalyticsConsent: (Boolean) -> Unit,
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
     onSignOut: () -> Unit,
+    onUsageData: () -> Unit,
     onOpenLegalDocument: (LegalDocumentDomain) -> Unit,
 ) {
     LazyColumn(
@@ -151,18 +152,15 @@ private fun InnerAccountScreen(
                         onCheckedChange = onNotifications,
                         enabled = !busy,
                     )
-                    if (analytics.available) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                        AccountPreferenceRow(
-                            title = stringResource(Res.string.analytics_title),
-                            glyph = Glyph.SHIELD,
-                            description = stringResource(Res.string.analytics_description),
-                            checked = analytics.enabled,
-                            onCheckedChange = onAnalyticsConsent,
-                            enabled = !busy,
-                            modifier = Modifier.testTag("analytics_consent"),
-                        )
-                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    NavigationRow(
+                        title = stringResource(Res.string.usage_data_title),
+                        description = stringResource(Res.string.usage_data_description),
+                        glyph = Glyph.SHIELD,
+                        onClick = onUsageData,
+                        enabled = !busy,
+                        modifier = Modifier.testTag("usage_data_settings"),
+                    )
                 }
             }
         }

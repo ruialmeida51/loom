@@ -32,6 +32,8 @@ internal fun SettlementResponse.toDomain(): SettlementDomain =
         to = to,
         amountMinor = amountMinor,
         occurredOn = occurredOn,
+        createdBy = createdBy,
+        version = version,
     )
 
 internal fun RecurringExpenseResponse.toDomain(): RecurringExpenseDomain =

@@ -5,6 +5,7 @@ import com.eyther.lumbridge.core.domain.errors.AppError
 import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseAccountError
 import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseError
 import com.eyther.lumbridge.features.expenses.domain.errors.RecurringExpenseError
+import com.eyther.lumbridge.features.expenses.domain.errors.SettlementError
 import io.github.jan.supabase.postgrest.exception.PostgrestRestException
 
 internal fun Exception.toExpenseError(): AppError {
@@ -13,6 +14,8 @@ internal fun Exception.toExpenseError(): AppError {
     if (code != "P0001") return toAppError()
 
     return when (error) {
+        "expenses.payment_changed" -> SettlementError.Changed(cause = this)
+        "expenses.payment_permission_denied" -> SettlementError.PermissionDenied(cause = this)
         "expenses.account_access_denied" -> ExpenseAccountError.PermissionDenied(cause = this)
         "expenses.account_archived" -> ExpenseAccountError.Archived(cause = this)
         "expenses.record_changed",

@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PlatformStorage.initialize(applicationContext)
-        PushPlatform.permissionRequester = { callback ->
+        PushPlatform.attachPermissionRequester(owner = this) { callback ->
             if (
                 Build.VERSION.SDK_INT < 33 ||
                     checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
@@ -60,7 +60,9 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        PushPlatform.permissionRequester = null
+        PushPlatform.detachPermissionRequester(owner = this)
+        permissionCallback?.invoke(false)
+        permissionCallback = null
         super.onDestroy()
     }
 }

@@ -22,4 +22,6 @@
     <string name="account_deletion_description">Account and data deletion options</string>
     <string name="sign_out_title">Sign out of Loom?</string>
     <string name="sign_out_message">You’ll need to sign in again to access your households.</string>
+    <string name="usage_data_title">Usage &amp; diagnostics</string>
+    <string name="usage_data_description">Choose analytics and crash reporting</string>
 </resources>

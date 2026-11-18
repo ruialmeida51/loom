@@ -24,8 +24,6 @@ abstract class AccountScreenViewModelContract : LoomViewModel() {
 
     abstract fun onNotificationsChanged(enabled: Boolean)
 
-    abstract fun onAnalyticsConsentChanged(enabled: Boolean)
-
     abstract fun onRetry()
 
     abstract fun onDismissError()

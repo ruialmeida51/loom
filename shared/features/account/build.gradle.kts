@@ -22,7 +22,6 @@ kotlin {
         commonMain.dependencies {
             api(projects.shared.core)
             implementation(projects.shared.features.settings)
-            implementation(projects.shared.features.analytics)
             implementation(projects.shared.features.legal)
             api(libs.compose.runtime)
             api(libs.compose.foundation)

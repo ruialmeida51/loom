@@ -23,11 +23,13 @@ class AnalyticsConsentTest {
     private class Platform(override val available: Boolean = true) : AnalyticsPlatform {
 
         var enabled = false
+        val consentChanges = mutableListOf<Boolean>()
         var resets = 0
         val events = mutableListOf<AnalyticsEventRequest>()
 
         override fun setConsent(enabled: Boolean) {
             this.enabled = enabled
+            consentChanges += enabled
         }
 
         override fun logEvent(event: AnalyticsEventRequest) {
@@ -84,15 +86,30 @@ class AnalyticsConsentTest {
     @Test
     fun storedConsentIsRestoredWithoutAnAccountOrHouseholdIdentifier() = runTest {
         val platform = Platform()
-        val source = CommonAnalyticsDataSource(platform = platform, storage = Storage(enabled = true))
+        val source =
+            CommonAnalyticsDataSource(platform = platform, storage = Storage(enabled = true))
         source.initialize().getOrThrow()
         assertTrue(platform.enabled)
         assertTrue(source.stream().value.enabled)
     }
 
     @Test
+    fun reopeningPreferencesDoesNotWithdrawOrReinitializeAnExistingChoice() = runTest {
+        val platform = Platform()
+        val storage = Storage(enabled = true)
+        val source = CommonAnalyticsDataSource(platform = platform, storage = storage)
+        source.initialize().getOrThrow()
+        storage.failReads = true
+        source.initialize().getOrThrow()
+        assertEquals(listOf(true), platform.consentChanges)
+        assertTrue(source.stream().value.enabled)
+        assertEquals(0, platform.resets)
+    }
+
+    @Test
     fun unavailablePlatformsCannotEnableCollection() = runTest {
-        val source = CommonAnalyticsDataSource(platform = Platform(available = false), storage = Storage())
+        val source =
+            CommonAnalyticsDataSource(platform = Platform(available = false), storage = Storage())
         val result = source.setConsent(true)
         assertIs<AnalyticsError.Unavailable>(assertIs<AppResult.Failure>(result).error)
         assertFalse(source.stream().value.enabled)

@@ -155,3 +155,22 @@ Keep contextual action labels concise: use Delete when the dialog already names 
 names, scope and consequences in the title/body. Use short verbs such as Revoke and Discard in
 context, and distinguish destructive Cancel from dismissal with Keep. Accessibility labels on
 standalone icons still identify the target.
+
+
+## Optional data and notification consent
+
+Use Plannot's independent analytics/crash switches in a startup sheet, off by default. Essential
+services are explained separately. Allow all and Save choices have equal prominence and full-width
+vertical placement. Dismissing declines new optional categories while preserving any older analytics
+choice; persist the answer so resume does not repeat the sheet. My account opens the same chooser.
+Notification priming is contextual to creating or viewing a dated notification task, or enabling
+notifications in My account. Only Allow opens the OS prompt; Not now persists. Denied permissions
+lead to system settings, with registration checked on return from that explicit action.
+
+Expense and reimbursement history share compact card geometry and anchored Edit/Delete overflow
+menus. Reimbursements can be corrected or deleted by the original sender, recipient, creator or
+household owner. Deletion is confirmed and uses the frozen version; failures retain the target.
+
+Shopping grouping uses one draw offset through drag, acknowledgement and rollback. Never reset the
+finger offset before animating the committed indentation. Home skeletons retain grouped cards and
+section geometry; initial/manual refresh retain the existing minimum duration.

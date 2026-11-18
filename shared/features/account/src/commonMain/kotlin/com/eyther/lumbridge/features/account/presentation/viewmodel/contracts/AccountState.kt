@@ -9,7 +9,6 @@ import com.eyther.lumbridge.features.account.generated.resources.sign_out
 import com.eyther.lumbridge.features.account.generated.resources.sign_out_message
 import com.eyther.lumbridge.features.account.generated.resources.sign_out_title
 import com.eyther.lumbridge.features.account.generated.resources.ui_cancel
-import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsPreferencesDomain
 import com.eyther.lumbridge.features.settings.domain.model.SettingsDomain
 
 data class AccountState(
@@ -19,7 +18,6 @@ data class AccountState(
     val showSignOutConfirmation: Boolean = false,
     val nicknameError: TextResource? = null,
     val preferences: SettingsDomain = SettingsDomain(),
-    val analytics: AnalyticsPreferencesDomain = AnalyticsPreferencesDomain(),
     val loading: Boolean = true,
     val refreshing: Boolean = false,
     val busy: Boolean = false,

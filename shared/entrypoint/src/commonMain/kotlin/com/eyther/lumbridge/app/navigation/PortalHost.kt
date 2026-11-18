@@ -20,6 +20,7 @@ import com.eyther.lumbridge.di.householdModules
 import com.eyther.lumbridge.features.account.domain.datasource.ProfileDataSource
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
+import com.eyther.lumbridge.features.diagnostics.domain.datasource.DiagnosticsDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
@@ -39,6 +40,7 @@ internal fun PortalHost(
     householdDataSource: HouseholdDataSource,
     profileDataSource: ProfileDataSource,
     analyticsDataSource: AnalyticsDataSource,
+    diagnosticsDataSource: DiagnosticsDataSource,
     onSelect: (HouseholdDomain) -> Unit,
     onSignOut: () -> Unit,
 ) {
@@ -52,6 +54,7 @@ internal fun PortalHost(
                         profileDataSource = profileDataSource,
                         householdDataSource = householdDataSource,
                         analyticsDataSource = analyticsDataSource,
+                        diagnosticsDataSource = diagnosticsDataSource,
                     ),
                 )
             }

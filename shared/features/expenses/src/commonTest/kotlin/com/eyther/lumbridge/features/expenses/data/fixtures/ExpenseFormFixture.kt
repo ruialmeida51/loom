@@ -140,6 +140,13 @@ class ExpenseFormFixture {
             override suspend fun deleteExpense(expense: ExpenseDomain): AppResult<Unit> =
                 error("Not used")
 
+            override suspend fun saveSettlement(
+                settlement: SettlementDomain,
+            ): AppResult<SettlementDomain> = AppResult.Success(settlement)
+
+            override suspend fun removeSettlement(settlement: SettlementDomain): AppResult<Unit> =
+                AppResult.Success(Unit)
+
             override suspend fun recordSettlement(settlement: SettlementDomain): AppResult<Unit> =
                 error("Not used")
         }

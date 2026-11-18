@@ -6,7 +6,9 @@ import com.eyther.lumbridge.core.data.network.safeApiCall
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toDomain
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toExpenseError
+import com.eyther.lumbridge.features.expenses.data.network.mapper.toRemoveRequest
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toRequest
+import com.eyther.lumbridge.features.expenses.data.network.mapper.toSaveRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.request.DeleteExpenseRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.response.ExpenseResponse
 import com.eyther.lumbridge.features.expenses.data.network.model.response.SettlementResponse
@@ -101,6 +103,33 @@ class CommonExpenseDataSource(
                 .requireClient()
                 .postgrest
                 .rpc("record_account_settlement", settlement.toRequest(householdId = context.id))
+            Unit
+        }
+
+    override suspend fun saveSettlement(settlement: SettlementDomain): AppResult<SettlementDomain> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access
+                .requireClient()
+                .postgrest
+                .rpc(
+                    "save_account_settlement",
+                    settlement.toSaveRequest(householdId = context.id),
+                ) {
+                    single()
+                }
+                .decodeAs<SettlementResponse>()
+                .toDomain()
+        }
+
+    override suspend fun removeSettlement(settlement: SettlementDomain): AppResult<Unit> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access
+                .requireClient()
+                .postgrest
+                .rpc(
+                    "delete_account_settlement",
+                    settlement.toRemoveRequest(householdId = context.id),
+                )
             Unit
         }
 }

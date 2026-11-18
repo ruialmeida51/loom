@@ -10,9 +10,6 @@ import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCas
 import com.eyther.lumbridge.features.account.presentation.mapper.toAccountTextResource
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountState
-import com.eyther.lumbridge.features.analytics.domain.usecase.GetAnalyticsPreferencesStreamUseCase
-import com.eyther.lumbridge.features.analytics.domain.usecase.SetAnalyticsConsentUseCase
-import com.eyther.lumbridge.features.analytics.presentation.mapper.toAnalyticsTextResource
 import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetNotificationsUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetThemeUseCase
@@ -31,8 +28,6 @@ class AccountScreenViewModel(
     private val getSettingsStreamUseCase: GetSettingsStreamUseCase,
     private val setThemeUseCase: SetThemeUseCase,
     private val setNotificationsUseCase: SetNotificationsUseCase,
-    private val getAnalyticsPreferencesStreamUseCase: GetAnalyticsPreferencesStreamUseCase,
-    private val setAnalyticsConsentUseCase: SetAnalyticsConsentUseCase,
 ) : AccountScreenViewModelContract() {
     private data class InnerInputState(val nickname: String = "")
 
@@ -72,11 +67,6 @@ class AccountScreenViewModel(
             .observeWith(viewModelScope) { state ->
                 getSettingsStreamUseCase().updateState(state) { preferences ->
                     copy(preferences = preferences)
-                }
-            }
-            .observeWith(viewModelScope) { state ->
-                getAnalyticsPreferencesStreamUseCase().updateState(state) { analytics ->
-                    copy(analytics = analytics)
                 }
             }
 
@@ -151,20 +141,6 @@ class AccountScreenViewModel(
                 oldState.copy(
                     busy = false,
                     error = (result as? AppResult.Failure)?.error?.toSettingsTextResource(),
-                )
-            }
-        }
-    }
-
-    override fun onAnalyticsConsentChanged(enabled: Boolean) {
-        if (state.value.busy) return
-        mutableState.update { oldState -> oldState.copy(busy = true, error = null) }
-        launch {
-            val result = setAnalyticsConsentUseCase(enabled = enabled)
-            mutableState.update { oldState ->
-                oldState.copy(
-                    busy = false,
-                    error = (result as? AppResult.Failure)?.error?.toAnalyticsTextResource(),
                 )
             }
         }

@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ActionFab
+import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.FloatingActionContentPadding
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
@@ -33,6 +34,7 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_accounts
@@ -65,6 +67,7 @@ fun ExpensesScreen(
     viewModel: ExpensesScreenViewModelContract,
     onAddExpense: () -> Unit,
     onOpenExpense: (ExpenseDomain) -> Unit,
+    onEditExpense: (ExpenseDomain) -> Unit,
     onRecurringExpenses: () -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
@@ -91,12 +94,29 @@ fun ExpensesScreen(
             error = state.displayError,
             onAccounts = { viewModel.onAccountsVisibilityChanged(true) },
             onOpenExpense = onOpenExpense,
+            onEditExpense = onEditExpense,
+            onDeleteExpense = viewModel::onDeleteExpenseRequested,
+            onEditSettlement = viewModel::onEditSettlement,
+            onDeleteSettlement = viewModel::onDeleteSettlementRequested,
+            busy = state.busy,
             onManage = { viewModel.onManageAccountsVisibilityChanged(true) },
             onView = viewModel::onViewChanged,
             onRepayment = viewModel::onSuggestedRepayment,
             onRecurringExpenses = onRecurringExpenses,
             onDismiss = viewModel::onDismissError,
             onRetry = viewModel::onRefresh,
+        )
+    }
+    state.entryDeleteConfirmation?.let { confirmation ->
+        DestructiveConfirmation(
+            confirmation = confirmation,
+            busy = state.busy,
+            error = state.entryDeleteError,
+            confirmationTag =
+                if (state.deletingExpense != null) "confirm_delete_expense_entry"
+                else "confirm_delete_payment",
+            onConfirm = viewModel::onEntryDeleteConfirmed,
+            onDismiss = viewModel::onEntryDeleteCancelled,
         )
     }
 }
@@ -113,6 +133,11 @@ private fun InnerExpensesScreen(
     error: TextResource?,
     onAccounts: () -> Unit,
     onOpenExpense: (ExpenseDomain) -> Unit,
+    onEditExpense: (ExpenseDomain) -> Unit,
+    onDeleteExpense: (ExpenseDomain) -> Unit,
+    onEditSettlement: (SettlementDomain) -> Unit,
+    onDeleteSettlement: (SettlementDomain) -> Unit,
+    busy: Boolean,
     onManage: () -> Unit,
     onView: (ExpensesViewUi) -> Unit,
     onRepayment: (SuggestedSettlementDomain) -> Unit,
@@ -202,6 +227,11 @@ private fun InnerExpensesScreen(
                     ExpenseHistoryRow(
                         item = item,
                         onOpen = onOpenExpense,
+                        enabled = !busy,
+                        onEditExpense = onEditExpense,
+                        onDeleteExpense = onDeleteExpense,
+                        onEditSettlement = onEditSettlement,
+                        onDeleteSettlement = onDeleteSettlement,
                     )
                 }
             } else if (account != null) {

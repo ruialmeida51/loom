@@ -203,4 +203,14 @@
     <string name="receipt_zoom_out">Zoom out</string>
     <string name="receipt_zoom_reset">Reset zoom</string>
     <string name="receipt_error_missing">That receipt is no longer available.</string>
+    <string name="payment_edit_title">Edit payment</string>
+    <string name="payment_delete_title">Delete payment?</string>
+    <string name="payment_delete_message">Remove the %1$s payment from this account’s balances for everyone?</string>
+    <string name="payment_error_changed">That payment changed. Refresh before editing or deleting it.</string>
+    <string name="payment_error_permission">You don’t have permission to change this payment.</string>
+    <string name="payment_saved">Payment saved</string>
+    <string name="payment_deleted">Payment deleted</string>
+    <string name="payment_personal_title">%1$s paid %2$s</string>
+    <string name="history_edit">Edit</string>
+    <string name="history_delete_message">“%1$s” will be removed from balances for everyone. Upcoming recurring bills remain scheduled.</string>
 </resources>

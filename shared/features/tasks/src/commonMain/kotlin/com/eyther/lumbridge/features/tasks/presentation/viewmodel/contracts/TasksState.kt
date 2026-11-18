@@ -24,6 +24,7 @@ data class TasksState(
     val timeZone: String = "UTC",
     val today: String = todayIso(),
     val refreshing: Boolean = false,
+    val notificationPrimeRequest: Int = 0,
     val completingIds: PersistentSet<String> = persistentSetOf(),
     val removingIds: PersistentSet<String> = persistentSetOf(),
     val deletingTask: TaskDomain? = null,

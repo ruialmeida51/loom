@@ -177,6 +177,17 @@ class LoomGraphTest {
         val access = SupabaseAccess(client = null)
         val settings =
             object : SettingsDataSource {
+                override suspend fun getNotificationPermission() =
+                    AppResult.Success(
+                        com.eyther.lumbridge.features.settings.domain.model
+                            .NotificationPermissionDomain
+                            .UNAVAILABLE,
+                    )
+
+                override suspend fun markNotificationPrimeAnswered() = AppResult.Success(Unit)
+
+                override suspend fun openNotificationSettings() = AppResult.Success(Unit)
+
                 override fun stream() = MutableStateFlow(SettingsDomain())
 
                 override suspend fun setTheme(value: String): AppResult<Unit> =

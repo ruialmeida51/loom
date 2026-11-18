@@ -33,6 +33,7 @@ fun FormBottomSheet(
     onDismiss: (() -> Unit)? = null,
     actionLabel: String = stringResource(Res.string.action_save),
     actionEnabled: Boolean = true,
+    dismissLabel: String = stringResource(Res.string.action_cancel),
     busy: Boolean = false,
     actionModifier: Modifier = Modifier,
     contentSpacing: Dp = LoomSpacing.content,
@@ -68,7 +69,7 @@ fun FormBottomSheet(
             )
             onDismiss?.let { dismiss ->
                 LoomSecondaryButton(
-                    text = stringResource(Res.string.action_cancel),
+                    text = dismissLabel,
                     onClick = dismiss,
                     enabled = !busy,
                     modifier = Modifier.fillMaxWidth(),

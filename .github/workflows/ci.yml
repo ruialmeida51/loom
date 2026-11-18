@@ -34,7 +34,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - run: sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew :shared:di:jvmTest :shared:features:analytics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest :shared:features:settings:jvmTest :shared:features:account:jvmTest :shared:features:home:jvmTest :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest :shared:features:feed:jvmTest :shared:features:insights:jvmTest :shared:features:tasks:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
+      - run: ./gradlew :shared:di:jvmTest :shared:features:analytics:jvmTest :shared:features:diagnostics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest :shared:features:settings:jvmTest :shared:features:account:jvmTest :shared:features:home:jvmTest :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest :shared:features:feed:jvmTest :shared:features:insights:jvmTest :shared:features:tasks:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
       - run: python3 tools/test_database.py
       - uses: denoland/setup-deno@v2
         with:
@@ -96,6 +96,20 @@ jobs:
     runs-on: macos-26-intel
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch existing iOS Firebase client configuration
+        env:
+          LOOM_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -n "$LOOM_SERVICE_ACCOUNT" ]; then
+            umask 077
+            account_file="$RUNNER_TEMP/loom-ios-service-account.json"
+            trap 'rm -f "$account_file"' EXIT
+            printf '%s' "$LOOM_SERVICE_ACCOUNT" > "$account_file"
+            node tools/configure_firebase_ios.mjs "$account_file" iosApp/iosApp/GoogleService-Info.plist --existing-only
+          fi
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

@@ -37,9 +37,10 @@ Sharing a model does not change which domain owns it. A feature imports another 
 | `account/domain/model` | Global profile and nickname, independent of household membership |
 | `expenses/domain/model` | Spending accounts, participants, integer money, split methods, repayments, and ledger rules |
 | `authentication/data/local` | Secure authentication session serialization over core's native storage |
-| `settings/data` | Local preferences, notification permission/token adapters, and push-device registration |
+| `settings` | Local preferences, combined usage-data consent, contextual notification prompts and push-device registration |
 | `insights/data/export` | Native monthly-statement CSV sharing |
-| `analytics` | Typed consent state and event vocabulary, local consent storage, and the Android Firebase adapter |
+| `analytics` | Typed consent state and event vocabulary, local consent storage, and native Firebase Analytics adapters |
+| `diagnostics` | Optional crash-report consent state, native Firebase Crashlytics adapters and Kotlin/Native fatal frames |
 | `legal` | Public document destinations, release policy configuration, and localized legal-link components |
 | `entrypoint/app/demo/data` | Preview-only household fixtures and implementations of feature domain ports |
 | `entrypoint/navigation/push` | App-specific push destinations and pending navigation |

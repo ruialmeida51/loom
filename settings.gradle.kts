@@ -45,6 +45,8 @@ include(":shared:features:home")
 
 include(":shared:features:analytics")
 
+include(":shared:features:diagnostics")
+
 include(":shared:features:legal")
 
 include(":shared:features:account")

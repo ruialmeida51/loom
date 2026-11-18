@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.generated.resources.Res
 import com.eyther.lumbridge.core.generated.resources.icon_add
 import com.eyther.lumbridge.core.generated.resources.icon_bell
+import com.eyther.lumbridge.core.generated.resources.icon_calendar
 import com.eyther.lumbridge.core.generated.resources.icon_delete
 import com.eyther.lumbridge.core.generated.resources.icon_done
 import com.eyther.lumbridge.core.generated.resources.icon_expand
@@ -49,6 +50,7 @@ fun LoomIcon(
                 Glyph.HOME -> Res.string.icon_home
                 Glyph.FEED -> Res.string.icon_feed
                 Glyph.PHOTO -> Res.string.icon_photo
+                Glyph.CALENDAR -> Res.string.icon_calendar
                 Glyph.SHOPPING -> Res.string.icon_shopping
                 Glyph.MONEY -> Res.string.icon_money
                 Glyph.BELL -> Res.string.icon_bell
@@ -167,6 +169,21 @@ fun LoomIcon(
                     Size(8 * s, 10 * s),
                     style = Stroke(1.7f * s),
                 )
+            }
+            Glyph.CALENDAR -> {
+                drawRoundRect(
+                    tint,
+                    Offset(3 * s, 5 * s),
+                    Size(18 * s, 16 * s),
+                    androidx.compose.ui.geometry.CornerRadius(2 * s),
+                    style = Stroke(1.7f * s),
+                )
+                line(3f, 10f, 21f, 10f)
+                line(8f, 3f, 8f, 7f)
+                line(16f, 3f, 16f, 7f)
+                line(7f, 14f, 10f, 14f)
+                line(14f, 14f, 17f, 14f)
+                line(7f, 18f, 10f, 18f)
             }
             Glyph.PHOTO -> {
                 drawRoundRect(

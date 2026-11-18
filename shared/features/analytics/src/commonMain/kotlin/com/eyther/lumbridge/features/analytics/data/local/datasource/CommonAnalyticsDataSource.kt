@@ -18,57 +18,74 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class CommonAnalyticsDataSource internal constructor(
+class CommonAnalyticsDataSource
+internal constructor(
     private val platform: AnalyticsPlatform,
     private val storage: AnalyticsConsentStorage,
 ) : AnalyticsDataSource {
 
-    constructor() : this(
-        platform = NativeAnalyticsPlatform,
-        storage = CommonAnalyticsConsentStorage(),
-    )
+    constructor() :
+        this(
+            platform = NativeAnalyticsPlatform,
+            storage = CommonAnalyticsConsentStorage(),
+        )
 
     private val consentMutex = Mutex()
-    private val mutablePreferences = MutableStateFlow(
-        AnalyticsPreferencesDomain(available = platform.available),
-    )
+    private var initialized = false
+    private val mutablePreferences =
+        MutableStateFlow(
+            AnalyticsPreferencesDomain(available = platform.available),
+        )
 
     override fun stream(): StateFlow<AnalyticsPreferencesDomain> = mutablePreferences.asStateFlow()
 
-    override suspend fun initialize(): AppResult<Unit> = safeApiCall(
-        mapError = Exception::toAnalyticsError,
-    ) {
-        consentMutex.withLock {
-            platform.setConsent(enabled = false)
-            val enabled = platform.available && storage.get()
-            platform.setConsent(enabled = enabled)
-            mutablePreferences.value = AnalyticsPreferencesDomain(
-                available = platform.available,
-                enabled = enabled,
-            )
+    override suspend fun initialize(): AppResult<Unit> =
+        safeApiCall(
+            mapError = Exception::toAnalyticsError,
+        ) {
+            consentMutex.withLock {
+                if (initialized) return@withLock
+                val enabled =
+                    try {
+                        platform.available && storage.get()
+                    } catch (cause: Exception) {
+                        platform.setConsent(enabled = false)
+                        throw cause
+                    }
+                platform.setConsent(enabled = enabled)
+                mutablePreferences.value =
+                    AnalyticsPreferencesDomain(
+                        available = platform.available,
+                        enabled = enabled,
+                    )
+                initialized = true
+            }
         }
-    }
 
-    override suspend fun setConsent(enabled: Boolean): AppResult<Unit> = safeApiCall(
-        mapError = Exception::toAnalyticsError,
-    ) {
-        consentMutex.withLock {
-            if (enabled && !platform.available) {
-                throw AnalyticsError.Unavailable()
+    override suspend fun setConsent(enabled: Boolean): AppResult<Unit> =
+        safeApiCall(
+            mapError = Exception::toAnalyticsError,
+        ) {
+            consentMutex.withLock {
+                if (enabled && !platform.available) {
+                    throw AnalyticsError.Unavailable()
+                }
+                if (!enabled) {
+                    platform.setConsent(enabled = false)
+                    mutablePreferences.value =
+                        AnalyticsPreferencesDomain(available = platform.available)
+                    platform.clearData()
+                }
+                storage.set(enabled = enabled)
+                platform.setConsent(enabled = enabled)
+                mutablePreferences.value =
+                    AnalyticsPreferencesDomain(
+                        available = platform.available,
+                        enabled = enabled,
+                    )
+                initialized = true
             }
-            if (!enabled) {
-                platform.setConsent(enabled = false)
-                mutablePreferences.value = AnalyticsPreferencesDomain(available = platform.available)
-                platform.clearData()
-            }
-            storage.set(enabled = enabled)
-            platform.setConsent(enabled = enabled)
-            mutablePreferences.value = AnalyticsPreferencesDomain(
-                available = platform.available,
-                enabled = enabled,
-            )
         }
-    }
 
     override suspend fun track(event: AnalyticsEventDomain): AppResult<Unit> = safeApiCall {
         consentMutex.withLock {

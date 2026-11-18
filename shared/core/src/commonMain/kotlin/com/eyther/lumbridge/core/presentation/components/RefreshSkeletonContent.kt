@@ -22,6 +22,9 @@ import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 fun RefreshSkeletonContent(
     isRefreshing: Boolean,
     modifier: Modifier = Modifier,
+    skeleton: @Composable () -> Unit = {
+        Column(Modifier.padding(LoomSpacing.content)) { LoadingRows(rows = 6) }
+    },
     content: @Composable BoxScope.() -> Unit,
 ) {
     Box(modifier = modifier.clipToBounds()) {
@@ -42,7 +45,7 @@ fun RefreshSkeletonContent(
                     },
                 color = MaterialTheme.colorScheme.surface,
             ) {
-                Column(Modifier.padding(LoomSpacing.content)) { LoadingRows(rows = 6) }
+                skeleton()
             }
         }
     }

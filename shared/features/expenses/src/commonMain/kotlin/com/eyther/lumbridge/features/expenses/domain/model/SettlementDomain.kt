@@ -7,4 +7,9 @@ data class SettlementDomain(
     val amountMinor: Long,
     val occurredOn: String,
     val accountId: String = "",
-)
+    val createdBy: String = "",
+    val version: Long = 0,
+) {
+    fun canManage(userId: String, isOwner: Boolean): Boolean =
+        isOwner || userId == createdBy || userId == from || userId == to
+}

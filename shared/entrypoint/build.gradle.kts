@@ -22,6 +22,8 @@ kotlin {
         binaries.framework {
             baseName = "LoomFoundation"
             isStatic = true
+            export(projects.shared.features.analytics)
+            export(projects.shared.features.diagnostics)
             binaryOption("bundleId", "com.eyther.lumbridge.foundation")
         }
     }
@@ -30,7 +32,8 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.shared.di)
             implementation(projects.shared.features.legal)
-            implementation(projects.shared.features.analytics)
+            api(projects.shared.features.analytics)
+            api(projects.shared.features.diagnostics)
             api(projects.shared.core)
             implementation(projects.shared.features.authentication)
             implementation(projects.shared.features.account)

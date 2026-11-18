@@ -111,6 +111,14 @@ internal fun BalancesHost(
                                         )
                                     }
                                 },
+                                onEditExpense = { expense ->
+                                    navigator.navigateTo(
+                                        BalancesDestination.Form(
+                                            accountId = expense.accountId,
+                                            expenseId = expense.id,
+                                        ),
+                                    )
+                                },
                                 onOpenExpense = { expense ->
                                     navigator.navigateTo(
                                         BalancesDestination.Expense(

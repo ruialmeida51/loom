@@ -32,4 +32,24 @@
   <string name="ui_save_nickname">Save nickname</string>
   <string name="ui_cancel">Cancel</string>
   <string name="ui_done">Done</string>
+    <string name="consent_title">Your privacy, your choice</string>
+    <string name="consent_message">Choose what you share to help improve Loom. Optional collection starts only after you save your choices.</string>
+    <string name="consent_required">Essential services</string>
+    <string name="consent_required_description">Authentication, household sync and security are needed to run Loom.</string>
+    <string name="consent_analytics">Usage analytics</string>
+    <string name="consent_analytics_description">Share general screen visits and actions with Firebase Analytics. No household names, task text or amounts.</string>
+    <string name="consent_crashes">Crash reports</string>
+    <string name="consent_crashes_description">Send crash traces and device diagnostics to Firebase Crashlytics so we can fix problems. No account identifiers are attached.</string>
+    <string name="consent_footnote">Both optional choices start off. You can change them in My account → Usage &amp; diagnostics.</string>
+    <string name="consent_allow_all">Allow all</string>
+    <string name="consent_save">Save choices</string>
+    <string name="consent_unavailable">Unavailable in this build.</string>
+    <string name="consent_error">Could not save your choices. Please try again.</string>
+    <string name="notifications_prime_title">Stay on top of reminders</string>
+    <string name="notifications_prime_message">Allow Loom to notify you when a task is due. Only tasks with a date and notifications enabled send a reminder.</string>
+    <string name="notifications_prime_footnote">You can change this later in My account. Your phone controls which notifications are allowed.</string>
+    <string name="notifications_prime_enable">Allow notifications</string>
+    <string name="notifications_prime_settings">Open settings</string>
+    <string name="notifications_prime_not_now">Not now</string>
+    <string name="consent_retry">Try again</string>
 </resources>

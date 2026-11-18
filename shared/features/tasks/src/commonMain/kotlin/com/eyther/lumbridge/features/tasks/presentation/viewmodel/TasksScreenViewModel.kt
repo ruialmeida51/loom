@@ -190,6 +190,9 @@ class TasksScreenViewModel(
                                 oldState.items.filterNot { it.id == result.value.id } +
                                     result.value,
                             showAdd = false,
+                            notificationPrimeRequest =
+                                oldState.notificationPrimeRequest +
+                                    if (input.hasDueDate && input.notificationEnabled) 1 else 0,
                             busy = false,
                         )
                     }

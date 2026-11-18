@@ -9,6 +9,7 @@ interface AnalyticsDataSource {
 
     fun stream(): StateFlow<AnalyticsPreferencesDomain>
 
+    /** Restore saved device consent once; reopening preferences must preserve the SDK state. */
     suspend fun initialize(): AppResult<Unit>
 
     suspend fun setConsent(enabled: Boolean): AppResult<Unit>
