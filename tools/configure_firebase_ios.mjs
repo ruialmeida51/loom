@@ -32,7 +32,7 @@ export async function configureFirebaseIos(token, request = fetch, sleep = ms =>
     let operation = await call(`projects/${PROJECT}/iosApps`, {
       method: 'POST', body: JSON.stringify({ displayName: 'Loom iOS', bundleId: BUNDLE }),
     });
-    if (!/^operations\/[A-Za-z0-9_-]+$/.test(operation.name ?? '')) throw new Error('Firebase returned an invalid registration operation.');
+    if (!/^operations\/[A-Za-z0-9_:/=+.-]+$/.test(operation.name ?? '') || operation.name.includes('..')) throw new Error('Firebase returned an invalid registration operation.');
     const deadline = Date.now() + 120_000;
     while (!operation.done && Date.now() < deadline) {
       await sleep(1000);

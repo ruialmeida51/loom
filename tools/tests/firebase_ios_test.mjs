@@ -18,8 +18,8 @@ test('existing matching iOS client is reused without a write', async () => {
 
 test('new registration waits for completion and verifies the returned bundle', async () => {
   const replies = [
-    { apps: [] }, { name: 'operations/new-ios' },
-    { name: 'operations/new-ios', done: true, response: app },
+    { apps: [] }, { name: 'operations/project:123/ios:abcdef==' },
+    { name: 'operations/project:123/ios:abcdef==', done: true, response: app },
     { configFileContents: Buffer.from(plist).toString('base64') },
   ];
   const writes = [];
