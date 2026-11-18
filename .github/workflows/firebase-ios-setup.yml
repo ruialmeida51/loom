@@ -1,0 +1,35 @@
+name: Configure Loom iOS Firebase
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/firebase-ios-setup.yml
+      - tools/configure_firebase_ios.mjs
+permissions:
+  contents: read
+concurrency:
+  group: loom-ios-firebase-setup
+  cancel-in-progress: false
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Register or find Loom iOS and download its client configuration
+        env:
+          LOOM_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          umask 077
+          account_file="$RUNNER_TEMP/loom-ios-service-account.json"
+          trap 'rm -f "$account_file"' EXIT
+          printf '%s' "$LOOM_SERVICE_ACCOUNT" > "$account_file"
+          node tools/configure_firebase_ios.mjs "$account_file" "$RUNNER_TEMP/GoogleService-Info.plist"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: loom-ios-firebase-config
+          path: ${{ runner.temp }}/GoogleService-Info.plist
+          retention-days: 1
