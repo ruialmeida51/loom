@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.11] - 2026-11-18
+
 - Payment details and editing now follow the same full-screen flow as expenses.
 - Keep household setup and selected households through session refresh.
 - Failed sign-outs and deletions keep their confirmation for retry.
