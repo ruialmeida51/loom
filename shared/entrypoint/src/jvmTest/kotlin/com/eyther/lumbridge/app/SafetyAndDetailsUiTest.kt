@@ -103,11 +103,11 @@ class SafetyAndDetailsUiTest {
             }
             onNodeWithText("ABC234").assertExists()
             capture("household-invitation-light")
-            onNodeWithText("Revoke code").performScrollTo().performClick()
+            onNodeWithText("Revoke").performScrollTo().performClick()
             onNodeWithTag("confirm_revoke_invitation").assertIsDisplayed()
             onNodeWithText("Cancel").performClick()
             onNodeWithText("ABC234").assertExists()
-            onNodeWithText("Revoke code").performClick()
+            onNodeWithText("Revoke").performClick()
             onNodeWithTag("confirm_revoke_invitation").performClick()
             waitUntil(timeoutMillis = 5_000) {
                 onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()

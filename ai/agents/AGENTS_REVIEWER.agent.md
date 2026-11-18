@@ -145,6 +145,8 @@ Read [PATTERNS_COMPONENTS](../PATTERNS_COMPONENTS.md) and [PATTERNS_UI](../PATTE
 - Destructive actions use filled/outlined buttons, never text buttons. Initial missing content
   and explicit refresh show matching skeletons for a single 300 ms minimum transition. Retain data/drafts underneath; resume/background reads have no minimum delay.
   Mutation progress and success feedback stay in action controls/snackbars.
+- Check short contextual action labels: Delete rather than repeating the target; retain target/scope
+  in the title/body, distinguish Cancel from Keep, and keep standalone icon descriptions explicit.
 - Confirm sign out and destructive shared actions before writing. Check Cancel, busy dismissal,
   duplicate confirmation and typed failure/retry. Routine completion and reversible archive/restore
   stay direct.

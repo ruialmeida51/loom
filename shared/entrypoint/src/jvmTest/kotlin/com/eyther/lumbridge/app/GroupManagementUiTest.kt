@@ -47,7 +47,7 @@ class GroupManagementUiTest {
                 .apply { parentFile.mkdirs() }
                 .writeBytes(checkNotNull(screenshot.encodeToData(EncodedImageFormat.PNG)).bytes)
             onNodeWithTag("list_actions_Groceries").performClick()
-            onNodeWithText("Delete list").performClick()
+            onNodeWithText("Delete").performClick()
             onNodeWithTag("confirm_delete_list").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Create list").fetchSemanticsNodes().isNotEmpty()
@@ -88,7 +88,7 @@ class GroupManagementUiTest {
                 .assertDoesNotExist()
             onNodeWithText("Manage accounts").performScrollTo().performClick()
             onNodeWithTag("account_actions_Finished holiday").performClick()
-            onNodeWithText("Delete account").performClick()
+            onNodeWithText("Delete").performClick()
             onNodeWithTag("confirm_delete_account").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Finished holiday").fetchSemanticsNodes().isEmpty()
