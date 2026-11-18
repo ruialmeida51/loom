@@ -1,0 +1,36 @@
+{
+  "kotlin": "2.4.21",
+  "source_branch": "feat/payment-details-and-layer-audit",
+  "configuration": "Existing strong skipping; temporary init script supplies report output paths only.",
+  "modules": {
+    "shared/entrypoint": {
+      "restartable": 31,
+      "skippable": 31,
+      "inspected": [
+        "PaymentFormHost",
+        "PaymentDetailsHost",
+        "BalancesHost",
+        "LauncherHost"
+      ]
+    },
+    "shared/features/expenses": {
+      "restartable": 38,
+      "skippable": 38,
+      "inspected": [
+        "InnerPaymentFormScreen",
+        "InnerPaymentDetailsScreen",
+        "ExpenseHistoryRow",
+        "InnerExpensesScreen"
+      ]
+    },
+    "shared/features/authentication": {
+      "restartable": 15,
+      "skippable": 15,
+      "inspected": [
+        "InnerSessionScreen",
+        "SessionStartup"
+      ]
+    }
+  },
+  "limits": "Skippable is a compiler property, not a device frame-time measurement. Standard collection/domain and LocalDate parameters are not globally marked stable."
+}

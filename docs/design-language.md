@@ -40,13 +40,13 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 - The owning Host applies and consumes system/toolbar/bottom-navigation insets once. Scrollable
   forms own their IME clearance. The primary action remains reachable with the keyboard open.
 - Use one sheet for a short contextual task: split editing, shopping edits, task creation,
-  feed subscription, repayment or nickname editing. Fields scroll above a fixed action footer.
+  feed subscription or nickname editing. Fields scroll above a fixed action footer.
   Close or replace a sheet rather than stacking sheets.
 - All form sheets stack full-width primary Save above full-width outlined Cancel, with consistent
   spacing. Labels may wrap at larger text sizes; fields scroll above this fixed footer. Read-only sheets say Close; immediate-selection
   managers omit Cancel/Done. Optional task date controls stay compact, with a gap before the consistently
   outlined 48dp remove-date control. Menus anchor to their caret or overflow icon, not the full row.
-- Use full destinations for expense capture/details, account creation and browsing full history.
+- Use full destinations for expense and payment capture/details, account creation and browsing full history. Both financial records open details on tap and expose the same Edit/Delete toolbar menu; date and split pickers remain focused sheets.
   Dialogs are for brief confirmations. Confirm sign out, destructive shared deletes and invitation
   revocation. Keep retryable failures in context and disable competing dismissal/actions during a write.
   Routine task/checklist completion and reversible archive/restore stay direct.

@@ -4,6 +4,7 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.model.AuthSessionDomain
 import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,8 @@ internal class FakeAuthenticationDataSource : AuthenticationDataSource {
         MutableStateFlow<AuthenticationStateDomain>(AuthenticationStateDomain.SignedOut)
 
     var signInResult: AppResult<Unit> = AppResult.Success(Unit)
+    var signOutGate: CompletableDeferred<AppResult<Unit>>? = null
+    var signOutCalls: Int = 0
     var resendResult: AppResult<Unit> = AppResult.Success(Unit)
     var verifiedEmail: String? = null
     var verifiedCode: String? = null
@@ -60,7 +63,9 @@ internal class FakeAuthenticationDataSource : AuthenticationDataSource {
     }
 
     override suspend fun signOut(): AppResult<Unit> {
-        session.value = AuthenticationStateDomain.SignedOut
-        return AppResult.Success(Unit)
+        signOutCalls++
+        val result = signOutGate?.await() ?: AppResult.Success(Unit)
+        if (result is AppResult.Success) session.value = AuthenticationStateDomain.SignedOut
+        return result
     }
 }

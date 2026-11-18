@@ -45,6 +45,34 @@ class SettlementDataSourceTest {
         )
 
     @Test
+    fun paymentDetailsReadUsesTheExactHouseholdAccountAndRecordScope() = runTest {
+        val client =
+            createSupabaseClient("https://loom.test", "test-key") {
+                install(Postgrest)
+                httpEngine = MockEngine { request ->
+                    assertEquals("/rest/v1/settlements", request.url.encodedPath)
+                    assertEquals("eq.home", request.url.parameters["household_id"])
+                    assertEquals("eq.trip", request.url.parameters["account_id"])
+                    assertEquals("eq.payment", request.url.parameters["id"])
+                    respond(
+                        """[{"id":"payment","account_id":"trip","from_user":"you","to_user":"alex","amount_minor":1250,"occurred_on":"2026-11-18","created_by":"you","version":3}]""",
+                        HttpStatusCode.OK,
+                        headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+            }
+        try {
+            val source = CommonExpenseDataSource(access = SupabaseAccess(client), context = context)
+            assertEquals(
+                payment,
+                source.getSettlement(id = payment.id, accountId = payment.accountId).getOrThrow(),
+            )
+        } finally {
+            client.close()
+        }
+    }
+
+    @Test
     fun editsAndDeletionSendTheOriginalVersionAndExactHouseholdAccountScope() = runTest {
         val calls = mutableListOf<String>()
         val client =

@@ -69,6 +69,9 @@ class HouseholdPolishUiTest {
             capture("payment-card-menu-light")
             onNodeWithText("Edit").performClick()
             onNodeWithText("Edit payment").assertIsDisplayed()
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodesWithTag("repayment_amount").fetchSemanticsNodes().isNotEmpty()
+            }
             onNodeWithTag("repayment_amount").performTextClearance()
             onNodeWithTag("repayment_amount").performTextInput("20.00")
             capture("payment-edit-light-narrow")

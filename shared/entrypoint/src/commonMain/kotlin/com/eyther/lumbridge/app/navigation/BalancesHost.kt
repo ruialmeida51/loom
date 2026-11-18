@@ -8,7 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.eyther.lumbridge.app.navigation.components.BusyNavigationGuard
 import com.eyther.lumbridge.app.navigation.components.FlowScaffold
@@ -21,7 +23,8 @@ import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
-import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseDetailsActions
+import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
+import com.eyther.lumbridge.features.expenses.presentation.components.FinancialRecordActions
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpenseAccountFormScreen
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpenseDetailsScreen
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpensesScreen
@@ -54,11 +57,14 @@ internal fun BalancesHost(
             subclass(BalancesDestination.Insights::class)
             subclass(BalancesDestination.Expense::class)
             subclass(BalancesDestination.Form::class)
+            subclass(BalancesDestination.Payment::class)
+            subclass(BalancesDestination.PaymentForm::class)
             subclass(BalancesDestination.Receipt::class)
             subclass(BalancesDestination.AccountForm::class)
         }
     val navigator = remember(state) { Navigator(state = state) }
     val destination = state.getActiveBackStack()?.lastOrNull()
+    var contentRevision by remember { mutableIntStateOf(0) }
     ScreenAnalyticsEffect(
         screen =
             when (destination) {
@@ -127,6 +133,34 @@ internal fun BalancesHost(
                                         ),
                                     )
                                 },
+                                onOpenPayment = { payment ->
+                                    navigator.navigateTo(
+                                        BalancesDestination.Payment(
+                                            accountId = payment.accountId,
+                                            paymentId = payment.id,
+                                        ),
+                                    )
+                                },
+                                onEditPayment = { payment ->
+                                    navigator.navigateTo(
+                                        BalancesDestination.PaymentForm(
+                                            accountId = payment.accountId,
+                                            paymentId = payment.id,
+                                        ),
+                                    )
+                                },
+                                onRecordPayment = { suggestion ->
+                                    overviewViewModel.state.value.account?.let { account ->
+                                        navigator.navigateTo(
+                                            BalancesDestination.PaymentForm(
+                                                accountId = account.id,
+                                                suggestedFrom = suggestion.from,
+                                                suggestedTo = suggestion.to,
+                                                suggestedAmountMinor = suggestion.amountMinor,
+                                            ),
+                                        )
+                                    }
+                                },
                                 onRecurringExpenses = {
                                     navigator.navigateTo(BalancesDestination.Recurring)
                                 },
@@ -157,6 +191,50 @@ internal fun BalancesHost(
                         }
                     },
                     onSaved = {
+                        contentRevision++
+                        overviewViewModel.onContentChanged()
+                        navigator.goBack()
+                    },
+                )
+            is BalancesDestination.PaymentForm ->
+                PaymentFormHost(
+                    accountId = key.accountId,
+                    paymentId = key.paymentId,
+                    suggestion =
+                        if (
+                            key.suggestedFrom != null &&
+                                key.suggestedTo != null &&
+                                key.suggestedAmountMinor != null
+                        )
+                            SuggestedSettlementDomain(
+                                from = key.suggestedFrom,
+                                to = key.suggestedTo,
+                                amountMinor = key.suggestedAmountMinor,
+                            )
+                        else null,
+                    onBack = navigator::goBack,
+                    onSaved = {
+                        contentRevision++
+                        overviewViewModel.onContentChanged()
+                        navigator.goBack()
+                    },
+                )
+            is BalancesDestination.Payment ->
+                PaymentDetailsHost(
+                    accountId = key.accountId,
+                    paymentId = key.paymentId,
+                    contentRevision = contentRevision,
+                    active = destination == key,
+                    onBack = navigator::goBack,
+                    onEdit = {
+                        navigator.navigateTo(
+                            BalancesDestination.PaymentForm(
+                                accountId = key.accountId,
+                                paymentId = key.paymentId,
+                            ),
+                        )
+                    },
+                    onDeleted = {
                         overviewViewModel.onContentChanged()
                         navigator.goBack()
                     },
@@ -171,12 +249,16 @@ internal fun BalancesHost(
                     )
                 }
                 val detailsState by viewModel.state.platformCollectAsStateOnStart()
+                LaunchedEffect(destination, contentRevision) {
+                    if (destination == key) viewModel.onContentChanged()
+                }
                 FlowScaffold(
                     title = stringResource(Res.string.flow_expense_details),
                     onBack = navigator::goBack,
                     backEnabled = !detailsState.busy,
                     actions = {
-                        ExpenseDetailsActions(
+                        FinancialRecordActions(
+                            testTag = "expense_actions",
                             canEdit = detailsState.canEdit,
                             busy = detailsState.busy,
                             onEdit = {

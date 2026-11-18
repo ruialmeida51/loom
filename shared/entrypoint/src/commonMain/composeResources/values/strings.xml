@@ -28,10 +28,11 @@
     <string name="flow_new_account">New trip or event</string>
     <string name="flow_edit_account">Edit account</string>
   <string name="tab_more">More</string>
-    <string name="startup_restoring">Getting things ready…</string>
-    <string name="startup_reconnecting">Reconnecting. Your account is still saved.</string>
   <string name="toolbar_feed_subscriptions">Manage feeds</string>
   <string name="toolbar_feed">The reading corner</string>
     <string name="tab_tasks">Tasks</string>
     <string name="flow_receipt">Receipt photo</string>
+    <string name="flow_payment_details">Payment details</string>
+    <string name="flow_record_payment">Record payment</string>
+    <string name="flow_edit_payment">Edit payment</string>
 </resources>

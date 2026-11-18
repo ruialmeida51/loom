@@ -73,6 +73,9 @@ class FinancialFlowsUiTest {
             onNodeWithTag("balances_view_balances").performClick()
             capture("trip-balances-light")
             onAllNodesWithTag("record_payment").onFirst().performClick()
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodesWithTag("repayment_amount").fetchSemanticsNodes().isNotEmpty()
+            }
             onNodeWithTag("repayment_amount").assertTextContains("7.50")
             capture("repayment-light")
             onNodeWithTag("record_repayment_submit").performClick()
@@ -101,7 +104,7 @@ class FinancialFlowsUiTest {
             onNodeWithText("Electrician").performClick()
             awaitLoadedDestination(tag = "expense_details_content")
             onNodeWithTag("expense_actions").performClick()
-            onNodeWithText("Edit expense").performClick()
+            onNodeWithText("Edit").performClick()
             onNodeWithTag("expense_title").performTextReplacement("Electrician final")
             onNodeWithTag("expense_amount").performTextReplacement("18.00")
             onNodeWithTag("save_expense").performClick()

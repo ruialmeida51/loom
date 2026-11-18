@@ -46,4 +46,8 @@
     <string name="error_code_expired">That code is invalid or has expired. Request a new code and try again.</string>
     <string name="error_verification_failed">We couldn’t complete verification. Request a new code and try again.</string>
     <string name="error_email_delivery_unavailable">We couldn’t send the email. Please try again later or contact support.</string>
+    <string name="startup_restoring">Getting things ready…</string>
+    <string name="startup_reconnecting">Reconnecting. Your account is still saved.</string>
+    <string name="session_retry">Try again</string>
+    <string name="session_choose_household">Choose a household</string>
 </resources>

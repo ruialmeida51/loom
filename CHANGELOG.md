@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- Payment details and editing now follow the same full-screen flow as expenses.
+- Keep household setup and selected households through session refresh.
+- Failed sign-outs and deletions keep their confirmation for retry.
+- Keep newly saved receipt photos visible after refreshing.
+
 ## [4.0.10] - 2026-11-18
 
 - Added edit/delete menus to expense and repayment cards.

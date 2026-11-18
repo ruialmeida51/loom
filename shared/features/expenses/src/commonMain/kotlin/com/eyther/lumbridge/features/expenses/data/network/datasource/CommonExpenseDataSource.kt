@@ -75,6 +75,22 @@ class CommonExpenseDataSource(
                 .toDomain()
         }
 
+    override suspend fun getSettlement(id: String, accountId: String): AppResult<SettlementDomain> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access
+                .requireClient()
+                .from("settlements")
+                .select {
+                    filter {
+                        eq("household_id", context.id)
+                        eq("account_id", accountId)
+                        eq("id", id)
+                    }
+                }
+                .decodeSingle<SettlementResponse>()
+                .toDomain()
+        }
+
     override suspend fun saveExpense(expense: ExpenseDomain): AppResult<Unit> =
         safeApiCall(mapError = Exception::toExpenseError) {
             access

@@ -64,6 +64,11 @@ class InsightsScreenViewModelTest {
                 override suspend fun saveExpense(expense: ExpenseDomain): AppResult<Unit> =
                     AppResult.Success(Unit)
 
+                override suspend fun getSettlement(
+                    id: String,
+                    accountId: String,
+                ): AppResult<SettlementDomain> = error("Not used")
+
                 override suspend fun getExpense(
                     id: String,
                     accountId: String,

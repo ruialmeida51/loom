@@ -28,6 +28,7 @@ data class ExpenseDetailsState(
     val refreshing: Boolean = false,
     val busy: Boolean = false,
     val error: TextResource? = null,
+    val deleteError: TextResource? = null,
     val receipt: ExpenseReceiptDomain? = null,
     val receiptPhoto: ReceiptPhotoDomain? = null,
     val receiptLoading: Boolean = false,

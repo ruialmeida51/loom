@@ -5,6 +5,8 @@ import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
 import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdSelectionDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 class RestoreHouseholdUseCase(
     private val selectionDataSource: HouseholdSelectionDataSource,
@@ -12,8 +14,10 @@ class RestoreHouseholdUseCase(
 ) {
 
     suspend operator fun invoke(userId: String): AppResult<HouseholdDomain?> = safeCall {
-        val selectedId = selectionDataSource.getLastSelected(userId).getOrThrow() ?: return@safeCall null
+        val selectedId =
+            selectionDataSource.getLastSelected(userId).getOrThrow() ?: return@safeCall null
         val households = getHouseholdsUseCase().getOrThrow()
+        currentCoroutineContext().ensureActive()
         val household = households.firstOrNull { it.id == selectedId }
 
         if (household == null) {

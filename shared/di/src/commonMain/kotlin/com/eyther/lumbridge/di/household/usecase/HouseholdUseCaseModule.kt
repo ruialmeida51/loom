@@ -18,6 +18,8 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpensesStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpensesStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSelectedExpenseAccountStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementFormUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
@@ -512,4 +514,22 @@ class HouseholdUseCaseModule {
     fun provideRemoveSettlementUseCase(
         expenseDataSource: ExpenseDataSource,
     ): RemoveSettlementUseCase = RemoveSettlementUseCase(expenseDataSource)
+
+    @Single
+    fun provideGetSettlementUseCase(expenseDataSource: ExpenseDataSource): GetSettlementUseCase =
+        GetSettlementUseCase(expenseDataSource = expenseDataSource)
+
+    @Single
+    fun provideGetSettlementFormUseCase(
+        expenseAccountDataSource: ExpenseAccountDataSource,
+        getSettlementUseCase: GetSettlementUseCase,
+        householdDataSource: HouseholdDataSource,
+        context: HouseholdContextDomain,
+    ): GetSettlementFormUseCase =
+        GetSettlementFormUseCase(
+            expenseAccountDataSource = expenseAccountDataSource,
+            getSettlementUseCase = getSettlementUseCase,
+            householdDataSource = householdDataSource,
+            context = context,
+        )
 }

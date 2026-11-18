@@ -54,6 +54,9 @@ fun AccountScreen(
     onUsageData: () -> Unit,
     onAllowNotifications: () -> Unit,
     onOpenLegalDocument: (LegalDocumentDomain) -> Unit,
+    signingOut: Boolean = false,
+    signOutError: TextResource? = null,
+    onSignOutDismissed: () -> Unit = {},
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     PullToRefreshContentContainer(isRefreshing = state.refreshing, onRefresh = viewModel::onRetry) {
@@ -63,7 +66,7 @@ fun AccountScreen(
             loading = state.loading,
             preferences = state.preferences,
             theme = state.theme,
-            busy = state.busy,
+            busy = state.busy || signingOut,
             error = state.displayError,
             onEditNickname = viewModel::onEditNickname,
             onTheme = viewModel::onThemeSelected,
@@ -80,13 +83,16 @@ fun AccountScreen(
     state.signOutConfirmation?.let { confirmation ->
         DestructiveConfirmation(
             confirmation = confirmation,
-            busy = state.busy,
+            busy = state.busy || signingOut,
+            error = signOutError,
             confirmationTag = "confirm_sign_out",
-            onConfirm = {
-                viewModel.onSignOutCancelled()
-                onSignOut()
+            onConfirm = onSignOut,
+            onDismiss = {
+                if (!signingOut) {
+                    viewModel.onSignOutCancelled()
+                    onSignOutDismissed()
+                }
             },
-            onDismiss = viewModel::onSignOutCancelled,
         )
     }
 }

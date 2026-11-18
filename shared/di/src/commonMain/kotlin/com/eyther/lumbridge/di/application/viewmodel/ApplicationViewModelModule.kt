@@ -1,17 +1,23 @@
 package com.eyther.lumbridge.di.application.viewmodel
 
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetGoogleSignInResultsStreamUseCase
+import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RegisterUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RequestEmailCodeUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInWithGoogleUseCase
+import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.VerifyEmailUseCase
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.EmailVerificationScreenViewModel
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.LoginScreenViewModel
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.RegisterScreenViewModel
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.SessionScreenViewModel
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.EmailVerificationScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.LoginScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.RegisterScreenViewModelContract
+import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.SessionScreenViewModelContract
+import com.eyther.lumbridge.features.household.domain.usecase.RememberHouseholdUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.RestoreHouseholdUseCase
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 import org.koin.core.annotation.Module
@@ -51,5 +57,19 @@ class ApplicationViewModelModule {
             params = params,
             verifyEmailUseCase = verifyEmailUseCase,
             requestEmailCodeUseCase = requestEmailCodeUseCase,
+        )
+
+    @KoinViewModel(binds = [SessionScreenViewModelContract::class])
+    fun provideSessionScreenViewModel(
+        getSessionStreamUseCase: GetSessionStreamUseCase,
+        restoreHouseholdUseCase: RestoreHouseholdUseCase,
+        rememberHouseholdUseCase: RememberHouseholdUseCase,
+        signOutUseCase: SignOutUseCase,
+    ): SessionScreenViewModelContract =
+        SessionScreenViewModel(
+            getSessionStreamUseCase = getSessionStreamUseCase,
+            restoreHouseholdUseCase = restoreHouseholdUseCase,
+            rememberHouseholdUseCase = rememberHouseholdUseCase,
+            signOutUseCase = signOutUseCase,
         )
 }

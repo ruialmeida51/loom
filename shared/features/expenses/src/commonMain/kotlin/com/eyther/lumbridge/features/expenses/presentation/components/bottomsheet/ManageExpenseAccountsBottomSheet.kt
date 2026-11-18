@@ -28,13 +28,14 @@ import com.eyther.lumbridge.features.expenses.generated.resources.account_rename
 import com.eyther.lumbridge.features.expenses.generated.resources.account_restore
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_close
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ManageExpenseAccountsBottomSheet(
-    accounts: List<ExpenseAccountDomain>,
-    userId: String,
-    isOwner: Boolean,
+    accounts: ImmutableList<ExpenseAccountDomain>,
+    manageableAccountIds: ImmutableSet<String>,
     busy: Boolean,
     error: TextResource?,
     onSelect: (String) -> Unit,
@@ -70,7 +71,7 @@ fun ManageExpenseAccountsBottomSheet(
                             enabled = !busy,
                             modifier = Modifier.weight(1f).testTag("manage_account_${account.id}"),
                         )
-                        if (account.canManage(userId = userId, isOwner = isOwner))
+                        if (account.id in manageableAccountIds)
                             ActionMenu(
                                 modifier = Modifier.testTag("account_actions_${account.name}"),
                                 items =

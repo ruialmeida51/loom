@@ -14,6 +14,8 @@ interface ExpenseDataSource {
 
     suspend fun getExpense(id: String, accountId: String): AppResult<ExpenseDomain>
 
+    suspend fun getSettlement(id: String, accountId: String): AppResult<SettlementDomain>
+
     suspend fun deleteExpense(expense: ExpenseDomain): AppResult<Unit>
 
     suspend fun recordSettlement(settlement: SettlementDomain): AppResult<Unit>
