@@ -12,12 +12,17 @@ import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsActionDomain
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
 import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
+import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseReceiptDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelectionDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
 import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesTextResource
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
@@ -28,6 +33,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class ExpenseFormScreenViewModel(
+    private val getExpenseReceiptUseCase: GetExpenseReceiptUseCase,
+    private val prepareReceiptPhotoUseCase: PrepareReceiptPhotoUseCase,
+    private val saveExpenseReceiptUseCase: SaveExpenseReceiptUseCase,
     private val params: ExpenseFormScreenViewModelContract.Params,
     private val getExpenseFormUseCase: GetExpenseFormUseCase,
     private val saveExpenseUseCase: SaveExpenseUseCase,
@@ -50,10 +58,18 @@ class ExpenseFormScreenViewModel(
             InnerInputState(paidBy = context.userId, occurredOn = todayIso(context.timeZone)),
         )
     private val expenseId: String = params.expenseId ?: newId()
+    private var receiptAtDraft: ExpenseReceiptDomain? = null
     private var initialized: Boolean = false
     private val mutableState =
         MutableStateFlow(
-                ExpenseFormState(userId = context.userId, editing = params.expenseId != null),
+                ExpenseFormState(
+                    userId = context.userId,
+                    editing = params.expenseId != null,
+                    receipt =
+                        ExpenseReceiptDomain(expenseId = expenseId, accountId = params.accountId),
+                    receiptLoading = params.expenseId != null,
+                    receiptReady = params.expenseId == null,
+                ),
             )
             .observeWith(viewModelScope) { state ->
                 inputState.updateState(state) { input ->
@@ -71,27 +87,117 @@ class ExpenseFormScreenViewModel(
             .launchWith(viewModelScope) { state -> loadInitialData(state = state) }
     override val state = mutableState.asStateFlow()
 
+    override fun onReceiptPicked(bytes: ByteArray) {
+        if (
+            state.value.busy ||
+                state.value.receiptPending ||
+                state.value.receiptLoading ||
+                state.value.receiptPreparing
+        )
+            return
+        receiptAtDraft = state.value.receipt
+        mutableState.update { oldState ->
+            oldState.copy(receiptPreparing = true, receiptError = null)
+        }
+        launch {
+            val result = prepareReceiptPhotoUseCase(bytes = bytes)
+            mutableState.update { oldState ->
+                when (result) {
+                    is AppResult.Success ->
+                        oldState.copy(receiptPhoto = result.value, receiptPreparing = false)
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            receiptPreparing = false,
+                            receiptError = result.error.toExpensesTextResource(),
+                        )
+                }
+            }
+        }
+    }
+
+    override fun onReceiptPickFailed(error: ReceiptError) {
+        mutableState.update { oldState ->
+            oldState.copy(receiptError = error.toExpensesTextResource())
+        }
+    }
+
+    override fun onReceiptDiscarded() {
+        if (state.value.busy || state.value.receiptPending) return
+        receiptAtDraft = null
+        mutableState.update { oldState -> oldState.copy(receiptPhoto = null, receiptError = null) }
+    }
+
+    override fun onReceiptRetry() {
+        if (state.value.receiptPending) {
+            onSave()
+            return
+        }
+        if (state.value.receiptLoading || state.value.busy) return
+        mutableState.update { oldState ->
+            oldState.copy(receiptLoading = true, receiptError = null)
+        }
+        launch { loadReceipt() }
+    }
+
+    override fun onKeepExpense() {
+        if (!state.value.receiptPending || state.value.busy) return
+        mutableState.update { oldState ->
+            oldState.copy(
+                receiptPending = false,
+                receiptPhoto = null,
+                redirectTo = RedirectTo.Saved,
+            )
+        }
+        launch { trackExpenseSaved() }
+    }
+
+    private suspend fun loadReceipt() {
+        val result = getExpenseReceiptUseCase(expenseId = expenseId, accountId = params.accountId)
+        mutableState.update { oldState ->
+            when (result) {
+                is AppResult.Success ->
+                    oldState.copy(
+                        receipt = result.value,
+                        receiptLoading = false,
+                        receiptReady = true,
+                        receiptError = null,
+                    )
+                is AppResult.Failure ->
+                    oldState.copy(
+                        receiptLoading = false,
+                        receiptError = result.error.toExpensesTextResource(),
+                    )
+            }
+        }
+    }
+
     override fun onTitleChanged(value: String) {
+        if (state.value.receiptPending || state.value.busy) return
         inputState.update { oldState -> oldState.copy(title = value) }
     }
 
     override fun onAmountChanged(value: String) {
+        if (state.value.receiptPending || state.value.busy) return
         inputState.update { oldState -> oldState.copy(amount = value) }
     }
 
     override fun onPayerChanged(value: String) {
+        if (state.value.receiptPending || state.value.busy) return
         inputState.update { oldState -> oldState.copy(paidBy = value) }
     }
 
     override fun onDateChanged(value: String) {
+        if (state.value.receiptPending || state.value.busy) return
         inputState.update { oldState -> oldState.copy(occurredOn = value) }
     }
 
     override fun onCategoryChanged(value: String) {
+        if (state.value.receiptPending || state.value.busy) return
         inputState.update { oldState -> oldState.copy(category = value) }
     }
 
     override fun onRecurringChanged(value: Boolean) {
+        if (state.value.receiptPending || state.value.busy) return
         if (state.value.expense != null) return
         inputState.update { oldState -> oldState.copy(recurring = value) }
     }
@@ -117,6 +223,7 @@ class ExpenseFormScreenViewModel(
     }
 
     override fun onSplitConfirmed(selection: ExpenseSplitSelectionDomain) {
+        if (state.value.receiptPending || state.value.busy) return
         inputState.update { oldState -> oldState.copy(split = selection) }
     }
 
@@ -125,51 +232,80 @@ class ExpenseFormScreenViewModel(
         val account = state.value.account ?: return
         val input = inputState.value
         val before = state.value.expense
+        val photo = state.value.receiptPhoto
+        val receipt = receiptAtDraft ?: state.value.receipt
+        val financialAlreadySaved = state.value.receiptPending
         mutableState.update { oldState -> oldState.copy(busy = true, error = null) }
         launch {
+            var savedReceipt: ExpenseReceiptDomain? = null
             val result = safeCall {
-                val amount = MoneyDomain.parse(text = input.amount, currency = account.currency)
-                val expense =
-                    ExpenseDomain(
-                        id = expenseId,
-                        title = input.title,
-                        amountMinor = amount.minorUnits,
-                        paidBy = input.paidBy,
-                        category = input.category,
-                        occurredOn = input.occurredOn,
-                        shares =
-                            ExpenseSplitDomain.resolve(
-                                amountMinor = amount.minorUnits,
-                                selection = input.split,
-                            ),
-                        recurring = input.recurring,
-                        accountId = account.id,
-                        version = before?.version ?: 0,
-                        createdBy = before?.createdBy ?: context.userId,
-                        splitMethod = input.split.method,
-                        splitValues = input.split.values,
-                    )
-                saveExpenseUseCase(expense = expense).getOrThrow()
+                if (!financialAlreadySaved) {
+                    val amount = MoneyDomain.parse(text = input.amount, currency = account.currency)
+                    val expense =
+                        ExpenseDomain(
+                            id = expenseId,
+                            title = input.title,
+                            amountMinor = amount.minorUnits,
+                            paidBy = input.paidBy,
+                            category = input.category,
+                            occurredOn = input.occurredOn,
+                            shares =
+                                ExpenseSplitDomain.resolve(
+                                    amountMinor = amount.minorUnits,
+                                    selection = input.split,
+                                ),
+                            recurring = input.recurring,
+                            accountId = account.id,
+                            version = before?.version ?: 0,
+                            createdBy = before?.createdBy ?: context.userId,
+                            splitMethod = input.split.method,
+                            splitValues = input.split.values,
+                        )
+                    saveExpenseUseCase(expense = expense).getOrThrow()
+                    if (photo != null)
+                        mutableState.update { oldState -> oldState.copy(receiptPending = true) }
+                }
+                if (photo != null && receipt != null)
+                    savedReceipt =
+                        saveExpenseReceiptUseCase(receipt = receipt, photo = photo).getOrThrow()
             }
             if (result is AppResult.Success) {
-                trackAnalyticsEventUseCase(
-                    event =
-                        AnalyticsEventDomain.ActionCompleted(
-                            action =
-                                if (params.expenseId == null) AnalyticsActionDomain.EXPENSE_RECORDED
-                                else AnalyticsActionDomain.EXPENSE_UPDATED,
-                        ),
-                )
+                trackExpenseSaved()
             }
             mutableState.update { oldState ->
                 when (result) {
                     is AppResult.Success ->
-                        oldState.copy(busy = false, redirectTo = RedirectTo.Saved)
+                        oldState.copy(
+                            busy = false,
+                            receiptPending = false,
+                            receiptPhoto = null,
+                            receipt = savedReceipt ?: oldState.receipt,
+                            redirectTo = RedirectTo.Saved,
+                        )
                     is AppResult.Failure ->
-                        oldState.copy(busy = false, error = result.error.toExpensesTextResource())
+                        oldState.copy(
+                            busy = false,
+                            error =
+                                if (oldState.receiptPending) null
+                                else result.error.toExpensesTextResource(),
+                            receiptError =
+                                if (oldState.receiptPending) result.error.toExpensesTextResource()
+                                else oldState.receiptError,
+                        )
                 }
             }
         }
+    }
+
+    private suspend fun trackExpenseSaved() {
+        trackAnalyticsEventUseCase(
+            event =
+                AnalyticsEventDomain.ActionCompleted(
+                    action =
+                        if (params.expenseId == null) AnalyticsActionDomain.EXPENSE_RECORDED
+                        else AnalyticsActionDomain.EXPENSE_UPDATED,
+                ),
+        )
     }
 
     override fun onRetry() {
@@ -242,6 +378,7 @@ class ExpenseFormScreenViewModel(
                         error = null,
                     )
                 }
+                if (params.expenseId != null && !state.value.receiptReady) loadReceipt()
             }
             is AppResult.Failure ->
                 state.update { oldState ->

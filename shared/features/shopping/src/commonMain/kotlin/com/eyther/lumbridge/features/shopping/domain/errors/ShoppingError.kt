@@ -6,6 +6,8 @@ sealed class ShoppingError(cause: Throwable? = null) : AppError(cause) {
 
     class ListNameAlreadyExists(cause: Throwable? = null) : ShoppingError(cause)
 
+    class InvalidGroup(cause: Throwable? = null) : ShoppingError(cause)
+
     class InvalidCompletedSelection(cause: Throwable? = null) : ShoppingError(cause)
 
     class InvalidBatchSize(cause: Throwable? = null) : ShoppingError(cause)

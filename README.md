@@ -24,17 +24,20 @@ Current interaction pass: [Paginated news](docs/screenshots/feed-paged-light.png
 
 Confirmation/detail pass: [Expense details](docs/screenshots/expense-details-light.png), [household details](docs/screenshots/household-details-light.png), [invitation](docs/screenshots/household-invitation-light.png), [split actions at larger text](docs/screenshots/split-actions-modern-narrow.png), [anchored settings menu](docs/screenshots/theme-menu-anchored-light.png), [request ledger](docs/plans/2026-11-17-confirmations-and-details.md) and [audit](docs/audits/2026-11-17-confirmations-and-details.md).
 
+Nested shopping and receipts: [Shopping groups](docs/screenshots/shopping-nested-light.png), [receipt viewer at larger text](docs/screenshots/receipt-viewer-dark-narrow.png), [request ledger](docs/plans/2026-11-17-nested-shopping-and-receipts.md) and [final audit](docs/audits/2026-11-18-nested-shopping-and-receipts.md).
+
 ## What’s included
 
 - Google sign-in, separate email login/registration/verification screens, password visibility controls, and code resend with a cooldown. Existing accounts can also request an email sign-in code.
 - Separate household selection, creation and invitation-joining screens, each with its own ViewModel.
 - Home, Shopping, Money, Tasks and More tabs, with compact Home quick actions, a full Tasks list and secondary News under More and on Home. Household selection and global My account follow Plannot’s portal pattern.
 - Multiple households, owner invitations, quick switching, and restoring the last accessible household. My account is available before the first household exists.
-- Named shared shopping lists with aligned Enter-to-add, completed-item selection and bulk deletion, optional editing, undo, favorites, moving items, and list rename/archive/restore/delete.
+- Named shared shopping lists with aligned Enter-to-add, completed-item selection and bulk deletion, Keep-style swipe nesting, optional editing, undo, favorites, moving items, and list rename/archive/restore/delete.
 - Household tasks with optional dates/notifications, daily/weekly repeats and completion feedback.
 - Short skeleton transitions for first loads and pull-to-refresh, preserving drafts and scroll underneath, compact Home shopping previews and six-character household invitations.
 - Independent Everyday and trip/event accounts with one currency each and household-member participants.
-- Dedicated expense entry/detail/editing, equal/weighted-share/exact-amount/percentage splits with steppers, who-pays-whom balances and repayments.
+- Dedicated expense entry/detail/editing, equal/weighted-share/exact-amount/percentage splits with steppers, who-pays-whom balances and repayments. Attach one private receipt photo from the camera/gallery, retry an upload without repeating the expense, and zoom to read or confirm deletion.
+- One optional receipt photo per expense from camera/gallery, with private household access, retry without duplicate expenses, replacement, confirmed deletion and a zoomable viewer.
 - Monthly recurring expense schedules with payment dates and pause/resume/cancel controls. Balances prioritizes the account's current position; historical reporting/export code remains for compatibility.
 - RSS/Atom subscriptions with multi-source/unread filters, stable paginated reading, scheduled/manual refreshes and separate source management, including feeds that have not loaded articles yet.
 - Light, dark, and system themes using the Loom gold and yarn branding.

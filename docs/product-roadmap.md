@@ -28,7 +28,7 @@ The live app currently requires a connection. Sample-household changes are held 
 5. Keep the household and selected list visible, with straightforward saving feedback, failures, and retry actions.
 6. Add a quick household switcher with distinct icons/colors and restore the last selected household when it remains accessible.
 
-The hierarchy is household → shopping list → item. Store tags or filters can follow when useful; a new store does not require a new household. Named lists are shared with the household initially.
+The hierarchy is household → shopping list → item → optional one-level child item. Store tags or filters can follow when useful; a new store does not require a new household. Named lists are shared with the household initially.
 
 Monthly recurring-expense management was delivered alongside shopping: payment dates determine the monthly anchor, schedules can be paused/resumed/cancelled, and existing ledger entries remain intact. Production/demo separation, resource-backed UI text, named Gradle references, and an automated ownership audit are also in place.
 
@@ -81,3 +81,11 @@ Revisit offline access and editing as a separate future initiative.
 Shopping lists and items belong to shopping; household selection and membership belong to household; global profiles belong to account; spending accounts, money, splits, and bill policies belong to expenses; tasks, reminder scheduling and chore policies belong to tasks; RSS remains in feed. Cross-feature use cases may depend on other feature domains. Core stays limited to generic infrastructure and utilities.
 
 Backend changes must use new migrations, preserving the existing migration history and financial records.
+
+## Delivered: grouped groceries and receipt photos
+
+Keep-style right/left swipes group and ungroup one checklist level; menu/accessibility commands,
+parent completion, move, deletion, bulk selection and transactional Undo preserve the family.
+An expense can have one camera/gallery receipt photo, with private household access, zoom,
+confirmed removal and upload retry that preserves the financial record. Replaced, deleted and
+unattached photos are reclaimed by the existing worker.

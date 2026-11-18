@@ -116,7 +116,7 @@ class SafetyAndDetailsUiTest {
         }
 
     @Test
-    fun splitUsesEqualWidthActionsAndAMenuBesideTheMethod() =
+    fun splitUsesStackedFullWidthActionsAndAMenuBesideTheMethod() =
         runSkikoComposeUiTest(size = Size(360f, 740f), density = Density(1f, 1.3f)) {
             startApp()
             onNodeWithTag("home_add_expense").performClick()
@@ -133,11 +133,12 @@ class SafetyAndDetailsUiTest {
                     .assertIsDisplayed()
                     .fetchSemanticsNode()
                     .boundsInWindow
-            assertTrue(abs(save.top - cancel.top) < 2f, "The two actions should share a row")
+            assertTrue(save.bottom < cancel.top, "Save should be above Cancel with space between")
             assertTrue(
                 abs(save.width - cancel.width) < 2f,
-                "The two actions should fill equal footer space",
+                "Both stacked actions should use the same full width",
             )
+            assertTrue(save.width > 300f, "Stacked actions should fill the narrow sheet")
             onNodeWithTag("split_method").performClick()
             val menu = onNodeWithTag("split_method_menu").fetchSemanticsNode().boundsInWindow
             assertTrue(

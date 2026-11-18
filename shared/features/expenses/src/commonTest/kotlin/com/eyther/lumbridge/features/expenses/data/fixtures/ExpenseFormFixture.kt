@@ -11,7 +11,10 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseFormScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
@@ -26,6 +29,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class ExpenseFormFixture {
+    val receipts = ReceiptFixtureDataSource()
+    var saveCalls = 0
+
     val context =
         HouseholdContextDomain(
             id = "home",
@@ -114,6 +120,7 @@ class ExpenseFormFixture {
     private val expenses =
         object : ExpenseDataSource {
             override suspend fun saveExpense(expense: ExpenseDomain): AppResult<Unit> {
+                saveCalls++
                 saved = expense
                 return saveResult
             }
@@ -152,6 +159,12 @@ class ExpenseFormFixture {
 
     fun viewModel(): ExpenseFormScreenViewModel =
         ExpenseFormScreenViewModel(
+            getExpenseReceiptUseCase =
+                GetExpenseReceiptUseCase(expenseReceiptDataSource = receipts),
+            prepareReceiptPhotoUseCase =
+                PrepareReceiptPhotoUseCase(expenseReceiptDataSource = receipts),
+            saveExpenseReceiptUseCase =
+                SaveExpenseReceiptUseCase(expenseReceiptDataSource = receipts),
             params = ExpenseFormScreenViewModelContract.Params(accountId = account.id),
             getExpenseFormUseCase =
                 GetExpenseFormUseCase(

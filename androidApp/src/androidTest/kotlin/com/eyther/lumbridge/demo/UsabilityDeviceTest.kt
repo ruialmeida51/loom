@@ -14,6 +14,7 @@ import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -27,16 +28,23 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
+import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.text.AnnotatedString
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
+import com.eyther.lumbridge.app.demo.data.loadDemoReceiptBytes
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.regex.Pattern
 import kotlin.math.abs
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -236,8 +244,8 @@ class UsabilityDeviceTest {
         compose.onNodeWithTag("home_add_task").performClick()
         compose.onNodeWithTag("task_title").performTextInput(taskTitle)
         compose.onNodeWithTag("task_notification").assertDoesNotExist()
-        hideKeyboard()
-        compose.onNodeWithTag("save_task").performClick()
+        // The sheet footer remains usable while its own window holds the IME.
+        compose.onNodeWithTag("save_task").assertIsDisplayed().performClick()
         compose.waitUntil(timeoutMillis = 5_000) {
             compose.onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()
         }
@@ -323,6 +331,120 @@ class UsabilityDeviceTest {
             compose.onAllNodesWithTag("confirm_sign_out").fetchSemanticsNodes().isEmpty()
         }
         compose.onNodeWithTag("account_content").assertIsDisplayed()
+    }
+
+    @Test
+    fun groupingUsesTheRealSwipeGestureAndOutdentKeepsTheChecklistAligned() {
+        compose.onNodeWithTag("navigation_shopping").performClick()
+        awaitDestination(tag = "shopping_content")
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
+        }
+        compose.onNodeWithTag("edit_Cherry tomatoes").performTouchInput { swipeRight() }
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose
+                .onNodeWithTag("check_Cherry tomatoes")
+                .fetchSemanticsNode()
+                .boundsInWindow
+                .left >
+                compose.onNodeWithTag("check_Avocados").fetchSemanticsNode().boundsInWindow.left +
+                    20f
+        }
+        capture(name = "shopping-nested")
+        compose.onNodeWithTag("edit_Cherry tomatoes").performTouchInput { swipeLeft() }
+        compose.waitUntil(timeoutMillis = 5_000) {
+            abs(
+                compose
+                    .onNodeWithTag("check_Cherry tomatoes")
+                    .fetchSemanticsNode()
+                    .boundsInWindow
+                    .left -
+                    compose
+                        .onNodeWithTag("check_Avocados")
+                        .fetchSemanticsNode()
+                        .boundsInWindow
+                        .left,
+            ) < 2f
+        }
+        compose.onNodeWithTag("shopping_inline_input").assertIsDisplayed()
+    }
+
+    @Test
+    fun systemPhotoPickerKeepsTheExpenseDraftAndTheSavedPhotoOpensInItsViewer() {
+        val resolver = compose.activity.contentResolver
+        val values =
+            ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, "Loom receipt fixture.jpg")
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(
+                    MediaStore.Images.Media.RELATIVE_PATH,
+                    "${Environment.DIRECTORY_PICTURES}/Loom-receipt-test",
+                )
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+        val uri =
+            requireNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values))
+        try {
+            resolver.openOutputStream(uri).use { output ->
+                requireNotNull(output).write(runBlocking { loadDemoReceiptBytes() })
+            }
+            resolver.update(
+                uri,
+                ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) },
+                null,
+                null,
+            )
+            val title = "Receipt through gallery"
+            compose.onNodeWithTag("home_add_expense").performClick()
+            compose.onNodeWithTag("expense_title").performTextInput(title)
+            compose.onNodeWithTag("expense_amount").performTextInput("8.40")
+            hideKeyboard()
+            compose.onNodeWithTag("expense_receipt").performScrollTo().performClick()
+            compose.onNodeWithText("Choose photo").performClick()
+            val thumbnail =
+                device.wait(
+                    Until.findObject(By.res(Pattern.compile(".*:id/icon_thumbnail"))),
+                    15_000,
+                )
+            requireNotNull(thumbnail) { "The Android photo picker did not show the test image" }
+                .click()
+            device.findObject(By.text(Pattern.compile("Add|Add [(]1[)]")))?.click()
+            compose.waitUntil(timeoutMillis = 10_000) {
+                compose.onAllNodesWithText("Ready to save").fetchSemanticsNodes().isNotEmpty()
+            }
+            compose.onNodeWithTag("expense_title").assertTextContains(title)
+            compose.onNodeWithTag("expense_amount").assertTextContains("8.40")
+            hideKeyboard()
+            capture(name = "expense-receipt-draft")
+            compose.onNodeWithTag("save_expense").performClick()
+            awaitDestination(tag = "home_content")
+            compose.onNodeWithTag("navigation_money").performClick()
+            awaitDestination(tag = "expenses_content")
+            compose.waitUntil(timeoutMillis = 5_000) {
+                compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
+            }
+            compose.onNodeWithText(title).performScrollTo().performClick()
+            awaitDestination(tag = "expense_details_content")
+            compose.waitUntil(timeoutMillis = 5_000) {
+                compose.onAllNodesWithText("View photo").fetchSemanticsNodes().isNotEmpty()
+            }
+            compose.onNodeWithTag("expense_receipt").performScrollTo().performClick()
+            compose.waitUntil(timeoutMillis = 10_000) {
+                compose.onAllNodesWithTag("receipt_zoom_reset").fetchSemanticsNodes().isNotEmpty()
+            }
+            compose.waitUntil(timeoutMillis = 5_000) {
+                compose
+                    .onAllNodesWithContentDescription("Receipt photo")
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            }
+            compose.onNodeWithContentDescription("Receipt photo").assertIsDisplayed()
+            capture(name = "receipt-gallery-viewer")
+            pressSystemBack()
+            awaitDestination(tag = "expense_details_content")
+        } finally {
+            resolver.delete(uri, null, null)
+        }
     }
 
     private fun capture(name: String) {

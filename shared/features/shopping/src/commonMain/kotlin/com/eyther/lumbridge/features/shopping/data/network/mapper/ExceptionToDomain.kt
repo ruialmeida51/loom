@@ -15,6 +15,7 @@ internal fun Exception.toShoppingError(): AppError {
     if (code != "P0001") return toAppError()
 
     return when (error) {
+        "shopping.invalid_group" -> ShoppingError.InvalidGroup(cause = this)
         "shopping.message_invalid_completed_selection" ->
             ShoppingError.InvalidCompletedSelection(cause = this)
         "shopping.message_add_between_1_and_50_items_at_once" ->

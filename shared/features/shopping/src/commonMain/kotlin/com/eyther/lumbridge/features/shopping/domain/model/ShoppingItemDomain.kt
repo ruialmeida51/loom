@@ -14,6 +14,7 @@ data class ShoppingItemDomain(
     val removed: Boolean = false,
     val favorite: Boolean = false,
     val position: Long = 0,
+    val parentId: String? = null,
 ) {
 
     fun validated(): ShoppingItemDomain {

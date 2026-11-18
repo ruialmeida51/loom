@@ -59,6 +59,7 @@ import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingIt
 import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingEntryUi
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
 import org.jetbrains.compose.resources.stringResource
 
@@ -73,6 +74,8 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
         InnerShoppingScreen(
             selectedListName = state.selectedList?.name.orEmpty(),
             uncheckedItems = state.uncheckedItems,
+            nestingParentIds = state.nestingParentIds,
+            indentedItemIds = state.indentedItemIds,
             completedItems = state.completedItems,
             moveTargets = state.moveTargets,
             showCompleted = state.showChecked,
@@ -106,6 +109,8 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
             onRemove = viewModel::onRemoveItem,
             onFavorite = viewModel::onToggleFavorite,
             onMove = viewModel::onMoveItem,
+            onNest = viewModel::onNestItem,
+            onUnnest = viewModel::onUnnestItem,
             onDismiss = viewModel::onDismissError,
             onRetry = viewModel::onRetry,
         )
@@ -148,6 +153,8 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
 private fun InnerShoppingScreen(
     selectedListName: String,
     uncheckedItems: ImmutableList<ShoppingItemDomain>,
+    nestingParentIds: ImmutableMap<String, String>,
+    indentedItemIds: ImmutableSet<String>,
     completedItems: ImmutableList<ShoppingItemDomain>,
     moveTargets: ImmutableList<ShoppingListDomain>,
     showCompleted: Boolean,
@@ -181,6 +188,8 @@ private fun InnerShoppingScreen(
     onRemove: (ShoppingItemDomain) -> Unit,
     onFavorite: (ShoppingItemDomain) -> Unit,
     onMove: (ShoppingItemDomain, String) -> Unit,
+    onNest: (ShoppingItemDomain) -> Unit,
+    onUnnest: (ShoppingItemDomain) -> Unit,
     onDismiss: () -> Unit,
     onRetry: () -> Unit,
 ) {
@@ -254,6 +263,11 @@ private fun InnerShoppingScreen(
                     onRemove = onRemove,
                     onFavorite = onFavorite,
                     onMove = onMove,
+                    indented = item.id in indentedItemIds,
+                    canNest = item.id in nestingParentIds,
+                    canUnnest = item.parentId != null,
+                    onNest = onNest,
+                    onUnnest = onUnnest,
                 )
             }
         if (hasList)
@@ -316,6 +330,11 @@ private fun InnerShoppingScreen(
                         onRemove = onRemove,
                         onFavorite = onFavorite,
                         onMove = onMove,
+                        indented = item.id in indentedItemIds,
+                        canNest = item.id in nestingParentIds,
+                        canUnnest = item.parentId != null,
+                        onNest = onNest,
+                        onUnnest = onUnnest,
                     )
                 }
         }

@@ -20,7 +20,7 @@ def sql(value: str) -> None:
 
 
 try:
-    subprocess.run(["docker", "run", "-d", "--name", container, "-e", "POSTGRES_PASSWORD=loom-test-only", IMAGE], check=True, capture_output=True)
+    subprocess.run(["docker", "run", "-d", "--name", container, "--tmpfs", "/var/lib/postgresql/data:rw,size=256m", "-e", "POSTGRES_PASSWORD=loom-test-only", IMAGE], check=True, capture_output=True)
     for attempt in range(60):
         if subprocess.run(["docker", "exec", container, "pg_isready", "-h", "127.0.0.1", "-U", "postgres"], capture_output=True).returncode == 0:
             break
@@ -31,6 +31,14 @@ try:
         create role anon nologin;
         create role authenticated nologin;
         create role service_role nologin bypassrls;
+        create schema storage;
+        create table storage.buckets(id text primary key,name text,public boolean default false,file_size_limit bigint,allowed_mime_types text[]);
+        create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text references storage.buckets(id),name text,owner_id text,created_at timestamptz default now(),metadata jsonb,unique(bucket_id,name));
+        alter table storage.objects enable row level security;
+        grant usage on schema storage to anon,authenticated,service_role;
+        grant select on storage.objects to anon;
+        grant select,insert,update,delete on storage.objects to authenticated;
+        grant all on storage.buckets,storage.objects to service_role;
         create schema auth;
         create table auth.users(id uuid primary key,email text);
         create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
@@ -52,4 +60,4 @@ try:
         sql(test.read_text())
     print(f"PostgreSQL: {len(migrations)} migrations applied; household, ledger, recurrence, statement, and access tests passed.")
 finally:
-    subprocess.run(["docker", "rm", "-f", container], capture_output=True)
+    subprocess.run(["docker", "rm", "-f", "-v", container], capture_output=True)

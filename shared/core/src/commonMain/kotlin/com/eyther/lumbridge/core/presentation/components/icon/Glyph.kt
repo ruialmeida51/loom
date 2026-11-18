@@ -5,6 +5,7 @@ enum class Glyph {
     HOME,
     MORE,
     FEED,
+    PHOTO,
     SHOPPING,
     MONEY,
     BELL,

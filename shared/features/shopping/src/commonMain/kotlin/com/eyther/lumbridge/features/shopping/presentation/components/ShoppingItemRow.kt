@@ -23,6 +23,8 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
+import com.eyther.lumbridge.features.shopping.generated.resources.group_nest
+import com.eyther.lumbridge.features.shopping.generated.resources.group_unnest
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_edit
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_favorite_add
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_favorite_remove
@@ -40,13 +42,26 @@ fun ShoppingItemRow(
     selectionMode: Boolean = false,
     selected: Boolean = false,
     onSelect: () -> Unit = {},
+    indented: Boolean = false,
+    canNest: Boolean = false,
+    canUnnest: Boolean = false,
+    onNest: (ShoppingItemDomain) -> Unit = {},
+    onUnnest: (ShoppingItemDomain) -> Unit = {},
     onToggle: (ShoppingItemDomain) -> Unit,
     onEdit: (ShoppingItemDomain) -> Unit,
     onRemove: (ShoppingItemDomain) -> Unit,
     onFavorite: (ShoppingItemDomain) -> Unit,
     onMove: (ShoppingItemDomain, String) -> Unit,
 ) {
-    Column {
+    ShoppingGroupingGesture(
+        id = item.id,
+        indented = indented,
+        canNest = canNest,
+        canUnnest = canUnnest,
+        enabled = !busy && !selectionMode,
+        onNest = { onNest(item) },
+        onUnnest = { onUnnest(item) },
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -107,6 +122,22 @@ fun ShoppingItemRow(
                                     enabled = !busy,
                                 ),
                             )
+                            if (canNest)
+                                add(
+                                    ActionMenuItem(
+                                        text = TextResource.Resource(Res.string.group_nest),
+                                        onClick = { onNest(item) },
+                                        enabled = !busy,
+                                    ),
+                                )
+                            if (canUnnest)
+                                add(
+                                    ActionMenuItem(
+                                        text = TextResource.Resource(Res.string.group_unnest),
+                                        onClick = { onUnnest(item) },
+                                        enabled = !busy,
+                                    ),
+                                )
                             moveTargets.forEach { target ->
                                 add(
                                     ActionMenuItem(

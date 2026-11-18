@@ -146,3 +146,16 @@ security-invoker `public.reminders` compatibility view exposes only dated notifi
 to old clients and scheduled workers. Existing reminders keep their notification intent. New app
 writes explicitly choose notification intent. Completion locks the task and checks the expected
 due date (including null) to prevent advancing a newer occurrence from a stale request.
+
+## Shopping groups and receipts
+
+Shopping owns parent relationships, family mutation planning and stable tree order in its domain.
+The ViewModel freezes affected versions, presents one optimistic family change and adopts the atomic
+RPC result for rollback/Undo. Completed-item removal also adopts promoted-child versions. Gesture
+feedback is transient presentation state, with equivalent menu and accessibility actions.
+
+Expenses owns receipt metadata, immutable photo bytes, typed media errors and focused receipt
+UseCases. Its data adapter re-encodes bounded JPEGs and uses private authenticated Supabase Storage
+with unique, non-upsert paths. DTOs and mappers remain separate. Central annotated DI supplies both
+production and isolated demo ports. The dedicated viewer owns a route; the image component owns
+only transient zoom/pan. See the backend guide for RLS, version checks and Storage cleanup.

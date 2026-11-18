@@ -6,6 +6,6 @@
   "compilerOptions": { "strict": true },
   "tasks": {
     "check": "deno check refresh-feed/index.ts household-worker/index.ts",
-    "test": "deno test _shared/rss_test.ts"
+    "test": "deno test _shared/rss_test.ts _shared/receipts_test.ts"
   }
 }

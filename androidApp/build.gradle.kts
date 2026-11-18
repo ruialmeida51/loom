@@ -51,6 +51,11 @@ android {
 }
 
 dependencies {
+    constraints {
+        implementation("androidx.concurrent:concurrent-futures:1.2.0") {
+            because("The application and AndroidX Test must resolve the same runtime version")
+        }
+    }
     implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
     implementation("com.google.firebase:firebase-messaging")
     implementation("androidx.core:core-ktx:1.19.1")

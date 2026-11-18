@@ -16,7 +16,7 @@ Adapted from Plannot `ai/PATTERNS_COMPONENTS.md`; [design language](../docs/desi
 | Shared section layout | core GroupedSurface, NavigationRow, SectionTitle; Privacy & Legal is the preferred row reference |
 | Read-only metadata / identity | core InfoRow / PersonAvatar; feature owns labels, roles and display models |
 | Primary list creation | core ActionFab in the refresh container's Scaffold slot; matching FloatingActionContentPadding |
-| Contextual list actions | core ActionMenu; feature owns permissions, confirmation and feedback |
+| Contextual list actions | core ActionMenu + rememberActionMenuState when a related row opens it; feature owns permissions, confirmation and feedback |
 | Selector | core SelectorButton, label-adjacent caret |
 | Forms / sheets | core FormBottomSheet; feature owns pure content, Host owns controller |
 | Optional task date | tasks TaskDueDate + TaskDateUi (feature-owned) |
@@ -32,8 +32,8 @@ whose destructive confirmation uses the shared filled destructive control beside
 Confirm sign out and destructive shared actions; disable dismissal/duplicate writes while busy. Keep
 typed failure feedback in context for retry. Routine completion and reversible archive/restore stay direct.
 
-FormBottomSheet uses a fixed equal-width horizontal footer: outlined Cancel and primary Save. Fields
-scroll separately. Forms and draft selections say Save; read-only views say Close. Immediate-selection
+FormBottomSheet uses a fixed vertical footer: full-width primary Save above full-width outlined
+Cancel, with shared small spacing. Fields scroll separately. Forms and draft selections say Save; read-only views say Close. Immediate-selection
 managers omit Cancel/Done and use an explicit creation action where needed. Localized labels may wrap.
 Buttons share the theme's medium shape and at least a 48dp touch target.
 

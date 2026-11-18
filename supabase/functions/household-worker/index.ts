@@ -1,4 +1,5 @@
 import { isWorker, response, serviceClient } from "../_shared/backend.ts";
+import { cleanupReceipts } from "../_shared/receipts.ts";
 import { deliver, type Delivery } from "../_shared/push.ts";
 
 Deno.serve(async (request) => {
@@ -6,10 +7,17 @@ Deno.serve(async (request) => {
     return response({ error: "Unauthorized" }, 401);
   }
   const database = serviceClient();
+  const receiptCleanup = cleanupReceipts(database).catch(() => {
+    console.error("Receipt cleanup will retry");
+    return 0;
+  });
   const { data, error } = await database.rpc("claim_notification_deliveries", {
     p_limit: 50,
   });
-  if (error) return response({ error: "Could not claim household work" }, 500);
+  if (error) {
+    await receiptCleanup;
+    return response({ error: "Could not claim household work" }, 500);
+  }
   const deliveries = (data ?? []) as Delivery[];
   let sent = 0;
   for (let offset = 0; offset < deliveries.length; offset += 5) {
@@ -36,5 +44,9 @@ Deno.serve(async (request) => {
       }),
     );
   }
-  return response({ claimed: deliveries.length, sent });
+  return response({
+    claimed: deliveries.length,
+    sent,
+    receiptsRemoved: await receiptCleanup,
+  });
 });

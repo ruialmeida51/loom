@@ -42,8 +42,8 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 - Use one sheet for a short contextual task: split editing, shopping edits, task creation,
   feed subscription, repayment or nickname editing. Fields scroll above a fixed action footer.
   Close or replace a sheet rather than stacking sheets.
-- All form sheets use equal-width outlined Cancel and primary Save buttons side by side. Labels may
-  wrap at larger text sizes; actions share one height. Read-only sheets say Close; immediate-selection
+- All form sheets stack full-width primary Save above full-width outlined Cancel, with consistent
+  spacing. Labels may wrap at larger text sizes; fields scroll above this fixed footer. Read-only sheets say Close; immediate-selection
   managers omit Cancel/Done. Optional task date controls stay compact, with a gap before the consistently
   outlined 48dp remove-date control. Menus anchor to their caret or overflow icon, not the full row.
 - Use full destinations for expense capture/details, account creation and browsing full history.
@@ -133,3 +133,18 @@ Finish with the [reviewer procedure](../ai/agents/AGENTS_REVIEWER.agent.md) afte
 Review light/dark, narrow screens, large text, empty/loading/error, real IME, system/toolbar Back,
 sheet cancellation and background/resume with a draft. Desktop captures validate shared layout;
 Android system bars/IME and iOS gestures require native verification. Keep those limits explicit.
+
+## Shopping groups and receipt photos
+
+Shopping supports a single Keep-style indentation level. Right swipe groups an item beneath the
+preceding root; left swipe moves it out. The overflow menu and accessibility actions provide the same
+commands. Indentation is 24 dp; the root checkbox, pending entry and composer retain identical touch
+geometry. Parent completion includes children. Moving a parent moves its children; deleting it
+promotes surviving children, and Undo restores the relationship when versions still match.
+
+Receipt capture is optional within the expense form. The compact Add receipt row opens a
+Camera/Gallery menu anchored to its overflow control. A local preview is kept through upload retries;
+financial writes are not repeated after an attachment failure. Details opens a dedicated photo viewer
+with pinch/pan, zoom buttons and Reset. Persistent photo deletion is confirmed; draft discard is direct.
+The photo picker is remembered at the Screen root so a system picker does not depend on a sheet's
+lifetime. Preparation and upload use action progress, never refresh skeletons.

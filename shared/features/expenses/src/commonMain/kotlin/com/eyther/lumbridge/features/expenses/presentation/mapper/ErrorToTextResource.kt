@@ -5,6 +5,7 @@ import com.eyther.lumbridge.core.presentation.mapper.toTextResource
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseAccountError
 import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseError
+import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import com.eyther.lumbridge.features.expenses.domain.errors.RecurringExpenseError
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_error_archived
@@ -33,6 +34,11 @@ import com.eyther.lumbridge.features.expenses.generated.resources.error_no_parti
 import com.eyther.lumbridge.features.expenses.generated.resources.error_settlement_not_permitted
 import com.eyther.lumbridge.features.expenses.generated.resources.error_unbalanced_ledger
 import com.eyther.lumbridge.features.expenses.generated.resources.error_unsupported_currency
+import com.eyther.lumbridge.features.expenses.generated.resources.receipt_error_changed
+import com.eyther.lumbridge.features.expenses.generated.resources.receipt_error_invalid
+import com.eyther.lumbridge.features.expenses.generated.resources.receipt_error_large
+import com.eyther.lumbridge.features.expenses.generated.resources.receipt_error_missing
+import com.eyther.lumbridge.features.expenses.generated.resources.receipt_error_unavailable
 import com.eyther.lumbridge.features.expenses.generated.resources.recurring_error_cancelled
 import com.eyther.lumbridge.features.expenses.generated.resources.recurring_error_changed
 import com.eyther.lumbridge.features.expenses.generated.resources.recurring_error_inactive_participants
@@ -43,6 +49,12 @@ import com.eyther.lumbridge.features.expenses.generated.resources.recurring_erro
 
 fun AppError.toExpensesTextResource(): TextResource =
     when (this) {
+        is ReceiptError.NotFound -> TextResource.Resource(Res.string.receipt_error_missing)
+        is ReceiptError.InvalidPhoto -> TextResource.Resource(Res.string.receipt_error_invalid)
+        is ReceiptError.PhotoTooLarge -> TextResource.Resource(Res.string.receipt_error_large)
+        is ReceiptError.PhotoUnavailable ->
+            TextResource.Resource(Res.string.receipt_error_unavailable)
+        is ReceiptError.ReceiptChanged -> TextResource.Resource(Res.string.receipt_error_changed)
         is ExpenseAccountError.InvalidName -> TextResource.Resource(Res.string.account_error_name)
         is ExpenseAccountError.InvalidMembers ->
             TextResource.Resource(Res.string.account_error_members)

@@ -4,9 +4,11 @@ import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseDataSource
+import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseReceiptDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonRecurringExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.feed.data.network.datasource.CommonFeedDataSource
 import com.eyther.lumbridge.features.feed.data.network.datasource.CommonFeedSubscriptionDataSource
@@ -59,6 +61,12 @@ class HouseholdDataSourceModule(
             access = access,
             context = context,
         )
+
+    @Single
+    fun provideExpenseReceiptDataSource(
+        access: SupabaseAccess,
+        context: HouseholdContextDomain,
+    ): ExpenseReceiptDataSource = CommonExpenseReceiptDataSource(access = access, context = context)
 
     @Single
     fun provideTaskDataSource(

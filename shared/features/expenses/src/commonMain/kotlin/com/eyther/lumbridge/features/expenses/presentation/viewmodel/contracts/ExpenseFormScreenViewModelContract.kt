@@ -2,6 +2,7 @@ package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
 import androidx.compose.runtime.Stable
 import com.eyther.lumbridge.core.viewmodel.LoomViewModel
+import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelectionDomain
 import kotlinx.coroutines.flow.StateFlow
 
@@ -16,6 +17,16 @@ abstract class ExpenseFormScreenViewModelContract : LoomViewModel() {
     }
 
     abstract val state: StateFlow<ExpenseFormState>
+
+    abstract fun onReceiptPicked(bytes: ByteArray)
+
+    abstract fun onReceiptPickFailed(error: ReceiptError)
+
+    abstract fun onReceiptDiscarded()
+
+    abstract fun onReceiptRetry()
+
+    abstract fun onKeepExpense()
 
     abstract fun onTitleChanged(value: String)
 

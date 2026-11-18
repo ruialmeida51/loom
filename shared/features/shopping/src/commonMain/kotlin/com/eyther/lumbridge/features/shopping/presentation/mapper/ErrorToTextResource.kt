@@ -22,9 +22,11 @@ import com.eyther.lumbridge.features.shopping.generated.resources.error_list_cha
 import com.eyther.lumbridge.features.shopping.generated.resources.error_list_name_already_exists
 import com.eyther.lumbridge.features.shopping.generated.resources.error_list_not_found
 import com.eyther.lumbridge.features.shopping.generated.resources.error_version_required
+import com.eyther.lumbridge.features.shopping.generated.resources.group_invalid
 
 fun AppError.toShoppingTextResource(): TextResource =
     when (this) {
+        is ShoppingError.InvalidGroup -> TextResource.Resource(Res.string.group_invalid)
         is ShoppingError.ListNameAlreadyExists ->
             TextResource.Resource(Res.string.error_list_name_already_exists)
         is ShoppingError.InvalidCompletedSelection ->
