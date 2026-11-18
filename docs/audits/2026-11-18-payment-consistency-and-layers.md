@@ -93,5 +93,9 @@ and is not proof that every possible source of jank has been removed.
 
 **Final review: pass for shared behavior, feature/layer ownership and platform compilation.**
 Native execution and iOS results are recorded by the PR's required CI checks before delivery.
+The first emulator run reached payment details after passing keyboard/date-Back/resume checks,
+but its assertion ran during the intentional initial skeleton. The destination helper now waits
+for that destination's skeleton to finish. Device evidence also prompted matching the payment
+skeleton's label/value rows and inter-card spacing to the loaded details.
 The earlier reported production resume crash still needs a captured device stack for attribution;
 this audit does not claim a universal crash/jank fix. Offline behavior remains deferred.

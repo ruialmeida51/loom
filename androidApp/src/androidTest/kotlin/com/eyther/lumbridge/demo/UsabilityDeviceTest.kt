@@ -13,6 +13,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.isDisplayed
@@ -570,7 +571,13 @@ class UsabilityDeviceTest {
     }
 
     private fun awaitDestination(tag: String) {
-        compose.waitUntil(timeoutMillis = 5_000) { compose.onNodeWithTag(tag).isDisplayed() }
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onNodeWithTag(tag).isDisplayed() &&
+                compose
+                    .onAllNodes(hasTestTag("loading_rows") and hasAnyAncestor(hasTestTag(tag)))
+                    .fetchSemanticsNodes()
+                    .isEmpty()
+        }
         compose.waitForIdle()
     }
 
