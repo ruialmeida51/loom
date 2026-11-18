@@ -35,7 +35,9 @@ Privacy pages and data-safety notes describe SDK diagnostics and independent cho
 Notification explanations are contextual to dated notification tasks or My account's enable control.
 Only explicit Allow calls the native requester. Not now persists, denied permission links to system
 settings, and only a return from that explicit settings action can register automatically. Android's
-request callback is owned by its activity, so an old activity cannot detach its replacement's bridge.
+request callback is owned by its activity, so an old activity cannot detach its replacement's bridge. Missing requesters are provider failures,
+not a saved permission refusal. Consent/permission sheets rebind after a failed swipe dismissal so
+a local save failure cannot hide its retry UI. Task dismissal targets the displayed sheet.
 
 Shopping keeps one draw offset through drag, acknowledgement and rollback; committed indentation
 changes once. Cancellation/short swipes preserve the relationship. RTL uses logical start/end.
@@ -49,7 +51,7 @@ Crashlytics reports need a consenting installation and an actual crash before de
 can be confirmed. CI compiles iOS; physical iOS permissions and lifecycle still need Apple hardware.
 
 Validation before platform CI: 223 JVM checks, including 51 shared UI flows; Android debug and test
-APKs; all 20 migrations and database integration tests; 9 Edge Function tests; 7 Python and 31 Node
+APKs; all 20 migrations and database integration tests; 9 Edge Function tests; 7 Python and 32 Node
 checks; resource/package/DI audit and whitespace checks. Screenshots verify light/dark, compact cards,
 large-text consent and vertically stacked actions. Native Android and Xcode results and Firebase
 version/distribution receipts are attached to the PR after CI completes.

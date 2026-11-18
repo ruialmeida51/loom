@@ -47,7 +47,15 @@ internal fun AccountHost(
     val controller = rememberBottomSheetController()
     val legalDocuments: GetLegalDocumentsUseCase = koinInject()
     val uriHandler = LocalUriHandler.current
-    LaunchedEffect(state.showNickname, consentState.visible, notificationState.visible) {
+    LaunchedEffect(
+        state.showNickname,
+        consentState.visible,
+        consentState.busy,
+        consentState.error,
+        notificationState.visible,
+        notificationState.busy,
+        notificationState.error,
+    ) {
         if (consentState.visible) controller.showBottomSheet(AccountSheets.UsageData)
         else if (notificationState.visible) controller.showBottomSheet(AccountSheets.Notifications)
         else if (state.showNickname) controller.showBottomSheet(AccountSheets.Nickname)

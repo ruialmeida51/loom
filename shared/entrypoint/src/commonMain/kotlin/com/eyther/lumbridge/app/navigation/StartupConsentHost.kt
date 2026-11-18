@@ -20,7 +20,7 @@ internal fun StartupConsentHost(content: @Composable () -> Unit) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     val controller = rememberBottomSheetController()
     LaunchedEffect(viewModel) { viewModel.onStartup() }
-    LaunchedEffect(state.visible) {
+    LaunchedEffect(state.visible, state.busy, state.error) {
         if (state.visible) controller.showBottomSheet(ConsentSheets.UsageData)
         else controller.hideBottomSheet()
     }

@@ -55,7 +55,7 @@ internal fun TasksSheetHost(
             notificationState.visible -> TasksSheets.Notifications
             else -> null
         }
-    LaunchedEffect(requestedSheet) {
+    LaunchedEffect(requestedSheet, notificationState.busy, notificationState.error) {
         if (requestedSheet == null) controller.hideBottomSheet()
         else controller.showBottomSheet(requestedSheet)
     }
@@ -88,8 +88,11 @@ internal fun TasksSheetHost(
         controller = controller,
         dismissEnabled = !state.busy && !notificationState.busy,
         onDismissed = {
-            if (notificationState.visible) notificationViewModel.onNotNow()
-            else viewModel.onAddSheetVisibilityChanged(false)
+            when (requestedSheet) {
+                TasksSheets.Task -> viewModel.onAddSheetVisibilityChanged(false)
+                TasksSheets.Notifications -> notificationViewModel.onNotNow()
+                null -> Unit
+            }
         },
         content = {
             Box(Modifier.fillMaxSize()) {

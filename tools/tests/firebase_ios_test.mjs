@@ -35,3 +35,12 @@ test('wrong configuration and missing permissions fail without printing credenti
   await assert.rejects(configureFirebaseIos('private-token', async () => ({ ok: false, status: 403 })), /firebase.clients.create/);
   await assert.rejects(configureFirebaseIos('private-token', async url => ok(url.endsWith('/config') ? { configFileContents: Buffer.from('another app').toString('base64') } : { apps: [app] })), /different app/);
 });
+
+test('ordinary iOS builds never register a missing client', async () => {
+  const methods = [];
+  await assert.rejects(configureFirebaseIos('test', async (url, options) => {
+    methods.push(options.method ?? 'GET');
+    return ok({ apps: [] });
+  }, undefined, false), /client is missing/);
+  assert.deepEqual(methods, ['GET']);
+});

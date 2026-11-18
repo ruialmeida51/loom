@@ -46,7 +46,8 @@ actual object PushPlatform {
                 .areNotificationsEnabled()
         return when {
             permissionGranted && notificationsEnabled -> NotificationPermissionDomain.GRANTED
-            PlatformStorage.get("notification-os-requested") == "true" ||
+            permissionGranted && !notificationsEnabled ||
+                PlatformStorage.get("notification-os-requested") == "true" ||
                 Build.VERSION.SDK_INT < 33 -> NotificationPermissionDomain.DENIED
             else -> NotificationPermissionDomain.NOT_REQUESTED
         }
@@ -67,11 +68,10 @@ actual object PushPlatform {
             requireDomain(FirebaseApp.getApps(PlatformStorage.applicationContext).isNotEmpty()) {
                 SettingsError.ProviderUnavailable()
             }
+            val requester = permissionRequester ?: throw SettingsError.ProviderUnavailable()
             PlatformStorage.put("notification-os-requested", "true")
             val granted = suspendCancellableCoroutine { continuation ->
-                val requester = permissionRequester
-                if (requester == null) continuation.resume(false)
-                else requester { if (continuation.isActive) continuation.resume(it) }
+                requester { if (continuation.isActive) continuation.resume(it) }
             }
             requireDomain(granted) {
                 SettingsError.PermissionDenied()
