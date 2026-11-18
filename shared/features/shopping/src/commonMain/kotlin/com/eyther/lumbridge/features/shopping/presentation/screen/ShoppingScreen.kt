@@ -42,8 +42,8 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
+import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_confirm
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_message
-import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_selected
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_title
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_create
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_empty
@@ -125,11 +125,7 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
                             Res.string.completed_delete_message,
                             args = listOf(state.pendingCompletedDeletion.size),
                         ),
-                    confirmText =
-                        TextResource.Resource(
-                            Res.string.completed_delete_selected,
-                            args = listOf(state.pendingCompletedDeletion.size),
-                        ),
+                    confirmText = TextResource.Resource(Res.string.completed_delete_confirm),
                     cancelText = TextResource.Resource(Res.string.ui_cancel),
                 ),
             busy = state.deletingCompleted,

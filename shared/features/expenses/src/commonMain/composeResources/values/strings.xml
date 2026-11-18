@@ -67,11 +67,11 @@
   <string name="ui_payer_1_s">Payer · %1$s</string>
   <string name="ui_pause">Pause</string>
   <string name="ui_resume">Resume</string>
-  <string name="ui_cancel_schedule">Cancel schedule</string>
+  <string name="ui_cancel_schedule">Cancel</string>
   <string name="ui_resuming_schedules_the_next_future_entry_paused_months_are">Resuming schedules the next future entry; paused months are skipped.</string>
   <string name="ui_cancel_this_schedule">Cancel this schedule?</string>
   <string name="ui_future_entries_will_stop_expenses_already_recorded_stay_in">Future entries will stop. Expenses already recorded stay in your household history.</string>
-  <string name="ui_keep_schedule">Keep schedule</string>
+  <string name="ui_keep_schedule">Keep</string>
   <string name="error_access_denied">Household access denied.</string>
   <string name="recurring_error_not_found">This recurring expense no longer exists.</string>
   <string name="recurring_error_permission_denied">Only the payer, creator or household owner can manage this schedule.</string>
@@ -136,7 +136,7 @@
     <string name="form_recurring_unchanged">Edits apply to this expense. Upcoming bills keep their existing schedule.</string>
     <string name="form_save">Save</string>
     <string name="detail_edit">Edit expense</string>
-    <string name="detail_delete">Delete expense</string>
+    <string name="detail_delete">Delete</string>
     <string name="detail_delete_title">Delete this expense?</string>
     <string name="detail_delete_message">It will be removed from the balances. Upcoming recurring bills remain scheduled.</string>
     <string name="detail_deleted">Expense removed.</string>
@@ -148,7 +148,7 @@
     <string name="balance_owes">Owes</string>
     <string name="account_manage">Manage accounts</string>
     <string name="account_manage_hint">Archive finished trips to keep their history. Reopening does not restart paused bills.</string>
-    <string name="account_delete">Delete account</string>
+    <string name="account_delete">Delete</string>
     <string name="account_delete_title">Permanently delete this account?</string>
     <string name="account_delete_message">“%1$s” and all its expenses, repayments, recurring bills and saved statements will be deleted for everyone. This cannot be undone.</string>
     <string name="split_input_shares">Shares</string>
@@ -185,8 +185,8 @@
     <string name="receipt_ready">Ready to save</string>
     <string name="receipt_camera">Take photo</string>
     <string name="receipt_gallery">Choose photo</string>
-    <string name="receipt_discard">Discard photo</string>
-    <string name="receipt_delete">Delete photo</string>
+    <string name="receipt_discard">Discard</string>
+    <string name="receipt_delete">Delete</string>
     <string name="receipt_options">Receipt options</string>
     <string name="receipt_delete_title">Delete receipt?</string>
     <string name="receipt_delete_message">The receipt photo will be deleted for everyone in your household.</string>

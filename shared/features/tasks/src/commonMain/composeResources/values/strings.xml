@@ -36,5 +36,5 @@
     <string name="task_delete_title">Delete task?</string>
     <string name="task_delete_message">Delete “%1$s” for everyone in this household?</string>
     <string name="task_delete_recurring_message">Delete “%1$s” for everyone in this household? Future repetitions will also stop.</string>
-    <string name="task_delete_confirm">Delete task</string>
+    <string name="task_delete_confirm">Delete</string>
 </resources>

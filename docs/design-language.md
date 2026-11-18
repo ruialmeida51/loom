@@ -148,3 +148,10 @@ financial writes are not repeated after an attachment failure. Details opens a d
 with pinch/pan, zoom buttons and Reset. Persistent photo deletion is confirmed; draft discard is direct.
 The photo picker is remembered at the Screen root so a system picker does not depend on a sheet's
 lifetime. Preparation and upload use action progress, never refresh skeletons.
+
+## Contextual action copy
+
+Keep contextual action labels concise: use Delete when the dialog already names the target; put
+names, scope and consequences in the title/body. Use short verbs such as Revoke and Discard in
+context, and distinguish destructive Cancel from dismissal with Keep. Accessibility labels on
+standalone icons still identify the target.

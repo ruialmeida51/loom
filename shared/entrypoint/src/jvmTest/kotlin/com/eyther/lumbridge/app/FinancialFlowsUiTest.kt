@@ -113,7 +113,7 @@ class FinancialFlowsUiTest {
             onNodeWithText("€18.00").assertExists()
             capture("expense-details-light")
             onNodeWithTag("expense_actions").performClick()
-            onNodeWithText("Delete expense").performClick()
+            onNodeWithText("Delete").performClick()
             onNodeWithTag("confirm_delete_expense").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Expense details").fetchSemanticsNodes().isEmpty()

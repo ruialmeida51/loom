@@ -31,7 +31,7 @@
     <string name="details_member">Member</string>
     <string name="error_invitation_rate_limited">Too many attempts. Wait 15 minutes before trying again.</string>
     <string name="invitation_short_description">Share this code with someone joining your household.</string>
-    <string name="invitation_revoke">Revoke code</string>
+    <string name="invitation_revoke">Revoke</string>
     <string name="member_selector_you">You</string>
     <string name="member_selector_choose">Choose a person</string>
     <string name="invitation_revoke_title">Revoke active invitation codes?</string>

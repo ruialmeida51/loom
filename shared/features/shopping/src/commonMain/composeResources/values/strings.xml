@@ -74,7 +74,7 @@
     <string name="lists_empty">Make room for your next list</string>
     <string name="lists_empty_description">Create a checklist everyone in this household can use.</string>
     <string name="lists_create">Create list</string>
-    <string name="list_delete">Delete list</string>
+    <string name="list_delete">Delete</string>
     <string name="list_delete_title">Delete this list?</string>
     <string name="list_delete_message">“%1$s” and all its items will be permanently deleted for everyone in this household.</string>
     <string name="completed_select">Select completed</string>
@@ -92,8 +92,9 @@
     <string name="completed_invalid_selection">Select up to 1,000 completed groceries from one list.</string>
     <string name="item_delete_title">Delete grocery?</string>
     <string name="item_delete_message">Delete “%1$s” from this shared shopping list?</string>
-    <string name="item_delete_confirm">Delete grocery</string>
+    <string name="item_delete_confirm">Delete</string>
     <string name="group_nest">Group under previous item</string>
     <string name="group_unnest">Move out of group</string>
     <string name="group_invalid">Keep groups one level deep, in the same list. Refresh and try again.</string>
+    <string name="completed_delete_confirm">Delete</string>
 </resources>

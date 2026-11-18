@@ -42,3 +42,8 @@ SelectorButton's menu slot anchors its popup to the caret. Transient expansion s
 committed selection and errors stay in the feature VM. MemberPickerRow remains household-owned because
 it understands members and the current user. PersonAvatar is decorative beside an accessible name;
 features choose semantic emphasis. InfoRow is read-only and must not imply a navigation action.
+
+Keep contextual action labels concise: use Delete when the dialog already names the target; put
+names, scope and consequences in the title/body. Use short verbs such as Revoke and Discard in
+context, and distinguish destructive Cancel from dismissal with Keep. Accessibility labels on
+standalone icons still identify the target.
