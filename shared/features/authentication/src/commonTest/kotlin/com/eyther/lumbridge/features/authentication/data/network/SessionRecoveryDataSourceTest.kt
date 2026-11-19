@@ -218,6 +218,52 @@ class SessionRecoveryDataSourceTest {
         }
     }
 
+    @Test
+    fun resumeRefreshesATokenWhoseRunningRefreshWasDelayedByDeviceSleep() = runTest {
+        var refreshes = 0
+        val client =
+            createSupabaseClient("https://loom.test", "test-key") {
+                install(Auth) {
+                    configureLoomAuthentication(MemorySessionManager(), MemoryCodeVerifierCache())
+                    autoLoadFromStorage = false
+                    autoSetupPlatform = false
+                }
+                httpEngine = MockEngine {
+                    refreshes++
+                    respond(
+                        sessionResponseFixture(),
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+            }
+        try {
+            val source =
+                CommonAuthenticationDataSource(
+                    access = SupabaseAccess(client),
+                    pushDevices = pushDevices,
+                )
+            withContext(Dispatchers.Default) {
+                val fresh = expiredSession().copy(expiresAt = Clock.System.now() + 3600.seconds)
+                client.auth.importSession(fresh)
+                assertEquals(true, client.auth.isAutoRefreshRunning)
+                assertIs<AppResult.Success<Unit>>(source.recoverSession())
+                assertEquals(0, refreshes, "A token before its refresh point is left alone")
+                // The job still waits for the old deadline while the token is already due.
+                client.auth.importSession(expiredSession(), autoRefresh = false)
+                assertEquals(true, client.auth.isAutoRefreshRunning)
+                withTimeout(3000) {
+                    assertIs<AppResult.Success<Unit>>(source.recoverSession())
+                    client.auth.sessionStatus
+                        .filterIsInstance<SessionStatus.Authenticated>()
+                        .first { it.session.refreshToken == "test-refresh-token" }
+                }
+            }
+            assertEquals(1, refreshes)
+        } finally {
+            client.close()
+        }
+    }
+
     private fun expiredSession(): UserSession =
         Json.decodeFromString<UserSession>(sessionResponseFixture())
             .copy(

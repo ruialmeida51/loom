@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Tap a shopping item to edit it in place; the keyboard arrow adds the next item right below it.
+- Shorter item menu, with one Move to another list option.
+- Smoother sign-in recovery after long device sleep.
+
 ## [4.0.13] - 2026-11-19
 
 - Timed, consistent Undo feedback and reusable shopping favourites.

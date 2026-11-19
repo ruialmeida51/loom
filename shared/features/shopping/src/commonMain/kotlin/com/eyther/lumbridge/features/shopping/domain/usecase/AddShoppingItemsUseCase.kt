@@ -21,4 +21,13 @@ class AddShoppingItemsUseCase(
         }
         shoppingDataSource.addItems(items.map { it.validated() }).getOrThrow()
     }
+
+    /** Keep-style entry: the server places [item] directly below [afterId], or appends. */
+    suspend fun insertAfter(
+        item: ShoppingItemDomain,
+        afterId: String,
+    ): AppResult<List<ShoppingItemDomain>> = safeCall {
+        requireDomain(item.version == 0L && !item.removed) { ShoppingError.ItemsAlreadySaved() }
+        shoppingDataSource.insertItemAfter(item = item.validated(), afterId = afterId).getOrThrow()
+    }
 }

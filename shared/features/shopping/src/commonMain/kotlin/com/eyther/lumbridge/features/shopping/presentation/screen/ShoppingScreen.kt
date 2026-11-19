@@ -45,7 +45,6 @@ import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
-import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.action_undo
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_confirm
@@ -61,9 +60,10 @@ import com.eyther.lumbridge.features.shopping.generated.resources.ui_shopping_li
 import com.eyther.lumbridge.features.shopping.presentation.components.CompletedShoppingActions
 import com.eyther.lumbridge.features.shopping.presentation.components.CompletedShoppingSectionHeader
 import com.eyther.lumbridge.features.shopping.presentation.components.PendingShoppingItemRow
+import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingDraftRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingEntryRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingItemRow
-import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingEntryUi
+import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingRowUi
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
@@ -92,11 +92,14 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
     ) {
         InnerShoppingScreen(
             selectedListName = state.selectedList?.name.orEmpty(),
-            uncheckedItems = state.uncheckedItems,
+            uncheckedRows = state.uncheckedRows,
             nestingParentIds = state.nestingParentIds,
             indentedItemIds = state.indentedItemIds,
             completedItems = state.completedItems,
-            moveTargets = state.moveTargets,
+            canMove = state.activeLists.size > 1,
+            editingItemId = state.editingItemId,
+            editingName = state.editingName,
+            draftName = state.draftName,
             showCompleted = state.showChecked,
             selectingCompleted = state.selectingCompleted,
             selectedCompletedIds = state.selectedCompletedIds,
@@ -110,7 +113,6 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
             busy = state.busy || state.deletingCompleted,
             savingItemIds = state.savingItemIds,
             inlineName = state.inlineName,
-            pendingEntries = state.visiblePendingEntries,
             entryRevision = state.entryRevision,
             hasList = state.selectedList != null,
             canAddInline = state.canAddInline,
@@ -125,10 +127,16 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
             onShowFavorites = { viewModel.onFavoritesVisibilityChanged(true) },
             onShowCompleted = viewModel::onCheckedItemsVisibilityChanged,
             onToggle = viewModel::onToggleItem,
-            onEdit = viewModel::onEditItem,
+            onStartEditing = viewModel::onStartEditing,
+            onEditingName = viewModel::onEditingNameChanged,
+            onEditingNext = viewModel::onEditingNext,
+            onEditingFinished = viewModel::onEditingFinished,
+            onDraftName = viewModel::onDraftNameChanged,
+            onSubmitDraft = viewModel::onSubmitDraft,
+            onDraftFinished = viewModel::onDraftFinished,
             onRemove = viewModel::onRemoveItem,
             onFavorite = viewModel::onToggleFavorite,
-            onMove = viewModel::onMoveItem,
+            onMove = viewModel::onMoveRequested,
             onNest = viewModel::onNestItem,
             onUnnest = viewModel::onUnnestItem,
             onDismiss = viewModel::onDismissError,
@@ -168,11 +176,14 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
 @Composable
 private fun InnerShoppingScreen(
     selectedListName: String,
-    uncheckedItems: ImmutableList<ShoppingItemDomain>,
+    uncheckedRows: ImmutableList<ShoppingRowUi>,
     nestingParentIds: ImmutableMap<String, String>,
     indentedItemIds: ImmutableSet<String>,
     completedItems: ImmutableList<ShoppingItemDomain>,
-    moveTargets: ImmutableList<ShoppingListDomain>,
+    canMove: Boolean,
+    editingItemId: String?,
+    editingName: String,
+    draftName: String,
     showCompleted: Boolean,
     selectingCompleted: Boolean,
     selectedCompletedIds: ImmutableSet<String>,
@@ -186,7 +197,6 @@ private fun InnerShoppingScreen(
     busy: Boolean,
     savingItemIds: ImmutableSet<String>,
     inlineName: String,
-    pendingEntries: ImmutableList<ShoppingEntryUi>,
     entryRevision: Long,
     hasList: Boolean,
     canAddInline: Boolean,
@@ -201,10 +211,16 @@ private fun InnerShoppingScreen(
     onShowFavorites: () -> Unit,
     onShowCompleted: (Boolean) -> Unit,
     onToggle: (ShoppingItemDomain) -> Unit,
-    onEdit: (ShoppingItemDomain) -> Unit,
+    onStartEditing: (ShoppingItemDomain) -> Unit,
+    onEditingName: (String) -> Unit,
+    onEditingNext: () -> Unit,
+    onEditingFinished: () -> Unit,
+    onDraftName: (String) -> Unit,
+    onSubmitDraft: () -> Unit,
+    onDraftFinished: () -> Unit,
     onRemove: (ShoppingItemDomain) -> Unit,
     onFavorite: (ShoppingItemDomain) -> Unit,
-    onMove: (ShoppingItemDomain, String) -> Unit,
+    onMove: (ShoppingItemDomain) -> Unit,
     onNest: (ShoppingItemDomain) -> Unit,
     onUnnest: (ShoppingItemDomain) -> Unit,
     onDismiss: () -> Unit,
@@ -217,8 +233,7 @@ private fun InnerShoppingScreen(
     val entryIndex =
         1 +
             (if (error != null) 1 else 0) +
-            (if (loading) 1 else uncheckedItems.size) +
-            pendingEntries.size
+            (if (loading) 1 else uncheckedRows.size)
     LaunchedEffect(entryRevision, keyboardHeight, entryFocused) {
         if (entryFocused && !loading && hasList) {
             listState.animateScrollToItem(entryIndex)
@@ -285,32 +300,46 @@ private fun InnerShoppingScreen(
                 }
             }
         if (!loading)
-            items(uncheckedItems, key = { it.id }, contentType = { "checklist_item" }) { item ->
-                ShoppingItemRow(
-                    item = item,
-                    moveTargets = moveTargets,
-                    busy = busy || item.id in savingItemIds,
-                    onToggle = onToggle,
-                    onEdit = onEdit,
-                    onRemove = onRemove,
-                    onFavorite = onFavorite,
-                    onMove = onMove,
-                    indented = item.id in indentedItemIds,
-                    canNest = item.id in nestingParentIds,
-                    canUnnest = item.parentId != null,
-                    onNest = onNest,
-                    onUnnest = onUnnest,
-                )
-            }
-        if (hasList)
-            items(pendingEntries, key = { it.item.id }, contentType = { "checklist_item" }) { entry
-                ->
-                PendingShoppingItemRow(
-                    name = entry.item.name,
-                    error = entry.error,
-                    onRetry = { onRetryEntry(entry.item.id) },
-                    onDiscard = { onDiscardEntry(entry.item.id) },
-                )
+            items(uncheckedRows, key = { it.key }, contentType = { "checklist_item" }) { row ->
+                when (row) {
+                    is ShoppingRowUi.Item ->
+                        ShoppingItemRow(
+                            item = row.item,
+                            busy = busy || row.item.id in savingItemIds,
+                            canMove = canMove,
+                            onToggle = onToggle,
+                            onStartEditing = onStartEditing,
+                            onRemove = onRemove,
+                            onFavorite = onFavorite,
+                            onMove = onMove,
+                            editing = row.item.id == editingItemId,
+                            editingName = editingName,
+                            onEditingName = onEditingName,
+                            onEditingNext = onEditingNext,
+                            onEditingFinished = onEditingFinished,
+                            indented = row.indented,
+                            canNest = row.item.id in nestingParentIds,
+                            canUnnest = row.item.parentId != null,
+                            onNest = onNest,
+                            onUnnest = onUnnest,
+                        )
+                    is ShoppingRowUi.Pending ->
+                        PendingShoppingItemRow(
+                            name = row.entry.item.name,
+                            error = row.entry.error,
+                            indented = row.indented,
+                            onRetry = { onRetryEntry(row.entry.item.id) },
+                            onDiscard = { onDiscardEntry(row.entry.item.id) },
+                        )
+                    is ShoppingRowUi.Draft ->
+                        ShoppingDraftRow(
+                            value = draftName,
+                            indented = row.indented,
+                            onValue = onDraftName,
+                            onNext = onSubmitDraft,
+                            onFinished = onDraftFinished,
+                        )
+                }
             }
         if (hasList)
             item(key = "inline_entry") {
@@ -352,16 +381,21 @@ private fun InnerShoppingScreen(
                 items(completedItems, key = { it.id }) { item ->
                     ShoppingItemRow(
                         item = item,
-                        moveTargets = moveTargets,
                         busy = busy || item.id in savingItemIds,
+                        canMove = canMove,
                         selectionMode = selectingCompleted,
                         selected = item.id in selectedCompletedIds,
                         onSelect = { onSelectCompleted(item.id) },
                         onToggle = onToggle,
-                        onEdit = onEdit,
+                        onStartEditing = onStartEditing,
                         onRemove = onRemove,
                         onFavorite = onFavorite,
                         onMove = onMove,
+                        editing = item.id == editingItemId,
+                        editingName = editingName,
+                        onEditingName = onEditingName,
+                        onEditingNext = onEditingNext,
+                        onEditingFinished = onEditingFinished,
                         indented = item.id in indentedItemIds,
                         canNest = item.id in nestingParentIds,
                         canUnnest = item.parentId != null,

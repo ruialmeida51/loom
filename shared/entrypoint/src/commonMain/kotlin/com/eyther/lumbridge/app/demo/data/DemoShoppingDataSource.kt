@@ -34,6 +34,32 @@ class DemoShoppingDataSource(private val store: DemoHouseholdStore) : ShoppingDa
         saved
     }
 
+    override suspend fun insertItemAfter(item: ShoppingItemDomain, afterId: String) = safeCall {
+        requireDomain(store.shopping.value.activeLists.any { it.id == item.listId }) {
+            ShoppingError.ActiveListRequired()
+        }
+        item.validated()
+        store.shopping.value.items
+            .firstOrNull { it.id == item.id }
+            ?.let { existing -> return@safeCall listOf(existing) }
+        val nextPosition = (store.shopping.value.items.maxOfOrNull { it.position } ?: 0L) + 1
+        val changes =
+            store.shopping.value.placeBelow(
+                item = item.copy(version = 1, position = nextPosition),
+                afterId = afterId,
+            )
+        val changed = changes.associateBy { it.id }
+        store.shopping.update { snapshot ->
+            val existingIds = snapshot.items.map { it.id }.toSet()
+            snapshot.copy(
+                items =
+                    snapshot.items.map { row -> changed[row.id] ?: row } +
+                        changes.filterNot { it.id in existingIds },
+            )
+        }
+        changes
+    }
+
     override suspend fun saveItem(item: ShoppingItemDomain) = safeCall {
         val before =
             store.shopping.value.items.firstOrNull { it.id == item.id }

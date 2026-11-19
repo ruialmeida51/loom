@@ -3,7 +3,6 @@ package com.eyther.lumbridge.features.authentication.data
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RecoverSessionUseCase
-import com.eyther.lumbridge.features.authentication.domain.usecase.ResumeSessionUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.SessionScreenViewModel
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
@@ -89,7 +88,6 @@ internal class SessionFixture {
 
     fun viewModel(): SessionScreenViewModel =
         SessionScreenViewModel(
-            resumeSessionUseCase = ResumeSessionUseCase(authenticationDataSource = authentication),
             recoverSessionUseCase =
                 RecoverSessionUseCase(authenticationDataSource = authentication),
             getHouseholdsStreamUseCase =

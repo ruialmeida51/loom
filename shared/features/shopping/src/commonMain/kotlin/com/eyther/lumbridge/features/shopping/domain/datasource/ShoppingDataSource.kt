@@ -11,6 +11,12 @@ interface ShoppingDataSource {
 
     suspend fun addItems(items: List<ShoppingItemDomain>): AppResult<List<ShoppingItemDomain>>
 
+    /** Places [item] directly below [afterId]; returns it first, then every row that moved. */
+    suspend fun insertItemAfter(
+        item: ShoppingItemDomain,
+        afterId: String,
+    ): AppResult<List<ShoppingItemDomain>>
+
     suspend fun saveItem(item: ShoppingItemDomain): AppResult<ShoppingItemDomain>
 
     suspend fun saveGroup(items: List<ShoppingItemDomain>): AppResult<List<ShoppingItemDomain>>

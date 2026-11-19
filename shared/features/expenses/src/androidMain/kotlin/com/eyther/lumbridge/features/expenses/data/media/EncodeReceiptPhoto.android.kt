@@ -13,8 +13,9 @@ import java.io.IOException
 internal actual suspend fun encodeReceiptPhoto(
     bytes: ByteArray,
     maximumEdge: Int,
-    jpegQuality: Int,
-): ByteArray {
+    jpegQualities: List<Int>,
+    maximumBytes: Int,
+): ByteArray? {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
     if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw ReceiptError.InvalidPhoto()
@@ -28,16 +29,12 @@ internal actual suspend fun encodeReceiptPhoto(
     try {
         val orientation =
             try {
-                try {
-                    ByteArrayInputStream(bytes).use {
-                        ExifInterface(it)
-                            .getAttributeInt(
-                                ExifInterface.TAG_ORIENTATION,
-                                ExifInterface.ORIENTATION_NORMAL,
-                            )
-                    }
-                } catch (_: IOException) {
-                    ExifInterface.ORIENTATION_NORMAL
+                ByteArrayInputStream(bytes).use {
+                    ExifInterface(it)
+                        .getAttributeInt(
+                            ExifInterface.TAG_ORIENTATION,
+                            ExifInterface.ORIENTATION_NORMAL,
+                        )
                 }
             } catch (_: IOException) {
                 ExifInterface.ORIENTATION_NORMAL
@@ -61,11 +58,18 @@ internal actual suspend fun encodeReceiptPhoto(
                 }
             }
         oriented = Bitmap.createBitmap(decoded, 0, 0, decoded.width, decoded.height, matrix, true)
-        return ByteArrayOutputStream().use { output ->
-            if (!oriented.compress(Bitmap.CompressFormat.JPEG, jpegQuality, output))
-                throw ReceiptError.InvalidPhoto()
-            output.toByteArray()
+        // Decode and orient once; each quality only re-encodes the same pixels.
+        for (jpegQuality in jpegQualities) {
+            val encoded =
+                ByteArrayOutputStream().use { output ->
+                    if (!oriented.compress(Bitmap.CompressFormat.JPEG, jpegQuality, output))
+                        throw ReceiptError.InvalidPhoto()
+                    output.toByteArray()
+                }
+            if (encoded.isEmpty()) throw ReceiptError.InvalidPhoto()
+            if (encoded.size <= maximumBytes) return encoded
         }
+        return null
     } finally {
         if (oriented !== decoded) oriented?.recycle()
         decoded.recycle()

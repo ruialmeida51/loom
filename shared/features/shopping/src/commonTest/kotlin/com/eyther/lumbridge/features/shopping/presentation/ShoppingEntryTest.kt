@@ -634,6 +634,168 @@ class ShoppingEntryTest {
         }
     }
 
+    @Test
+    fun tappingARowRenamesInPlaceAndTheKeyboardArrowOpensALineDirectlyBelow() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source = keepSource()
+        val store = ViewModelStore()
+        try {
+            val viewModel = createViewModel(source = source).also { store.put("shopping", it) }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            val apples = viewModel.state.value.uncheckedItems.first()
+            viewModel.onStartEditing(apples)
+            runCurrent()
+            assertEquals("apples", viewModel.state.value.editingItemId)
+            assertEquals("apples", viewModel.state.value.editingName)
+            viewModel.onEditingNameChanged("Green apples")
+            viewModel.onEditingNext()
+            runCurrent()
+            assertNull(viewModel.state.value.editingItemId)
+            assertEquals(
+                "Green apples",
+                viewModel.state.value.snapshot.items.first { it.id == "apples" }.name,
+            )
+            assertNull(viewModel.state.value.undoMessage, "The rename itself is the feedback")
+            assertEquals("apples", viewModel.state.value.draftAfterId)
+            assertEquals(
+                listOf("apples", "shopping_draft", "bread"),
+                viewModel.state.value.uncheckedRows.map { it.key },
+            )
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun draftLinesChainBelowTheirAnchorAndSaveInTypingOrder() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source = keepSource()
+        val store = ViewModelStore()
+        try {
+            val viewModel = createViewModel(source = source).also { store.put("shopping", it) }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            viewModel.onStartEditing(viewModel.state.value.uncheckedItems.first())
+            viewModel.onEditingNext()
+            viewModel.onDraftNameChanged("Avocados")
+            viewModel.onSubmitDraft()
+            viewModel.onDraftNameChanged("Bananas")
+            viewModel.onSubmitDraft()
+            runCurrent()
+            val rows = viewModel.state.value.uncheckedRows.map { it.key }
+            assertEquals("apples", rows.first())
+            assertEquals("bread", rows.last())
+            assertEquals("shopping_draft", rows[3], "The cursor stays on the newest line")
+            assertEquals(1, source.requests.size, "Lines are sent one at a time, in order")
+            assertEquals("apples", source.insertAnchors.single())
+            val avocados = source.requests.single().single()
+            source.responses.send(
+                AppResult.Success(
+                    listOf(
+                        avocados.copy(version = 1, position = 2),
+                        bread.copy(position = 3),
+                    ),
+                ),
+            )
+            runCurrent()
+            assertEquals(avocados.id, source.insertAnchors.last(), "The next line follows it")
+            val bananas = source.requests.last().single()
+            assertEquals("Bananas", bananas.name)
+            source.responses.send(
+                AppResult.Success(
+                    listOf(bananas.copy(version = 1, position = 3), bread.copy(position = 4)),
+                ),
+            )
+            runCurrent()
+            assertEquals(
+                listOf("apples", "Avocados", "Bananas", "bread"),
+                viewModel.state.value.uncheckedItems.map { it.name },
+            )
+            viewModel.onSubmitDraft()
+            assertNull(viewModel.state.value.draftAfterId, "An empty line closes the draft")
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun aBlankRenameRevertsWhenTheRowLosesFocus() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source = keepSource()
+        source.deferItemWrites = true
+        val store = ViewModelStore()
+        try {
+            val viewModel = createViewModel(source = source).also { store.put("shopping", it) }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            viewModel.onStartEditing(viewModel.state.value.uncheckedItems.first())
+            viewModel.onEditingNameChanged("   ")
+            viewModel.onEditingFinished()
+            runCurrent()
+            assertNull(viewModel.state.value.editingItemId)
+            assertNull(viewModel.state.value.draftAfterId)
+            assertTrue(source.itemWrites.isEmpty())
+            assertEquals("apples", viewModel.state.value.uncheckedItems.first().name)
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun movingUsesOneMenuEntryAndASheetOfTheOtherLists() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source = keepSource()
+        val store = ViewModelStore()
+        try {
+            val viewModel = createViewModel(source = source).also { store.put("shopping", it) }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            val apples = viewModel.state.value.uncheckedItems.first()
+            viewModel.onMoveRequested(apples)
+            assertEquals(apples, viewModel.state.value.movingItem)
+            assertEquals(listOf("holiday"), viewModel.state.value.moveTargets.map { it.id })
+            viewModel.onMoveItem(apples, "holiday")
+            runCurrent()
+            assertNull(viewModel.state.value.movingItem)
+            assertEquals(
+                "holiday",
+                viewModel.state.value.snapshot.items.first { it.id == "apples" }.listId,
+            )
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    private val apples = feedbackItem(id = "apples").copy(position = 1)
+    private val bread = feedbackItem(id = "bread").copy(position = 2)
+
+    private fun keepSource(): ShoppingEntryFixtureDataSource =
+        ShoppingEntryFixtureDataSource().apply {
+            val original = (snapshot.value as AppResult.Success).value
+            snapshot.value = AppResult.Success(original.copy(items = listOf(apples, bread)))
+        }
+
     private fun feedbackItem(
         id: String,
         checked: Boolean = false,

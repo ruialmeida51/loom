@@ -62,6 +62,8 @@ class ShoppingScreenViewModel(
     private data class InnerInputState(
         val name: String = "",
         val inlineName: String = "",
+        val editingName: String = "",
+        val draftName: String = "",
         val quantity: String = "",
         val category: String = "Produce",
         val listName: String = "",
@@ -74,10 +76,9 @@ class ShoppingScreenViewModel(
 
     private val inputState = MutableStateFlow(InnerInputState())
     private val refreshRequests = MutableStateFlow(0)
-    private val entryRequests = Channel<ShoppingItemDomain>(capacity = Channel.UNLIMITED)
+    private val entryRequests = Channel<ShoppingEntryUi>(capacity = Channel.UNLIMITED)
     private var pendingItemUpdates: Map<String, ShoppingItemDomain> = emptyMap()
     private var acknowledgedItems: Map<String, ShoppingItemDomain> = emptyMap()
-    private var editingItem: ShoppingItemDomain? = null
     private var editingList: ShoppingListDomain? = null
     private var requestIds: List<String> = emptyList()
     private var newListId: String = newId()
@@ -95,6 +96,8 @@ class ShoppingScreenViewModel(
                     copy(
                         name = input.name,
                         inlineName = input.inlineName,
+                        editingName = input.editingName,
+                        draftName = input.draftName,
                         quantity = input.quantity,
                         category = input.category,
                         listName = input.listName,
@@ -279,7 +282,7 @@ class ShoppingScreenViewModel(
     init {
         viewModelScope.launch {
             // Preserve Enter order even when a network round trip takes longer than typing.
-            for (item in entryRequests) submitInlineItem(item = item)
+            for (entry in entryRequests) submitInlineItem(entry = entry)
         }
     }
 
@@ -296,16 +299,17 @@ class ShoppingScreenViewModel(
                 checked = false,
                 listId = listId,
             )
+        val entry = ShoppingEntryUi(item = item)
         inputState.update { oldState -> oldState.copy(inlineName = "") }
         mutableState.update { oldState ->
             oldState.copy(
                 inlineName = "",
                 inlineError = null,
                 entryRevision = oldState.entryRevision + 1,
-                pendingEntries = oldState.pendingEntries + ShoppingEntryUi(item = item),
+                pendingEntries = oldState.pendingEntries + entry,
             )
         }
-        entryRequests.trySend(item)
+        entryRequests.trySend(entry)
     }
 
     override fun onRetryEntry(id: String) {
@@ -319,7 +323,7 @@ class ShoppingScreenViewModel(
                     },
             )
         }
-        entryRequests.trySend(entry.item)
+        entryRequests.trySend(entry.copy(error = null))
     }
 
     override fun onDiscardEntry(id: String) {
@@ -331,20 +335,32 @@ class ShoppingScreenViewModel(
         }
     }
 
-    private suspend fun submitInlineItem(item: ShoppingItemDomain) {
-        when (val result = addShoppingItemsUseCase(items = listOf(item))) {
+    private suspend fun submitInlineItem(entry: ShoppingEntryUi) {
+        val item = entry.item
+        val result =
+            entry.afterId?.let { afterId ->
+                addShoppingItemsUseCase.insertAfter(item = item, afterId = afterId)
+            } ?: addShoppingItemsUseCase(items = listOf(item))
+        when (result) {
             is AppResult.Success -> {
                 acknowledgedItems = acknowledgedItems + result.value.associateBy { it.id }
-                val savedIds = result.value.map { it.id }.toSet()
+                val saved = result.value.associateBy { it.id }
                 mutableState.update { oldState ->
+                    val existingIds = oldState.snapshot.items.map { it.id }.toSet()
                     oldState.copy(
                         pendingEntries =
                             oldState.pendingEntries.filterNot { it.item.id == item.id },
                         snapshot =
                             oldState.snapshot.copy(
                                 items =
-                                    oldState.snapshot.items.filterNot { it.id in savedIds } +
-                                        result.value,
+                                    oldState.snapshot.items.map { existing ->
+                                        // Shifted rows keep their version; keep newer local edits.
+                                        saved[existing.id]?.let { server ->
+                                            if (existing.version > server.version)
+                                                existing.copy(position = server.position)
+                                            else server
+                                        } ?: existing
+                                    } + result.value.filterNot { it.id in existingIds },
                             ),
                     )
                 }
@@ -402,7 +418,6 @@ class ShoppingScreenViewModel(
         if (!value && state.value.busy) return
 
         if (value) {
-            editingItem = null
             requestIds = emptyList()
             inputState.update { oldState ->
                 oldState.copy(name = "", quantity = "", category = "Other")
@@ -412,21 +427,96 @@ class ShoppingScreenViewModel(
         mutableState.update { oldState ->
             oldState.copy(
                 showAdd = value,
-                editing = if (value) false else oldState.editing,
                 formError = null,
             )
         }
     }
 
-    override fun onEditItem(item: ShoppingItemDomain) {
-        editingItem = item
-        inputState.update { oldState ->
-            oldState.copy(name = item.name, quantity = item.quantity, category = item.category)
-        }
-
+    override fun onStartEditing(item: ShoppingItemDomain) {
+        if (state.value.busy || item.id in state.value.savingItemIds) return
+        if (state.value.editingItemId == item.id) return
+        commitEditing()
+        submitDraft(continueBelow = false)
+        inputState.update { oldState -> oldState.copy(editingName = item.name) }
         mutableState.update { oldState ->
-            oldState.copy(showAdd = true, editing = true, formError = null)
+            oldState.copy(editingItemId = item.id, draftAfterId = null)
         }
+    }
+
+    override fun onEditingNameChanged(value: String) {
+        inputState.update { oldState -> oldState.copy(editingName = value) }
+    }
+
+    override fun onEditingNext() {
+        val item =
+            state.value.snapshot.items.firstOrNull { it.id == state.value.editingItemId } ?: return
+        commitEditing()
+        if (!item.checked && state.value.selectedList != null) {
+            inputState.update { oldState -> oldState.copy(draftName = "") }
+            mutableState.update { oldState -> oldState.copy(draftAfterId = item.id) }
+        }
+    }
+
+    override fun onEditingFinished() {
+        commitEditing()
+    }
+
+    /** Renames are visible in place, so they save without an Undo snackbar; blank text reverts. */
+    private fun commitEditing() {
+        val id = state.value.editingItemId ?: return
+        val name = inputState.value.editingName.trim()
+        mutableState.update { oldState -> oldState.copy(editingItemId = null) }
+        val item = state.value.snapshot.items.firstOrNull { it.id == id } ?: return
+        if (name.isNotEmpty() && name != item.name)
+            saveItem(
+                item = item.copy(name = name),
+                message = TextResource.Resource(Res.string.item_updated),
+                showUndo = false,
+            )
+    }
+
+    override fun onDraftNameChanged(value: String) {
+        inputState.update { oldState -> oldState.copy(draftName = value) }
+    }
+
+    override fun onSubmitDraft() {
+        submitDraft(continueBelow = true)
+    }
+
+    override fun onDraftFinished() {
+        submitDraft(continueBelow = false)
+    }
+
+    /** A blank line closes the draft; otherwise it is queued in order behind earlier lines. */
+    private fun submitDraft(continueBelow: Boolean) {
+        val afterId = state.value.draftAfterId ?: return
+        val listId = state.value.selectedList?.id
+        val name = inputState.value.draftName.trim()
+        inputState.update { oldState -> oldState.copy(draftName = "") }
+        if (name.isEmpty() || listId == null) {
+            mutableState.update { oldState -> oldState.copy(draftAfterId = null) }
+            return
+        }
+        val entry =
+            ShoppingEntryUi(
+                item =
+                    ShoppingItemDomain(
+                        id = newId(),
+                        name = name,
+                        quantity = "",
+                        category = "Other",
+                        checked = false,
+                        listId = listId,
+                    ),
+                afterId = afterId,
+            )
+        mutableState.update { oldState ->
+            oldState.copy(
+                pendingEntries = oldState.pendingEntries + entry,
+                draftAfterId = if (continueBelow) entry.item.id else null,
+            )
+        }
+        entryRequests.trySend(entry)
     }
 
     override fun onItemNameChanged(value: String) {
@@ -471,22 +561,6 @@ class ShoppingScreenViewModel(
     override fun onSaveItem() {
         if (state.value.busy) return
         val input = inputState.value
-        val before = editingItem
-
-        if (before != null) {
-            saveItem(
-                item =
-                    before.copy(
-                        name = input.name,
-                        quantity = input.quantity,
-                        category = input.category,
-                    ),
-                message = TextResource.Resource(Res.string.item_updated),
-                closeForm = true,
-            )
-            return
-        }
-
         val names = input.name.lineSequence().map { it.trim() }.filter { it.isNotEmpty() }.toList()
         if (requestIds.size != names.size) requestIds = names.map { newId() }
         val items = names.mapIndexed { index, name ->
@@ -594,7 +668,17 @@ class ShoppingScreenViewModel(
         )
     }
 
+    override fun onMoveRequested(item: ShoppingItemDomain) {
+        if (state.value.busy || item.id in state.value.savingItemIds) return
+        mutableState.update { oldState -> oldState.copy(movingItem = item) }
+    }
+
+    override fun onMoveDismissed() {
+        mutableState.update { oldState -> oldState.copy(movingItem = null) }
+    }
+
     override fun onMoveItem(item: ShoppingItemDomain, listId: String) {
+        mutableState.update { oldState -> oldState.copy(movingItem = null) }
         saveItem(
             item = item.copy(listId = listId, parentId = null),
             message = TextResource.Resource(Res.string.item_moved),
@@ -774,20 +858,19 @@ class ShoppingScreenViewModel(
     private fun saveItem(
         item: ShoppingItemDomain,
         message: TextResource,
-        closeForm: Boolean = false,
+        showUndo: Boolean = true,
     ) {
         if (state.value.snapshot.items.none { it.id == item.id }) return
         val changes = state.value.snapshot.changeGroup(item)
         val ids = changes.map { it.id }.toSet()
         if (state.value.busy || state.value.savingItemIds.any { it in ids }) return
         val before = state.value.snapshot.items.filter { it.id in ids }
-        onDismissUndo()
+        if (showUndo) onDismissUndo()
         val feedbackRevision = undoRevision
         val pending = changes.associateBy { it.id }
         pendingItemUpdates = pendingItemUpdates + pending
         mutableState.update { oldState ->
             oldState.copy(
-                busy = closeForm,
                 savingItemIds = oldState.savingItemIds.addAll(ids),
                 error = null,
                 formError = null,
@@ -806,8 +889,8 @@ class ShoppingScreenViewModel(
                 is AppResult.Success -> {
                     val saved = result.value.associateBy { it.id }
                     acknowledgedItems = acknowledgedItems + saved
-                    val showUndo = feedbackRevision == undoRevision
-                    if (showUndo)
+                    val offerUndo = showUndo && feedbackRevision == undoRevision
+                    if (offerUndo)
                         undoChange =
                             UndoChange(
                                 before = before,
@@ -815,11 +898,9 @@ class ShoppingScreenViewModel(
                             )
                     mutableState.update { oldState ->
                         oldState.copy(
-                            busy = if (closeForm) false else oldState.busy,
                             savingItemIds = oldState.savingItemIds.removeAll(ids),
-                            showAdd = if (closeForm) false else oldState.showAdd,
-                            undoMessage = if (showUndo) message else oldState.undoMessage,
-                            successMessage = if (showUndo) null else oldState.successMessage,
+                            undoMessage = if (offerUndo) message else oldState.undoMessage,
+                            successMessage = if (offerUndo) null else oldState.successMessage,
                             deletingItem =
                                 if (item.removed && oldState.deletingItem?.id == item.id) null
                                 else oldState.deletingItem,
@@ -834,7 +915,7 @@ class ShoppingScreenViewModel(
                                 ),
                         )
                     }
-                    if (showUndo) {
+                    if (offerUndo) {
                         undoExpiryJob = launch {
                             delay(DEFAULT_ACTION_ALERT_DURATION)
                             onDismissUndo()
@@ -845,19 +926,15 @@ class ShoppingScreenViewModel(
                     val original = before.associateBy { it.id }
                     mutableState.update { oldState ->
                         oldState.copy(
-                            busy = if (closeForm) false else oldState.busy,
                             savingItemIds = oldState.savingItemIds.removeAll(ids),
                             error =
-                                if (closeForm || oldState.deletingItem?.id == item.id)
+                                if (oldState.deletingItem?.id == item.id)
                                     oldState.error
                                 else result.error.toShoppingTextResource(),
                             itemDeleteError =
                                 if (oldState.deletingItem?.id == item.id)
                                     result.error.toShoppingTextResource()
                                 else oldState.itemDeleteError,
-                            formError =
-                                if (closeForm) result.error.toShoppingTextResource()
-                                else oldState.formError,
                             snapshot =
                                 oldState.snapshot.copy(
                                     items =

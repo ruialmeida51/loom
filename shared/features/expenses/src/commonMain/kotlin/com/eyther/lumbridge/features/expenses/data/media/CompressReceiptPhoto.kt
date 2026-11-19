@@ -9,16 +9,13 @@ private val ReceiptJpegQualities = listOf(85, 75, 65)
 /** Prefer readable resolution before reducing dimensions to meet the upload budget. */
 internal suspend fun compressReceiptPhoto(bytes: ByteArray): ByteArray {
     for (maximumEdge in ReceiptMaximumEdges) {
-        for (jpegQuality in ReceiptJpegQualities) {
-            val encoded =
-                encodeReceiptPhoto(
-                    bytes = bytes,
-                    maximumEdge = maximumEdge,
-                    jpegQuality = jpegQuality,
-                )
-            if (encoded.isEmpty()) throw ReceiptError.InvalidPhoto()
-            if (encoded.size <= ReceiptPhotoDomain.MAX_UPLOAD_BYTES) return encoded
-        }
+        encodeReceiptPhoto(
+                bytes = bytes,
+                maximumEdge = maximumEdge,
+                jpegQualities = ReceiptJpegQualities,
+                maximumBytes = ReceiptPhotoDomain.MAX_UPLOAD_BYTES,
+            )
+            ?.let { return it }
     }
     throw ReceiptError.PhotoTooLarge()
 }

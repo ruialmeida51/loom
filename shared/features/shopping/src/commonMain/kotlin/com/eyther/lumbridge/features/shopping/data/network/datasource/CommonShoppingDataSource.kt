@@ -12,6 +12,7 @@ import com.eyther.lumbridge.features.shopping.data.network.mapper.toGroupRequest
 import com.eyther.lumbridge.features.shopping.data.network.mapper.toRequest
 import com.eyther.lumbridge.features.shopping.data.network.mapper.toShoppingError
 import com.eyther.lumbridge.features.shopping.data.network.model.request.AddShoppingItemsRequest
+import com.eyther.lumbridge.features.shopping.data.network.model.request.InsertShoppingItemAfterRequest
 import com.eyther.lumbridge.features.shopping.data.network.model.request.DeleteShoppingListRequest
 import com.eyther.lumbridge.features.shopping.data.network.model.request.RemoveCompletedShoppingItemsRequest
 import com.eyther.lumbridge.features.shopping.data.network.model.request.SaveShoppingGroupRequest
@@ -69,6 +70,25 @@ class CommonShoppingDataSource(
                 .map { it.toDomain() }
         }
     }
+
+    override suspend fun insertItemAfter(
+        item: ShoppingItemDomain,
+        afterId: String,
+    ): AppResult<List<ShoppingItemDomain>> =
+        safeApiCall(mapError = Exception::toShoppingError) {
+            val request =
+                InsertShoppingItemAfterRequest(
+                    householdId = context.id,
+                    item = item.toAddRequest(),
+                    afterId = afterId,
+                )
+            access
+                .requireClient()
+                .postgrest
+                .rpc("insert_shopping_item_after", request)
+                .decodeList<ShoppingItemResponse>()
+                .map { it.toDomain() }
+        }
 
     override suspend fun saveItem(item: ShoppingItemDomain): AppResult<ShoppingItemDomain> {
         return safeApiCall(

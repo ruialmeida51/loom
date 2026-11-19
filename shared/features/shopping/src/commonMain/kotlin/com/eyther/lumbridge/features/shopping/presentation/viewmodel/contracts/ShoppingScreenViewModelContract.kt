@@ -41,7 +41,21 @@ abstract class ShoppingScreenViewModelContract : LoomViewModel() {
 
     abstract fun onAddSheetVisibilityChanged(value: Boolean)
 
-    abstract fun onEditItem(item: ShoppingItemDomain)
+    abstract fun onStartEditing(item: ShoppingItemDomain)
+
+    abstract fun onEditingNameChanged(value: String)
+
+    /** Keyboard action: keeps the edit and opens a new line directly below, as in Google Keep. */
+    abstract fun onEditingNext()
+
+    abstract fun onEditingFinished()
+
+    abstract fun onDraftNameChanged(value: String)
+
+    /** Keyboard action: adds the draft line and continues with another line below it. */
+    abstract fun onSubmitDraft()
+
+    abstract fun onDraftFinished()
 
     abstract fun onItemNameChanged(value: String)
 
@@ -66,6 +80,10 @@ abstract class ShoppingScreenViewModelContract : LoomViewModel() {
     abstract fun onUnnestItem(item: ShoppingItemDomain)
 
     abstract fun onToggleFavorite(item: ShoppingItemDomain)
+
+    abstract fun onMoveRequested(item: ShoppingItemDomain)
+
+    abstract fun onMoveDismissed()
 
     abstract fun onMoveItem(item: ShoppingItemDomain, listId: String)
 
