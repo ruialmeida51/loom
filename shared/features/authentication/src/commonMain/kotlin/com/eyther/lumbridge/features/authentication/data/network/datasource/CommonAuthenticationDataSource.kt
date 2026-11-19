@@ -2,6 +2,7 @@ package com.eyther.lumbridge.features.authentication.data.network.datasource
 
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.safeApiCall
+import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.authentication.data.network.config.AuthenticationRedirect
 import com.eyther.lumbridge.features.authentication.data.network.mapper.toAuthenticationError
@@ -30,6 +31,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 class CommonAuthenticationDataSource(
@@ -45,6 +48,7 @@ class CommonAuthenticationDataSource(
         )
     private val googleSignInResult = MutableStateFlow<AppResult<Unit>?>(null)
     private var pushRegistration: Job? = null
+    private val recoveryMutex = Mutex()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override val configured: Boolean = access.configured
@@ -80,6 +84,23 @@ class CommonAuthenticationDataSource(
     }
 
     override fun stream(): StateFlow<AuthenticationStateDomain> = mutableSession.asStateFlow()
+
+    override suspend fun recoverSession(): AppResult<Unit> =
+        safeApiCall(mapError = Exception::toAuthenticationError) {
+            recoveryMutex.withLock {
+                val auth = access.requireClient().auth
+                if (auth.sessionStatus.value is SessionStatus.NotAuthenticated) {
+                    throw CommonError.NotAuthenticated()
+                }
+                // A background callback may have cancelled the SDK job. An active job already
+                // owns refresh-token rotation and must never race a manual refresh.
+                if (!auth.isAutoRefreshRunning && !auth.loadFromStorage()) {
+                    auth.clearSession()
+                    throw CommonError.NotAuthenticated()
+                }
+                access.read { Unit }
+            }
+        }
 
     override fun streamGoogleSignInResults(): Flow<AppResult<Unit>> =
         googleSignInResult.filterNotNull()

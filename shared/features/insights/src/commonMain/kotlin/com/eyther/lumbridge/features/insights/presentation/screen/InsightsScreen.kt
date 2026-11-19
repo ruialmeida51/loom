@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +25,7 @@ import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
@@ -127,11 +127,17 @@ private fun InnerInsightsScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                OutlinedButton(onClick = onPrevious) {
-                    Text(stringResource(Res.string.ui_previous))
-                }
+                LoomSecondaryButton(
+                    text = stringResource(Res.string.ui_previous),
+                    onClick = onPrevious,
+                    modifier = Modifier,
+                )
                 Text(month, style = MaterialTheme.typography.titleMedium)
-                OutlinedButton(onClick = onNext) { Text(stringResource(Res.string.ui_next)) }
+                LoomSecondaryButton(
+                    text = stringResource(Res.string.ui_next),
+                    onClick = onNext,
+                    modifier = Modifier,
+                )
             }
         }
         error?.let { message ->
@@ -243,16 +249,14 @@ private fun InnerInsightsScreen(
                     )
                 }
                 item {
-                    OutlinedButton(
+                    LoomSecondaryButton(
+                        text =
+                            if (busy) stringResource(Res.string.ui_saving)
+                            else stringResource(Res.string.ui_save_statement_snapshot),
                         onClick = onSave,
                         enabled = !busy,
                         modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            if (busy) stringResource(Res.string.ui_saving)
-                            else stringResource(Res.string.ui_save_statement_snapshot),
-                        )
-                    }
+                    )
                 }
             }
     }

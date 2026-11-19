@@ -7,10 +7,15 @@ collect_device_evidence() {
     mkdir -p build/device-captures
     timeout 15s adb pull /sdcard/Pictures/Loom-usability build/device-captures || true
     timeout 15s adb logcat -d > build/device-captures/logcat.txt || true
+    # Surface failing instrumentation assertions in the job log; artifacts are not always reachable.
+    find androidApp/build/outputs/androidTest-results -name '*.xml' -exec grep -h -B1 -A30 '<failure' {} + 2>/dev/null | head -200 || true
+    grep -iE 'supabase|background activity|Abort background|BackgroundActivityStart|SessionLifecycle' build/device-captures/logcat.txt 2>/dev/null | tail -120 || true
     exit "$usability_status"
 }
 trap collect_device_evidence EXIT
 adb shell setprop log.tag.WindowOnBackDispatcher DEBUG
+# Keep early test logs available for the failure summary.
+adb logcat -G 16M || true
 # Use a narrow phone at a lower physical resolution to keep software rendering within CI resources.
 adb shell wm size 720x1600
 adb shell wm density 320

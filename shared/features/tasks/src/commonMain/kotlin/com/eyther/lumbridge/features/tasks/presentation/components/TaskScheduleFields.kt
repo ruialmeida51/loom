@@ -1,17 +1,16 @@
 package com.eyther.lumbridge.features.tasks.presentation.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimeInput
@@ -27,15 +26,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.DestructiveIconButton
-import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.DialogActions
+import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.NavigationRow
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.resources.calendarDateText
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.tasks.domain.model.TaskRecurrenceDomain
 import com.eyther.lumbridge.features.tasks.generated.resources.Res
-import com.eyther.lumbridge.features.tasks.generated.resources.task_add_date
-import com.eyther.lumbridge.features.tasks.generated.resources.task_at_time
+import com.eyther.lumbridge.features.tasks.generated.resources.task_due_date
+import com.eyther.lumbridge.features.tasks.generated.resources.task_no_date
 import com.eyther.lumbridge.features.tasks.generated.resources.task_notification_time
 import com.eyther.lumbridge.features.tasks.generated.resources.task_notify_household
 import com.eyther.lumbridge.features.tasks.generated.resources.task_picker_done
@@ -72,27 +73,26 @@ internal fun TaskScheduleFields(
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
-    ) {
-        OutlinedButton(
-            onClick = { showDatePicker = true },
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            enabled = !busy,
-            modifier = Modifier.weight(1f, fill = false).testTag("task_date"),
-        ) {
-            Text(
-                if (hasDueDate) calendarDateText(date)
-                else stringResource(Res.string.task_add_date),
-            )
-        }
-        if (hasDueDate)
-            DestructiveIconButton(
-                description = stringResource(Res.string.task_remove_date),
-                onClick = { onDueDateEnabled(false) },
+    GroupedSurface {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            NavigationRow(
+                title = stringResource(Res.string.task_due_date),
+                description =
+                    if (hasDueDate) calendarDateText(date)
+                    else stringResource(Res.string.task_no_date),
+                glyph = Glyph.CALENDAR,
+                onClick = { showDatePicker = true },
                 enabled = !busy,
+                modifier = Modifier.weight(1f).testTag("task_date"),
             )
+            if (hasDueDate)
+                DestructiveIconButton(
+                    description = stringResource(Res.string.task_remove_date),
+                    onClick = { onDueDateEnabled(false) },
+                    enabled = !busy,
+                    modifier = Modifier.padding(end = LoomSpacing.small),
+                )
+        }
     }
     if (hasDueDate) {
         val notificationLabel = stringResource(Res.string.task_notify_household)
@@ -109,12 +109,15 @@ internal fun TaskScheduleFields(
             )
         }
         if (notificationEnabled) {
-            OutlinedButton(
-                onClick = { showTimePicker = true },
-                enabled = !busy,
-                modifier = Modifier.testTag("task_time"),
-            ) {
-                Text(stringResource(Res.string.task_at_time, time.toString()))
+            GroupedSurface {
+                NavigationRow(
+                    title = stringResource(Res.string.task_notification_time),
+                    value = time.toString(),
+                    glyph = Glyph.BELL,
+                    onClick = { showTimePicker = true },
+                    enabled = !busy,
+                    modifier = Modifier.testTag("task_time"),
+                )
             }
             Text(
                 stringResource(Res.string.ui_times_are_in_1_s, timeZone),
@@ -141,11 +144,13 @@ internal fun TaskScheduleFields(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                LoomButton(
-                    text = stringResource(Res.string.task_picker_done),
-                    enabled = pickerState.selectedDateMillis != null,
-                    modifier = Modifier.testTag("confirm_task_date"),
-                    onClick = {
+                DialogActions(
+                    confirmText = stringResource(Res.string.task_picker_done),
+                    dismissText = stringResource(Res.string.ui_cancel),
+                    confirmEnabled = pickerState.selectedDateMillis != null,
+                    confirmModifier = Modifier.testTag("confirm_task_date"),
+                    onDismiss = { showDatePicker = false },
+                    onConfirm = {
                         pickerState.selectedDateMillis?.let { selected ->
                             onDate(
                                 Instant.fromEpochMilliseconds(selected)
@@ -156,11 +161,6 @@ internal fun TaskScheduleFields(
                         showDatePicker = false
                     },
                 )
-            },
-            dismissButton = {
-                OutlinedButton(onClick = { showDatePicker = false }) {
-                    Text(stringResource(Res.string.ui_cancel))
-                }
             },
         ) {
             DatePicker(state = pickerState)
@@ -178,19 +178,16 @@ internal fun TaskScheduleFields(
             title = { Text(stringResource(Res.string.task_notification_time)) },
             text = { TimeInput(state = pickerState) },
             confirmButton = {
-                LoomButton(
-                    text = stringResource(Res.string.task_picker_done),
-                    modifier = Modifier.testTag("confirm_task_time"),
-                    onClick = {
+                DialogActions(
+                    confirmText = stringResource(Res.string.task_picker_done),
+                    dismissText = stringResource(Res.string.ui_cancel),
+                    confirmModifier = Modifier.testTag("confirm_task_time"),
+                    onDismiss = { showTimePicker = false },
+                    onConfirm = {
                         onTime(LocalTime(hour = pickerState.hour, minute = pickerState.minute))
                         showTimePicker = false
                     },
                 )
-            },
-            dismissButton = {
-                OutlinedButton(onClick = { showTimePicker = false }) {
-                    Text(stringResource(Res.string.ui_cancel))
-                }
             },
         )
     }

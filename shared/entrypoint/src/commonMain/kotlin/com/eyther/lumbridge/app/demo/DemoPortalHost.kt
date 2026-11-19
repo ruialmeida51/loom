@@ -1,8 +1,6 @@
 package com.eyther.lumbridge.app.demo
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -10,6 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import com.eyther.lumbridge.app.demo.data.DemoAnalyticsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoDiagnosticsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseAccountDataSource
@@ -37,6 +36,7 @@ import com.eyther.lumbridge.app.navigation.push.PendingPush
 import com.eyther.lumbridge.core.navigation.composables.navigation3.DefaultNavDisplay
 import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.viewmodel.rememberHostViewModelStoreOwner
 import com.eyther.lumbridge.di.providedAccountModules
@@ -179,14 +179,14 @@ internal fun DemoPortalHost(
                                         }
                                 }
                                 .forEach { household ->
-                                    OutlinedButton(
+                                    LoomSecondaryButton(
+                                        text = household.context.name,
                                         onClick = {
                                             onSelect(household.context.id)
                                             navigator.resetTo(PortalDestination.Household)
                                         },
-                                    ) {
-                                        Text(household.context.name)
-                                    }
+                                        modifier = Modifier,
+                                    )
                                 }
                         }
                     }

@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -19,6 +17,7 @@ import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
@@ -121,7 +120,11 @@ private fun InnerFeedScreen(
         error?.let { message ->
             item(key = "error") {
                 ErrorNotice(message = message, onDismiss = onDismiss)
-                FilledTonalButton(onClick = onRetry) { Text(stringResource(Res.string.feed_retry)) }
+                LoomSecondaryButton(
+                    text = stringResource(Res.string.feed_retry),
+                    onClick = onRetry,
+                    modifier = Modifier,
+                )
             }
         }
         item(key = "source_filters") {

@@ -18,12 +18,17 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.io.bytestring.ByteString
 
 class CommonExpenseReceiptDataSource(
     private val access: SupabaseAccess,
     private val context: HouseholdContextDomain,
 ) : ExpenseReceiptDataSource {
+    private val photoMutex = Mutex()
+    private val downloadedPhotos = linkedMapOf<String, ReceiptPhotoDomain>()
+
     override suspend fun preparePhoto(bytes: ByteArray): AppResult<ReceiptPhotoDomain> =
         prepareReceiptPhoto(bytes = bytes)
 
@@ -54,12 +59,22 @@ class CommonExpenseReceiptDataSource(
     ): AppResult<ReceiptPhotoDomain> =
         safeApiCall(mapError = Exception::toReceiptError) {
             val path = receipt.objectPath ?: throw ReceiptError.NotFound()
-            val bytes = access.read { client ->
-                client.storage[RECEIPT_BUCKET].downloadAuthenticated(path = path)
+            photoMutex.withLock {
+                downloadedPhotos.remove(path)?.let { cached ->
+                    downloadedPhotos[path] = cached
+                    return@withLock cached
+                }
+                val bytes = access.read { client ->
+                    client.storage[RECEIPT_BUCKET].downloadAuthenticated(path = path)
+                }
+                if (bytes.isEmpty() || bytes.size > ReceiptPhotoDomain.MAX_STORED_BYTES)
+                    throw ReceiptError.InvalidPhoto()
+                val photo = ReceiptPhotoDomain(data = ByteString(bytes), id = path)
+                downloadedPhotos[path] = photo
+                if (downloadedPhotos.size > MAX_CACHED_PHOTOS)
+                    downloadedPhotos.remove(downloadedPhotos.keys.first())
+                photo
             }
-            if (bytes.isEmpty() || bytes.size > ReceiptPhotoDomain.MAX_UPLOAD_BYTES)
-                throw ReceiptError.InvalidPhoto()
-            ReceiptPhotoDomain(data = ByteString(bytes), id = path)
         }
 
     override suspend fun savePhoto(
@@ -134,3 +149,4 @@ class CommonExpenseReceiptDataSource(
 }
 
 private const val RECEIPT_BUCKET = "expense-receipts"
+private const val MAX_CACHED_PHOTOS = 2

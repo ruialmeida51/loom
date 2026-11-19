@@ -24,7 +24,6 @@ data class ExpenseFormState(
     val recurring: Boolean = false,
     val split: ExpenseSplitSelectionDomain =
         ExpenseSplitSelectionDomain(ExpenseSplitMethodDomain.EQUAL, emptySet()),
-    val showDetails: Boolean = false,
     val loading: Boolean = true,
     val busy: Boolean = false,
     val error: TextResource? = null,

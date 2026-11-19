@@ -55,6 +55,8 @@ class LoomGraphTest {
 
         override val configured: Boolean = true
 
+        override suspend fun recoverSession(): AppResult<Unit> = AppResult.Success(Unit)
+
         override fun stream(): StateFlow<AuthenticationStateDomain> =
             MutableStateFlow(AuthenticationStateDomain.SignedOut)
 

@@ -1,21 +1,10 @@
 package com.eyther.lumbridge.core.presentation.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-
-private val DestructiveActionMinimumHeight =
-    50.dp // Match full-width primary and secondary actions.
+import androidx.compose.ui.graphics.Color
+import com.eyther.lumbridge.core.presentation.components.button.DefaultLoomButton
 
 /** Destructive secondary action with a visible boundary and request progress. */
 @Composable
@@ -25,20 +14,17 @@ fun DestructiveButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     loading: Boolean = false,
+    filled: Boolean = false,
 ) {
-    OutlinedButton(
+    DefaultLoomButton(
+        text = text,
         onClick = onClick,
-        modifier = modifier.heightIn(min = DestructiveActionMinimumHeight),
-        enabled = enabled && !loading,
-        colors =
-            ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            if (loading) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-            Text(text)
-        }
-    }
+        modifier = modifier,
+        enabled = enabled,
+        loading = loading,
+        containerColor = if (filled) MaterialTheme.colorScheme.error else Color.Transparent,
+        contentColor =
+            if (filled) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.error,
+        outlineColor = if (filled) null else MaterialTheme.colorScheme.error,
+    )
 }

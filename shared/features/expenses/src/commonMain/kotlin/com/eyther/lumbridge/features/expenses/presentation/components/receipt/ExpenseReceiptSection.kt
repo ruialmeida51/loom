@@ -1,6 +1,8 @@
 package com.eyther.lumbridge.features.expenses.presentation.components.receipt
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,8 +10,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
@@ -23,6 +29,7 @@ import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.components.menu.rememberActionMenuState
+import com.eyther.lumbridge.core.presentation.extensions.shimmer
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
@@ -43,6 +50,8 @@ import org.jetbrains.compose.resources.stringResource
 
 private val DraftPreviewHeight =
     144.dp // A useful preview without turning expense capture into a photo screen.
+private val ReceiptThumbnailHeight = 80.dp
+private val ReceiptThumbnailWidth = 64.dp
 
 @Composable
 internal fun ExpenseReceiptSection(
@@ -64,8 +73,11 @@ internal fun ExpenseReceiptSection(
     onDelete: () -> Unit,
     onRetry: () -> Unit,
     onInvalidPhoto: () -> Unit,
+    preview: ReceiptPhotoUi? = null,
+    previewLoading: Boolean = false,
 ) {
     val menu = rememberActionMenuState()
+    val hasThumbnail = photo == null && (preview != null || previewLoading)
     Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.small)) {
         if (loading) GroupedSurface { LoadingRow() }
         else if (canManage || attached || photo != null)
@@ -79,85 +91,117 @@ internal fun ExpenseReceiptSection(
                                 .padding(LoomSpacing.small),
                         onInvalidPhoto = onInvalidPhoto,
                     )
-                NavigationRow(
-                    title =
-                        stringResource(
-                            if (attached || photo != null) Res.string.receipt_title
-                            else Res.string.receipt_add,
-                        ),
-                    description =
-                        if (photo != null) stringResource(Res.string.receipt_ready)
-                        else if (attached) stringResource(Res.string.receipt_view) else null,
-                    glyph = Glyph.PHOTO,
-                    onClick = if (attached && photo == null) onView else menu::show,
-                    enabled = !busy && (canManage || attached),
-                    modifier = Modifier.testTag("expense_receipt"),
-                    trailingContent = {
-                        if (preparing)
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp,
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (hasThumbnail) {
+                        val thumbnailModifier =
+                            Modifier.padding(
+                                    start = LoomSpacing.small,
+                                    top = LoomSpacing.small,
+                                    bottom = LoomSpacing.small,
+                                )
+                                .size(
+                                    width = ReceiptThumbnailWidth,
+                                    height = ReceiptThumbnailHeight,
+                                )
+                                .clip(MaterialTheme.shapes.small)
+                                .clickable(onClick = onView)
+                                .testTag("receipt_thumbnail")
+                        if (preview != null)
+                            ReceiptImage(
+                                photo = preview,
+                                modifier = thumbnailModifier,
+                                contentScale = ContentScale.Crop,
+                                onInvalidPhoto = onInvalidPhoto,
                             )
-                        else if (canManage)
-                            ActionMenu(
-                                state = menu,
-                                contentDescription = stringResource(Res.string.receipt_options),
-                                modifier = Modifier.testTag("receipt_options"),
-                                items =
-                                    buildList {
-                                        add(
-                                            ActionMenuItem(
-                                                text =
-                                                    TextResource.Resource(
-                                                        Res.string.receipt_gallery,
+                        else
+                            Box(
+                                modifier =
+                                    thumbnailModifier.shimmer(
+                                        shouldShimmer = true,
+                                        shape = MaterialTheme.shapes.small,
+                                    ),
+                            )
+                    }
+                    NavigationRow(
+                        title =
+                            stringResource(
+                                if (attached || photo != null) Res.string.receipt_title
+                                else Res.string.receipt_add,
+                            ),
+                        description =
+                            if (photo != null) stringResource(Res.string.receipt_ready)
+                            else if (attached) stringResource(Res.string.receipt_view) else null,
+                        glyph = if (hasThumbnail) null else Glyph.PHOTO,
+                        onClick = if (attached && photo == null) onView else menu::show,
+                        enabled = !busy && (canManage || attached),
+                        modifier = Modifier.weight(1f).testTag("expense_receipt"),
+                        trailingContent = {
+                            if (preparing)
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp,
+                                )
+                            else if (canManage)
+                                ActionMenu(
+                                    state = menu,
+                                    contentDescription = stringResource(Res.string.receipt_options),
+                                    modifier = Modifier.testTag("receipt_options"),
+                                    items =
+                                        buildList {
+                                            add(
+                                                ActionMenuItem(
+                                                    text =
+                                                        TextResource.Resource(
+                                                            Res.string.receipt_gallery,
+                                                        ),
+                                                    onClick = onGallery,
+                                                    enabled = !busy,
+                                                ),
+                                            )
+                                            if (cameraSupported)
+                                                add(
+                                                    ActionMenuItem(
+                                                        text =
+                                                            TextResource.Resource(
+                                                                Res.string.receipt_camera,
+                                                            ),
+                                                        onClick = onCamera,
+                                                        enabled = !busy,
                                                     ),
-                                                onClick = onGallery,
-                                                enabled = !busy,
-                                            ),
-                                        )
-                                        if (cameraSupported)
-                                            add(
-                                                ActionMenuItem(
-                                                    text =
-                                                        TextResource.Resource(
-                                                            Res.string.receipt_camera,
-                                                        ),
-                                                    onClick = onCamera,
-                                                    enabled = !busy,
-                                                ),
-                                            )
-                                        if (photo != null)
-                                            add(
-                                                ActionMenuItem(
-                                                    text =
-                                                        TextResource.Resource(
-                                                            Res.string.receipt_discard,
-                                                        ),
-                                                    onClick = onDiscard,
-                                                    enabled = !busy,
-                                                ),
-                                            )
-                                        else if (canDelete && attached)
-                                            add(
-                                                ActionMenuItem(
-                                                    text =
-                                                        TextResource.Resource(
-                                                            Res.string.receipt_delete,
-                                                        ),
-                                                    onClick = onDelete,
-                                                    enabled = !busy,
-                                                    destructive = true,
-                                                ),
-                                            )
-                                    },
-                            )
-                        else LoomIcon(glyph = Glyph.ARROW, decorative = true)
-                    },
-                )
+                                                )
+                                            if (photo != null)
+                                                add(
+                                                    ActionMenuItem(
+                                                        text =
+                                                            TextResource.Resource(
+                                                                Res.string.receipt_discard,
+                                                            ),
+                                                        onClick = onDiscard,
+                                                        enabled = !busy,
+                                                    ),
+                                                )
+                                            else if (canDelete && attached)
+                                                add(
+                                                    ActionMenuItem(
+                                                        text =
+                                                            TextResource.Resource(
+                                                                Res.string.receipt_delete,
+                                                            ),
+                                                        onClick = onDelete,
+                                                        enabled = !busy,
+                                                        destructive = true,
+                                                    ),
+                                                )
+                                        },
+                                )
+                            else LoomIcon(glyph = Glyph.ARROW, decorative = true)
+                        },
+                    )
+                }
             }
         error?.let { message ->
             ErrorNotice(message = message)
-            if (!canManage && !attached && photo == null)
+            if (photo == null && !preparing)
                 LoomSecondaryButton(
                     text = stringResource(Res.string.balance_retry),
                     onClick = onRetry,

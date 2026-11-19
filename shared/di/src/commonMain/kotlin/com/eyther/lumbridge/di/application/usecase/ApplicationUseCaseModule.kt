@@ -3,8 +3,10 @@ package com.eyther.lumbridge.di.application.usecase
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetGoogleSignInResultsStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
+import com.eyther.lumbridge.features.authentication.domain.usecase.RecoverSessionUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RegisterUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RequestEmailCodeUseCase
+import com.eyther.lumbridge.features.authentication.domain.usecase.ResumeSessionUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInWithGoogleUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
@@ -18,6 +20,18 @@ import org.koin.core.annotation.Single
 
 @Module
 class ApplicationUseCaseModule {
+
+    @Single
+    fun provideResumeSessionUseCase(
+        authenticationDataSource: AuthenticationDataSource,
+    ): ResumeSessionUseCase =
+        ResumeSessionUseCase(authenticationDataSource = authenticationDataSource)
+
+    @Single
+    fun provideRecoverSessionUseCase(
+        authenticationDataSource: AuthenticationDataSource,
+    ): RecoverSessionUseCase =
+        RecoverSessionUseCase(authenticationDataSource = authenticationDataSource)
 
     @Single
     fun provideSignInWithGoogleUseCase(

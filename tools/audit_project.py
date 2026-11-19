@@ -73,6 +73,10 @@ for source in (ROOT / 'shared').rglob('*.kt'):
                 issues.append(f'Use updateState inside observeWith: {path}')
         if re.search(r'\bTextButton\s*\(', text):
             issues.append(f'Use filled, tonal or outlined actions, or grouped navigation rows, instead of TextButton: {path}')
+        if re.search(r'\b(?:Button|OutlinedButton|FilledTonalButton)\s*\(', text) and source.name != 'DefaultLoomButton.kt':
+            issues.append(f'Use the shared Loom action-button renderer: {path}')
+        if any(imp.startswith('androidx.compose.material3.SnackbarHost') for imp in imports):
+            issues.append(f'Use custom feedback with feature-owned expiry instead of a stock snackbar host: {path}')
         if '/presentation/screen/' in str(source):
             screen_count += 1
             screens = re.findall(r'^fun (\w+Screen)\(', text, re.M)

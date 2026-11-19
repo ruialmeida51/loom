@@ -8,6 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackbar
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
@@ -27,18 +29,24 @@ fun SessionScreen(
         @Composable
         (String, HouseholdContextDomain?, Boolean, TextResource?) -> Unit,
 ) {
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.onResume() }
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { viewModel.onPause() }
     val state by viewModel.state.platformCollectAsStateOnStart()
     InnerSessionScreen(
         stage = state.stage,
         userId = state.userId,
         context = state.context,
         reconnecting = state.reconnecting,
+        sessionRecoveryAvailable = state.sessionRecoveryAvailable,
+        recoveringSession = state.recoveringSession,
+        sessionRecoveryError = state.sessionRecoveryError,
         restoreError = state.restoreError,
         selectionError = state.selectionError ?: state.accessError,
         selectionMessage = state.selectionMessage,
         signingOut = state.signingOut,
         signOutError = state.signOutError,
         onRetry = viewModel::onRetryHouseholdRestore,
+        onRetrySession = viewModel::onRetrySessionRecovery,
         onChooseHousehold = viewModel::onChooseHousehold,
         onDismissSelectionError = viewModel::onDismissSelectionError,
         signedOutContent = signedOutContent,
@@ -52,12 +60,16 @@ private fun InnerSessionScreen(
     userId: String?,
     context: HouseholdContextDomain?,
     reconnecting: Boolean,
+    sessionRecoveryAvailable: Boolean,
+    recoveringSession: Boolean,
+    sessionRecoveryError: TextResource?,
     restoreError: TextResource?,
     selectionError: TextResource?,
     selectionMessage: TextResource?,
     signingOut: Boolean,
     signOutError: TextResource?,
     onRetry: () -> Unit,
+    onRetrySession: () -> Unit,
     onChooseHousehold: () -> Unit,
     onDismissSelectionError: () -> Unit,
     signedOutContent: @Composable () -> Unit,
@@ -66,7 +78,13 @@ private fun InnerSessionScreen(
         (String, HouseholdContextDomain?, Boolean, TextResource?) -> Unit,
 ) {
     when (stage) {
-        SessionStageUi.RESTORING -> SessionStartup(reconnecting = reconnecting)
+        SessionStageUi.RESTORING ->
+            SessionStartup(
+                reconnecting = reconnecting,
+                error = sessionRecoveryError,
+                retrying = recoveringSession,
+                onRetry = onRetrySession.takeIf { sessionRecoveryAvailable },
+            )
         SessionStageUi.HOUSEHOLD_RESTORE_FAILED ->
             SessionStartup(
                 reconnecting = reconnecting,

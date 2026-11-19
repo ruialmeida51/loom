@@ -10,4 +10,6 @@ internal sealed interface ShoppingSheets : BottomSheetType {
     @Stable data object ShoppingLists : ShoppingSheets
 
     @Stable data object ShoppingListName : ShoppingSheets
+
+    @Stable data object ShoppingFavorites : ShoppingSheets
 }

@@ -117,6 +117,10 @@ class ExpensesScreenViewModel(
         }
     }
 
+    override fun onMemberBalancesVisibilityChanged(value: Boolean) {
+        mutableState.update { oldState -> oldState.copy(showMemberBalances = value) }
+    }
+
     override fun onAccountSelected(id: String) {
         if (state.value.busy) return
         if (state.value.account?.id == id) {

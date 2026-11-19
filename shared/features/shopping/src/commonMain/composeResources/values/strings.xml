@@ -9,7 +9,11 @@
   <string name="message_couldn_t_load_your_shopping_lists">Couldn’t load your shopping lists.</string>
   <string name="item_updated">Item updated</string>
   <string name="item_removed">Item removed</string>
-  <string name="favorite_updated">Favorite updated</string>
+  <string name="favorite_updated">Favourites updated</string>
+  <string name="action_undo">Undo</string>
+  <string name="favorites_title">Favourites</string>
+  <string name="favorites_empty">Star items to keep them here for next time.</string>
+  <string name="favorites_on_list">Already on this list</string>
   <string name="item_moved">Item moved</string>
   <string name="item_restored">Item restored</string>
   <string name="ui_one_less_thing_to_remember">ONE LESS THING TO REMEMBER</string>
@@ -59,8 +63,8 @@
     <item quantity="one">%1$d thing left to pick up. Everyone’s on the same page.</item>
     <item quantity="other">%1$d things left to pick up. Everyone’s on the same page.</item>
   </plurals>
-  <string name="ui_favorite_add">Add to favorites</string>
-  <string name="ui_favorite_remove">Remove from favorites</string>
+  <string name="ui_favorite_add">Add to favourites</string>
+  <string name="ui_favorite_remove">Remove from favourites</string>
   <string name="error_list_name_already_exists">A list with this name already exists.</string>
   <string name="ui_move_to">Move to %1$s</string>
   <string name="ui_item_options">Options for %1$s</string>

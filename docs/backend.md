@@ -45,6 +45,21 @@ Check [Auth logs](https://supabase.com/dashboard/project/eeyfhmlyopuobtgdfbql/lo
 
 These hosted Auth settings are separate from SQL migrations. The connected Supabase tools currently expose database/log operations but not Auth configuration; no hosted template or SMTP change is implied by editing `config.toml`.
 
+## Session recovery
+
+Supabase Auth loads and saves the encrypted session, including its absolute expiry and rotated
+refresh token. The SDK remains the only owner of automatic refresh. Its Android background callback
+temporarily publishes `Initializing`; that is not a sign-out. Authenticated reads and user-identity
+lookups wait through initialization/refresh instead of issuing anonymous requests. Fallible streams
+resolve identity inside their cold flow so a screen opened during resume cannot throw before its
+typed error handler is attached.
+
+An open session also attempts a silent, debounced repair on resume; pause/identity changes cancel that foreground request without resetting household state. An interrupted startup exposes Try again after 15 seconds (or a refresh failure). Recovery restarts
+the SDK from secure storage only when its refresh job is stopped; it waits for an existing job
+instead of racing refresh-token rotation. Offline failures retain credentials and household state.
+A rejected/revoked refresh token still clears the SDK session and returns to login. This does not
+add offline data support. See the session regressions and final audit for validation limits.
+
 ## Android push
 
 1. Register the Android application **`com.eyther.lumbridge`** in your Firebase project.

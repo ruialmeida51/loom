@@ -3,13 +3,12 @@ package com.eyther.lumbridge.features.shopping.presentation.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.DestructiveButton
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_selected
@@ -29,18 +28,16 @@ internal fun CompletedShoppingActions(
         modifier = Modifier.padding(top = LoomSpacing.extraSmall, bottom = LoomSpacing.small),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        OutlinedButton(
-            onClick = onSelectAll,
-            enabled = !busy,
-            modifier = Modifier.testTag("select_all_completed"),
-        ) {
-            Text(
+        LoomSecondaryButton(
+            text =
                 stringResource(
                     if (allSelected) Res.string.completed_deselect_all
                     else Res.string.completed_select_all,
                 ),
-            )
-        }
+            onClick = onSelectAll,
+            enabled = !busy,
+            modifier = Modifier.testTag("select_all_completed"),
+        )
         DestructiveButton(
             text = stringResource(Res.string.completed_delete_selected, selectedCount),
             onClick = onDelete,

@@ -1,0 +1,1 @@
+# Debug builds work without Firebase configuration and do not upload release symbols.

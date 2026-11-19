@@ -31,6 +31,9 @@ data class ExpenseDetailsState(
     val deleteError: TextResource? = null,
     val receipt: ExpenseReceiptDomain? = null,
     val receiptPhoto: ReceiptPhotoDomain? = null,
+    val receiptPreview: ReceiptPhotoDomain? = null,
+    val receiptPreviewLoading: Boolean = false,
+    val receiptPreviewAttempt: Long = 0L,
     val receiptLoading: Boolean = false,
     val receiptReady: Boolean = false,
     val receiptPreparing: Boolean = false,
@@ -42,6 +45,9 @@ data class ExpenseDetailsState(
 ) {
     val receiptPhotoUi: ReceiptPhotoUi? = receiptPhoto?.let {
         ReceiptPhotoUi(id = it.id, data = it.data)
+    }
+    val receiptPreviewUi: ReceiptPhotoUi? = receiptPreview?.let {
+        ReceiptPhotoUi(id = "${it.id}:$receiptPreviewAttempt", data = it.data)
     }
 
     val receiptDeleteConfirmation: DestructiveConfirmationUi? =

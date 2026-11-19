@@ -13,7 +13,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingForm
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
@@ -92,7 +92,11 @@ private fun InnerExpenseAccountFormScreen(
             if (loading) LoadingForm()
             error?.let {
                 ErrorNotice(message = it, onDismiss = onDismiss)
-                OutlinedButton(onClick = onRetry) { Text(stringResource(Res.string.balance_retry)) }
+                LoomSecondaryButton(
+                    text = stringResource(Res.string.balance_retry),
+                    onClick = onRetry,
+                    modifier = Modifier,
+                )
             }
             if (members.isNotEmpty()) {
                 OutlinedTextField(

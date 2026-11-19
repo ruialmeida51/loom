@@ -10,6 +10,7 @@ import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseReceiptDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.update
 
 class ExpenseDetailsScreenViewModel(
     private val getExpenseReceiptUseCase: GetExpenseReceiptUseCase,
+    private val downloadReceiptPhotoUseCase: DownloadReceiptPhotoUseCase,
     private val prepareReceiptPhotoUseCase: PrepareReceiptPhotoUseCase,
     private val saveExpenseReceiptUseCase: SaveExpenseReceiptUseCase,
     private val removeExpenseReceiptUseCase: RemoveExpenseReceiptUseCase,
@@ -45,6 +47,7 @@ class ExpenseDetailsScreenViewModel(
     private var receiptAtDraft: ExpenseReceiptDomain? = null
     private var receiptToDelete: ExpenseReceiptDomain? = null
     private var successJob: Job? = null
+    private var receiptPreviewJob: Job? = null
     private val mutableState =
         MutableStateFlow(ExpenseDetailsState(userId = context.userId, receiptLoading = true))
             .launchWith(viewModelScope) { state ->
@@ -90,7 +93,11 @@ class ExpenseDetailsScreenViewModel(
     override fun onReceiptRetry() {
         if (state.value.busy || state.value.receiptLoading) return
         mutableState.update { oldState ->
-            oldState.copy(receiptLoading = true, receiptError = null)
+            oldState.copy(
+                receiptLoading = true,
+                receiptError = null,
+                receiptPreviewAttempt = oldState.receiptPreviewAttempt + 1L,
+            )
         }
         launch { loadReceipt() }
     }
@@ -100,15 +107,27 @@ class ExpenseDetailsScreenViewModel(
         val receipt = receiptAtDraft ?: return
         if (!state.value.canEdit || state.value.receiptPreparing) return
         mutableState.update { oldState ->
-            oldState.copy(busy = true, receiptError = null, receiptLoading = false)
+            oldState.copy(
+                busy = true,
+                receiptError = null,
+                receiptLoading = false,
+                receiptPreviewLoading = false,
+            )
         }
         receiptReadRevision++
+        receiptPreviewJob?.cancel()
         launch {
             val result = saveExpenseReceiptUseCase(receipt = receipt, photo = photo)
             mutableState.update { oldState ->
                 when (result) {
                     is AppResult.Success ->
-                        oldState.copy(busy = false, receiptPhoto = null, receipt = result.value)
+                        oldState.copy(
+                            busy = false,
+                            receiptPhoto = null,
+                            receipt = result.value,
+                            receiptPreview = result.value.objectPath?.let { photo.copy(id = it) },
+                            receiptPreviewLoading = false,
+                        )
                     is AppResult.Failure ->
                         oldState.copy(
                             busy = false,
@@ -141,9 +160,15 @@ class ExpenseDetailsScreenViewModel(
         val receipt = receiptToDelete ?: return
         if (!state.value.showReceiptDeletion || !state.value.canEdit) return
         mutableState.update { oldState ->
-            oldState.copy(busy = true, receiptError = null, receiptLoading = false)
+            oldState.copy(
+                busy = true,
+                receiptError = null,
+                receiptLoading = false,
+                receiptPreviewLoading = false,
+            )
         }
         receiptReadRevision++
+        receiptPreviewJob?.cancel()
         launch {
             val result = removeExpenseReceiptUseCase(receipt = receipt)
             mutableState.update { oldState ->
@@ -152,6 +177,8 @@ class ExpenseDetailsScreenViewModel(
                         oldState.copy(
                             busy = false,
                             receipt = result.value,
+                            receiptPreview = null,
+                            receiptPreviewLoading = false,
                             showReceiptDeletion = false,
                         )
                     is AppResult.Failure ->
@@ -177,6 +204,7 @@ class ExpenseDetailsScreenViewModel(
 
     private suspend fun loadReceipt() {
         val revision = ++receiptReadRevision
+        receiptPreviewJob?.cancel()
         val result =
             getExpenseReceiptUseCase(expenseId = params.expenseId, accountId = params.accountId)
         if (revision != receiptReadRevision) return
@@ -185,16 +213,50 @@ class ExpenseDetailsScreenViewModel(
                 is AppResult.Success ->
                     oldState.copy(
                         receipt = result.value,
+                        receiptPreview =
+                            oldState.receiptPreview?.takeIf { it.id == result.value.objectPath },
                         receiptReady = true,
                         receiptLoading = false,
+                        receiptPreviewLoading = false,
                         receiptError =
                             if (oldState.receiptPhoto == null) null else oldState.receiptError,
                     )
                 is AppResult.Failure ->
                     oldState.copy(
                         receiptLoading = false,
+                        receiptPreviewLoading = false,
                         receiptError = result.error.toExpensesTextResource(),
                     )
+            }
+        }
+        if (result is AppResult.Success && result.value.objectPath != null)
+            loadReceiptPreview(receipt = result.value, revision = revision)
+    }
+
+    private fun loadReceiptPreview(receipt: ExpenseReceiptDomain, revision: Long) {
+        val path = receipt.objectPath ?: return
+        if (state.value.receiptPreview?.id == path) return
+        receiptPreviewJob?.cancel()
+        mutableState.update { oldState -> oldState.copy(receiptPreviewLoading = true) }
+        receiptPreviewJob = launch {
+            val result = downloadReceiptPhotoUseCase(receipt = receipt)
+            if (revision != receiptReadRevision) return@launch
+            mutableState.update { oldState ->
+                when (result) {
+                    is AppResult.Success ->
+                        oldState.copy(
+                            receiptPreview = result.value.copy(id = path),
+                            receiptPreviewLoading = false,
+                        )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            receiptPreviewLoading = false,
+                            receiptError =
+                                if (oldState.receiptPhoto == null && !oldState.receiptPreparing)
+                                    result.error.toExpensesTextResource()
+                                else oldState.receiptError,
+                        )
+                }
             }
         }
     }

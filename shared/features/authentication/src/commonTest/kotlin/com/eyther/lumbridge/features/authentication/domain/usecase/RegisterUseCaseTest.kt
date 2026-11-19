@@ -20,6 +20,9 @@ class RegisterUseCaseTest {
 
         override val configured: Boolean = true
 
+        override suspend fun recoverSession(): AppResult<Unit> =
+            error("Recovery is outside this test")
+
         var registeredEmail: String? = null
 
         override fun stream(): StateFlow<AuthenticationStateDomain> =

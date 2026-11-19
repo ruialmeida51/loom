@@ -37,15 +37,17 @@ private val StartupProgressWidth = 160.dp
 internal fun SessionStartup(
     reconnecting: Boolean,
     error: TextResource? = null,
-    onRetry: () -> Unit = {},
-    onChooseHousehold: () -> Unit = {},
+    retrying: Boolean = false,
+    onRetry: (() -> Unit)? = null,
+    onChooseHousehold: (() -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier.fillMaxSize().safeDrawingPadding().testTag("session_startup"),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(LoomSpacing.content, Alignment.CenterVertically),
     ) {
-        if (error == null) LinearProgressIndicator(modifier = Modifier.width(StartupProgressWidth))
+        if (error == null && onRetry == null)
+            LinearProgressIndicator(modifier = Modifier.width(StartupProgressWidth))
         Text(
             text =
                 stringResource(
@@ -55,21 +57,27 @@ internal fun SessionStartup(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        error?.let { message ->
+        if (error != null || onRetry != null) {
             Column(
                 Modifier.widthIn(max = StartupContentMaxWidth).padding(LoomSpacing.content),
                 verticalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
             ) {
-                ErrorNotice(message = message)
-                LoomButton(
-                    text = stringResource(Res.string.session_retry),
-                    onClick = onRetry,
-                    modifier = Modifier.fillMaxWidth().testTag("retry_session_household"),
-                )
-                LoomSecondaryButton(
-                    text = stringResource(Res.string.session_choose_household),
-                    onClick = onChooseHousehold,
-                )
+                error?.let { message -> ErrorNotice(message = message) }
+                onRetry?.let { retry ->
+                    LoomButton(
+                        text = stringResource(Res.string.session_retry),
+                        onClick = retry,
+                        loading = retrying,
+                        modifier = Modifier.fillMaxWidth().testTag("retry_session"),
+                    )
+                }
+                onChooseHousehold?.let { chooseHousehold ->
+                    LoomSecondaryButton(
+                        text = stringResource(Res.string.session_choose_household),
+                        onClick = chooseHousehold,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }

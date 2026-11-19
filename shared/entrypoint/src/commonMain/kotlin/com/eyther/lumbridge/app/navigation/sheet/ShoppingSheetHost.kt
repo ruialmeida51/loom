@@ -8,6 +8,7 @@ import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.BottomSheetLayout
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.rememberBottomSheetController
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.features.shopping.presentation.components.bottomsheet.ShoppingFavoritesBottomSheet
 import com.eyther.lumbridge.features.shopping.presentation.components.bottomsheet.ShoppingItemBottomSheet
 import com.eyther.lumbridge.features.shopping.presentation.components.bottomsheet.ShoppingListNameBottomSheet
 import com.eyther.lumbridge.features.shopping.presentation.components.bottomsheet.ShoppingListsBottomSheet
@@ -25,6 +26,7 @@ internal fun ShoppingSheetHost(
             state.showListForm -> ShoppingSheets.ShoppingListName
             state.showLists -> ShoppingSheets.ShoppingLists
             state.showAdd -> ShoppingSheets.ShoppingItem
+            state.showFavorites -> ShoppingSheets.ShoppingFavorites
             else -> null
         }
     LaunchedEffect(requestedSheet) {
@@ -72,6 +74,17 @@ internal fun ShoppingSheetHost(
             onDismiss = viewModel::onDismissError,
         )
     }
+    controller.registerBottomSheet<ShoppingSheets.ShoppingFavorites> {
+        ShoppingFavoritesBottomSheet(
+            listName = state.selectedList?.name.orEmpty(),
+            favorites = state.favorites,
+            busy = state.busy || state.savingItemIds.isNotEmpty(),
+            error = state.displayError,
+            onReuse = viewModel::onReuseItem,
+            onRemoveFavorite = viewModel::onToggleFavorite,
+            onDismissError = viewModel::onDismissError,
+        )
+    }
     BottomSheetLayout(
         controller = controller,
         dismissEnabled = !state.busy,
@@ -79,6 +92,7 @@ internal fun ShoppingSheetHost(
             when {
                 state.showListForm -> viewModel.onCloseListForm()
                 state.showLists -> viewModel.onListsVisibilityChanged(false)
+                state.showFavorites -> viewModel.onFavoritesVisibilityChanged(false)
                 else -> viewModel.onAddSheetVisibilityChanged(false)
             }
         },

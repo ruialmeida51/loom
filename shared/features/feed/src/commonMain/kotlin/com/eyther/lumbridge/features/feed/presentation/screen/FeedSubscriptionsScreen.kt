@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -15,6 +13,7 @@ import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.IllustratedEmptyState
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -90,7 +89,11 @@ private fun InnerFeedSubscriptionsScreen(
         error?.let { message ->
             item(key = "error") {
                 ErrorNotice(message = message, onDismiss = onDismiss)
-                FilledTonalButton(onClick = onRetry) { Text(stringResource(Res.string.feed_retry)) }
+                LoomSecondaryButton(
+                    text = stringResource(Res.string.feed_retry),
+                    onClick = onRetry,
+                    modifier = Modifier,
+                )
             }
         }
         if (loading) item(key = "loading") { LoadingRows() }

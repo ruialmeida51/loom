@@ -73,6 +73,8 @@ abstract class ShoppingScreenViewModelContract : LoomViewModel() {
 
     abstract fun onListsVisibilityChanged(value: Boolean)
 
+    abstract fun onFavoritesVisibilityChanged(value: Boolean)
+
     abstract fun onOpenListForm(list: ShoppingListDomain?)
 
     abstract fun onCloseListForm()

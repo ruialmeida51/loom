@@ -108,7 +108,7 @@
     <string name="history_repayment">Repayment</string>
     <string name="history_transfer_on">%1$s → %2$s · %3$s</string>
     <string name="former_member">Former member</string>
-    <string name="balance_who_pays">Who pays whom</string>
+    <string name="balance_who_pays">Who owes whom</string>
     <string name="balance_person_owes">%1$s owes %2$s</string>
     <string name="balance_all_settled">All settled.</string>
     <string name="balance_statements">Statements and statistics</string>
@@ -128,8 +128,6 @@
     <string name="form_amount">Amount (%1$s)</string>
     <string name="form_amount_label">Amount</string>
     <string name="form_split">Split</string>
-    <string name="form_more">More details</string>
-    <string name="form_less">Fewer details</string>
     <string name="form_date">Date</string>
     <string name="form_monthly">Repeat monthly</string>
     <string name="form_recurring_unchanged">Edits apply to this expense. Upcoming bills keep their existing schedule.</string>
@@ -218,4 +216,6 @@
   <string name="bill_delete_title">Delete recurring bill?</string>
   <string name="bill_delete_message">Future entries for %1$s will stop. Expenses already recorded will stay.</string>
   <string name="departure_balances">Current balances by account</string>
+    <string name="form_category">Category</string>
+    <string name="payment_record">Record payment</string>
 </resources>

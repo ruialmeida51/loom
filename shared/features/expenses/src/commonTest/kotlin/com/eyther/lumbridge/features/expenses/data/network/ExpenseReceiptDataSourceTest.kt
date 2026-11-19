@@ -36,6 +36,116 @@ import kotlinx.serialization.json.jsonPrimitive
 @OptIn(SupabaseInternal::class)
 class ExpenseReceiptDataSourceTest {
     @Test
+    fun previewAndViewerReuseAnAuthenticatedDownloadAndTheMemoryCacheIsBounded() = runTest {
+        var downloads = 0
+        val legacyPhoto = ByteArray(ReceiptPhotoDomain.MAX_UPLOAD_BYTES + 16) { 1 }
+        val client =
+            createSupabaseClient("https://loom.test", "test-key") {
+                install(Auth) {
+                    autoLoadFromStorage = false
+                    autoSaveToStorage = false
+                }
+                install(Storage) { requireValidSession = true }
+                httpEngine = MockEngine { request ->
+                    assertEquals(
+                        "Bearer test-user-token",
+                        request.headers[HttpHeaders.Authorization],
+                    )
+                    assertEquals(HttpMethod.Get, request.method)
+                    downloads++
+                    respond(legacyPhoto, headers = headersOf(HttpHeaders.ContentType, "image/jpeg"))
+                }
+            }
+        try {
+            client.auth.awaitInitialization()
+            client.auth.setSessionStatus(
+                SessionStatus.Authenticated(
+                    UserSession(
+                        accessToken = "test-user-token",
+                        refreshToken = "test-refresh-token",
+                        expiresIn = 3600,
+                        tokenType = "Bearer",
+                    ),
+                ),
+            )
+            val source =
+                CommonExpenseReceiptDataSource(
+                    access = SupabaseAccess(client),
+                    context =
+                        HouseholdContextDomain(
+                            id = "home",
+                            userId = "alice",
+                            name = "Home",
+                            currency = "EUR",
+                            timeZone = "Europe/Lisbon",
+                        ),
+                )
+            val receipt =
+                ExpenseReceiptDomain(
+                    expenseId = "expense",
+                    accountId = "account",
+                    objectPath = "home/account/expense/legacy.jpg",
+                )
+            val preview =
+                assertIs<AppResult.Success<ReceiptPhotoDomain>>(source.downloadPhoto(receipt)).value
+            val viewer =
+                assertIs<AppResult.Success<ReceiptPhotoDomain>>(source.downloadPhoto(receipt)).value
+            assertEquals(preview, viewer)
+            assertEquals(
+                legacyPhoto.size,
+                viewer.data.size,
+                "Older photos remain readable above the new upload budget",
+            )
+            assertEquals(1, downloads, "Opening the viewer must reuse the preview bytes")
+            source.downloadPhoto(receipt.copy(objectPath = "home/account/expense/two.jpg"))
+            source.downloadPhoto(receipt.copy(objectPath = "home/account/expense/three.jpg"))
+            source.downloadPhoto(receipt)
+            assertEquals(
+                4,
+                downloads,
+                "Old entries must be evicted instead of retaining every viewed photo",
+            )
+        } finally {
+            client.close()
+        }
+    }
+
+    @Test
+    fun newPhotosOverTheUploadBudgetAreRejectedBeforeNetworkWrites() = runTest {
+        val client =
+            createSupabaseClient("https://loom.test", "test-key") {
+                install(Postgrest)
+                install(Storage)
+                httpEngine = MockEngine { error("Oversized uploads must not reach the server") }
+            }
+        try {
+            val source =
+                CommonExpenseReceiptDataSource(
+                    access = SupabaseAccess(client),
+                    context =
+                        HouseholdContextDomain(
+                            id = "home",
+                            userId = "alice",
+                            name = "Home",
+                            currency = "EUR",
+                            timeZone = "Europe/Lisbon",
+                        ),
+                )
+            val result =
+                source.savePhoto(
+                    receipt = ExpenseReceiptDomain(expenseId = "expense", accountId = "account"),
+                    photo =
+                        ReceiptPhotoDomain(
+                            data = ByteString(ByteArray(ReceiptPhotoDomain.MAX_UPLOAD_BYTES + 1)),
+                        ),
+                )
+            assertIs<ReceiptError.PhotoTooLarge>(assertIs<AppResult.Failure>(result).error)
+        } finally {
+            client.close()
+        }
+    }
+
+    @Test
     fun attachmentAndRemovalRequestOneObjectAndPreserveTheRemovalVersion() = runTest {
         val versions = mutableListOf<String>()
         val path = "home/account/expense/photo.jpg"

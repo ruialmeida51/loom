@@ -202,10 +202,6 @@ class ExpenseFormScreenViewModel(
         inputState.update { oldState -> oldState.copy(recurring = value) }
     }
 
-    override fun onDetailsVisibilityChanged(value: Boolean) {
-        mutableState.update { oldState -> oldState.copy(showDetails = value) }
-    }
-
     override fun onEditSplit() {
         if (state.value.busy || state.value.loading) return
         val result = safeCall {

@@ -9,16 +9,17 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
-private const val MAXIMUM_EDGE = 2560
-private const val JPEG_QUALITY = 85
-
 /** Sample before allocating pixels; full-resolution camera images can exhaust the app heap. */
-internal actual suspend fun compressReceiptPhoto(bytes: ByteArray): ByteArray {
+internal actual suspend fun encodeReceiptPhoto(
+    bytes: ByteArray,
+    maximumEdge: Int,
+    jpegQuality: Int,
+): ByteArray {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
     if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw ReceiptError.InvalidPhoto()
     var sample = 1
-    while (maxOf(bounds.outWidth, bounds.outHeight) / sample > MAXIMUM_EDGE) sample *= 2
+    while (maxOf(bounds.outWidth, bounds.outHeight) / sample > maximumEdge) sample *= 2
     val options = BitmapFactory.Options().apply { inSampleSize = sample }
     val decoded =
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
@@ -61,7 +62,7 @@ internal actual suspend fun compressReceiptPhoto(bytes: ByteArray): ByteArray {
             }
         oriented = Bitmap.createBitmap(decoded, 0, 0, decoded.width, decoded.height, matrix, true)
         return ByteArrayOutputStream().use { output ->
-            if (!oriented.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, output))
+            if (!oriented.compress(Bitmap.CompressFormat.JPEG, jpegQuality, output))
                 throw ReceiptError.InvalidPhoto()
             output.toByteArray()
         }

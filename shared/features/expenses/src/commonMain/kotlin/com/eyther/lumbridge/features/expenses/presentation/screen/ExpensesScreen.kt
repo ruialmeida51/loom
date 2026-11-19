@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -23,9 +22,13 @@ import com.eyther.lumbridge.core.presentation.components.ActionFab
 import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.FloatingActionContentPadding
+import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
+import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
@@ -93,6 +96,9 @@ fun ExpensesScreen(
             memberBalances = state.memberBalances,
             suggestions = state.suggestedRepayments,
             ownBalance = state.ownBalance,
+            showPersonalSummary = state.showPersonalSummary,
+            showMemberBalances = state.showMemberBalances,
+            onMemberBalances = viewModel::onMemberBalancesVisibilityChanged,
             loading = state.loading,
             error = state.displayError,
             onAccounts = { viewModel.onAccountsVisibilityChanged(true) },
@@ -133,6 +139,9 @@ private fun InnerExpensesScreen(
     memberBalances: ImmutableList<MemberBalanceUi>,
     suggestions: ImmutableList<SuggestedRepaymentUi>,
     ownBalance: BalanceSummaryUi,
+    showPersonalSummary: Boolean,
+    showMemberBalances: Boolean,
+    onMemberBalances: (Boolean) -> Unit,
     loading: Boolean,
     error: TextResource?,
     onAccounts: () -> Unit,
@@ -216,9 +225,11 @@ private fun InnerExpensesScreen(
             error?.let { message ->
                 item {
                     ErrorNotice(message = message, onDismiss = onDismiss)
-                    OutlinedButton(onClick = onRetry) {
-                        Text(stringResource(Res.string.balance_retry))
-                    }
+                    LoomSecondaryButton(
+                        text = stringResource(Res.string.balance_retry),
+                        onClick = onRetry,
+                        modifier = Modifier,
+                    )
                 }
             }
             if (loading) item { LoadingRows() }
@@ -243,12 +254,13 @@ private fun InnerExpensesScreen(
                     )
                 }
             } else if (account != null) {
-                item(key = "current_position") {
-                    PersonalBalanceCard(
-                        balance = ownBalance,
-                        everyoneSettled = suggestions.isEmpty(),
-                    )
-                }
+                if (showPersonalSummary)
+                    item(key = "current_position") {
+                        PersonalBalanceCard(
+                            balance = ownBalance,
+                            everyoneSettled = suggestions.isEmpty(),
+                        )
+                    }
                 if (suggestions.isNotEmpty())
                     item {
                         Text(
@@ -263,15 +275,21 @@ private fun InnerExpensesScreen(
                         onRecord = { onRepayment(repayment.settlement) },
                     )
                 }
-                item {
-                    Text(
-                        stringResource(Res.string.balance_everyone),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
+                item(key = "member_balances_toggle") {
+                    GroupedSurface {
+                        NavigationRow(
+                            title = stringResource(Res.string.balance_everyone),
+                            glyph = Glyph.PERSON,
+                            trailingGlyph = Glyph.CHEVRON_DOWN,
+                            onClick = { onMemberBalances(!showMemberBalances) },
+                            modifier = Modifier.testTag("member_balances_toggle"),
+                        )
+                    }
                 }
-                items(memberBalances, key = { it.member.id }) { member ->
-                    MemberBalanceRow(member = member)
-                }
+                if (showMemberBalances)
+                    items(memberBalances, key = { it.member.id }) { member ->
+                        MemberBalanceRow(member = member)
+                    }
             }
         }
     }

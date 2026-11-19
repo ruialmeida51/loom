@@ -7,6 +7,8 @@ import kotlinx.io.bytestring.ByteString
 data class ReceiptPhotoDomain(val data: ByteString, val id: String = newId()) {
     companion object {
         const val MAX_SOURCE_BYTES: Int = 25 * 1024 * 1024
-        const val MAX_UPLOAD_BYTES: Int = 5 * 1024 * 1024
+        const val MAX_UPLOAD_BYTES: Int = 1024 * 1024
+        // Existing receipts remain readable after tightening the budget for new uploads.
+        const val MAX_STORED_BYTES: Int = 5 * 1024 * 1024
     }
 }

@@ -6,6 +6,7 @@ import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.presentation.components.snackbar.DEFAULT_ACTION_ALERT_DURATION
 import com.eyther.lumbridge.core.presentation.components.snackbar.DEFAULT_ALERT_DURATION
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsActionDomain
@@ -82,6 +83,8 @@ class ShoppingScreenViewModel(
     private var newListId: String = newId()
     private var feedbackJob: Job? = null
     private var undoChange: UndoChange? = null
+    private var undoExpiryJob: Job? = null
+    private var undoRevision: Long = 0L
 
     private val mutableState =
         MutableStateFlow(
@@ -367,11 +370,15 @@ class ShoppingScreenViewModel(
     }
 
     override fun onDismissUndo() {
+        undoExpiryJob?.cancel()
+        undoExpiryJob = null
+        undoRevision += 1L
         undoChange = null
         mutableState.update { oldState -> oldState.copy(undoMessage = null) }
     }
 
     override fun onListSelected(id: String) {
+        onDismissUndo()
         mutableState.update { oldState ->
             oldState.copy(
                 selectedListId = id,
@@ -597,6 +604,8 @@ class ShoppingScreenViewModel(
     override fun onUndo() {
         val undo = undoChange ?: return
         if (state.value.busy || state.value.savingItemIds.isNotEmpty()) return
+        undoExpiryJob?.cancel()
+        undoExpiryJob = null
         mutableState.update { oldState -> oldState.copy(busy = true, error = null) }
         launch {
             val result =
@@ -632,6 +641,13 @@ class ShoppingScreenViewModel(
     }
 
     override fun onReuseItem(item: ShoppingItemDomain) {
+        if (
+            state.value.snapshot.containsUncheckedItem(
+                listId = state.value.selectedListId,
+                name = item.name,
+            )
+        )
+            return
         val existing =
             state.value.snapshot.findReusableItem(
                 listId = state.value.selectedListId,
@@ -660,6 +676,10 @@ class ShoppingScreenViewModel(
         mutableState.update { oldState ->
             oldState.copy(showLists = value, formError = null)
         }
+    }
+
+    override fun onFavoritesVisibilityChanged(value: Boolean) {
+        mutableState.update { oldState -> oldState.copy(showFavorites = value, error = null) }
     }
 
     override fun onOpenListForm(list: ShoppingListDomain?) {
@@ -761,6 +781,8 @@ class ShoppingScreenViewModel(
         val ids = changes.map { it.id }.toSet()
         if (state.value.busy || state.value.savingItemIds.any { it in ids }) return
         val before = state.value.snapshot.items.filter { it.id in ids }
+        onDismissUndo()
+        val feedbackRevision = undoRevision
         val pending = changes.associateBy { it.id }
         pendingItemUpdates = pendingItemUpdates + pending
         mutableState.update { oldState ->
@@ -784,17 +806,20 @@ class ShoppingScreenViewModel(
                 is AppResult.Success -> {
                     val saved = result.value.associateBy { it.id }
                     acknowledgedItems = acknowledgedItems + saved
-                    undoChange =
-                        UndoChange(
-                            before = before,
-                            afterVersions = saved.mapValues { it.value.version },
-                        )
+                    val showUndo = feedbackRevision == undoRevision
+                    if (showUndo)
+                        undoChange =
+                            UndoChange(
+                                before = before,
+                                afterVersions = saved.mapValues { it.value.version },
+                            )
                     mutableState.update { oldState ->
                         oldState.copy(
                             busy = if (closeForm) false else oldState.busy,
                             savingItemIds = oldState.savingItemIds.removeAll(ids),
                             showAdd = if (closeForm) false else oldState.showAdd,
-                            undoMessage = message,
+                            undoMessage = if (showUndo) message else oldState.undoMessage,
+                            successMessage = if (showUndo) null else oldState.successMessage,
                             deletingItem =
                                 if (item.removed && oldState.deletingItem?.id == item.id) null
                                 else oldState.deletingItem,
@@ -808,6 +833,12 @@ class ShoppingScreenViewModel(
                                         },
                                 ),
                         )
+                    }
+                    if (showUndo) {
+                        undoExpiryJob = launch {
+                            delay(DEFAULT_ACTION_ALERT_DURATION)
+                            onDismissUndo()
+                        }
                     }
                 }
                 is AppResult.Failure -> {

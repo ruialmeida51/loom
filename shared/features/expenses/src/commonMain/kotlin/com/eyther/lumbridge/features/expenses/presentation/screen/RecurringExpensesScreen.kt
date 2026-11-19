@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,6 +18,7 @@ import com.eyther.lumbridge.core.presentation.components.EmptyNotice
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
@@ -112,9 +112,11 @@ private fun InnerRecurringExpensesScreen(
         error?.let { message ->
             item(key = "error") {
                 ErrorNotice(message = message, onDismiss = onDismiss)
-                OutlinedButton(onClick = onRetry) {
-                    Text(stringResource(Res.string.ui_refresh_and_retry))
-                }
+                LoomSecondaryButton(
+                    text = stringResource(Res.string.ui_refresh_and_retry),
+                    onClick = onRetry,
+                    modifier = Modifier,
+                )
             }
         }
         if (loading) item { LoadingRows() }

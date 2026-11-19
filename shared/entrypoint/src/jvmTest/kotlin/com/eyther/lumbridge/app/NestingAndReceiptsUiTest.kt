@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -65,9 +66,11 @@ class NestingAndReceiptsUiTest {
             onNodeWithText("The weekly shop").performClick()
             awaitLoadedDestination("expense_details_content")
             waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithTag("expense_receipt").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithTag("receipt_thumbnail").fetchSemanticsNodes().isNotEmpty()
             }
-            onNodeWithTag("expense_receipt").performScrollTo().performClick()
+            onNodeWithTag("receipt_thumbnail").performScrollTo().assertIsDisplayed()
+            capture("receipt-preview-dark-narrow")
+            onNodeWithTag("receipt_thumbnail").performClick()
             onNodeWithTag("receipt_viewer").assertExists()
             waitUntil(timeoutMillis = 5_000) {
                 onAllNodesWithTag("receipt_zoom_reset").fetchSemanticsNodes().isNotEmpty()
@@ -88,6 +91,26 @@ class NestingAndReceiptsUiTest {
             onNodeWithTag("confirm_delete_receipt").assertDoesNotExist()
             onNodeWithText("Receipt deleted").assertExists()
             onNodeWithText("Add receipt").assertExists()
+        }
+
+    @Test
+    fun favouritesAreVisibleAndCanRestoreARemovedItemWithoutOpeningAnItemForm() =
+        runSkikoComposeUiTest(size = Size(390f, 800f), density = Density(1f, 1.2f)) {
+            ThemePreferences.set("LIGHT")
+            setContent { LoomDemoApp() }
+            awaitLoadedDestination("home_content")
+            onNodeWithTag("navigation_shopping").performClick()
+            awaitLoadedDestination("shopping_content")
+            onNodeWithTag("actions_Avocados").performClick()
+            onNodeWithText("Add to favourites").performClick()
+            onNodeWithTag("actions_Avocados").performClick()
+            onNodeWithText("Remove").performClick()
+            onNodeWithTag("confirm_delete_grocery").performClick()
+            onNodeWithText("Undo").assertExists()
+            onNodeWithTag("shopping_favorites").performScrollTo().performClick()
+            onNodeWithTag("favorite_Avocados").performClick()
+            onNodeWithTag("favorite_Avocados").assertTextContains("Already on this list")
+            capture("shopping-favourites-light")
         }
 
     private fun SkikoComposeUiTest.indent(child: String, parent: String): Float =

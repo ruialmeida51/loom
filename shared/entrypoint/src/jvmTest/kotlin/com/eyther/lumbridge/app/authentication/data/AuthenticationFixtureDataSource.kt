@@ -13,6 +13,8 @@ internal class AuthenticationFixtureDataSource : AuthenticationDataSource {
 
     override val configured: Boolean = true
 
+    override suspend fun recoverSession(): AppResult<Unit> = AppResult.Success(Unit)
+
     private val session =
         MutableStateFlow<AuthenticationStateDomain>(AuthenticationStateDomain.SignedOut)
 

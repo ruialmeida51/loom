@@ -96,6 +96,17 @@ data class ShoppingSnapshotDomain(
         it.listId == listId && it.name.equals(name, ignoreCase = true)
     }
 
+    /** Starred history remains reusable after completion/removal within its original list. */
+    fun favorites(listId: String): List<ShoppingItemDomain> =
+        items
+            .filter { it.listId == listId && it.favorite }
+            .sortedBy { it.name.lowercase() }
+            .distinctBy { it.name.trim().lowercase() }
+
+    fun containsUncheckedItem(listId: String, name: String): Boolean = activeItems.any {
+        it.listId == listId && !it.checked && it.name.equals(name, ignoreCase = true)
+    }
+
     fun suggestions(listId: String): List<ShoppingItemDomain> =
         items
             .filter { it.favorite || it.checked || it.removed }

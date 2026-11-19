@@ -3,9 +3,7 @@ package com.eyther.lumbridge.app.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -14,6 +12,7 @@ import com.eyther.lumbridge.app.navigation.model.HouseholdSetupDestination
 import com.eyther.lumbridge.core.navigation.composables.navigation3.HorizontalSlideNavDisplay
 import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.toolbar.Toolbar
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
@@ -63,13 +62,14 @@ internal fun HouseholdSetupHost(
                             onBack = { onBack?.invoke() },
                             actions = {
                                 if (onAccount != null)
-                                    OutlinedButton(onClick = onAccount) {
-                                        Text(
+                                    LoomSecondaryButton(
+                                        text =
                                             stringResource(
                                                 Res.string.portal_my_account,
                                             ),
-                                        )
-                                    }
+                                        onClick = onAccount,
+                                        modifier = Modifier,
+                                    )
                             },
                         )
                     },

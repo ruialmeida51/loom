@@ -7,6 +7,12 @@ import kotlinx.coroutines.flow.StateFlow
 abstract class SessionScreenViewModelContract : LoomViewModel() {
     abstract val state: StateFlow<SessionState>
 
+    abstract fun onResume()
+
+    abstract fun onPause()
+
+    abstract fun onRetrySessionRecovery()
+
     abstract fun onHouseholdSelected(household: HouseholdDomain)
 
     abstract fun onHouseholdExited(householdId: String, explicit: Boolean)

@@ -40,8 +40,6 @@ abstract class ExpenseFormScreenViewModelContract : LoomViewModel() {
 
     abstract fun onRecurringChanged(value: Boolean)
 
-    abstract fun onDetailsVisibilityChanged(value: Boolean)
-
     abstract fun onEditSplit()
 
     abstract fun onSplitConfirmed(selection: ExpenseSplitSelectionDomain)
