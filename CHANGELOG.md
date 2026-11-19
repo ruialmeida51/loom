@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.12] - 2026-11-19
+
 - Manage household owners, members and reusable invitation codes.
 - Leave or delete households with clear balance and history warnings.
 - Edit active or paused recurring bills; delete schedules without losing expenses.
