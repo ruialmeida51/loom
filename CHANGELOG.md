@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.13] - 2026-11-19
+
 - Timed, consistent Undo feedback and reusable shopping favourites.
 - Receipt thumbnails and smaller photo uploads.
 - Expense date and category are always visible.
