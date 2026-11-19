@@ -130,7 +130,7 @@ class LoomUiTest {
             onNodeWithText("Streaming service").assertExists()
             capture("money-light")
             onNodeWithTag("balances_view_balances").performClick()
-            onNodeWithText("Who pays whom").assertExists()
+            onNodeWithText("Who owes whom").assertExists()
             capture("balances-light")
             onNodeWithContentDescription("Back").assertDoesNotExist()
             onNodeWithTag("open_my_account").performClick()

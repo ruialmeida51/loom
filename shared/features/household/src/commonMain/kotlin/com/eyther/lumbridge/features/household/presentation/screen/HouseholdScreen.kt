@@ -9,8 +9,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -20,6 +18,7 @@ import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
@@ -105,12 +104,11 @@ private fun InnerHouseholdScreen(
             modifier = Modifier.fillMaxWidth().testTag("open_create_household"),
             enabled = !busy,
         )
-        OutlinedButton(
+        LoomSecondaryButton(
+            text = stringResource(Res.string.ui_join_household),
             onClick = onJoin,
             enabled = !busy,
             modifier = Modifier.fillMaxWidth().testTag("open_join_household"),
-        ) {
-            Text(stringResource(Res.string.ui_join_household))
-        }
+        )
     }
 }

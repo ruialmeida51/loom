@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.shopping.presentation.screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +16,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -33,8 +34,10 @@ import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
 import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackbar
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
@@ -44,9 +47,11 @@ import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
+import com.eyther.lumbridge.features.shopping.generated.resources.action_undo
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_confirm
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_message
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_title
+import com.eyther.lumbridge.features.shopping.generated.resources.favorites_title
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_create
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_empty
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_empty_description
@@ -74,7 +79,16 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
     PullToRefreshContentContainer(
         isRefreshing = state.refreshing,
         onRefresh = viewModel::onRetry,
-        snackbarHost = { SuccessSnackbar(message = state.successMessage) },
+        snackbarHost = {
+            SuccessSnackbar(
+                message = state.undoMessage ?: state.successMessage,
+                actionText =
+                    if (state.undoMessage != null) stringResource(Res.string.action_undo) else null,
+                actionEnabled = !state.busy && state.savingItemIds.isEmpty(),
+                actionLoading = state.busy,
+                onAction = viewModel::onUndo,
+            )
+        },
     ) {
         InnerShoppingScreen(
             selectedListName = state.selectedList?.name.orEmpty(),
@@ -108,6 +122,7 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
             onDiscardEntry = viewModel::onDiscardEntry,
             onCreateList = { viewModel.onOpenListForm(null) },
             onShowLists = { viewModel.onListsVisibilityChanged(true) },
+            onShowFavorites = { viewModel.onFavoritesVisibilityChanged(true) },
             onShowCompleted = viewModel::onCheckedItemsVisibilityChanged,
             onToggle = viewModel::onToggleItem,
             onEdit = viewModel::onEditItem,
@@ -183,6 +198,7 @@ private fun InnerShoppingScreen(
     onDiscardEntry: (String) -> Unit,
     onCreateList: () -> Unit,
     onShowLists: () -> Unit,
+    onShowFavorites: () -> Unit,
     onShowCompleted: (Boolean) -> Unit,
     onToggle: (ShoppingItemDomain) -> Unit,
     onEdit: (ShoppingItemDomain) -> Unit,
@@ -217,22 +233,37 @@ private fun InnerShoppingScreen(
         verticalArrangement = Arrangement.spacedBy(ChecklistRowSpacing),
     ) {
         item(key = "list_selector") {
-            SelectorButton(
-                contentPadding = PaddingValues(),
-                text = selectedListName.ifBlank { stringResource(Res.string.ui_shopping_lists) },
-                onClick = onShowLists,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
                 modifier =
                     Modifier.fillMaxWidth()
-                        .padding(bottom = LoomSpacing.content - ChecklistRowSpacing)
-                        .testTag("manage_lists"),
-            )
+                        .padding(bottom = LoomSpacing.content - ChecklistRowSpacing),
+            ) {
+                SelectorButton(
+                    contentPadding = PaddingValues(),
+                    text =
+                        selectedListName.ifBlank { stringResource(Res.string.ui_shopping_lists) },
+                    onClick = onShowLists,
+                    modifier = Modifier.weight(1f).testTag("manage_lists"),
+                )
+                LoomSecondaryButton(
+                    text = stringResource(Res.string.favorites_title),
+                    glyph = Glyph.STAR,
+                    onClick = onShowFavorites,
+                    enabled = hasList && !busy && !loading,
+                    modifier = Modifier.testTag("shopping_favorites"),
+                )
+            }
         }
         error?.let { message ->
             item {
                 ErrorNotice(message = message, onDismiss = onDismiss)
-                OutlinedButton(onClick = onRetry) {
-                    Text(stringResource(Res.string.ui_refresh_and_retry))
-                }
+                LoomSecondaryButton(
+                    text = stringResource(Res.string.ui_refresh_and_retry),
+                    onClick = onRetry,
+                    modifier = Modifier,
+                )
             }
         }
         if (loading) item(key = "loading") { LoadingRows() }

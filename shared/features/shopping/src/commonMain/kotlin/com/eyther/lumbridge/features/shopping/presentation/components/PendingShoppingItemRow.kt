@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.DestructiveIconButton
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.entry_discard_description
@@ -48,12 +48,11 @@ fun PendingShoppingItemRow(
             ) {
                 Text(message.getString(), color = MaterialTheme.colorScheme.error)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilledTonalButton(
+                    LoomSecondaryButton(
+                        text = stringResource(Res.string.entry_retry),
                         onClick = onRetry,
                         modifier = Modifier.testTag("retry_entry_$name"),
-                    ) {
-                        Text(stringResource(Res.string.entry_retry))
-                    }
+                    )
                     DestructiveIconButton(
                         description = stringResource(Res.string.entry_discard_description, name),
                         onClick = onDiscard,

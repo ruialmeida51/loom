@@ -1,0 +1,38 @@
+{
+  "core": {
+    "restartableComposables": 109,
+    "skippableComposables": 76,
+    "knownStableArguments": 1283,
+    "knownUnstableArguments": 8
+  },
+  "features/authentication": {
+    "restartableComposables": 31,
+    "skippableComposables": 26,
+    "knownStableArguments": 585,
+    "knownUnstableArguments": 2
+  },
+  "features/shopping": {
+    "restartableComposables": 58,
+    "skippableComposables": 38,
+    "knownStableArguments": 932,
+    "knownUnstableArguments": 4
+  },
+  "features/expenses": {
+    "restartableComposables": 171,
+    "skippableComposables": 118,
+    "knownStableArguments": 2957,
+    "knownUnstableArguments": 24
+  },
+  "features/tasks": {
+    "restartableComposables": 31,
+    "skippableComposables": 24,
+    "knownStableArguments": 484,
+    "knownUnstableArguments": 11
+  },
+  "entrypoint": {
+    "restartableComposables": 138,
+    "skippableComposables": 123,
+    "knownStableArguments": 1407,
+    "knownUnstableArguments": 13
+  }
+}

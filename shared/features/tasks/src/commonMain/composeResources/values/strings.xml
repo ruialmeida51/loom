@@ -23,7 +23,8 @@
     <string name="task_removed">Task deleted</string>
     <string name="task_added">Task added</string>
     <string name="task_delete_description">Delete task: %1$s</string>
-    <string name="task_add_date">Add date</string>
+    <string name="task_due_date">Due date</string>
+    <string name="task_no_date">No date</string>
     <string name="task_remove_date">Remove due date</string>
     <string name="task_notify_household">Notify the household</string>
     <string name="task_notification_time">Notification time</string>

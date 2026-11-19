@@ -35,6 +35,23 @@ jobs:
       - run: sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew :shared:di:jvmTest :shared:features:analytics:jvmTest :shared:features:diagnostics:jvmTest :shared:core:jvmTest :shared:features:authentication:jvmTest :shared:features:settings:jvmTest :shared:features:account:jvmTest :shared:features:home:jvmTest :shared:features:household:jvmTest :shared:features:shopping:jvmTest :shared:features:expenses:jvmTest :shared:features:feed:jvmTest :shared:features:insights:jvmTest :shared:features:tasks:jvmTest :shared:entrypoint:jvmTest :androidApp:assembleDebug
+      - name: Build a minified validation APK without uploading symbols
+        if: hashFiles('androidApp/google-services.json') != ''
+        run: >-
+          ./gradlew :androidApp:assembleRelease --no-parallel
+          -PloomVersionName=0.0.0-ci -PloomVersionCode=1
+          -x :androidApp:uploadCrashlyticsMappingFileRelease
+      - name: Check R8 and Crashlytics IDs against the minified APK
+        if: hashFiles('androidApp/google-services.json') != ''
+        run: >-
+          python3 tools/verify_android_symbols.py
+          --mapping androidApp/build/outputs/mapping/release/mapping.txt
+          --generated-id androidApp/build/crashlytics/release/mappingFileId.txt
+          --resource androidApp/build/generated/res/injectCrashlyticsMappingFileIdRelease/values/com_google_firebase_crashlytics_mappingfileid.xml
+          --apk androidApp/build/outputs/apk/release/androidApp-release-unsigned.apk
+          --aapt2 "$ANDROID_HOME/build-tools/37.0.0/aapt2"
+          --version-name 0.0.0-ci --version-code 1 --source-commit "$GITHUB_SHA"
+          --output androidApp/build/outputs/symbols/release/symbols.json
       - run: python3 tools/test_database.py
       - uses: denoland/setup-deno@v2
         with:
@@ -52,6 +69,14 @@ jobs:
           path: |
             shared/**/build/reports/tests/
             build/screenshots/
+      - uses: actions/upload-artifact@v4
+        if: always() && hashFiles('androidApp/build/outputs/symbols/release/symbols.json') != ''
+        with:
+          name: loom-minified-ci-symbols-${{ github.sha }}
+          path: |
+            androidApp/build/outputs/mapping/release/mapping.txt
+            androidApp/build/outputs/symbols/release/symbols.json
+          if-no-files-found: error
   android-device-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -100,6 +125,7 @@ jobs:
         with:
           node-version: '22'
       - name: Fetch existing iOS Firebase client configuration
+        id: firebase
         env:
           LOOM_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
@@ -110,6 +136,9 @@ jobs:
             printf '%s' "$LOOM_SERVICE_ACCOUNT" > "$account_file"
             node tools/configure_firebase_ios.mjs "$account_file" iosApp/iosApp/GoogleService-Info.plist --existing-only
           fi
+          if [ -f iosApp/iosApp/GoogleService-Info.plist ]; then
+            printf 'configured=true\n' >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -117,3 +146,26 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew :shared:entrypoint:compileKotlinIosSimulatorArm64
       - run: xcodebuild -project iosApp/iosApp.xcodeproj -scheme Loom -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO build
+      - name: Validate iOS release archive and Crashlytics symbols
+        if: steps.firebase.outputs.configured == 'true'
+        run: >-
+          xcodebuild -project iosApp/iosApp.xcodeproj -scheme Loom -configuration Release
+          -sdk iphoneos -destination 'generic/platform=iOS'
+          -archivePath "$RUNNER_TEMP/Loom.xcarchive"
+          -derivedDataPath "$RUNNER_TEMP/loom-ios-release"
+          CODE_SIGNING_ALLOWED=NO archive
+      - name: Verify and retain the matching iOS dSYMs
+        if: steps.firebase.outputs.configured == 'true'
+        run: bash tools/archive_ios_symbols.sh "$RUNNER_TEMP/Loom.xcarchive" build/ios-symbols
+      - name: Upload and check the complete release archive symbol set
+        if: steps.firebase.outputs.configured == 'true'
+        run: >-
+          "$RUNNER_TEMP/loom-ios-release/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols"
+          -gsp iosApp/iosApp/GoogleService-Info.plist -p ios "$RUNNER_TEMP/Loom.xcarchive/dSYMs"
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.firebase.outputs.configured == 'true' && hashFiles('build/ios-symbols/Loom-dSYMs.zip') != ''
+        with:
+          name: loom-ios-symbols-${{ github.sha }}
+          retention-days: 90
+          path: build/ios-symbols/
+          if-no-files-found: error

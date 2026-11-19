@@ -2,7 +2,6 @@ package com.eyther.lumbridge.features.authentication.presentation.screen
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -11,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
@@ -130,9 +130,12 @@ private fun InnerLoginScreen(
             loading = requestingCode,
             enabled = canRequestCode && !signingIn && !startingGoogle,
         )
-        OutlinedButton(onClick = onRegister, enabled = !busy) {
-            Text(stringResource(Res.string.ui_new_here_create_an_account))
-        }
+        LoomSecondaryButton(
+            text = stringResource(Res.string.ui_new_here_create_an_account),
+            onClick = onRegister,
+            enabled = !busy,
+            modifier = Modifier,
+        )
         LegalLinks(onOpenDocument = onOpenLegalDocument, showAccountDeletion = true)
     }
 }

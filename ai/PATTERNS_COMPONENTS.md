@@ -9,7 +9,7 @@ Adapted from Plannot `ai/PATTERNS_COMPONENTS.md`; [design language](../docs/desi
 | Destructive action | core DestructiveButton / DestructiveIconButton, or DestructiveConfirmation |
 | Data refresh container | core container/PullToRefreshContentContainer |
 | Transient success | core snackbar/SuccessSnackbar; lifetime in VM |
-| Actionable Undo | existing Shopping host snackbar |
+| Actionable Undo | core snackbar/SuccessSnackbar optional action; bounded lifetime and target in the feature VM |
 | Content skeleton | core LoadingLine/LoadingRow/LoadingRows/LoadingForm; feed owns its preview skeleton |
 | Refresh preserving focus/geometry | core RefreshSkeletonContent; Home scopes it per section |
 | Illustrated empty state | core IllustratedEmptyState, feature-owned copy/glyph |
@@ -19,7 +19,8 @@ Adapted from Plannot `ai/PATTERNS_COMPONENTS.md`; [design language](../docs/desi
 | Primary list creation | core ActionFab in the refresh container's Scaffold slot; matching FloatingActionContentPadding |
 | Contextual list actions | core ActionMenu + rememberActionMenuState when a related row opens it; feature owns permissions, confirmation and feedback |
 | Selector | core SelectorButton, label-adjacent caret |
-| Forms / sheets | core FormBottomSheet; feature owns pure content, Host owns controller |
+| Forms / sheets | core FormBottomSheet; omit actions for immediate-selection content, feature owns pure content, Host owns controller |
+| Brief dialog footer | core DialogActions, equally weighted Cancel and Save/confirm |
 | Optional task date | tasks TaskDueDate + TaskDateUi (feature-owned) |
 | Checklist / bulk selection | shopping row/action components (feature-owned) |
 
@@ -36,7 +37,11 @@ typed failure feedback in context for retry. Routine completion and reversible a
 FormBottomSheet uses a fixed vertical footer: full-width primary Save above full-width outlined
 Cancel, with shared small spacing. Fields scroll separately. Forms and draft selections say Save; read-only views say Close. Immediate-selection
 managers omit Cancel/Done and use an explicit creation action where needed. Localized labels may wrap.
-Buttons share the theme's medium shape and at least a 48dp touch target.
+Labelled actions share Plannot's pill shape and at least a 48dp touch target through DefaultLoomButton.
+The public primary/secondary/destructive variants delegate their appearance to that one renderer.
+Loading preserves the label's measured layout instead of inserting a spinner beside it. Brief date,
+time and confirmation dialogs use equally weighted horizontal DialogActions; form-sheet footers
+remain vertically stacked. Immediate row-action sheets may omit the footer entirely.
 
 NavigationRow supports emphasisColor and trailingContent for an anchored caret/popup or progress.
 SelectorButton's menu slot anchors its popup to the caret. Transient expansion stays in the component;

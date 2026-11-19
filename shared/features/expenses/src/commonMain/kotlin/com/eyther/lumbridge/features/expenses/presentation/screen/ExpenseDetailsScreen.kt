@@ -71,6 +71,8 @@ fun ExpenseDetailsScreen(
             onRetry = viewModel::onRefresh,
             onDismiss = viewModel::onDismissError,
             receiptPhoto = state.receiptPhotoUi,
+            receiptPreview = state.receiptPreviewUi,
+            receiptPreviewLoading = state.receiptPreviewLoading,
             receiptAttached = state.receipt?.objectPath != null,
             receiptLoading = state.receiptLoading,
             receiptPreparing = state.receiptPreparing || pickers.reading,
@@ -118,6 +120,8 @@ private fun InnerExpenseDetailsScreen(
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
     receiptPhoto: ReceiptPhotoUi?,
+    receiptPreview: ReceiptPhotoUi?,
+    receiptPreviewLoading: Boolean,
     receiptAttached: Boolean,
     receiptLoading: Boolean,
     receiptPreparing: Boolean,
@@ -175,6 +179,8 @@ private fun InnerExpenseDetailsScreen(
                 item(key = "receipt") {
                     ExpenseReceiptSection(
                         photo = receiptPhoto,
+                        preview = receiptPreview,
+                        previewLoading = receiptPreviewLoading,
                         attached = receiptAttached,
                         loading = receiptLoading,
                         preparing = receiptPreparing,

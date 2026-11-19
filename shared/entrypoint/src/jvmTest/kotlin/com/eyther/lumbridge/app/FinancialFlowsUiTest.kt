@@ -80,7 +80,7 @@ class FinancialFlowsUiTest {
             capture("repayment-light")
             onNodeWithTag("record_repayment_submit").performClick()
             waitUntil(timeoutMillis = 5000) {
-                onAllNodesWithText("Record payment").fetchSemanticsNodes().isEmpty()
+                onAllNodesWithTag("record_repayment_submit").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithTag("expense_accounts").performClick()
             capture("trip-accounts-light")
@@ -151,7 +151,7 @@ class FinancialFlowsUiTest {
             onNodeWithContentDescription("Share for Sam").performTextReplacement("0.00")
             onNodeWithTag("confirm_expense_split").performClick()
             onNodeWithTag("expense_title").assertTextContains("Shared dinner")
-            onNodeWithText("More details").performClick()
+            onNodeWithText("Category").assertExists()
             onNodeWithText("Date").performScrollTo().performClick()
             onNodeWithTag("form_sheet").assertIsDisplayed()
             capture("expense-date-light")
@@ -197,7 +197,7 @@ class FinancialFlowsUiTest {
             onNodeWithTag("add_expense").performClick()
             onNodeWithTag("expense_title").performTextInput("Cottage rent")
             onNodeWithTag("expense_amount").performTextInput("90.00")
-            onNodeWithText("More details").performClick()
+            onNodeWithText("Category").assertExists()
             onNodeWithTag("expense_recurring").performScrollTo().performClick()
             onNodeWithTag("save_expense").performClick()
             waitUntil(timeoutMillis = 5000) {

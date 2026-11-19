@@ -12,6 +12,8 @@ abstract class ExpensesScreenViewModelContract : LoomViewModel() {
 
     abstract fun onViewChanged(view: ExpensesViewUi)
 
+    abstract fun onMemberBalancesVisibilityChanged(value: Boolean)
+
     abstract fun onAccountsVisibilityChanged(value: Boolean)
 
     abstract fun onAccountSelected(id: String)

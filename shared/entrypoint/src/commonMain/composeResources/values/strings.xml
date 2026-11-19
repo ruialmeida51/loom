@@ -20,7 +20,6 @@
     <string name="portal_my_account">My account</string>
     <string name="tab_money">Money</string>
     <string name="household_details">Household details</string>
-    <string name="action_undo">Undo</string>
     <string name="flow_add_expense">Add expense</string>
     <string name="flow_edit_expense">Edit expense</string>
     <string name="flow_expense_details">Expense details</string>

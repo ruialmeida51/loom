@@ -14,6 +14,7 @@ import com.eyther.lumbridge.features.shopping.generated.resources.list_delete_me
 import com.eyther.lumbridge.features.shopping.generated.resources.list_delete_title
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingEntryUi
+import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingFavoriteUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
@@ -50,6 +51,7 @@ data class ShoppingState(
     val editing: Boolean = false,
     val showChecked: Boolean = false,
     val showLists: Boolean = false,
+    val showFavorites: Boolean = false,
     val showListForm: Boolean = false,
     val listName: String = "",
     val busy: Boolean = false,
@@ -85,6 +87,17 @@ data class ShoppingState(
     val orderedLists: ImmutableList<ShoppingListDomain> =
         snapshot.lists.sortedBy { it.name.lowercase() }.toImmutableList()
     val selectedList: ShoppingListDomain? = activeLists.firstOrNull { it.id == selectedListId }
+    val favorites: ImmutableList<ShoppingFavoriteUi> =
+        snapshot
+            .favorites(selectedListId)
+            .map { item ->
+                ShoppingFavoriteUi(
+                    item = item,
+                    alreadyOnList =
+                        snapshot.containsUncheckedItem(listId = selectedListId, name = item.name),
+                )
+            }
+            .toImmutableList()
     val items: ImmutableList<ShoppingItemDomain> =
         snapshot.activeItems.filter { it.listId == selectedListId }.toImmutableList()
     private val itemById = items.associateBy { it.id }

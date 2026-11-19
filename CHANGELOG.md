@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+- Timed, consistent Undo feedback and reusable shopping favourites.
+- Receipt thumbnails and smaller photo uploads.
+- Expense date and category are always visible.
+- Clearer balances and payment actions.
+- Consistent buttons and roomier date-dialog actions.
+- Familiar optional task dates.
+- Safer session recovery after backgrounding and clearer crash reports.
+
 ## [4.0.12] - 2026-11-19
 
 - Manage household owners, members and reusable invitation codes.

@@ -30,7 +30,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun FormBottomSheet(
     title: String,
-    onAction: () -> Unit,
+    onAction: (() -> Unit)? = null,
     onDismiss: (() -> Unit)? = null,
     actionLabel: String = stringResource(Res.string.action_save),
     actionEnabled: Boolean = true,
@@ -57,35 +57,37 @@ fun FormBottomSheet(
             verticalArrangement = Arrangement.spacedBy(contentSpacing),
             content = content,
         )
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
-            verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
-        ) {
-            if (destructiveAction) {
-                DestructiveButton(
-                    text = actionLabel,
-                    onClick = onAction,
-                    loading = busy,
-                    enabled = actionEnabled,
-                    modifier = actionModifier.fillMaxWidth(),
-                )
-            } else {
-                LoomButton(
-                    text = actionLabel,
-                    onClick = onAction,
-                    loading = busy,
-                    enabled = actionEnabled,
-                    modifier = actionModifier.fillMaxWidth(),
-                )
-            }
-            onDismiss?.let { dismiss ->
-                LoomSecondaryButton(
-                    text = dismissLabel,
-                    onClick = dismiss,
-                    enabled = !busy,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+        if (onAction != null || onDismiss != null) {
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
+                verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+            ) {
+                if (onAction != null && destructiveAction) {
+                    DestructiveButton(
+                        text = actionLabel,
+                        onClick = onAction,
+                        loading = busy,
+                        enabled = actionEnabled,
+                        modifier = actionModifier.fillMaxWidth(),
+                    )
+                } else if (onAction != null) {
+                    LoomButton(
+                        text = actionLabel,
+                        onClick = onAction,
+                        loading = busy,
+                        enabled = actionEnabled,
+                        modifier = actionModifier.fillMaxWidth(),
+                    )
+                }
+                onDismiss?.let { dismiss ->
+                    LoomSecondaryButton(
+                        text = dismissLabel,
+                        onClick = dismiss,
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }

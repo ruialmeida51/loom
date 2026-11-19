@@ -99,6 +99,8 @@ class DesignFlowsUiTest {
             onNodeWithTag("navigation_money").performClick()
             awaitLoadedDestination(tag = "expenses_content")
             onNodeWithTag("balances_view_balances").performClick()
+            onNodeWithTag("member_balances_toggle").performScrollTo().performClick()
+            onNodeWithTag("expenses_content").performScrollToNode(hasText("Rui"))
             onNodeWithText("Rui").assertExists()
             onNodeWithTag("navigation_home").performClick()
             onNodeWithTag("open_my_account").performClick()

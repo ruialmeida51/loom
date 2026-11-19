@@ -17,6 +17,9 @@ internal class FakeAuthenticationDataSource : AuthenticationDataSource {
         MutableStateFlow<AuthenticationStateDomain>(AuthenticationStateDomain.SignedOut)
 
     var signInResult: AppResult<Unit> = AppResult.Success(Unit)
+    var recoveryResult: AppResult<Unit> = AppResult.Success(Unit)
+    var recoveryGate: CompletableDeferred<AppResult<Unit>>? = null
+    var recoveryCalls: Int = 0
     var signOutGate: CompletableDeferred<AppResult<Unit>>? = null
     var signOutCalls: Int = 0
     var resendResult: AppResult<Unit> = AppResult.Success(Unit)
@@ -29,6 +32,11 @@ internal class FakeAuthenticationDataSource : AuthenticationDataSource {
     val googleResults = MutableSharedFlow<AppResult<Unit>>(replay = 1)
 
     override fun stream() = session
+
+    override suspend fun recoverSession(): AppResult<Unit> {
+        recoveryCalls++
+        return recoveryGate?.await() ?: recoveryResult
+    }
 
     override suspend fun signInWithGoogle(): AppResult<Unit> {
         googleSignInCount += 1

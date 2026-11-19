@@ -28,8 +28,10 @@ class SupabaseAccess(
 
     fun requireClient(): SupabaseClient = client ?: throw CommonError.ServiceUnavailable()
 
-    fun userId(): String =
-        requireClient().auth.currentUserOrNull()?.id ?: throw CommonError.NotAuthenticated()
+    /** Identity lookups wait for the same lifecycle/token recovery as authenticated reads. */
+    suspend fun userId(): String = read { client ->
+        client.auth.currentUserOrNull()?.id ?: throw CommonError.NotAuthenticated()
+    }
 
     /**
      * A scoped read waits for SDK recovery; only the existing narrow read-recovery race may retry.

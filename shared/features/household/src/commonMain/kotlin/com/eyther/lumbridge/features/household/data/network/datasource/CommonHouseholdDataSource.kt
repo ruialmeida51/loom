@@ -23,7 +23,9 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CommonHouseholdDataSource(
@@ -115,15 +117,19 @@ class CommonHouseholdDataSource(
         }
     }
 
-    override fun streamMembers(householdId: String): Flow<AppResult<List<MemberDomain>>> =
-        profileDataSource
-            .stream(userId = access.userId())
-            .flatMapLatest {
+    override fun streamMembers(householdId: String): Flow<AppResult<List<MemberDomain>>> = flow {
+        // SDK background callbacks temporarily remove the in-memory user. Resolve it
+        // inside the cold, protected stream so opening a screen during resume cannot throw.
+        val userId = access.userId()
+        emitAll(
+            profileDataSource.stream(userId = userId).flatMapLatest {
                 access.watch(table = "profiles", scopeId = householdId) {
                     loadMembers(householdId = householdId)
                 }
-            }
-            .asApiResult(mapError = Exception::toHouseholdError, retryTransientFailures = true)
+            },
+        )
+    }
+        .asApiResult(mapError = Exception::toHouseholdError, retryTransientFailures = true)
 
     override suspend fun getMembers(householdId: String): AppResult<List<MemberDomain>> =
         safeApiCall(mapError = Exception::toHouseholdError) {

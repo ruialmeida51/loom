@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -17,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.IllustratedEmptyState
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.RefreshSkeletonContent
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
@@ -269,5 +268,9 @@ private fun InnerHomeScreen(
 @Composable
 private fun HomeSectionError(message: TextResource, onDismiss: (() -> Unit)?, onRetry: () -> Unit) {
     ErrorNotice(message = message, onDismiss = onDismiss)
-    OutlinedButton(onClick = onRetry) { Text(stringResource(Res.string.ui_try_again)) }
+    LoomSecondaryButton(
+        text = stringResource(Res.string.ui_try_again),
+        onClick = onRetry,
+        modifier = Modifier,
+    )
 }

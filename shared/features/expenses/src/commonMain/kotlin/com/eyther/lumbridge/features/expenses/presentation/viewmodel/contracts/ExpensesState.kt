@@ -41,6 +41,7 @@ data class ExpensesState(
     val balances: Map<String, Long> = emptyMap(),
     val selectedView: ExpensesViewUi = ExpensesViewUi.EXPENSES,
     val showAccounts: Boolean = false,
+    val showMemberBalances: Boolean = false,
     val deletingAccount: ExpenseAccountDomain? = null,
     val deletingExpense: ExpenseDomain? = null,
     val deletingSettlement: SettlementDomain? = null,
@@ -63,12 +64,11 @@ data class ExpensesState(
             accountMembers.isNotEmpty() &&
             !busy &&
             !loading
-    val canRecordSettlement: Boolean =
+    private val settlementAvailable: Boolean =
         userId in account?.memberIds.orEmpty() &&
             account?.archived == false &&
-            accountMembers.size > 1 &&
-            !busy &&
-            !loading
+            accountMembers.size > 1
+    val canRecordSettlement: Boolean = settlementAvailable && !busy && !loading
     val deleteConfirmation: DestructiveConfirmationUi? = deletingAccount?.let { target ->
         DestructiveConfirmationUi(
             title = TextResource.Resource(Res.string.account_delete_title),
@@ -144,6 +144,9 @@ data class ExpensesState(
                     isCurrentUserSender = userId == settlement.from,
                     isCurrentUserRecipient = userId == settlement.to,
                     canRecord =
+                        settlementAvailable &&
+                            (userId == settlement.from || userId == settlement.to),
+                    recordEnabled =
                         canRecordSettlement &&
                             (userId == settlement.from || userId == settlement.to),
                 )
@@ -153,6 +156,8 @@ data class ExpensesState(
         BalanceSummaryUi(
             money = MoneyDomain(minorUnits = balances[userId] ?: 0L, currency = currency),
         )
+    val showPersonalSummary: Boolean =
+        suggestedRepayments.count { it.isCurrentUserSender || it.isCurrentUserRecipient } != 1
     val memberBalances: ImmutableList<MemberBalanceUi> =
         (account?.memberIds.orEmpty() + balances.keys)
             .map { id ->

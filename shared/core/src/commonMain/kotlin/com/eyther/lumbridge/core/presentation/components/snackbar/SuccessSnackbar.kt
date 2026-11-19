@@ -21,14 +21,25 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
 
 const val DEFAULT_ALERT_DURATION: Long = 4_000L
+const val DEFAULT_ACTION_ALERT_DURATION: Long = 8_000L
 
 /** Plannot-style transient feedback. Its lifetime is owned by the ViewModel, not composition. */
 @Composable
-fun SuccessSnackbar(message: TextResource?, modifier: Modifier = Modifier) {
+fun SuccessSnackbar(
+    message: TextResource?,
+    modifier: Modifier = Modifier,
+    actionText: String? = null,
+    actionEnabled: Boolean = true,
+    actionLoading: Boolean = false,
+    onAction: (() -> Unit)? = null,
+) {
     AnimatedVisibility(
         visible = message != null,
         modifier = modifier,
@@ -53,7 +64,20 @@ fun SuccessSnackbar(message: TextResource?, modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(message?.getString().orEmpty(), style = MaterialTheme.typography.bodyMedium)
+                LoomIcon(glyph = Glyph.CHECK, decorative = true)
+                Text(
+                    text = message?.getString().orEmpty(),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                if (actionText != null && onAction != null)
+                    LoomSecondaryButton(
+                        text = actionText,
+                        onClick = onAction,
+                        enabled = actionEnabled,
+                        loading = actionLoading,
+                        modifier = Modifier.testTag("snackbar_action"),
+                    )
             }
         }
     }

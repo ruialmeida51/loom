@@ -12,4 +12,8 @@ data class SuggestedRepaymentUi(
     val isCurrentUserSender: Boolean,
     val isCurrentUserRecipient: Boolean,
     val canRecord: Boolean = false,
-)
+    val recordEnabled: Boolean = canRecord,
+) {
+    val counterpartyInitials: String =
+        (if (isCurrentUserSender) toName else fromName).orEmpty().trim().take(1).uppercase()
+}

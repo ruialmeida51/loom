@@ -124,8 +124,25 @@ CI fetches the existing client with the service account already configured for r
 prints credentials or requires another repository secret. Local builds can download the matching
 Apple configuration from Firebase Console. Without it, Firebase remains unavailable in that build. Firebase Apple SDK 12.9.0 is pinned through Swift Package Manager. Collection defaults
 off in Info.plist; Swift bridges expose consent and Kotlin fatal frames without setting a user ID.
-Release device builds upload dSYMs through the Firebase SDK script. Android applies Crashlytics's
-Gradle plugin when its Firebase configuration exists and uploads release mapping files.
+Release device builds use Firebase's recommended Crashlytics `run` phase with Xcode's required
+dSYM, built Firebase configuration and executable inputs. Debug builds retain optional Firebase
+setup. CI additionally creates an unsigned device Release archive, checks that its dSYM UUIDs
+cover the app binary, synchronously uploads the archive's complete symbol set with `upload-symbols`,
+and retains `Loom-dSYMs.zip`, archive metadata and UUIDs for 90 days.
+`LoomFoundation` is statically linked, so its code belongs to the app's release symbol set.
+
+Android explicitly enables and runs `uploadCrashlyticsMappingFileRelease`. Before Firebase or Play
+distribution, `tools/verify_android_symbols.py` checks the R8 map ID against the APK's DEX source
+markers, the Crashlytics mapping ID against its generated metadata/resources and packaged value,
+and the package/version against the release plan. Every release retains the APK/AAB, final mapping,
+Crashlytics ID and `symbols.json` (source commit, both IDs and SHA-256 hashes) in the versioned
+`loom-android-symbols-<version>-<code>` Actions artifact for 90 days, including Firebase builds.
+Retrieve this artifact immediately for an affected build and keep it with long-lived release
+records if it must remain diagnosable beyond Actions retention. A crash's `r8-map-id-…` must equal
+the mapping's `pg_map_id` before retracing it. The random Crashlytics mapping ID is a separate ID.
+
+The documented configurations come from [Firebase's Android mapping guide](https://firebase.google.com/docs/crashlytics/android/get-deobfuscated-reports)
+and [Apple symbol guide](https://firebase.google.com/docs/crashlytics/ios/get-deobfuscated-reports).
 
 The idempotent Configure Loom iOS Firebase workflow can retrieve the client configuration again
 using the existing service account. It does not upload a build, consume a version or change consent.

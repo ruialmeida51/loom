@@ -3,7 +3,6 @@ package com.eyther.lumbridge.features.authentication.presentation.screen
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.PageHeading
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
@@ -109,9 +109,12 @@ private fun InnerRegisterScreen(
             loading = busy,
             enabled = canSubmit,
         )
-        OutlinedButton(onClick = onBack, enabled = !busy) {
-            Text(stringResource(Res.string.ui_already_have_an_account_sign_in))
-        }
+        LoomSecondaryButton(
+            text = stringResource(Res.string.ui_already_have_an_account_sign_in),
+            onClick = onBack,
+            enabled = !busy,
+            modifier = Modifier,
+        )
     }
 }
 

@@ -1,3 +1,5 @@
+import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
@@ -10,8 +12,14 @@ if (file("google-services.json").exists()) {
 
 val releaseVersionCode = providers.gradleProperty("loomVersionCode").orElse("1").get().toInt()
 val releaseVersionName = providers.gradleProperty("loomVersionName").get()
-require(releaseVersionCode in 1..2_100_000_000) { "loomVersionCode must be a valid positive Play version code" }
-require(Regex("[0-9][A-Za-z0-9.+_-]{0,49}").matches(releaseVersionName)) { "Invalid loomVersionName" }
+
+require(releaseVersionCode in 1..2_100_000_000) {
+    "loomVersionCode must be a valid positive Play version code"
+}
+
+require(Regex("[0-9][A-Za-z0-9.+_-]{0,49}").matches(releaseVersionName)) {
+    "Invalid loomVersionName"
+}
 
 val uploadStorePath = providers.environmentVariable("LOOM_UPLOAD_STORE_FILE").orNull
 
@@ -40,6 +48,9 @@ android {
         release {
             if (uploadStorePath != null) signingConfig = signingConfigs.getByName("upload")
             isMinifyEnabled = true
+            if (file("google-services.json").exists()) {
+                configure<CrashlyticsExtension> { mappingFileUploadEnabled = true }
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -68,6 +79,8 @@ dependencies {
     implementation(libs.activity.compose)
     androidTestImplementation("org.jetbrains.compose.ui:ui-test-junit4:1.12.1")
     androidTestImplementation(projects.shared.features.expenses)
+    androidTestImplementation(projects.shared.features.authentication)
+    androidTestImplementation(libs.ktor.mock)
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")

@@ -1,0 +1,16 @@
+{
+  "versionName": "4.0.10",
+  "versionCode": 60,
+  "sourceCommit": "d673ef9e4f4d26fde90114e0fcea9df2f64c6223",
+  "reportedAndRebuiltR8MapId": "e78f31c029286a960e4d23fa99dc1e53309083f7cd277f8bd17e3ccdfa0b5455",
+  "rebuiltMappingSha256": "288a49689c9531dc94367d240dae06db49a1c2c18112ee62d2123266c744d680",
+  "matchingIdentityVerified": true,
+  "decodedException": "com.eyther.lumbridge.core.domain.errors.CommonError.NotAuthenticated",
+  "decodedCallChain": [
+    "SupabaseAccess.userId",
+    "CommonHouseholdDataSource.streamMembers",
+    "GetMembersStreamUseCase.invoke",
+    "ExpensesScreenViewModel member stream"
+  ],
+  "note": "Rebuilt from the exact source/version with symbol upload excluded. Original Crashlytics random mapping UUID is not recovered; do not upload a rebuilt random UUID as if it belonged to the distributed APK."
+}

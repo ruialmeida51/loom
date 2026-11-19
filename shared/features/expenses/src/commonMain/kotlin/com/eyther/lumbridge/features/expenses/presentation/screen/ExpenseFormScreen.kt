@@ -13,7 +13,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingForm
@@ -37,10 +35,9 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_retry
+import com.eyther.lumbridge.features.expenses.generated.resources.form_category
 import com.eyther.lumbridge.features.expenses.generated.resources.form_date
-import com.eyther.lumbridge.features.expenses.generated.resources.form_less
 import com.eyther.lumbridge.features.expenses.generated.resources.form_monthly
-import com.eyther.lumbridge.features.expenses.generated.resources.form_more
 import com.eyther.lumbridge.features.expenses.generated.resources.form_recurring_unchanged
 import com.eyther.lumbridge.features.expenses.generated.resources.form_save
 import com.eyther.lumbridge.features.expenses.generated.resources.form_split
@@ -100,7 +97,6 @@ fun ExpenseFormScreen(
         recurring = state.recurring,
         splitMethod = state.split.method,
         participantCount = state.split.participants.size,
-        showDetails = state.showDetails,
         editing = state.editing,
         readyForInput = !state.editing || state.expense != null,
         loading = state.loading,
@@ -112,7 +108,6 @@ fun ExpenseFormScreen(
         onPayer = viewModel::onPayerChanged,
         onCategory = viewModel::onCategoryChanged,
         onRecurring = viewModel::onRecurringChanged,
-        onDetails = viewModel::onDetailsVisibilityChanged,
         onSplit = viewModel::onEditSplit,
         onDate = onChooseDate,
         onSave = viewModel::onSave,
@@ -148,7 +143,6 @@ private fun InnerExpenseFormScreen(
     recurring: Boolean,
     splitMethod: ExpenseSplitMethodDomain,
     participantCount: Int,
-    showDetails: Boolean,
     editing: Boolean,
     readyForInput: Boolean,
     loading: Boolean,
@@ -160,7 +154,6 @@ private fun InnerExpenseFormScreen(
     onPayer: (String) -> Unit,
     onCategory: (String) -> Unit,
     onRecurring: (Boolean) -> Unit,
-    onDetails: (Boolean) -> Unit,
     onSplit: () -> Unit,
     onDate: () -> Unit,
     onSave: () -> Unit,
@@ -200,9 +193,11 @@ private fun InnerExpenseFormScreen(
             error?.let { message ->
                 ErrorNotice(message = message, onDismiss = if (account == null) null else onDismiss)
                 if (account == null)
-                    OutlinedButton(onClick = onRetry) {
-                        Text(stringResource(Res.string.balance_retry))
-                    }
+                    LoomSecondaryButton(
+                        text = stringResource(Res.string.balance_retry),
+                        onClick = onRetry,
+                        modifier = Modifier,
+                    )
             }
             if (loading && account == null && readyForInput) LoadingRow()
             if (account != null) {
@@ -235,6 +230,30 @@ private fun InnerExpenseFormScreen(
                         onClick = onSplit,
                         enabled = !busy && !receiptPending,
                     )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    NavigationRow(
+                        title = stringResource(Res.string.form_date),
+                        description = date,
+                        onClick = onDate,
+                        enabled = !busy && !receiptPending,
+                    )
+                }
+                Text(
+                    text = stringResource(Res.string.form_category),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+                ) {
+                    listOf("Groceries", "Bills", "Food & drink", "Home", "Other").forEach { choice
+                        ->
+                        FilterChip(
+                            selected = category == choice,
+                            onClick = { onCategory(choice) },
+                            enabled = !busy && !receiptPending,
+                            label = { Text(expenseCategoryLabel(choice)) },
+                        )
+                    }
                 }
                 ExpenseReceiptSection(
                     photo = receiptPhoto,
@@ -267,55 +286,24 @@ private fun InnerExpenseFormScreen(
                         modifier = Modifier.testTag("keep_expense"),
                     )
                 }
-                OutlinedButton(
-                    onClick = { onDetails(!showDetails) },
-                    enabled = !busy && !receiptPending,
-                ) {
-                    Text(
-                        stringResource(
-                            if (showDetails) Res.string.form_less else Res.string.form_more,
-                        ),
-                    )
-                }
-                if (showDetails) {
-                    NavigationRow(
-                        title = stringResource(Res.string.form_date),
-                        description = date,
-                        onClick = onDate,
-                        enabled = !busy && !receiptPending,
-                    )
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        listOf("Groceries", "Bills", "Food & drink", "Home", "Other").forEach {
-                            choice ->
-                            FilterChip(
-                                selected = category == choice,
-                                onClick = { onCategory(choice) },
-                                enabled = !busy && !receiptPending,
-                                label = { Text(expenseCategoryLabel(choice)) },
-                            )
-                        }
-                    }
-                    if (!editing)
-                        Row {
-                            Text(
-                                stringResource(Res.string.form_monthly),
-                                modifier = Modifier.weight(1f),
-                            )
-                            Switch(
-                                modifier = Modifier.testTag("expense_recurring"),
-                                checked = recurring,
-                                onCheckedChange = onRecurring,
-                                enabled = !busy && !receiptPending,
-                            )
-                        }
-                    else if (recurring)
+                if (!editing)
+                    Row {
                         Text(
-                            stringResource(Res.string.form_recurring_unchanged),
-                            style = MaterialTheme.typography.bodySmall,
+                            stringResource(Res.string.form_monthly),
+                            modifier = Modifier.weight(1f),
                         )
-                }
+                        Switch(
+                            modifier = Modifier.testTag("expense_recurring"),
+                            checked = recurring,
+                            onCheckedChange = onRecurring,
+                            enabled = !busy && !receiptPending,
+                        )
+                    }
+                else if (recurring)
+                    Text(
+                        stringResource(Res.string.form_recurring_unchanged),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
             }
         }
         LoomButton(

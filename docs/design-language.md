@@ -19,6 +19,9 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
   nested controls. Open rows use quiet separators; cards represent distinct summaries or articles.
 - Preserve at least 48dp touch targets, including visually small checkboxes and stepper icons.
   Density comes from hierarchy and grouping, not smaller hit areas.
+- Labelled actions use one Plannot-style pill renderer for primary, secondary and destructive
+  appearances. Preserve label geometry while showing progress. Brief date/time and confirmation
+  dialogs give their two actions equal width; form sheets keep full-width vertically stacked actions.
 - Use resource strings/plurals for UI copy, errors, dates and accessibility. Publisher names and
   user content remain data. Keep useful phrases without repeating the page title or instructions.
 - Use the Privacy & Legal compact icon-led row pattern for account actions, preferences and
@@ -151,6 +154,15 @@ financial writes are not repeated after an attachment failure. Details opens a d
 with pinch/pan, zoom buttons and Reset. Persistent photo deletion is confirmed; draft discard is direct.
 The photo picker is remembered at the Screen root so a system picker does not depend on a sheet's
 lifetime. Preparation and upload use action progress, never refresh skeletons.
+Details show a tappable receipt thumbnail and reuse the authenticated download in a bounded,
+household-scoped memory cache for the viewer. A thumbnail does not create another stored object.
+New uploads are normalized JPEGs capped at 1 MiB, with quality/resolution adjusted before upload;
+older receipts up to the previous 5 MiB limit remain readable. The native codec strips source
+metadata and normalizes orientation. Supabase stores those optimized bytes.
+
+Shopping exposes each list's favourites in a quick-reuse sheet, including checked-off/removed
+starred items. Feedback uses the same custom snackbar for plain success and Undo; the feature VM
+owns expiry and clears stale targets when the user leaves or starts another action.
 
 ## Contextual action copy
 

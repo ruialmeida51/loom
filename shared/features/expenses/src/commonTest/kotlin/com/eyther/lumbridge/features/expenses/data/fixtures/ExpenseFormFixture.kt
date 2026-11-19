@@ -12,6 +12,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseUseCase
@@ -211,6 +212,10 @@ class ExpenseFormFixture {
 
     fun detailsViewModel(): ExpenseDetailsScreenViewModel =
         ExpenseDetailsScreenViewModel(
+            downloadReceiptPhotoUseCase =
+                DownloadReceiptPhotoUseCase(
+                    expenseReceiptDataSource = receipts,
+                ),
             getExpenseReceiptUseCase =
                 GetExpenseReceiptUseCase(expenseReceiptDataSource = receipts),
             prepareReceiptPhotoUseCase =

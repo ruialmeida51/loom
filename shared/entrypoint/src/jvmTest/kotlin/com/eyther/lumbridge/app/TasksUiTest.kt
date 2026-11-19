@@ -22,7 +22,9 @@ import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import java.io.File
+import kotlin.math.abs
 import kotlin.test.Test
+import kotlin.test.assertTrue
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
 
@@ -66,6 +68,10 @@ class TasksUiTest {
             onNodeWithTag("add_task").performClick()
             onNodeWithTag("task_title").performTextInput("Water balcony plants")
             onNodeWithTag("task_date").performClick()
+            val saveBounds = onNodeWithTag("confirm_task_date").fetchSemanticsNode().boundsInRoot
+            val cancelBounds = onNodeWithTag("dialog_dismiss").fetchSemanticsNode().boundsInRoot
+            assertTrue(abs(saveBounds.width - cancelBounds.width) < 1f)
+            capture("task-calendar-equal-actions")
             onNodeWithTag("confirm_task_date").performClick()
             onNodeWithTag("task_notification").assertIsOff()
             onNodeWithText("Daily").performScrollTo().performClick()

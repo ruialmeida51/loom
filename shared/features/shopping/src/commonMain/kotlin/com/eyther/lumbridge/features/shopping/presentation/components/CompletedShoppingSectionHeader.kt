@@ -4,10 +4,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +13,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
@@ -62,20 +61,18 @@ internal fun CompletedShoppingSectionHeader(
                         stateDescription = expansionState
                     },
             )
-            FilledTonalButton(
+            LoomSecondaryButton(
+                text =
+                    stringResource(
+                        if (selecting) Res.string.ui_done else Res.string.completed_select_short,
+                    ),
                 onClick = { onSelecting(!selecting) },
                 enabled = !busy,
                 modifier =
                     Modifier.testTag("select_completed").semantics {
                         contentDescription = selectionLabel
                     },
-            ) {
-                Text(
-                    stringResource(
-                        if (selecting) Res.string.ui_done else Res.string.completed_select_short,
-                    ),
-                )
-            }
+            )
         }
     }
 }

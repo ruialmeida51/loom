@@ -33,6 +33,7 @@ import com.eyther.lumbridge.core.generated.resources.icon_photo
 import com.eyther.lumbridge.core.generated.resources.icon_privacy
 import com.eyther.lumbridge.core.generated.resources.icon_settings
 import com.eyther.lumbridge.core.generated.resources.icon_shopping
+import com.eyther.lumbridge.core.generated.resources.icon_star
 import com.eyther.lumbridge.core.generated.resources.icon_tasks
 import org.jetbrains.compose.resources.stringResource
 
@@ -61,6 +62,7 @@ fun LoomIcon(
                 Glyph.PLUS -> Res.string.icon_add
                 Glyph.ARROW -> Res.string.icon_next
                 Glyph.CHECK -> Res.string.icon_done
+                Glyph.STAR -> Res.string.icon_star
                 Glyph.DELETE -> Res.string.icon_delete
                 Glyph.LOG_OUT -> Res.string.icon_log_out
                 Glyph.CHEVRON_DOWN -> Res.string.icon_expand
@@ -87,6 +89,23 @@ fun LoomIcon(
                 StrokeCap.Round,
             )
         when (glyph) {
+            Glyph.STAR -> {
+                val star =
+                    Path().apply {
+                        moveTo(12f * s, 3f * s)
+                        lineTo(14.8f * s, 8.7f * s)
+                        lineTo(21f * s, 9.6f * s)
+                        lineTo(16.5f * s, 14f * s)
+                        lineTo(17.6f * s, 20.2f * s)
+                        lineTo(12f * s, 17.2f * s)
+                        lineTo(6.4f * s, 20.2f * s)
+                        lineTo(7.5f * s, 14f * s)
+                        lineTo(3f * s, 9.6f * s)
+                        lineTo(9.2f * s, 8.7f * s)
+                        close()
+                    }
+                drawPath(star, tint, style = Stroke(1.7f * s))
+            }
             Glyph.PERSON -> {
                 drawCircle(
                     tint,

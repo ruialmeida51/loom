@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.shopping.presentation
 import androidx.lifecycle.ViewModelStore
 import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.presentation.components.snackbar.DEFAULT_ACTION_ALERT_DURATION
 import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
 import com.eyther.lumbridge.features.shopping.data.fixtures.ShoppingAnalyticsFixtureDataSource
 import com.eyther.lumbridge.features.shopping.data.fixtures.ShoppingEntryFixtureDataSource
@@ -23,6 +24,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -469,6 +471,186 @@ class ShoppingEntryTest {
                 Dispatchers.resetMain()
             }
         }
+
+    @Test
+    fun removalFeedbackExpiresAndTheSameMessageCanBeShownAgain() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source = ShoppingEntryFixtureDataSource()
+        val initial = (source.snapshot.value as AppResult.Success).value
+        val milk = feedbackItem(id = "Milk")
+        val bread = feedbackItem(id = "Bread")
+        source.snapshot.value = AppResult.Success(initial.copy(items = listOf(milk, bread)))
+        val store = ViewModelStore()
+        val model = createViewModel(source = source).also { store.put("shopping", it) }
+        try {
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                model.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            model.onRemoveItem(milk)
+            model.onRemoveItemConfirmed()
+            runCurrent()
+            val message = model.state.value.undoMessage
+            assertNotNull(message)
+            advanceTimeBy(DEFAULT_ACTION_ALERT_DURATION)
+            runCurrent()
+            assertNull(model.state.value.undoMessage)
+            model.onUndo()
+            runCurrent()
+            assertTrue(model.state.value.snapshot.items.first { it.id == milk.id }.removed)
+            model.onRemoveItem(bread)
+            model.onRemoveItemConfirmed()
+            runCurrent()
+            assertEquals(message, model.state.value.undoMessage)
+            advanceTimeBy(DEFAULT_ACTION_ALERT_DURATION - 1)
+            runCurrent()
+            assertNotNull(model.state.value.undoMessage)
+            advanceTimeBy(1)
+            runCurrent()
+            assertNull(model.state.value.undoMessage)
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun newerUndoSurvivesTheOldDeadlineAndRestoresOnlyItsOwnItem() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source = ShoppingEntryFixtureDataSource()
+        val initial = (source.snapshot.value as AppResult.Success).value
+        val milk = feedbackItem(id = "Milk")
+        val bread = feedbackItem(id = "Bread")
+        source.snapshot.value = AppResult.Success(initial.copy(items = listOf(milk, bread)))
+        val store = ViewModelStore()
+        val model = createViewModel(source = source).also { store.put("shopping", it) }
+        try {
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                model.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            model.onRemoveItem(milk)
+            model.onRemoveItemConfirmed()
+            runCurrent()
+            advanceTimeBy(DEFAULT_ACTION_ALERT_DURATION / 2)
+            model.onRemoveItem(bread)
+            model.onRemoveItemConfirmed()
+            runCurrent()
+            advanceTimeBy(DEFAULT_ACTION_ALERT_DURATION / 2)
+            runCurrent()
+            assertNotNull(model.state.value.undoMessage)
+            model.onUndo()
+            runCurrent()
+            assertFalse(model.state.value.snapshot.items.first { it.id == bread.id }.removed)
+            assertTrue(model.state.value.snapshot.items.first { it.id == milk.id }.removed)
+            assertNull(model.state.value.undoMessage)
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun leavingWhileAnItemIsSavingCannotReviveItsOldUndo() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source = ShoppingEntryFixtureDataSource().apply { deferItemWrites = true }
+        val initial = (source.snapshot.value as AppResult.Success).value
+        val milk = feedbackItem(id = "Milk")
+        source.snapshot.value = AppResult.Success(initial.copy(items = listOf(milk)))
+        val store = ViewModelStore()
+        val model = createViewModel(source = source).also { store.put("shopping", it) }
+        try {
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                model.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            model.onRemoveItem(milk)
+            model.onRemoveItemConfirmed()
+            runCurrent()
+            model.onDismissUndo()
+            source.itemWrites
+                .getValue(milk.id)
+                .complete(AppResult.Success(milk.copy(removed = true, version = 2)))
+            runCurrent()
+            assertNull(model.state.value.undoMessage)
+            assertTrue(model.state.value.snapshot.items.single().removed)
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun favouritesKeepCheckedAndRemovedItemsAndReuseThemWithoutAForm() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source = ShoppingEntryFixtureDataSource()
+        val initial = (source.snapshot.value as AppResult.Success).value
+        val milk = feedbackItem(id = "Milk", checked = true, favorite = true)
+        val bread = feedbackItem(id = "Bread", removed = true, favorite = true)
+        val otherList = feedbackItem(id = "Trip snack", favorite = true).copy(listId = "holiday")
+        source.snapshot.value =
+            AppResult.Success(initial.copy(items = listOf(milk, bread, otherList)))
+        val store = ViewModelStore()
+        val model = createViewModel(source = source).also { store.put("shopping", it) }
+        try {
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                model.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            assertEquals(listOf("Bread", "Milk"), model.state.value.favorites.map { it.item.name })
+            model.onFavoritesVisibilityChanged(true)
+            model.onReuseItem(bread)
+            runCurrent()
+            assertTrue(model.state.value.showFavorites)
+            assertFalse(model.state.value.showAdd)
+            assertEquals("Bread", model.state.value.uncheckedItems.single().name)
+            assertTrue(model.state.value.favorites.first().alreadyOnList)
+            model.onReuseItem(milk)
+            runCurrent()
+            assertEquals(
+                setOf("Bread", "Milk"),
+                model.state.value.uncheckedItems.map { it.name }.toSet(),
+            )
+            assertTrue(model.state.value.favorites.all { it.alreadyOnList })
+            advanceTimeBy(DEFAULT_ACTION_ALERT_DURATION / 2)
+            model.onReuseItem(milk)
+            advanceTimeBy(DEFAULT_ACTION_ALERT_DURATION / 2)
+            runCurrent()
+            assertNull(
+                model.state.value.undoMessage,
+                "Already-present favourites must not create another write/Undo window",
+            )
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    private fun feedbackItem(
+        id: String,
+        checked: Boolean = false,
+        removed: Boolean = false,
+        favorite: Boolean = false,
+    ): ShoppingItemDomain =
+        ShoppingItemDomain(
+            id = id,
+            name = id,
+            quantity = "",
+            category = "Produce",
+            checked = checked,
+            listId = "groceries",
+            version = 1,
+            removed = removed,
+            favorite = favorite,
+        )
 
     private fun createViewModel(
         source: ShoppingEntryFixtureDataSource,

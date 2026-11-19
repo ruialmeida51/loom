@@ -10,6 +10,9 @@ interface AuthenticationDataSource {
 
     val configured: Boolean
 
+    /** Resumes stored-session recovery without creating a second token-refresh operation. */
+    suspend fun recoverSession(): AppResult<Unit>
+
     suspend fun signIn(email: String, password: String): AppResult<Unit>
 
     /** Starts the system-browser flow; authenticated entry still follows [stream]. */

@@ -8,6 +8,8 @@ import com.eyther.lumbridge.core.presentation.components.snackbar.DEFAULT_ALERT_
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
+import com.eyther.lumbridge.features.authentication.domain.usecase.RecoverSessionUseCase
+import com.eyther.lumbridge.features.authentication.domain.usecase.ResumeSessionUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
 import com.eyther.lumbridge.features.authentication.generated.resources.Res
 import com.eyther.lumbridge.features.authentication.generated.resources.household_exited
@@ -34,6 +36,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -43,6 +46,8 @@ import kotlinx.coroutines.sync.withLock
 @OptIn(ExperimentalCoroutinesApi::class)
 class SessionScreenViewModel(
     private val getSessionStreamUseCase: GetSessionStreamUseCase,
+    private val recoverSessionUseCase: RecoverSessionUseCase,
+    private val resumeSessionUseCase: ResumeSessionUseCase,
     private val restoreHouseholdUseCase: RestoreHouseholdUseCase,
     private val rememberHouseholdUseCase: RememberHouseholdUseCase,
     private val signOutUseCase: SignOutUseCase,
@@ -53,6 +58,8 @@ class SessionScreenViewModel(
     private var selectionJob: Job? = null
     private val selectionMutex = Mutex()
     private var signOutJob: Job? = null
+    private var sessionRecoveryJob: Job? = null
+    private var resumeRecoveryJob: Job? = null
     private var identityRevision: Long = 0
     private val mutableState =
         MutableStateFlow(SessionState())
@@ -64,7 +71,12 @@ class SessionScreenViewModel(
                     when (authentication) {
                         is AuthenticationStateDomain.Restoring ->
                             state.update { oldState ->
-                                oldState.copy(reconnecting = authentication.reconnecting)
+                                oldState.copy(
+                                    reconnecting = authentication.reconnecting,
+                                    sessionRecoveryAvailable =
+                                        oldState.sessionRecoveryAvailable ||
+                                            authentication.reconnecting,
+                                )
                             }
                         AuthenticationStateDomain.SignedOut -> {
                             cancelIdentityWork()
@@ -73,7 +85,14 @@ class SessionScreenViewModel(
                         is AuthenticationStateDomain.Authenticated -> {
                             val userId = authentication.session.userId
                             if (state.value.userId == userId) {
-                                state.update { oldState -> oldState.copy(reconnecting = false) }
+                                state.update { oldState ->
+                                    oldState.copy(
+                                        reconnecting = false,
+                                        sessionRecoveryAvailable = false,
+                                        recoveringSession = false,
+                                        sessionRecoveryError = null,
+                                    )
+                                }
                             } else {
                                 cancelIdentityWork()
                                 state.value = SessionState(userId = userId)
@@ -121,6 +140,56 @@ class SessionScreenViewModel(
                     }
             }
     override val state = mutableState.asStateFlow()
+
+    override fun onResume() {
+        if (state.value.stage != SessionStageUi.READY) return
+        resumeRecoveryJob?.cancel()
+        val revision = identityRevision
+        resumeRecoveryJob = viewModelScope.launch {
+            // Let the SDK's process callback finish before checking for a stopped refresh job.
+            delay(250L)
+            if (revision == identityRevision && state.value.stage == SessionStageUi.READY)
+                resumeSessionUseCase()
+        }
+    }
+
+    override fun onPause() {
+        resumeRecoveryJob?.cancel()
+    }
+
+    init {
+        viewModelScope.launch {
+            delay(15_000L)
+            mutableState.update { oldState ->
+                if (oldState.userId == null && oldState.stage == SessionStageUi.RESTORING)
+                    oldState.copy(reconnecting = true, sessionRecoveryAvailable = true)
+                else oldState
+            }
+        }
+    }
+
+    override fun onRetrySessionRecovery() {
+        if (state.value.stage != SessionStageUi.RESTORING || sessionRecoveryJob?.isActive == true)
+            return
+        mutableState.update { oldState ->
+            oldState.copy(recoveringSession = true, sessionRecoveryError = null)
+        }
+        val revision = identityRevision
+        sessionRecoveryJob = viewModelScope.launch {
+            val result = recoverSessionUseCase()
+            ensureActive()
+            if (revision != identityRevision || state.value.stage != SessionStageUi.RESTORING)
+                return@launch
+            mutableState.update { oldState ->
+                oldState.copy(
+                    recoveringSession = false,
+                    sessionRecoveryAvailable = true,
+                    sessionRecoveryError =
+                        (result as? AppResult.Failure)?.error?.toAuthenticationTextResource(),
+                )
+            }
+        }
+    }
 
     override fun onHouseholdSelected(household: HouseholdDomain) {
         val userId = state.value.userId ?: return
@@ -262,6 +331,8 @@ class SessionScreenViewModel(
         selectionJob?.cancel()
         signOutJob?.cancel()
         feedbackJob?.cancel()
+        resumeRecoveryJob?.cancel()
+        sessionRecoveryJob?.cancel()
     }
 
     private fun HouseholdDomain.toContext(userId: String): HouseholdContextDomain =

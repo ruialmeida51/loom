@@ -17,6 +17,7 @@ enum class Glyph {
     PLUS,
     ARROW,
     CHECK,
+    STAR,
     DELETE,
     LOG_OUT,
     CHEVRON_DOWN,

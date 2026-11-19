@@ -302,6 +302,7 @@ class HouseholdViewModelModule {
     @KoinViewModel(binds = [ExpenseDetailsScreenViewModelContract::class])
     fun provideExpenseDetailsScreenViewModel(
         getExpenseReceiptUseCase: GetExpenseReceiptUseCase,
+        downloadReceiptPhotoUseCase: DownloadReceiptPhotoUseCase,
         prepareReceiptPhotoUseCase: PrepareReceiptPhotoUseCase,
         saveExpenseReceiptUseCase: SaveExpenseReceiptUseCase,
         removeExpenseReceiptUseCase: RemoveExpenseReceiptUseCase,
@@ -312,6 +313,7 @@ class HouseholdViewModelModule {
     ): ExpenseDetailsScreenViewModelContract =
         ExpenseDetailsScreenViewModel(
             getExpenseReceiptUseCase = getExpenseReceiptUseCase,
+            downloadReceiptPhotoUseCase = downloadReceiptPhotoUseCase,
             prepareReceiptPhotoUseCase = prepareReceiptPhotoUseCase,
             saveExpenseReceiptUseCase = saveExpenseReceiptUseCase,
             removeExpenseReceiptUseCase = removeExpenseReceiptUseCase,
