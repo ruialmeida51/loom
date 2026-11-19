@@ -182,7 +182,9 @@ available for new expense assignments. Keep the existing payment authorization r
 - Complete: STATE-01 explicit exits/remote membership loss clear household selection while keeping login; connectivity failure retains context.
 - Local validation: 255 JVM tests (including 57 Compose/navigation checks), Android app/test APK builds, 22 SQL migrations/integration suites and a real concurrent owner-exit test pass. Python 7 and Node 32 checks pass; legal pages build/check.
 - Local review: compiler evidence records all restartable functions skippable in the five reviewed modules; source ownership audit passes. Screenshots compare all five roots.
-- Pending delivery gates: native Android device execution and iOS/Xcode CI, hosted migration application/verification, PR merge and normal Firebase release. These remain explicitly pending until the actual results are recorded.
+- Native verification: all 12 Android emulator tests and the iOS/Xcode build passed in [PR CI](https://github.com/ruialmeida51/loom/actions/runs/44430999776). Device captures include paused-bill editing with the real keyboard and retained state across resume.
+- Hosted backend: both migrations applied successfully as `20261119013329_recurring_bill_editing_and_deletion` and `20261119014955_household_lifecycle_and_reusable_invitations`. Repository filenames match that recorded history; SQL bodies are unchanged from the validated versions. Metadata, RPC grants, private-table access and Vault read restrictions were verified without modifying household data.
+- Remaining delivery gates: CI for the final history/documentation alignment, PR merge and normal Firebase release. Actual delivery results are tracked on [PR #21](https://github.com/ruialmeida51/loom/pull/21).
 - Future suggestions, outside this batch: saved split presets, task assignments, shopping-trip-to-expense capture.
 
 [Final source audit](../audits/2026-11-18-household-management-and-tab-consistency.md).

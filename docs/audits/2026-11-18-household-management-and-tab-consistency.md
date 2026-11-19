@@ -6,8 +6,8 @@ recorded in the [plan](../plans/2026-11-18-household-management-and-tab-consiste
 ## Final source review
 
 Reviewed the intended diff after fixes and local validation using `ai/agents/AGENTS_REVIEWER.agent.md`.
-Source review: **pass**. Native Android execution, iOS/Xcode and hosted application remain delivery
-gates; their results are tracked on the delivery PR rather than inferred from local screenshots.
+Source review: **pass**. Native Android execution, iOS/Xcode and hosted migration application passed.
+Final history-alignment CI and Firebase delivery results are tracked on the delivery PR.
 
 - **Household ownership:** member/role/lifecycle/invitation models, ports, typed errors, resources and
   use cases remain in Household. Member identities retain active/version facts. Domain membership
@@ -82,11 +82,24 @@ exist and neither authenticated nor anonymous clients can SELECT decrypted secre
 verification must remain metadata/advisory reads, not tests against household records.
 
 Desktop screenshots/skippability do not prove native touch, IME, background/resume or frame timing.
-The new Android device scenario covers a paused bill draft, keyboard clearance, resume, Save and
-system Back; execute it in CI. iOS requires the macOS/Xcode gate. Apply and verify the two migrations
-before distributing the normal versioned Firebase build to internal-testers. Firebase delivery does
-not create a Play release or GitHub tag.
+All 12 Android emulator tests passed in [PR CI](https://github.com/ruialmeida51/loom/actions/runs/44430999776),
+including the new paused-bill scenario covering keyboard clearance, resume, Save and system Back.
+The macOS/Xcode gate passed too, and native device captures were reviewed.
+
+Both migrations applied to hosted Supabase on 19 November 2026. The recorded versions are
+`20261119013329_recurring_bill_editing_and_deletion` and
+`20261119014955_household_lifecycle_and_reusable_invitations`; repository filenames match those
+versions with unchanged SQL bodies. Hosted checks inspect metadata and grants only. Public RPCs
+remain invokers, anonymous execution is denied, private management receipts deny client access,
+and anonymous/authenticated clients cannot read decrypted Vault secrets.
+
+Final history-alignment CI, merge and the normal versioned Firebase upload remain tracked on
+[PR #21](https://github.com/ruialmeida51/loom/pull/21). Firebase delivery does not create a Play release
+or GitHub tag.
 
 Baseline hosted security advisories included disabled leaked-password protection and the intentionally
 policy-free private receipt cleanup queue. These are recorded baseline settings, not regressions
-introduced by this source change. New private operation tables deny client access deliberately.
+introduced by this source change. The post-migration advisory adds the expected policy-free private
+management receipt table, whose client grants are revoked deliberately. The existing
+[leaked-password protection setting](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection)
+remains unchanged.
