@@ -11,6 +11,10 @@ internal sealed interface BalancesDestination : NavDestination {
 
     @Stable @Serializable data object Recurring : BalancesDestination
 
+    @Stable
+    @Serializable
+    data class RecurringForm(val accountId: String, val ruleId: String) : BalancesDestination
+
     @Stable @Serializable data object Insights : BalancesDestination
 
     @Stable

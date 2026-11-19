@@ -5,5 +5,5 @@ import com.eyther.lumbridge.core.presentation.components.bottomsheet.model.Botto
 
 @Stable
 internal sealed interface HouseholdDetailsSheets : BottomSheetType {
-    @Stable data object Invitation : HouseholdDetailsSheets
+    @Stable data object Confirmation : HouseholdDetailsSheets
 }

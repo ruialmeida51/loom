@@ -10,7 +10,10 @@ import androidx.compose.ui.test.onAllNodesWithTag
 internal fun ComposeUiTest.awaitLoadedDestination(tag: String) {
     waitUntil(timeoutMillis = 5_000) {
         onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty() &&
-            onAllNodes(hasTestTag("loading_rows") and hasAnyAncestor(hasTestTag(tag)))
+            onAllNodes(
+                    (hasTestTag("loading_rows") or hasTestTag("loading_form")) and
+                        hasAnyAncestor(hasTestTag(tag)),
+                )
                 .fetchSemanticsNodes()
                 .isEmpty()
     }

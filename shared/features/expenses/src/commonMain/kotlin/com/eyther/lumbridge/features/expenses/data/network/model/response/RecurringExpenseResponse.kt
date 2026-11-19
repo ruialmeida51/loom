@@ -18,4 +18,6 @@ internal data class RecurringExpenseResponse(
     @SerialName("created_by") val createdBy: String,
     @SerialName("version") val version: Long,
     @SerialName("shares") val shares: Map<String, Long>,
+    @SerialName("split_method") val splitMethod: String = "amounts",
+    @SerialName("split_values") val splitValues: Map<String, Long> = shares,
 )

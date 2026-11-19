@@ -36,7 +36,7 @@ class RecordSettlementUseCase(
         } catch (cause: IllegalArgumentException) {
             throw ExpenseError.InvalidPaymentDate(cause = cause)
         }
-        val memberIds = members(context.id).getOrThrow().map { it.id }
+        val memberIds = members(id = context.id, includeInactive = true).getOrThrow().map { it.id }
         requireDomain(settlement.from in memberIds && settlement.to in memberIds) {
             ExpenseError.InvalidSettlementMembers()
         }

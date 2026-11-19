@@ -21,7 +21,10 @@ import com.eyther.lumbridge.features.household.presentation.model.HouseholdMembe
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun HouseholdMemberRow(member: HouseholdMemberUi) {
+internal fun HouseholdMemberRow(
+    member: HouseholdMemberUi,
+    trailingContent: @Composable () -> Unit = {},
+) {
     Row(
         modifier = Modifier.padding(LoomSpacing.content),
         verticalAlignment = Alignment.CenterVertically,
@@ -70,5 +73,6 @@ internal fun HouseholdMemberRow(member: HouseholdMemberUi) {
                     ),
             )
         }
+        trailingContent()
     }
 }

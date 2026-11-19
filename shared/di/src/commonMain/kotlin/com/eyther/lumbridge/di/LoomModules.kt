@@ -18,10 +18,12 @@ import com.eyther.lumbridge.features.diagnostics.domain.datasource.DiagnosticsDa
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
+import com.eyther.lumbridge.features.expenses.domain.datasource.MemberAccountPositionDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
+import com.eyther.lumbridge.features.household.domain.datasource.HouseholdManagementDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportDataSource
@@ -55,6 +57,8 @@ fun householdModules(
 fun providedHouseholdModules(
     context: HouseholdContextDomain,
     householdDataSource: HouseholdDataSource,
+    householdManagementDataSource: HouseholdManagementDataSource,
+    memberAccountPositionDataSource: MemberAccountPositionDataSource,
     analyticsDataSource: AnalyticsDataSource,
     shoppingDataSource: ShoppingDataSource,
     shoppingSelectionDataSource: ShoppingSelectionDataSource,
@@ -74,6 +78,8 @@ fun providedHouseholdModules(
         ProvidedHouseholdDataSourceModule(
                 context = context,
                 householdDataSource = householdDataSource,
+                householdManagementDataSource = householdManagementDataSource,
+                memberAccountPositionDataSource = memberAccountPositionDataSource,
                 analyticsDataSource = analyticsDataSource,
                 shoppingDataSource = shoppingDataSource,
                 shoppingSelectionDataSource = shoppingSelectionDataSource,

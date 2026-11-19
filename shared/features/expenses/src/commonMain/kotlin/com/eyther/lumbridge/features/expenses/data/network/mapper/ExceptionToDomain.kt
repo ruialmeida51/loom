@@ -14,6 +14,7 @@ internal fun Exception.toExpenseError(): AppError {
     if (code != "P0001") return toAppError()
 
     return when (error) {
+        "expenses.recurring_invalid_date" -> RecurringExpenseError.InvalidDate(cause = this)
         "expenses.payment_changed" -> SettlementError.Changed(cause = this)
         "expenses.payment_permission_denied" -> SettlementError.PermissionDenied(cause = this)
         "expenses.account_access_denied" -> ExpenseAccountError.PermissionDenied(cause = this)

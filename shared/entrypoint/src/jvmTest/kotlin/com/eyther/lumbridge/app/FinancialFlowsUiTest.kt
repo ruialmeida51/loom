@@ -180,7 +180,7 @@ class FinancialFlowsUiTest {
         }
 
     @Test
-    fun tripRecurringBillsCanBePausedResumedAndCancelled() =
+    fun pausedTripBillsCanBeEditedResumedAndDeletedWithoutChangingPastExpenses() =
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
             startApp()
             onNodeWithTag("navigation_money").performClick()
@@ -209,15 +209,29 @@ class FinancialFlowsUiTest {
                 onAllNodesWithText("£90.00", substring = true).fetchSemanticsNodes().isNotEmpty()
             }
             onNodeWithText("£90.00", substring = true).assertExists()
-            onNodeWithTag("toggle_recurring_Cottage rent").performScrollTo().performClick()
+            onNodeWithTag("recurring_actions_Cottage rent").performScrollTo().performClick()
+            onNodeWithText("Pause").performClick()
             onNodeWithText("Paused").assertExists()
-            onNodeWithTag("toggle_recurring_Cottage rent").performClick()
+            onNodeWithTag("recurring_actions_Cottage rent").performClick()
+            onNodeWithText("Edit").performClick()
+            awaitLoadedDestination(tag = "recurring_form_content")
+            onNodeWithTag("expense_amount").performTextReplacement("100.00")
+            capture("recurring-edit-paused-light")
+            onNodeWithTag("save_recurring").performClick()
+            awaitLoadedDestination(tag = "recurring_content")
+            onNodeWithText("Paused").assertExists()
+            onNodeWithText("£100.00", substring = true).assertExists()
+            onNodeWithTag("recurring_actions_Cottage rent").performClick()
+            onNodeWithText("Resume").performClick()
             onNodeWithText("Active").assertExists()
             capture("trip-recurring-light")
-            onNodeWithTag("cancel_recurring_Cottage rent").performClick()
-            onNodeWithTag("confirm_cancel_recurring").performClick()
-            onNodeWithText("Cancelled").assertExists()
+            onNodeWithTag("recurring_actions_Cottage rent").performClick()
+            onNodeWithText("Delete").performClick()
+            onNodeWithTag("confirm_delete_recurring").performClick()
+            onNodeWithText("Cottage rent").assertDoesNotExist()
             onNodeWithContentDescription("Back").performClick()
+            onNodeWithText("Cottage rent").assertExists()
+            onNodeWithText("£90.00").assertExists()
             selectAccount("Everyday")
             onNodeWithText("Cottage rent").assertDoesNotExist()
         }

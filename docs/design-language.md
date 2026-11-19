@@ -101,8 +101,8 @@ Completed items stay collapsed and support Select/Select all. Confirmed bulk del
 versions; concurrent restoration or editing rejects the whole request. List selectors need no Done.
 
 Balances owns separate Everyday/trip/event accounts and who-pays-whom views. Never combine currencies
-or debts across accounts. The active picker stays simple; Manage accounts owns archived history,
-Reopen and Delete. A trip/event deletion removes its records for everyone and requires its creator or
+or debts across accounts. One account sheet combines immediate selection, a separate archived section, per-row
+Edit/Archive/Reopen/Delete menus and New account. It has no Close/Done footer or second manager hop. A trip/event deletion removes its records for everyone and requires its creator or
 household owner; Everyday remains the built-in account. Contextual actions expose recurring bills
 and current balances. Expense rows prioritize title and total, then payer, personal share and the actual
 expense date, without redundant Today or daily section headings.
@@ -112,8 +112,11 @@ include labels; an expense allocation is not an outstanding debt. Confirmations 
 with a filled destructive action. Repayments use personal wording and named Paid by/Received by rows.
 
 Household details use read-only currency/time-zone rows, named members with owner/current-user cues and
-one contextual invitation action. Display the six-character code clearly with its actual one-use,
-24-hour lifetime; require confirmation before revoking active codes.
+an owner-only active invitation card with expiry, Copy/Share and Replace/Revoke. Six-character codes
+can invite several people during 24 hours. Require confirmation for replacement/revocation and owner/member
+changes. Departure confirmations show Expenses-owned positions per account/currency and explain that
+existing bills keep their payer/split and future charges. Last owners promote someone first. Household
+deletion requires an impact warning and exact household-name confirmation, including when debt remains.
 
 More retains Feed and household details. Profile/preferences have explicit section
 spacing. Avoid importing unrelated personal-finance calculators while daily usability is the priority.
@@ -174,3 +177,15 @@ household owner. Deletion is confirmed and uses the frozen version; failures ret
 Shopping grouping uses one draw offset through drag, acknowledgement and rollback. Never reset the
 finger offset before animating the committed indentation. Home skeletons retain grouped cards and
 section geometry; initial/manual refresh retain the existing minimum duration.
+
+## Root geometry and recurring management (18 November 2026)
+
+All five roots use core's rootContentPadding: 16 dp top/side gutters,
+with RootHeading aligning static titles and selectors to the same 48 dp header geometry. with Home's edge-to-edge feed
+retained and feature-specific FAB/IME clearance. Root headings use the same title-to-content rhythm;
+checklist rows stay compact. Loaded, empty and loading states retain their grouping.
+
+Active and paused recurring bills open a dedicated full-screen editor. Reuse expense capture fields
+and focused split/date sheets; Save affects future entries and preserves paused state. Cards expose
+anchored Edit/Pause/Resume/Delete menus. Deleted/cancelled schedule history remains referenced by
+its recorded expenses; a deleted schedule cannot generate new entries.

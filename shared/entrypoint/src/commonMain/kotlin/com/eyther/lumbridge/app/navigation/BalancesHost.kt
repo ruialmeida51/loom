@@ -54,6 +54,7 @@ internal fun BalancesHost(
         rememberNavigationState(startRoot = BalancesDestination.Overview) {
             subclass(BalancesDestination.Overview::class)
             subclass(BalancesDestination.Recurring::class)
+            subclass(BalancesDestination.RecurringForm::class)
             subclass(BalancesDestination.Insights::class)
             subclass(BalancesDestination.Expense::class)
             subclass(BalancesDestination.Form::class)
@@ -318,15 +319,42 @@ internal fun BalancesHost(
                 }
                 BusyNavigationGuard(busy = accountState.busy)
             }
-            BalancesDestination.Recurring ->
+            BalancesDestination.Recurring -> {
+                val viewModel: RecurringExpensesScreenViewModelContract = koinViewModel()
+                val recurringState by viewModel.state.platformCollectAsStateOnStart()
+                LaunchedEffect(destination, contentRevision) {
+                    if (destination == key) viewModel.onContentChanged()
+                }
                 FlowScaffold(
                     title = stringResource(Res.string.toolbar_recurring_expenses),
                     onBack = navigator::goBack,
+                    backEnabled = !recurringState.busy,
                 ) {
                     RecurringExpensesScreen(
-                        viewModel = koinViewModel<RecurringExpensesScreenViewModelContract>(),
+                        viewModel = viewModel,
+                        onEdit = { rule ->
+                            navigator.navigateTo(
+                                BalancesDestination.RecurringForm(
+                                    accountId = rule.accountId,
+                                    ruleId = rule.id,
+                                ),
+                            )
+                        },
                     )
                 }
+                BusyNavigationGuard(busy = recurringState.busy)
+            }
+            is BalancesDestination.RecurringForm ->
+                RecurringExpenseFormHost(
+                    accountId = key.accountId,
+                    ruleId = key.ruleId,
+                    onBack = navigator::goBack,
+                    onSaved = {
+                        contentRevision++
+                        overviewViewModel.onContentChanged()
+                        navigator.goBack()
+                    },
+                )
             // Keep old saved routes/push links readable, but open the current account position.
             BalancesDestination.Insights ->
                 LaunchedEffect(Unit) {

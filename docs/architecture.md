@@ -169,3 +169,24 @@ models remain in household. Same-user refresh/reconnection keeps the portal and 
 An identity change cancels the old restoration and persistence work. Failed restoration has explicit
 Retry/Choose household states, persistence failures keep the active in-memory household, and
 sign-out progress/errors stay in the existing account confirmation until success or cancellation.
+
+### Household lifecycle and retained identities (18 November 2026)
+
+Household owns role/lifecycle/invitation models, ports, use cases and confirmation state. Current
+members and historical identities are separate reads. Historical financial names, payments and
+retained schedule participants remain available after access ends. Expenses owns per-account
+positions and its embedded departure-preview Screen/ViewModel; entrypoint composes that preview
+into household confirmations without a household → expenses dependency.
+
+Current owner authorization and household-first locking protect membership changes and last-owner
+races. Private operation receipts make lost responses retryable; invitation receipts contain IDs,
+never raw codes. Codes are hashed for redemption and stored encrypted in Supabase Vault for
+owner-only redisplay. New invitations are reusable for 24 hours; old hash-only invitations preserve
+their existing lifetime rules. Leaving/removal revokes shared codes, preserves financial history,
+and leaves existing schedules running unchanged. New participant assignments require active members.
+
+Session owns selected-household invalidation and persistence. Explicit exits and authoritative
+membership loss return to household selection while retaining the global session. Transient access
+read failures retain context; they do not become sign-out or membership loss. Household deletion
+removes only its scoped graph, preserves the global profile/other households and uses the existing
+durable receipt cleanup queue.

@@ -9,6 +9,8 @@ abstract class SessionScreenViewModelContract : LoomViewModel() {
 
     abstract fun onHouseholdSelected(household: HouseholdDomain)
 
+    abstract fun onHouseholdExited(householdId: String, explicit: Boolean)
+
     abstract fun onRetryHouseholdRestore()
 
     abstract fun onChooseHousehold()

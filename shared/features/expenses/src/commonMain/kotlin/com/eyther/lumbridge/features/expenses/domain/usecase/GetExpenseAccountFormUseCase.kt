@@ -13,9 +13,13 @@ class GetExpenseAccountFormUseCase(
     private val context: HouseholdContextDomain,
 ) {
     suspend operator fun invoke(id: String?): AppResult<ExpenseAccountFormDomain> = safeCall {
+        val account = id?.let { getExpenseAccountUseCase(id = it).getOrThrow() }
         ExpenseAccountFormDomain(
-            account = id?.let { getExpenseAccountUseCase(id = it).getOrThrow() },
-            members = getMembersUseCase(context.id).getOrThrow(),
+            account = account,
+            members =
+                getMembersUseCase(id = context.id, includeInactive = id != null)
+                    .getOrThrow()
+                    .filter { it.active || it.id in account?.memberIds.orEmpty() },
         )
     }
 }

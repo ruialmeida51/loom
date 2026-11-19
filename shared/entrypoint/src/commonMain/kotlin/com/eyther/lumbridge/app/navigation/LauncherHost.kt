@@ -53,6 +53,7 @@ fun LauncherHost() {
                     signOutError = signOutError,
                     onSelect = viewModel::onHouseholdSelected,
                     onSignOut = viewModel::onSignOut,
+                    onHouseholdExited = viewModel::onHouseholdExited,
                     onSignOutDismissed = viewModel::onSignOutDismissed,
                 )
             }

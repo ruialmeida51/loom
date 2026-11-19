@@ -9,4 +9,5 @@ data class HouseholdMemberUi(
     val initials: String,
     val isOwner: Boolean,
     val isCurrentUser: Boolean,
+    val canManage: Boolean = false,
 )

@@ -170,6 +170,54 @@ class UsabilityDeviceTest {
     }
 
     @Test
+    fun pausedRecurringBillEditRetainsDraftAboveKeyboardAndAcrossResume() {
+        compose.onNodeWithTag("navigation_money").performClick()
+        awaitDestination(tag = "expenses_content")
+        compose.onNodeWithTag("balances_actions").performClick()
+        compose.onNodeWithText("Recurring expenses").performClick()
+        awaitDestination(tag = "recurring_content")
+        compose.onNodeWithTag("recurring_actions_Internet").performScrollTo().performClick()
+        compose.onNodeWithText("Pause").performClick()
+        compose.onNodeWithText("Paused").assertExists()
+        compose.onNodeWithTag("recurring_actions_Internet").performClick()
+        compose.onNodeWithText("Edit").performClick()
+        compose.waitUntil(timeoutMillis = 5_000) {
+            compose.onAllNodesWithTag("expense_amount").fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag("expense_amount").performTextClearance()
+        compose.onNodeWithTag("expense_amount").performTextInput("42.00")
+        compose.waitUntil(timeoutMillis = 5_000) { keyboardVisible() }
+        val submitBottom =
+            compose.onNodeWithTag("save_recurring").fetchSemanticsNode().boundsInWindow.bottom
+        compose.runOnIdle {
+            val decor = compose.activity.window.decorView
+            val keyboard =
+                ViewCompat.getRootWindowInsets(decor)
+                    ?.getInsets(WindowInsetsCompat.Type.ime())
+                    ?.bottom ?: 0
+            assertTrue(
+                "Recurring Save must stay above the keyboard",
+                submitBottom <= decor.height - keyboard + 2f,
+            )
+        }
+        capture(name = "recurring-form-keyboard")
+        compose.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
+        compose.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+        awaitActivityWindowFocus()
+        compose.onNodeWithTag("expense_amount").assertTextContains("42.00")
+        hideKeyboard()
+        compose.onNodeWithTag("save_recurring").performClick()
+        awaitDestination(tag = "recurring_content")
+        compose.onNodeWithText("Paused").assertExists()
+        compose.onNodeWithText("42.00", substring = true).assertExists()
+        capture(name = "recurring-saved-paused")
+        pressSystemBack()
+        awaitDestination(tag = "expenses_content")
+        pressSystemBack()
+        awaitDestination(tag = "home_content")
+    }
+
+    @Test
     fun paymentFormKeepsItsDraftAcrossDateBackAndResumeThenOpensConsistentDetails() {
         compose.onNodeWithTag("navigation_money").performClick()
         awaitDestination(tag = "expenses_content")

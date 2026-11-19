@@ -3,10 +3,12 @@ package com.eyther.lumbridge.di.household.usecase
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
+import com.eyther.lumbridge.features.expenses.domain.datasource.MemberAccountPositionDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.usecase.ControlRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountUseCase
@@ -16,6 +18,8 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStr
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpensesStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetMemberAccountPositionsUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpenseFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpensesStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSelectedExpenseAccountStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementFormUseCase
@@ -29,6 +33,7 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplit
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccountUseCase
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
@@ -45,10 +50,16 @@ import com.eyther.lumbridge.features.feed.domain.usecase.UpdateFeedSubscriptionU
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCase
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
+import com.eyther.lumbridge.features.household.domain.datasource.HouseholdManagementDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import com.eyther.lumbridge.features.household.domain.usecase.ChangeHouseholdMemberUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.DeleteHouseholdUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdManagementStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.ReplaceHouseholdInvitationUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.RevokeHouseholdInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RevokeInvitationUseCase
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportDataSource
@@ -79,6 +90,76 @@ import org.koin.core.annotation.Single
 
 @Module
 class HouseholdUseCaseModule {
+    @Single
+    fun provideGetHouseholdManagementStreamUseCase(
+        householdManagementDataSource: HouseholdManagementDataSource,
+    ): GetHouseholdManagementStreamUseCase =
+        GetHouseholdManagementStreamUseCase(
+            householdManagementDataSource = householdManagementDataSource,
+        )
+
+    @Single
+    fun provideReplaceHouseholdInvitationUseCase(
+        householdManagementDataSource: HouseholdManagementDataSource,
+    ): ReplaceHouseholdInvitationUseCase =
+        ReplaceHouseholdInvitationUseCase(
+            householdManagementDataSource = householdManagementDataSource,
+        )
+
+    @Single
+    fun provideRevokeHouseholdInvitationUseCase(
+        householdManagementDataSource: HouseholdManagementDataSource,
+    ): RevokeHouseholdInvitationUseCase =
+        RevokeHouseholdInvitationUseCase(
+            householdManagementDataSource = householdManagementDataSource,
+        )
+
+    @Single
+    fun provideChangeHouseholdMemberUseCase(
+        householdManagementDataSource: HouseholdManagementDataSource,
+    ): ChangeHouseholdMemberUseCase =
+        ChangeHouseholdMemberUseCase(householdManagementDataSource = householdManagementDataSource)
+
+    @Single
+    fun provideDeleteHouseholdUseCase(
+        householdManagementDataSource: HouseholdManagementDataSource,
+    ): DeleteHouseholdUseCase =
+        DeleteHouseholdUseCase(householdManagementDataSource = householdManagementDataSource)
+
+    @Single
+    fun provideGetMemberAccountPositionsUseCase(
+        memberAccountPositionDataSource: MemberAccountPositionDataSource,
+    ): GetMemberAccountPositionsUseCase =
+        GetMemberAccountPositionsUseCase(
+            memberAccountPositionDataSource = memberAccountPositionDataSource,
+        )
+
+    @Single
+    fun provideGetRecurringExpenseFormUseCase(
+        recurringExpenseDataSource: RecurringExpenseDataSource,
+        expenseAccountDataSource: ExpenseAccountDataSource,
+        householdDataSource: HouseholdDataSource,
+        context: HouseholdContextDomain,
+    ): GetRecurringExpenseFormUseCase =
+        GetRecurringExpenseFormUseCase(
+            recurringExpenseDataSource = recurringExpenseDataSource,
+            expenseAccountDataSource = expenseAccountDataSource,
+            householdDataSource = householdDataSource,
+            context = context,
+        )
+
+    @Single
+    fun provideSaveRecurringExpenseUseCase(
+        recurringExpenseDataSource: RecurringExpenseDataSource,
+    ): SaveRecurringExpenseUseCase =
+        SaveRecurringExpenseUseCase(recurringExpenseDataSource = recurringExpenseDataSource)
+
+    @Single
+    fun provideDeleteRecurringExpenseUseCase(
+        recurringExpenseDataSource: RecurringExpenseDataSource,
+    ): DeleteRecurringExpenseUseCase =
+        DeleteRecurringExpenseUseCase(recurringExpenseDataSource = recurringExpenseDataSource)
+
     @Single
     fun provideGetMembersUseCase(householdDataSource: HouseholdDataSource): GetMembersUseCase =
         GetMembersUseCase(householdDataSource = householdDataSource)

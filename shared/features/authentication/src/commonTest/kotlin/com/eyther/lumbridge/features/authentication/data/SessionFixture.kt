@@ -8,12 +8,14 @@ import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSo
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdSelectionDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
+import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RememberHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RestoreHouseholdUseCase
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 
 internal class SessionFixture {
@@ -21,6 +23,10 @@ internal class SessionFixture {
     val home = HouseholdDomain("home", "Home", "EUR", "UTC")
     val trip = HouseholdDomain("trip", "Trip", "GBP", "Europe/London")
     val other = HouseholdDomain("other", "Other", "EUR", "UTC")
+    val availableHouseholds =
+        MutableStateFlow<AppResult<List<HouseholdDomain>>>(
+            AppResult.Success(listOf(home, trip, other)),
+        )
     val selected = mutableMapOf("you" to home.id, "another" to trip.id)
     var restoreCalls = 0
     var restoreResult: AppResult<List<HouseholdDomain>> =
@@ -32,6 +38,9 @@ internal class SessionFixture {
 
     private val householdDataSource =
         object : HouseholdDataSource {
+            override fun streamHouseholds(): Flow<AppResult<List<HouseholdDomain>>> =
+                availableHouseholds
+
             override suspend fun getHouseholds(): AppResult<List<HouseholdDomain>> {
                 restoreCalls++
                 val gate = restoreGate
@@ -78,6 +87,8 @@ internal class SessionFixture {
 
     fun viewModel(): SessionScreenViewModel =
         SessionScreenViewModel(
+            getHouseholdsStreamUseCase =
+                GetHouseholdsStreamUseCase(householdDataSource = householdDataSource),
             getSessionStreamUseCase = GetSessionStreamUseCase(dataSource = authentication),
             restoreHouseholdUseCase =
                 RestoreHouseholdUseCase(

@@ -4,10 +4,12 @@ import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSo
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
+import com.eyther.lumbridge.features.expenses.domain.datasource.MemberAccountPositionDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
+import com.eyther.lumbridge.features.household.domain.datasource.HouseholdManagementDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportDataSource
@@ -22,6 +24,8 @@ import org.koin.core.annotation.Single
 class ProvidedHouseholdDataSourceModule(
     private val context: HouseholdContextDomain,
     private val householdDataSource: HouseholdDataSource,
+    private val householdManagementDataSource: HouseholdManagementDataSource,
+    private val memberAccountPositionDataSource: MemberAccountPositionDataSource,
     private val analyticsDataSource: AnalyticsDataSource,
     private val shoppingSelectionDataSource: ShoppingSelectionDataSource,
     private val shoppingDataSource: ShoppingDataSource,
@@ -36,6 +40,14 @@ class ProvidedHouseholdDataSourceModule(
     private val statementExportDataSource: StatementExportDataSource,
     private val settingsDataSource: SettingsDataSource,
 ) {
+
+    @Single
+    fun provideHouseholdManagementDataSource(): HouseholdManagementDataSource =
+        householdManagementDataSource
+
+    @Single
+    fun provideMemberAccountPositionDataSource(): MemberAccountPositionDataSource =
+        memberAccountPositionDataSource
 
     @Single fun provideHouseholdContextDomain(): HouseholdContextDomain = context
 

@@ -55,6 +55,7 @@ class PortalFlowUiTest {
                 var selected by remember { mutableStateOf<HouseholdContextDomain?>(null) }
                 LoomTheme(mode = ThemeMode.LIGHT) {
                     PortalHost(
+                        onHouseholdExited = { _, _ -> },
                         userId = "member",
                         context = selected,
                         access = SupabaseAccess(client = null),
@@ -100,6 +101,7 @@ class PortalFlowUiTest {
             setContent {
                 LoomTheme(mode = ThemeMode.LIGHT) {
                     PortalHost(
+                        onHouseholdExited = { _, _ -> },
                         userId = "member",
                         context =
                             HouseholdContextDomain(

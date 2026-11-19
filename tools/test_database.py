@@ -2,6 +2,7 @@
 """Run migrations and authorization/ledger integration tests in a disposable PostgreSQL container."""
 from pathlib import Path
 import subprocess
+import runpy
 import time
 import uuid
 
@@ -53,11 +54,14 @@ try:
         after = ROOT / "supabase/tests/upgrades" / f"{name}.after.sql"
         if before.exists():
             sql(before.read_text())
+        if name == "household_lifecycle_and_reusable_invitations":
+            sql((ROOT / "supabase/tests/fixtures/vault.sql").read_text())
         sql(migration.read_text())
         if after.exists():
             sql(after.read_text())
     for test in sorted((ROOT / "supabase/tests").glob("*.sql")):
         sql(test.read_text())
+    runpy.run_path(str(ROOT / "supabase/tests/concurrency/household_management.py"))["run"](container)
     print(f"PostgreSQL: {len(migrations)} migrations applied; household, ledger, recurrence, statement, and access tests passed.")
 finally:
     subprocess.run(["docker", "rm", "-f", "-v", container], capture_output=True)

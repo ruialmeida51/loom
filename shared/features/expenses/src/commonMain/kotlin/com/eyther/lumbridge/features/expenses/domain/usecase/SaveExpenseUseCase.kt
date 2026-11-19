@@ -39,7 +39,12 @@ class SaveExpenseUseCase(
         }
         ExpenseSplitDomain.validate(expense.amountMinor, expense.shares)
         coroutineScope {
-            val memberRequest = async { members(context.id).getOrThrow().map { it.id }.toSet() }
+            val memberRequest = async {
+                members(id = context.id, includeInactive = expense.version > 0)
+                    .getOrThrow()
+                    .map { it.id }
+                    .toSet()
+            }
             val accountRequest = async {
                 expenseAccountDataSource.getAccount(id = expense.accountId).getOrThrow()
             }

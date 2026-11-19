@@ -240,6 +240,64 @@ class SessionScreenViewModelTest {
         }
     }
 
+    @Test
+    fun revokedMembershipClearsOnlyHouseholdAndItsRememberedSelection() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val fixture = SessionFixture()
+        fixture.authentication.stream().value = authenticated("you")
+        val viewModel = fixture.viewModel()
+        try {
+            backgroundScope.launch { viewModel.state.collect() }
+            runCurrent()
+            assertNotNull(viewModel.state.value.context)
+            fixture.availableHouseholds.value = AppResult.Success(listOf(fixture.trip))
+            runCurrent()
+            assertEquals(SessionStageUi.READY, viewModel.state.value.stage)
+            assertEquals("you", viewModel.state.value.userId)
+            assertNull(viewModel.state.value.context)
+            assertNull(fixture.selected["you"])
+            assertNotNull(viewModel.state.value.selectionError)
+            assertEquals(1, fixture.restoreCalls)
+        } finally {
+            viewModel.viewModelScope.cancel()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun accessReadFailureKeepsHouseholdAndRecoversWithoutLoggingOut() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val fixture = SessionFixture()
+        fixture.authentication.stream().value = authenticated("you")
+        val viewModel = fixture.viewModel()
+        try {
+            backgroundScope.launch { viewModel.state.collect() }
+            runCurrent()
+            fixture.availableHouseholds.value = AppResult.Failure(CommonError.NoConnection())
+            runCurrent()
+            assertEquals(fixture.home.id, viewModel.state.value.context?.id)
+            assertEquals(SessionStageUi.READY, viewModel.state.value.stage)
+            assertNotNull(viewModel.state.value.accessError)
+            fixture.availableHouseholds.value =
+                AppResult.Success(listOf(fixture.home, fixture.trip))
+            runCurrent()
+            assertNull(viewModel.state.value.accessError)
+            assertEquals(fixture.home.id, viewModel.state.value.context?.id)
+            viewModel.onHouseholdSelected(fixture.trip)
+            runCurrent()
+            viewModel.onHouseholdExited(householdId = fixture.home.id, explicit = false)
+            runCurrent()
+            assertEquals(
+                fixture.trip.id,
+                viewModel.state.value.context?.id,
+                "An old household exit cannot clear the current selection",
+            )
+        } finally {
+            viewModel.viewModelScope.cancel()
+            Dispatchers.resetMain()
+        }
+    }
+
     private fun authenticated(
         userId: String,
         email: String = "$userId@example.com",

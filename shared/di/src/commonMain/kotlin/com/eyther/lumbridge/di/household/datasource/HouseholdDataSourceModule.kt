@@ -5,16 +5,20 @@ import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSo
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseReceiptDataSource
+import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonMemberAccountPositionDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonRecurringExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
+import com.eyther.lumbridge.features.expenses.domain.datasource.MemberAccountPositionDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
 import com.eyther.lumbridge.features.feed.data.network.datasource.CommonFeedDataSource
 import com.eyther.lumbridge.features.feed.data.network.datasource.CommonFeedSubscriptionDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
+import com.eyther.lumbridge.features.household.data.network.datasource.CommonHouseholdManagementDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
+import com.eyther.lumbridge.features.household.domain.datasource.HouseholdManagementDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.insights.data.export.CommonStatementExportDataSource
 import com.eyther.lumbridge.features.insights.data.network.datasource.CommonStatementDataSource
@@ -38,6 +42,14 @@ class HouseholdDataSourceModule(
     private val analyticsDataSource: AnalyticsDataSource,
     private val settingsDataSource: SettingsDataSource,
 ) {
+
+    @Single
+    fun provideHouseholdManagementDataSource(): HouseholdManagementDataSource =
+        CommonHouseholdManagementDataSource(access = access, context = context)
+
+    @Single
+    fun provideMemberAccountPositionDataSource(): MemberAccountPositionDataSource =
+        CommonMemberAccountPositionDataSource(access = access, context = context)
 
     @Single fun provideHouseholdContextDomain(): HouseholdContextDomain = context
 

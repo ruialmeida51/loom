@@ -8,6 +8,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseReceiptDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MonthlyRecurrenceDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ReceiptPhotoDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
@@ -52,6 +53,8 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 ),
             )
     }
+
+    val deleted = MutableStateFlow(false)
 
     var members =
         listOf(
@@ -162,7 +165,10 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     "Bills",
                     todayIso(context.timeZone),
                     ExpenseSplitDomain.equal(3990, memberIds),
-                    true,
+                    accountId = context.id,
+                    splitMethod = ExpenseSplitMethodDomain.EQUAL,
+                    splitValues = emptyMap(),
+                    recurring = true,
                 ),
                 ExpenseDomain(
                     newId(),
@@ -206,6 +212,9 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     USER,
                     1,
                     ExpenseSplitDomain.equal(3990, memberIds),
+                    accountId = context.id,
+                    splitMethod = ExpenseSplitMethodDomain.EQUAL,
+                    splitValues = emptyMap(),
                 ),
             ),
         )

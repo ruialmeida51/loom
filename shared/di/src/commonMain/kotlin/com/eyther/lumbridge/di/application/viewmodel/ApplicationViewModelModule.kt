@@ -16,6 +16,7 @@ import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contr
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.LoginScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.RegisterScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.SessionScreenViewModelContract
+import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RememberHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RestoreHouseholdUseCase
 import org.koin.core.annotation.InjectedParam
@@ -63,12 +64,14 @@ class ApplicationViewModelModule {
     fun provideSessionScreenViewModel(
         getSessionStreamUseCase: GetSessionStreamUseCase,
         restoreHouseholdUseCase: RestoreHouseholdUseCase,
+        getHouseholdsStreamUseCase: GetHouseholdsStreamUseCase,
         rememberHouseholdUseCase: RememberHouseholdUseCase,
         signOutUseCase: SignOutUseCase,
     ): SessionScreenViewModelContract =
         SessionScreenViewModel(
             getSessionStreamUseCase = getSessionStreamUseCase,
             restoreHouseholdUseCase = restoreHouseholdUseCase,
+            getHouseholdsStreamUseCase = getHouseholdsStreamUseCase,
             rememberHouseholdUseCase = rememberHouseholdUseCase,
             signOutUseCase = signOutUseCase,
         )

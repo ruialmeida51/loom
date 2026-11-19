@@ -29,9 +29,7 @@ class GetSettlementFormUseCase(
                 else expenseAccountDataSource.getReferenceAccount(id = accountId).getOrThrow()
             }
             val membersRequest = async {
-                if (refreshReferences)
-                    householdDataSource.getMembers(householdId = context.id).getOrThrow()
-                else householdDataSource.getMemberReferences(householdId = context.id).getOrThrow()
+                householdDataSource.getMemberHistory(householdId = context.id).getOrThrow()
             }
             val settlementRequest = async {
                 settlementId?.let {

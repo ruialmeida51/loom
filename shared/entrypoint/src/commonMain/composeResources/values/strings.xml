@@ -35,4 +35,5 @@
     <string name="flow_payment_details">Payment details</string>
     <string name="flow_record_payment">Record payment</string>
     <string name="flow_edit_payment">Edit payment</string>
+  <string name="bill_edit_title">Edit recurring bill</string>
 </resources>

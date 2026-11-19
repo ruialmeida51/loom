@@ -4,12 +4,15 @@ import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEven
 import com.eyther.lumbridge.features.expenses.domain.usecase.ControlRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetMemberAccountPositionsUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpenseFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpensesStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
@@ -20,6 +23,7 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplit
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseAccountFormScreenViewModel
@@ -27,18 +31,22 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseDeta
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseFormScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpenseSplitViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ExpensesScreenViewModel
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.MemberAccountPositionsScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.PaymentDetailsScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.PaymentFormScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.ReceiptViewerScreenViewModel
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.RecurringExpenseFormScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.RecurringExpensesScreenViewModel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseAccountFormScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseDetailsScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseSplitViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.MemberAccountPositionsScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentDetailsScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentFormScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ReceiptViewerScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpenseFormScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedPageUseCase
@@ -59,9 +67,12 @@ import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCa
 import com.eyther.lumbridge.features.home.presentation.viewmodel.HomeScreenViewModel
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
-import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.ChangeHouseholdMemberUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.DeleteHouseholdUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdManagementStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
-import com.eyther.lumbridge.features.household.domain.usecase.RevokeInvitationUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.ReplaceHouseholdInvitationUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.RevokeHouseholdInvitationUseCase
 import com.eyther.lumbridge.features.household.presentation.viewmodel.HouseholdDetailsScreenViewModel
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdDetailsScreenViewModelContract
 import com.eyther.lumbridge.features.insights.domain.usecase.ExportStatementUseCase
@@ -92,6 +103,20 @@ import org.koin.core.annotation.Module
 @Module
 class HouseholdViewModelModule {
 
+    @KoinViewModel(binds = [RecurringExpenseFormScreenViewModelContract::class])
+    fun provideRecurringExpenseFormScreenViewModel(
+        @InjectedParam params: RecurringExpenseFormScreenViewModelContract.Params,
+        getRecurringExpenseFormUseCase: GetRecurringExpenseFormUseCase,
+        saveRecurringExpenseUseCase: SaveRecurringExpenseUseCase,
+        context: HouseholdContextDomain,
+    ): RecurringExpenseFormScreenViewModelContract =
+        RecurringExpenseFormScreenViewModel(
+            params = params,
+            getRecurringExpenseFormUseCase = getRecurringExpenseFormUseCase,
+            saveRecurringExpenseUseCase = saveRecurringExpenseUseCase,
+            context = context,
+        )
+
     @KoinViewModel(binds = [ExpensesScreenViewModelContract::class])
     fun provideExpensesScreenViewModel(
         getExpenseLedgerStreamUseCase: GetExpenseLedgerStreamUseCase,
@@ -120,6 +145,7 @@ class HouseholdViewModelModule {
     fun provideRecurringExpensesScreenViewModel(
         getRecurringExpensesStreamUseCase: GetRecurringExpensesStreamUseCase,
         controlRecurringExpenseUseCase: ControlRecurringExpenseUseCase,
+        deleteRecurringExpenseUseCase: DeleteRecurringExpenseUseCase,
         getMembersStreamUseCase: GetMembersStreamUseCase,
         context: HouseholdContextDomain,
         trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
@@ -127,6 +153,7 @@ class HouseholdViewModelModule {
         RecurringExpensesScreenViewModel(
             getRecurringExpensesStreamUseCase = getRecurringExpensesStreamUseCase,
             controlRecurringExpenseUseCase = controlRecurringExpenseUseCase,
+            deleteRecurringExpenseUseCase = deleteRecurringExpenseUseCase,
             getMembersStreamUseCase = getMembersStreamUseCase,
             context = context,
             trackAnalyticsEventUseCase = trackAnalyticsEventUseCase,
@@ -201,15 +228,29 @@ class HouseholdViewModelModule {
     @KoinViewModel(binds = [HouseholdDetailsScreenViewModelContract::class])
     fun provideHouseholdDetailsScreenViewModel(
         context: HouseholdContextDomain,
-        getMembersStreamUseCase: GetMembersStreamUseCase,
-        createInvitationUseCase: CreateInvitationUseCase,
-        revokeInvitationUseCase: RevokeInvitationUseCase,
+        getHouseholdManagementStreamUseCase: GetHouseholdManagementStreamUseCase,
+        replaceHouseholdInvitationUseCase: ReplaceHouseholdInvitationUseCase,
+        revokeHouseholdInvitationUseCase: RevokeHouseholdInvitationUseCase,
+        changeHouseholdMemberUseCase: ChangeHouseholdMemberUseCase,
+        deleteHouseholdUseCase: DeleteHouseholdUseCase,
     ): HouseholdDetailsScreenViewModelContract =
         HouseholdDetailsScreenViewModel(
             context = context,
-            getMembersStreamUseCase = getMembersStreamUseCase,
-            createInvitationUseCase = createInvitationUseCase,
-            revokeInvitationUseCase = revokeInvitationUseCase,
+            getHouseholdManagementStreamUseCase = getHouseholdManagementStreamUseCase,
+            replaceHouseholdInvitationUseCase = replaceHouseholdInvitationUseCase,
+            revokeHouseholdInvitationUseCase = revokeHouseholdInvitationUseCase,
+            changeHouseholdMemberUseCase = changeHouseholdMemberUseCase,
+            deleteHouseholdUseCase = deleteHouseholdUseCase,
+        )
+
+    @KoinViewModel(binds = [MemberAccountPositionsScreenViewModelContract::class])
+    fun provideMemberAccountPositionsScreenViewModel(
+        @InjectedParam params: MemberAccountPositionsScreenViewModelContract.Params,
+        getMemberAccountPositionsUseCase: GetMemberAccountPositionsUseCase,
+    ): MemberAccountPositionsScreenViewModelContract =
+        MemberAccountPositionsScreenViewModel(
+            params = params,
+            getMemberAccountPositionsUseCase = getMemberAccountPositionsUseCase,
         )
 
     @KoinViewModel(binds = [ShoppingScreenViewModelContract::class])

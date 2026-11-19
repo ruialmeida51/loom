@@ -8,13 +8,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.layout.RootHeading
+import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.household_details
@@ -32,11 +33,11 @@ internal fun MoreOverviewContent(
         modifier =
             Modifier.fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(LoomSpacing.content)
+                .padding(rootContentPadding())
                 .testTag("more_content"),
         verticalArrangement = Arrangement.spacedBy(LoomSpacing.content),
     ) {
-        Text(stringResource(Res.string.tab_more), style = MaterialTheme.typography.titleLarge)
+        RootHeading(title = stringResource(Res.string.tab_more))
         GroupedSurface {
             NavigationRow(
                 title = stringResource(Res.string.ui_feed),

@@ -8,6 +8,12 @@ import kotlinx.coroutines.flow.Flow
 interface RecurringExpenseDataSource {
     fun stream(accountId: String = ""): Flow<AppResult<List<RecurringExpenseDomain>>>
 
+    suspend fun getRule(id: String, accountId: String): AppResult<RecurringExpenseDomain>
+
+    suspend fun save(rule: RecurringExpenseDomain): AppResult<RecurringExpenseDomain>
+
+    suspend fun delete(rule: RecurringExpenseDomain): AppResult<Unit>
+
     suspend fun controlSchedule(
         rule: RecurringExpenseDomain,
         action: RecurringExpenseActionDomain,

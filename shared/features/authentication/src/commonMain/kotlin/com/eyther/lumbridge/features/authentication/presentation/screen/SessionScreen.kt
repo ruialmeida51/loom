@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
+import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackbar
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
@@ -33,7 +34,8 @@ fun SessionScreen(
         context = state.context,
         reconnecting = state.reconnecting,
         restoreError = state.restoreError,
-        selectionError = state.selectionError,
+        selectionError = state.selectionError ?: state.accessError,
+        selectionMessage = state.selectionMessage,
         signingOut = state.signingOut,
         signOutError = state.signOutError,
         onRetry = viewModel::onRetryHouseholdRestore,
@@ -52,6 +54,7 @@ private fun InnerSessionScreen(
     reconnecting: Boolean,
     restoreError: TextResource?,
     selectionError: TextResource?,
+    selectionMessage: TextResource?,
     signingOut: Boolean,
     signOutError: TextResource?,
     onRetry: () -> Unit,
@@ -76,6 +79,10 @@ private fun InnerSessionScreen(
             userId?.let { id ->
                 Box(Modifier.fillMaxSize()) {
                     authenticatedContent(id, context, signingOut, signOutError)
+                    SuccessSnackbar(
+                        message = selectionMessage,
+                        modifier = Modifier.align(Alignment.BottomCenter).safeDrawingPadding(),
+                    )
                     selectionError?.let { message ->
                         Box(
                             Modifier.align(Alignment.BottomCenter)

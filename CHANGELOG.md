@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+- Manage household owners, members and reusable invitation codes.
+- Leave or delete households with clear balance and history warnings.
+- Edit active or paused recurring bills; delete schedules without losing expenses.
+- Keep existing bills running unchanged when members leave.
+- Select and manage money accounts in one sheet.
+- Consistent tab spacing and smoother state updates.
+
 ## [4.0.11] - 2026-11-18
 
 - Payment details and editing now follow the same full-screen flow as expenses.

@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.Dp
 import com.eyther.lumbridge.core.generated.resources.Res
 import com.eyther.lumbridge.core.generated.resources.action_cancel
 import com.eyther.lumbridge.core.generated.resources.action_save
+import com.eyther.lumbridge.core.presentation.components.DestructiveButton
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
@@ -35,6 +36,7 @@ fun FormBottomSheet(
     actionEnabled: Boolean = true,
     dismissLabel: String = stringResource(Res.string.action_cancel),
     busy: Boolean = false,
+    destructiveAction: Boolean = false,
     actionModifier: Modifier = Modifier,
     contentSpacing: Dp = LoomSpacing.content,
     content: @Composable ColumnScope.() -> Unit,
@@ -60,13 +62,23 @@ fun FormBottomSheet(
             modifier = Modifier.fillMaxWidth().padding(LoomSpacing.content),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
         ) {
-            LoomButton(
-                text = actionLabel,
-                onClick = onAction,
-                loading = busy,
-                enabled = actionEnabled,
-                modifier = actionModifier.fillMaxWidth(),
-            )
+            if (destructiveAction) {
+                DestructiveButton(
+                    text = actionLabel,
+                    onClick = onAction,
+                    loading = busy,
+                    enabled = actionEnabled,
+                    modifier = actionModifier.fillMaxWidth(),
+                )
+            } else {
+                LoomButton(
+                    text = actionLabel,
+                    onClick = onAction,
+                    loading = busy,
+                    enabled = actionEnabled,
+                    modifier = actionModifier.fillMaxWidth(),
+                )
+            }
             onDismiss?.let { dismiss ->
                 LoomSecondaryButton(
                     text = dismissLabel,

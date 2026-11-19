@@ -35,10 +35,12 @@ import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
+import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
 import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackbar
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
@@ -62,6 +64,9 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
 import org.jetbrains.compose.resources.stringResource
+
+private val ChecklistRowSpacing =
+    2.dp // Keep checklist rows dense while the header uses the root rhythm.
 
 @Composable
 fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
@@ -207,19 +212,19 @@ private fun InnerShoppingScreen(
     }
     LazyColumn(
         state = listState,
-        modifier =
-            Modifier.fillMaxSize()
-                .imePadding()
-                .padding(horizontal = 16.dp)
-                .testTag("shopping_content"),
-        contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        modifier = Modifier.fillMaxSize().imePadding().testTag("shopping_content"),
+        contentPadding = rootContentPadding(),
+        verticalArrangement = Arrangement.spacedBy(ChecklistRowSpacing),
     ) {
         item(key = "list_selector") {
             SelectorButton(
+                contentPadding = PaddingValues(),
                 text = selectedListName.ifBlank { stringResource(Res.string.ui_shopping_lists) },
                 onClick = onShowLists,
-                modifier = Modifier.fillMaxWidth().testTag("manage_lists"),
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(bottom = LoomSpacing.content - ChecklistRowSpacing)
+                        .testTag("manage_lists"),
             )
         }
         error?.let { message ->

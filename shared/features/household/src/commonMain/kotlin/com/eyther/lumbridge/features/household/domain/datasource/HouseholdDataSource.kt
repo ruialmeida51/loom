@@ -24,6 +24,15 @@ interface HouseholdDataSource {
     suspend fun getMemberReferences(householdId: String): AppResult<List<MemberDomain>> =
         getMembers(householdId = householdId)
 
+    fun streamHouseholds(): Flow<AppResult<List<HouseholdDomain>>> =
+        kotlinx.coroutines.flow.flow { emit(getHouseholds()) }
+
+    fun streamMemberHistory(householdId: String): Flow<AppResult<List<MemberDomain>>> =
+        streamMembers(householdId = householdId)
+
+    suspend fun getMemberHistory(householdId: String): AppResult<List<MemberDomain>> =
+        getMembers(householdId = householdId)
+
     suspend fun revokeInvitation(householdId: String): AppResult<Unit>
 
     suspend fun createInvitation(householdId: String): AppResult<String>
