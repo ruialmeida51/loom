@@ -1,9 +1,6 @@
 package com.eyther.lumbridge.authentication
 
 import android.content.Intent
-import android.util.Log
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -31,6 +28,7 @@ import io.ktor.http.headersOf
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -62,6 +60,9 @@ class SessionLifecycleDeviceTest {
                 tokenType = "Bearer",
                 user =
                     UserInfo(id = "member", aud = "authenticated", email = "member@example.test"),
+                // supabase-kt 3.9 registers lifecycle callbacks only after startup recovery
+                // finishes; a fresh token defers that until its first refresh, ~48 minutes later.
+                expiresAt = Clock.System.now() - 1.seconds,
             ),
         )
         val refreshes = AtomicInteger()
@@ -107,21 +108,15 @@ class SessionLifecycleDeviceTest {
             awaitStage("initial authentication") {
                 source.stream().filterIsInstance<AuthenticationStateDomain.Authenticated>().first()
             }
-            instrumentation.runOnMainSync {
-                ProcessLifecycleOwner.get()
-                    .lifecycle
-                    .addObserver(
-                        LifecycleEventObserver { _, event -> Log.i(LOG_TAG, "Process $event") },
-                    )
-            }
+            // The SDK registers its process-lifecycle observer just after startup recovery.
+            delay(OBSERVER_SETTLE_MILLIS)
             repeat(2) { cycle ->
-                if (cycle == 0) Log.i(LOG_TAG, "pressHome=${device.pressHome()}")
-                else device.sleep()
+                if (cycle == 0) device.pressHome() else device.sleep()
                 awaitStage("cycle $cycle: background stops auto refresh") {
                     client.auth.sessionStatus.first { it is SessionStatus.Initializing }
                 }
                 val saved = storage.loadSession()
-                assertEquals("test-refresh-$cycle", saved.refreshToken)
+                assertEquals("test-refresh-${cycle + 1}", saved.refreshToken)
                 // Model a token that expired during a long sleep without slowing the device suite.
                 storage.saveSession(saved.copy(expiresAt = Clock.System.now() - 1.seconds))
                 assertTrue(source.stream().value is AuthenticationStateDomain.Authenticated)
@@ -139,10 +134,10 @@ class SessionLifecycleDeviceTest {
                     awaitStage("cycle $cycle: foreground refreshes the expired session") {
                         client.auth.sessionStatus
                             .filterIsInstance<SessionStatus.Authenticated>()
-                            .first { it.session.refreshToken == "test-refresh-${cycle + 1}" }
+                            .first { it.session.refreshToken == "test-refresh-${cycle + 2}" }
                     }
                 assertEquals("member", restored.session.user?.id)
-                assertEquals("test-refresh-${cycle + 1}", storage.loadSession().refreshToken)
+                assertEquals("test-refresh-${cycle + 2}", storage.loadSession().refreshToken)
             }
             scenario.recreate()
             awaitStage("activity recreation keeps the identity") {
@@ -152,7 +147,7 @@ class SessionLifecycleDeviceTest {
             }
             assertNotNull(client.auth.currentSessionOrNull())
             assertEquals("member", client.auth.currentUserOrNull()?.id)
-            assertEquals(2, refreshes.get())
+            assertEquals(3, refreshes.get())
         } finally {
             device.wakeUp()
             device.executeShellCommand("wm dismiss-keyguard")
@@ -167,4 +162,4 @@ class SessionLifecycleDeviceTest {
 }
 
 private const val STAGE_TIMEOUT_MILLIS = 10_000L
-private const val LOG_TAG = "SessionLifecycle"
+private const val OBSERVER_SETTLE_MILLIS = 500L
