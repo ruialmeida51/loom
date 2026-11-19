@@ -43,6 +43,12 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Session identity, rather than lifecycle events or refreshed tokens, owns household restoration.
  */
+/** Lets the SDK's process-lifecycle callback settle before checking its refresh job. */
+private const val RESUME_RECOVERY_DELAY_MILLIS = 250L
+
+/** A restore still pending after this long offers Retry instead of an indefinite spinner. */
+private const val STALLED_STARTUP_DELAY_MILLIS = 15_000L
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class SessionScreenViewModel(
     private val getSessionStreamUseCase: GetSessionStreamUseCase,
@@ -147,7 +153,7 @@ class SessionScreenViewModel(
         val revision = identityRevision
         resumeRecoveryJob = viewModelScope.launch {
             // Let the SDK's process callback finish before checking for a stopped refresh job.
-            delay(250L)
+            delay(RESUME_RECOVERY_DELAY_MILLIS)
             if (revision == identityRevision && state.value.stage == SessionStageUi.READY)
                 resumeSessionUseCase()
         }
@@ -159,7 +165,7 @@ class SessionScreenViewModel(
 
     init {
         viewModelScope.launch {
-            delay(15_000L)
+            delay(STALLED_STARTUP_DELAY_MILLIS)
             mutableState.update { oldState ->
                 if (oldState.userId == null && oldState.stage == SessionStageUi.RESTORING)
                     oldState.copy(reconnecting = true, sessionRecoveryAvailable = true)

@@ -19,6 +19,7 @@ import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.auth.user.UserSession
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.logging.LogLevel
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpHeaders
@@ -30,7 +31,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -63,6 +64,8 @@ class SessionLifecycleDeviceTest {
         val refreshes = AtomicInteger()
         val client =
             createSupabaseClient("https://loom.test", "test-key") {
+                // Logcat evidence for lifecycle callbacks and refresh attempts when a stage times out.
+                defaultLogLevel = LogLevel.DEBUG
                 install(Auth) {
                     configureLoomAuthentication(
                         sessionStorage = storage,
@@ -98,12 +101,12 @@ class SessionLifecycleDeviceTest {
                     access = SupabaseAccess(client),
                     pushDevices = pushDevices,
                 )
-            withTimeout(10_000L) {
+            awaitStage("initial authentication") {
                 source.stream().filterIsInstance<AuthenticationStateDomain.Authenticated>().first()
             }
             repeat(2) { cycle ->
                 if (cycle == 0) device.pressHome() else device.sleep()
-                withTimeout(10_000L) {
+                awaitStage("cycle $cycle: background stops auto refresh") {
                     client.auth.sessionStatus.first { it is SessionStatus.Initializing }
                 }
                 val saved = storage.loadSession()
@@ -122,7 +125,7 @@ class SessionLifecycleDeviceTest {
                         ),
                 )
                 val restored =
-                    withTimeout(10_000L) {
+                    awaitStage("cycle $cycle: foreground refreshes the expired session") {
                         client.auth.sessionStatus
                             .filterIsInstance<SessionStatus.Authenticated>()
                             .first { it.session.refreshToken == "test-refresh-${cycle + 1}" }
@@ -131,7 +134,7 @@ class SessionLifecycleDeviceTest {
                 assertEquals("test-refresh-${cycle + 1}", storage.loadSession().refreshToken)
             }
             scenario.recreate()
-            withTimeout(10_000L) {
+            awaitStage("activity recreation keeps the identity") {
                 client.auth.sessionStatus.filterIsInstance<SessionStatus.Authenticated>().first {
                     it.session.user?.id == "member"
                 }
@@ -146,4 +149,10 @@ class SessionLifecycleDeviceTest {
             scenario.close()
         }
     }
+
+    private suspend fun <T> awaitStage(stage: String, block: suspend () -> T): T =
+        withTimeoutOrNull(STAGE_TIMEOUT_MILLIS) { block() }
+            ?: throw AssertionError("Timed out waiting for $stage")
 }
+
+private const val STAGE_TIMEOUT_MILLIS = 10_000L
