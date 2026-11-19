@@ -9,6 +9,10 @@ class GetMembersStreamUseCase(
     private val householdDataSource: HouseholdDataSource,
 ) {
 
-    operator fun invoke(householdId: String): Flow<AppResult<List<MemberDomain>>> =
-        householdDataSource.streamMembers(householdId = householdId)
+    operator fun invoke(
+        householdId: String,
+        includeInactive: Boolean = false,
+    ): Flow<AppResult<List<MemberDomain>>> =
+        if (includeInactive) householdDataSource.streamMemberHistory(householdId = householdId)
+        else householdDataSource.streamMembers(householdId = householdId)
 }

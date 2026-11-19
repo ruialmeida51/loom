@@ -3,6 +3,7 @@ package com.eyther.lumbridge.core.presentation.components
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -36,6 +37,7 @@ fun SelectorButton(
     enabled: Boolean = true,
     expanded: Boolean = false,
     textStyle: TextStyle = MaterialTheme.typography.titleLarge,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 8.dp, vertical = 10.dp),
     menu: (@Composable () -> Unit)? = null,
 ) {
     val caretColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -47,7 +49,7 @@ fun SelectorButton(
         color = Color.Transparent,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 10.dp),
+            modifier = Modifier.fillMaxWidth().padding(contentPadding),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

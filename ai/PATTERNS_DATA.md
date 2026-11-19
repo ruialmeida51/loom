@@ -11,7 +11,9 @@ necessary definers stay in loom_private, with fixed search_path and explicit gra
 Concurrent edits use versions. Bulk writes validate and lock every target before changing any target.
 Retrying a successful removal is harmless; a changed/restored item is never silently deleted.
 
-Short invitations are hashed, expiring, single-use and revocable. Guess limits must survive failed
+Short invitations are hashed, reusable for 24 hours and revocable. New codes are recoverable only
+by current owners through protected Vault-backed RPCs; legacy hash-only codes keep their original
+expiry/consumption rules. Replacing/revoking targets a frozen identity/version. Guess limits must survive failed
 redemptions: return a transport result instead of raising an exception that rolls the counter back.
 Raw response statuses become typed domain errors in data mappers, never in UI.
 

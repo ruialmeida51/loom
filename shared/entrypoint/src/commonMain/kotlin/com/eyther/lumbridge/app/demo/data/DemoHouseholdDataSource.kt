@@ -23,9 +23,16 @@ class DemoHouseholdDataSource(private val store: DemoHouseholdStore) : Household
     override suspend fun joinHousehold(token: String) = AppResult.Success(Unit)
 
     override fun streamMembers(householdId: String): Flow<AppResult<List<MemberDomain>>> =
+        store.memberUpdates.map { AppResult.Success(it.filter { member -> member.active }) }
+
+    override suspend fun getMembers(householdId: String) =
+        AppResult.Success(store.members.filter { it.active })
+
+    override fun streamMemberHistory(householdId: String): Flow<AppResult<List<MemberDomain>>> =
         store.memberUpdates.map { AppResult.Success(it) }
 
-    override suspend fun getMembers(householdId: String) = AppResult.Success(store.members)
+    override suspend fun getMemberHistory(householdId: String): AppResult<List<MemberDomain>> =
+        AppResult.Success(store.members)
 
     override suspend fun revokeInvitation(householdId: String) = AppResult.Success(Unit)
 

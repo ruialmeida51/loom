@@ -16,5 +16,7 @@ sealed class RecurringExpenseError(cause: Throwable? = null) : AppError(cause) {
 
     class InactiveParticipants(cause: Throwable? = null) : RecurringExpenseError(cause)
 
+    class InvalidDate(cause: Throwable? = null) : RecurringExpenseError(cause)
+
     class InvalidAnchorDay(cause: Throwable? = null) : RecurringExpenseError(cause)
 }

@@ -18,7 +18,7 @@ set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000302';
 do $$ begin
     assert public.redeem_household_invitation(current_setting('loom.refine.old'))->>'status'='invalid','A replacement revokes the previous code';
     assert public.redeem_household_invitation(lower(current_setting('loom.refine.code')))->>'status'='joined','Case-insensitive short code works';
-    assert public.redeem_household_invitation(current_setting('loom.refine.code'))->>'status'='invalid','Single use';
+    assert public.redeem_household_invitation(current_setting('loom.refine.code'))->>'status'='already_joined','Reusable codes are idempotent for current members';
 end;$$;
 -- Any current member may delete completed groceries, including those added by another member.
 select public.add_shopping_items(current_setting('loom.refine.home')::uuid,jsonb_build_array(

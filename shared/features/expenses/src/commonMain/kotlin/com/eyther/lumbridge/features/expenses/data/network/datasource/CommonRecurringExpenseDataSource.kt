@@ -6,9 +6,12 @@ import com.eyther.lumbridge.core.data.network.safeApiCall
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toDomain
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toExpenseError
+import com.eyther.lumbridge.features.expenses.data.network.mapper.toSaveRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.request.ControlRecurringExpenseRequest
+import com.eyther.lumbridge.features.expenses.data.network.model.request.DeleteRecurringExpenseRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.response.RecurringExpenseResponse
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
+import com.eyther.lumbridge.features.expenses.domain.errors.RecurringExpenseError
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseActionDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
@@ -39,6 +42,49 @@ class CommonRecurringExpenseDataSource(
             }
             .asApiResult(mapError = Exception::toExpenseError, retryTransientFailures = true)
     }
+
+    override suspend fun getRule(id: String, accountId: String): AppResult<RecurringExpenseDomain> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access
+                .requireClient()
+                .from("recurring_expenses")
+                .select {
+                    filter {
+                        eq("household_id", context.id)
+                        eq("account_id", accountId)
+                        eq("id", id)
+                    }
+                }
+                .decodeList<RecurringExpenseResponse>()
+                .firstOrNull()
+                ?.toDomain() ?: throw RecurringExpenseError.NotFound()
+        }
+
+    override suspend fun save(rule: RecurringExpenseDomain): AppResult<RecurringExpenseDomain> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access
+                .requireClient()
+                .postgrest
+                .rpc("save_recurring_expense", rule.toSaveRequest(householdId = context.id))
+                .decodeAs<RecurringExpenseResponse>()
+                .toDomain()
+        }
+
+    override suspend fun delete(rule: RecurringExpenseDomain): AppResult<Unit> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access
+                .requireClient()
+                .postgrest
+                .rpc(
+                    "delete_recurring_expense",
+                    DeleteRecurringExpenseRequest(
+                        householdId = context.id,
+                        id = rule.id,
+                        version = rule.version,
+                    ),
+                )
+            Unit
+        }
 
     override suspend fun controlSchedule(
         rule: RecurringExpenseDomain,

@@ -15,6 +15,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.account_error_
 import com.eyther.lumbridge.features.expenses.generated.resources.account_error_members
 import com.eyther.lumbridge.features.expenses.generated.resources.account_error_missing
 import com.eyther.lumbridge.features.expenses.generated.resources.account_error_name
+import com.eyther.lumbridge.features.expenses.generated.resources.bill_error_date
 import com.eyther.lumbridge.features.expenses.generated.resources.error_access_denied
 import com.eyther.lumbridge.features.expenses.generated.resources.error_already_recorded
 import com.eyther.lumbridge.features.expenses.generated.resources.error_amount_not_positive
@@ -52,6 +53,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.recurring_erro
 
 fun AppError.toExpensesTextResource(): TextResource =
     when (this) {
+        is RecurringExpenseError.InvalidDate -> TextResource.Resource(Res.string.bill_error_date)
         is SettlementError.Changed -> TextResource.Resource(Res.string.payment_error_changed)
         is SettlementError.PermissionDenied ->
             TextResource.Resource(Res.string.payment_error_permission)

@@ -13,6 +13,7 @@ Adapted from Plannot `ai/PATTERNS_COMPONENTS.md`; [design language](../docs/desi
 | Content skeleton | core LoadingLine/LoadingRow/LoadingRows/LoadingForm; feed owns its preview skeleton |
 | Refresh preserving focus/geometry | core RefreshSkeletonContent; Home scopes it per section |
 | Illustrated empty state | core IllustratedEmptyState, feature-owned copy/glyph |
+| Root content layout | core layout/RootHeading and rootContentPadding align static titles/selectors and shared gutters |
 | Shared section layout | core GroupedSurface, NavigationRow, SectionTitle; Privacy & Legal is the preferred row reference |
 | Read-only metadata / identity | core InfoRow / PersonAvatar; feature owns labels, roles and display models |
 | Primary list creation | core ActionFab in the refresh container's Scaffold slot; matching FloatingActionContentPadding |

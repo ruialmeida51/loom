@@ -7,6 +7,6 @@ class RememberHouseholdUseCase(
     private val selectionDataSource: HouseholdSelectionDataSource,
 ) {
 
-    suspend operator fun invoke(userId: String, householdId: String): AppResult<Unit> =
+    suspend operator fun invoke(userId: String, householdId: String?): AppResult<Unit> =
         selectionDataSource.select(userId = userId, householdId = householdId)
 }

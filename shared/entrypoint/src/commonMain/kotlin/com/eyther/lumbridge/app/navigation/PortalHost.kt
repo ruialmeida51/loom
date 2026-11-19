@@ -44,6 +44,7 @@ internal fun PortalHost(
     diagnosticsDataSource: DiagnosticsDataSource,
     onSelect: (HouseholdDomain) -> Unit,
     onSignOut: () -> Unit,
+    onHouseholdExited: (String, Boolean) -> Unit,
     signingOut: Boolean = false,
     signOutError: TextResource? = null,
     onSignOutDismissed: () -> Unit = {},
@@ -122,7 +123,11 @@ internal fun PortalHost(
                     } else {
                         key(context.id) {
                             KoinIsolatedContext(context = householdGraph) {
-                                HouseholdHost(context = context, portalToolbar = portalToolbar)
+                                HouseholdHost(
+                                    context = context,
+                                    portalToolbar = portalToolbar,
+                                    onHouseholdExited = onHouseholdExited,
+                                )
                             }
                         }
                     }

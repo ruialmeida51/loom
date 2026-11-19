@@ -15,7 +15,6 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import com.eyther.lumbridge.app.demo.LoomDemoApp
@@ -63,7 +62,7 @@ class GroupManagementUiTest {
         }
 
     @Test
-    fun archivedTripsLeaveTheNormalPickerAndCanBePermanentlyDeletedFromManagement() =
+    fun archivedTripsHaveTheirOwnSectionAndCanBeDeletedInTheSamePicker() =
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
             startApp()
             onNodeWithTag("navigation_money").performClick()
@@ -76,17 +75,15 @@ class GroupManagementUiTest {
                 onAllNodesWithText("Finished holiday").fetchSemanticsNodes().isNotEmpty()
             }
             onNodeWithTag("expense_accounts").performClick()
-            onNodeWithText("Manage accounts").performScrollTo().performClick()
             onNodeWithTag("account_actions_Finished holiday").performClick()
             onNodeWithText("Archive account").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Archived").fetchSemanticsNodes().isNotEmpty()
             }
-            onNode(hasText("Close") and hasAnyAncestor(hasTestTag("modal_sheet"))).performClick()
-            onNodeWithTag("expense_accounts").performClick()
             onNode(hasText("Finished holiday") and hasAnyAncestor(hasTestTag("modal_sheet")))
+                .assertExists()
+            onNode(hasText("Close") and hasAnyAncestor(hasTestTag("modal_sheet")))
                 .assertDoesNotExist()
-            onNodeWithText("Manage accounts").performScrollTo().performClick()
             onNodeWithTag("account_actions_Finished holiday").performClick()
             onNodeWithText("Delete").performClick()
             onNodeWithTag("confirm_delete_account").performClick()

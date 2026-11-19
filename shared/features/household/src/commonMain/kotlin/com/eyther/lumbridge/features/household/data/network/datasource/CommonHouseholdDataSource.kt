@@ -42,6 +42,38 @@ class CommonHouseholdDataSource(
         }
     }
 
+    override fun streamHouseholds(): Flow<AppResult<List<HouseholdDomain>>> =
+        access
+            .watch(table = "household_members", scopeId = "households") {
+                access
+                    .requireClient()
+                    .from("households")
+                    .select()
+                    .decodeList<HouseholdResponse>()
+                    .map { it.toDomain() }
+            }
+            .asApiResult(mapError = Exception::toHouseholdError, retryTransientFailures = true)
+
+    override fun streamMemberHistory(householdId: String): Flow<AppResult<List<MemberDomain>>> =
+        access
+            .watch(table = "household_members", scopeId = householdId) {
+                loadMemberHistory(householdId = householdId)
+            }
+            .asApiResult(mapError = Exception::toHouseholdError, retryTransientFailures = true)
+
+    override suspend fun getMemberHistory(householdId: String): AppResult<List<MemberDomain>> =
+        safeApiCall(mapError = Exception::toHouseholdError) {
+            loadMemberHistory(householdId = householdId)
+        }
+
+    private suspend fun loadMemberHistory(householdId: String): List<MemberDomain> =
+        access
+            .requireClient()
+            .postgrest
+            .rpc("household_member_history", HouseholdRequest(householdId = householdId))
+            .decodeList<MemberResponse>()
+            .map { it.toDomain() }
+
     override suspend fun createHousehold(
         name: String,
         currency: String,

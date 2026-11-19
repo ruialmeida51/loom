@@ -2,6 +2,7 @@ package com.eyther.lumbridge.core.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -12,6 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+
+private val DestructiveActionMinimumHeight =
+    50.dp // Match full-width primary and secondary actions.
 
 /** Destructive secondary action with a visible boundary and request progress. */
 @Composable
@@ -24,7 +28,7 @@ fun DestructiveButton(
 ) {
     OutlinedButton(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.heightIn(min = DestructiveActionMinimumHeight),
         enabled = enabled && !loading,
         colors =
             ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),

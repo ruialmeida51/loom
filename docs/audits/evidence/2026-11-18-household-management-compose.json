@@ -1,0 +1,22 @@
+{
+  "core": {
+    "restartable": 37,
+    "skippable": 37
+  },
+  "features/household": {
+    "restartable": 17,
+    "skippable": 17
+  },
+  "features/expenses": {
+    "restartable": 42,
+    "skippable": 42
+  },
+  "features/authentication": {
+    "restartable": 15,
+    "skippable": 15
+  },
+  "entrypoint": {
+    "restartable": 32,
+    "skippable": 32
+  }
+}

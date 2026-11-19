@@ -8,5 +8,10 @@ class GetMembersUseCase(
     private val householdDataSource: HouseholdDataSource,
 ) {
 
-    suspend operator fun invoke(id: String): AppResult<List<MemberDomain>> = householdDataSource.getMembers(id)
+    suspend operator fun invoke(
+        id: String,
+        includeInactive: Boolean = false,
+    ): AppResult<List<MemberDomain>> =
+        if (includeInactive) householdDataSource.getMemberHistory(householdId = id)
+        else householdDataSource.getMembers(householdId = id)
 }

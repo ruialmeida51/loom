@@ -99,18 +99,21 @@ class SafetyAndDetailsUiTest {
             capture("household-details-light")
             onNodeWithTag("create_invitation").performScrollTo().performClick()
             waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithTag("active_invitation_code").fetchSemanticsNodes().isNotEmpty()
             }
             onNodeWithText("ABC234").assertExists()
             capture("household-invitation-light")
-            onNodeWithText("Revoke").performScrollTo().performClick()
-            onNodeWithTag("confirm_revoke_invitation").assertIsDisplayed()
+            onNodeWithTag("invitation_actions").performScrollTo().performClick()
+            onNodeWithText("Revoke").performClick()
+            onNodeWithTag("confirm_household_action").assertIsDisplayed()
             onNodeWithText("Cancel").performClick()
             onNodeWithText("ABC234").assertExists()
+            onNodeWithTag("invitation_actions").performClick()
             onNodeWithText("Revoke").performClick()
-            onNodeWithTag("confirm_revoke_invitation").performClick()
+            onNodeWithTag("confirm_household_action").performClick()
             waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty()
+                onAllNodesWithTag("modal_sheet").fetchSemanticsNodes().isEmpty() &&
+                    onAllNodesWithTag("active_invitation_code").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithTag("household_details_content").assertIsDisplayed()
         }

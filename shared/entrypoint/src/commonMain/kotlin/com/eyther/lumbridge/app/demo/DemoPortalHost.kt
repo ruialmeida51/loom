@@ -18,7 +18,9 @@ import com.eyther.lumbridge.app.demo.data.DemoExpenseReceiptDataSource
 import com.eyther.lumbridge.app.demo.data.DemoFeedDataSource
 import com.eyther.lumbridge.app.demo.data.DemoFeedSubscriptionDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdDataSource
+import com.eyther.lumbridge.app.demo.data.DemoHouseholdManagementDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
+import com.eyther.lumbridge.app.demo.data.DemoMemberAccountPositionDataSource
 import com.eyther.lumbridge.app.demo.data.DemoProfileDataSource
 import com.eyther.lumbridge.app.demo.data.DemoRecurringExpenseDataSource
 import com.eyther.lumbridge.app.demo.data.DemoSettingsDataSource
@@ -86,6 +88,10 @@ internal fun DemoPortalHost(
                     providedHouseholdModules(
                         context = store.context,
                         householdDataSource = DemoHouseholdDataSource(store = store),
+                        householdManagementDataSource =
+                            DemoHouseholdManagementDataSource(store = store),
+                        memberAccountPositionDataSource =
+                            DemoMemberAccountPositionDataSource(store = store),
                         analyticsDataSource = analytics,
                         shoppingDataSource = DemoShoppingDataSource(store = store),
                         shoppingSelectionDataSource =
@@ -141,7 +147,13 @@ internal fun DemoPortalHost(
                 PortalDestination.Household ->
                     key(selectedId) {
                         KoinIsolatedContext(context = householdGraph) {
-                            HouseholdHost(context = store.context, portalToolbar = portalToolbar)
+                            HouseholdHost(
+                                context = store.context,
+                                portalToolbar = portalToolbar,
+                                onHouseholdExited = { _, _ ->
+                                    navigator.resetTo(PortalDestination.Households)
+                                },
+                            )
                         }
                     }
                 PortalDestination.Account ->
@@ -159,16 +171,23 @@ internal fun DemoPortalHost(
                         onBack = navigator::goBack,
                     ) {
                         Column {
-                            stores.values.forEach { household ->
-                                OutlinedButton(
-                                    onClick = {
-                                        onSelect(household.context.id)
-                                        navigator.goBack()
-                                    },
-                                ) {
-                                    Text(household.context.name)
+                            stores.values
+                                .filter {
+                                    !it.deleted.value &&
+                                        it.members.any { member ->
+                                            member.id == it.context.userId && member.active
+                                        }
                                 }
-                            }
+                                .forEach { household ->
+                                    OutlinedButton(
+                                        onClick = {
+                                            onSelect(household.context.id)
+                                            navigator.resetTo(PortalDestination.Household)
+                                        },
+                                    ) {
+                                        Text(household.context.name)
+                                    }
+                                }
                         }
                     }
             }

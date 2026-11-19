@@ -13,9 +13,28 @@ import com.eyther.lumbridge.features.household.generated.resources.error_invalid
 import com.eyther.lumbridge.features.household.generated.resources.error_invitation_rate_limited
 import com.eyther.lumbridge.features.household.generated.resources.error_owner_required
 import com.eyther.lumbridge.features.household.generated.resources.error_unsupported_currency
+import com.eyther.lumbridge.features.household.generated.resources.management_error_access
+import com.eyther.lumbridge.features.household.generated.resources.management_error_changed
+import com.eyther.lumbridge.features.household.generated.resources.management_error_invitation_changed
+import com.eyther.lumbridge.features.household.generated.resources.management_error_invitation_failed
+import com.eyther.lumbridge.features.household.generated.resources.management_error_last_owner
+import com.eyther.lumbridge.features.household.generated.resources.management_error_name
+import com.eyther.lumbridge.features.household.generated.resources.management_error_share
 
 fun AppError.toHouseholdTextResource(): TextResource =
     when (this) {
+        is HouseholdError.AccessDenied -> TextResource.Resource(Res.string.management_error_access)
+        is HouseholdError.Changed -> TextResource.Resource(Res.string.management_error_changed)
+        is HouseholdError.LastOwner -> TextResource.Resource(Res.string.management_error_last_owner)
+        is HouseholdError.NameConfirmation ->
+            TextResource.Resource(Res.string.management_error_name)
+        is HouseholdError.InvitationChanged ->
+            TextResource.Resource(Res.string.management_error_invitation_changed)
+        is HouseholdError.InvitationFailed ->
+            TextResource.Resource(Res.string.management_error_invitation_failed)
+        is HouseholdError.ShareUnavailable ->
+            TextResource.Resource(Res.string.management_error_share)
+
         is HouseholdError.InvitationRateLimited ->
             TextResource.Resource(Res.string.error_invitation_rate_limited)
         is HouseholdError.InvalidInvitation ->

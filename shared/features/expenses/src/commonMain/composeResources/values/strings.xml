@@ -212,4 +212,10 @@
     <string name="history_edit">Edit</string>
     <string name="history_delete_message">“%1$s” will be removed from balances for everyone. Upcoming recurring bills remain scheduled.</string>
     <string name="payment_label">Payment</string>
+  <string name="bill_next_date">Next entry</string>
+  <string name="bill_future_only">Changes apply to future expenses. Saving a paused bill keeps it paused.</string>
+  <string name="bill_error_date">Choose a future date for the next entry.</string>
+  <string name="bill_delete_title">Delete recurring bill?</string>
+  <string name="bill_delete_message">Future entries for %1$s will stop. Expenses already recorded will stay.</string>
+  <string name="departure_balances">Current balances by account</string>
 </resources>

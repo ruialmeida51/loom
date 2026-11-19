@@ -2,7 +2,6 @@ package com.eyther.lumbridge.features.home.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.IllustratedEmptyState
@@ -22,6 +22,7 @@ import com.eyther.lumbridge.core.presentation.components.RefreshSkeletonContent
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
@@ -131,8 +132,8 @@ private fun InnerHomeScreen(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().testTag("home_content"),
-        contentPadding = PaddingValues(vertical = LoomSpacing.content),
-        verticalArrangement = Arrangement.spacedBy(LoomSpacing.content),
+        contentPadding = rootContentPadding(horizontal = 0.dp),
+        verticalArrangement = Arrangement.spacedBy(LoomSpacing.section),
     ) {
         item(key = "quick_actions") {
             Column(Modifier.padding(horizontal = LoomSpacing.content)) {
@@ -146,7 +147,7 @@ private fun InnerHomeScreen(
             ) {
                 Column(
                     Modifier.padding(horizontal = LoomSpacing.content),
-                    verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+                    verticalArrangement = Arrangement.spacedBy(LoomSpacing.content),
                 ) {
                     SectionTitle(
                         title = stringResource(Res.string.home_tasks),
@@ -187,7 +188,7 @@ private fun InnerHomeScreen(
                     skeleton = { HomeRefreshLoading() },
                 ) {
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+                        verticalArrangement = Arrangement.spacedBy(LoomSpacing.content),
                         modifier =
                             Modifier.padding(horizontal = LoomSpacing.content)
                                 .testTag("home_shopping_preview"),
@@ -219,7 +220,7 @@ private fun InnerHomeScreen(
             RefreshSkeletonContent(
                 isRefreshing = feedRefreshing,
                 skeleton = {
-                    Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.small)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.content)) {
                         SectionTitle(
                             title = stringResource(Res.string.home_news),
                             action = stringResource(Res.string.home_all_news),
@@ -230,7 +231,7 @@ private fun InnerHomeScreen(
                     }
                 },
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.small)) {
+                Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.content)) {
                     SectionTitle(
                         title = stringResource(Res.string.home_news),
                         action = stringResource(Res.string.home_all_news),

@@ -15,7 +15,6 @@ import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackba
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.ExpenseAccountsBottomSheet
-import com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet.ManageExpenseAccountsBottomSheet
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 
 @Composable
@@ -30,7 +29,6 @@ internal fun ExpensesSheetHost(
     val requested =
         when {
             state.showAccounts -> ExpensesSheets.Accounts
-            state.showManageAccounts -> ExpensesSheets.ManageAccounts
             else -> null
         }
     LaunchedEffect(requested) {
@@ -40,30 +38,22 @@ internal fun ExpensesSheetHost(
     controller.registerBottomSheet<ExpensesSheets.Accounts> {
         ExpenseAccountsBottomSheet(
             active = state.activeAccounts,
+            archived = state.archivedAccounts,
+            manageableAccountIds = state.manageableAccountIds,
             selectedId = state.account?.id,
             busy = state.busy,
+            error = state.error,
             onSelect = viewModel::onAccountSelected,
-            onManage = { viewModel.onManageAccountsVisibilityChanged(true) },
             onCreate = {
                 viewModel.onAccountsVisibilityChanged(false)
                 onCreateAccount()
             },
-        )
-    }
-    controller.registerBottomSheet<ExpensesSheets.ManageAccounts> {
-        ManageExpenseAccountsBottomSheet(
-            accounts = state.managedAccounts,
-            manageableAccountIds = state.manageableAccountIds,
-            busy = state.busy,
-            error = state.error,
-            onSelect = viewModel::onAccountSelected,
             onEdit = { account ->
-                viewModel.onManageAccountsVisibilityChanged(false)
+                viewModel.onAccountsVisibilityChanged(false)
                 onEditAccount(account)
             },
             onArchive = viewModel::onArchiveAccount,
             onDelete = viewModel::onDeleteAccountRequested,
-            onClose = { viewModel.onManageAccountsVisibilityChanged(false) },
             onDismissError = viewModel::onDismissError,
         )
     }
@@ -71,8 +61,7 @@ internal fun ExpensesSheetHost(
         controller = controller,
         dismissEnabled = !state.busy,
         onDismissed = {
-            if (state.showManageAccounts) viewModel.onManageAccountsVisibilityChanged(false)
-            else viewModel.onAccountsVisibilityChanged(false)
+            viewModel.onAccountsVisibilityChanged(false)
         },
         content = {
             Box(Modifier.fillMaxSize()) {

@@ -51,4 +51,6 @@ internal fun RecurringExpenseResponse.toDomain(): RecurringExpenseDomain =
         createdBy = createdBy,
         version = version,
         shares = shares,
+        splitMethod = splitMethod.toSplitMethod(),
+        splitValues = splitValues,
     )

@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.eyther.lumbridge.app.navigation.components.BusyNavigationGuard
 import com.eyther.lumbridge.app.navigation.components.FlowScaffold
 import com.eyther.lumbridge.app.navigation.components.MoreOverviewContent
 import com.eyther.lumbridge.app.navigation.components.ScreenAnalyticsEffect
@@ -16,6 +18,7 @@ import com.eyther.lumbridge.app.navigation.sheet.HouseholdDetailsSheetHost
 import com.eyther.lumbridge.core.navigation.composables.navigation3.HorizontalSlideNavDisplay
 import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
+import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.presentation.screen.HouseholdDetailsScreen
@@ -32,6 +35,7 @@ internal fun MoreHost(
     portalToolbar: @Composable () -> Unit,
     onRootChanged: (Boolean) -> Unit,
     onTasks: () -> Unit,
+    onHouseholdExited: (Boolean) -> Unit,
 ) {
     val state =
         rememberNavigationState(startRoot = MoreDestination.Overview) {
@@ -74,14 +78,17 @@ internal fun MoreHost(
                 }
             MoreDestination.HouseholdDetails -> {
                 val viewModel: HouseholdDetailsScreenViewModelContract = koinViewModel()
+                val detailsState by viewModel.state.platformCollectAsStateOnStart()
                 FlowScaffold(
                     title = stringResource(Res.string.household_details),
+                    backEnabled = !detailsState.busy,
                     onBack = navigator::goBack,
                 ) {
-                    HouseholdDetailsSheetHost(viewModel = viewModel) {
+                    HouseholdDetailsSheetHost(viewModel = viewModel, onExited = onHouseholdExited) {
                         HouseholdDetailsScreen(viewModel = viewModel, context = context)
                     }
                 }
+                BusyNavigationGuard(busy = detailsState.busy)
             }
         }
     }

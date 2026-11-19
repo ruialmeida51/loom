@@ -64,6 +64,8 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
                             1,
                             expense.shares,
                             accountId = expense.accountId,
+                            splitMethod = expense.splitMethod,
+                            splitValues = expense.splitValues,
                         )
                 }
             }

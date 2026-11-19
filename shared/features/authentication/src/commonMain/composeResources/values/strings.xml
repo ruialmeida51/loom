@@ -50,4 +50,5 @@
     <string name="startup_reconnecting">Reconnecting. Your account is still saved.</string>
     <string name="session_retry">Try again</string>
     <string name="session_choose_household">Choose a household</string>
+  <string name="household_exited">Choose a household to continue.</string>
 </resources>

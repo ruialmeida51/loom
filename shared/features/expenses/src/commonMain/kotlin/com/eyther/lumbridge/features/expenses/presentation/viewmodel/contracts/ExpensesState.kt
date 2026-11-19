@@ -41,7 +41,6 @@ data class ExpensesState(
     val balances: Map<String, Long> = emptyMap(),
     val selectedView: ExpensesViewUi = ExpensesViewUi.EXPENSES,
     val showAccounts: Boolean = false,
-    val showManageAccounts: Boolean = false,
     val deletingAccount: ExpenseAccountDomain? = null,
     val deletingExpense: ExpenseDomain? = null,
     val deletingSettlement: SettlementDomain? = null,
@@ -55,7 +54,7 @@ data class ExpensesState(
 ) {
     val currency: String = account?.currency ?: "EUR"
     val role: String? = members.firstOrNull { it.id == userId }?.role
-    val isOwner: Boolean = role == "owner"
+    val isOwner: Boolean = members.any { it.id == userId && it.isOwner }
     val accountMembers: List<MemberDomain> = members.filter {
         it.id in account?.memberIds.orEmpty()
     }
@@ -113,15 +112,16 @@ data class ExpensesState(
             else -> null
         }
     val displayError: TextResource? = error ?: loadError
-    val activeAccounts: List<ExpenseAccountDomain> =
+    val activeAccounts: ImmutableList<ExpenseAccountDomain> =
         accounts
             .filterNot { it.archived }
             .sortedWith(
                 compareByDescending<ExpenseAccountDomain> { it.isDefault }
                     .thenBy { it.name.lowercase() },
             )
-    val archivedAccounts: List<ExpenseAccountDomain> =
-        accounts.filter { it.archived }.sortedBy { it.name.lowercase() }
+            .toImmutableList()
+    val archivedAccounts: ImmutableList<ExpenseAccountDomain> =
+        accounts.filter { it.archived }.sortedBy { it.name.lowercase() }.toImmutableList()
     val manageableAccountIds: ImmutableSet<String> =
         accounts
             .filter {
@@ -129,8 +129,6 @@ data class ExpensesState(
             }
             .map { it.id }
             .toImmutableSet()
-    val managedAccounts: ImmutableList<ExpenseAccountDomain> =
-        (activeAccounts + archivedAccounts).toImmutableList()
     val memberNames: ImmutableMap<String, String> =
         members.associate { it.id to it.name }.toImmutableMap()
     val suggestions: ImmutableList<SuggestedSettlementDomain> =

@@ -11,6 +11,8 @@ data class SessionState(
     val reconnecting: Boolean = false,
     val restoreError: TextResource? = null,
     val selectionError: TextResource? = null,
+    val accessError: TextResource? = null,
+    val selectionMessage: TextResource? = null,
     val signingOut: Boolean = false,
     val signOutError: TextResource? = null,
 )

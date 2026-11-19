@@ -4,22 +4,34 @@ import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.coroutines.stateflow.FlowLaunchStrategy
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.core.presentation.components.snackbar.DEFAULT_ALERT_DURATION
+import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
+import com.eyther.lumbridge.features.authentication.generated.resources.Res
+import com.eyther.lumbridge.features.authentication.generated.resources.household_exited
 import com.eyther.lumbridge.features.authentication.presentation.mapper.toAuthenticationTextResource
 import com.eyther.lumbridge.features.authentication.presentation.model.SessionStageUi
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.SessionScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.SessionState
+import com.eyther.lumbridge.features.household.domain.errors.HouseholdError
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
+import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RememberHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RestoreHouseholdUseCase
 import com.eyther.lumbridge.features.household.presentation.mapper.toHouseholdTextResource
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
@@ -28,45 +40,86 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Session identity, rather than lifecycle events or refreshed tokens, owns household restoration.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class SessionScreenViewModel(
     private val getSessionStreamUseCase: GetSessionStreamUseCase,
     private val restoreHouseholdUseCase: RestoreHouseholdUseCase,
     private val rememberHouseholdUseCase: RememberHouseholdUseCase,
     private val signOutUseCase: SignOutUseCase,
+    private val getHouseholdsStreamUseCase: GetHouseholdsStreamUseCase,
 ) : SessionScreenViewModelContract() {
+    private var feedbackJob: Job? = null
     private var restoreJob: Job? = null
     private var selectionJob: Job? = null
     private val selectionMutex = Mutex()
     private var signOutJob: Job? = null
     private var identityRevision: Long = 0
     private val mutableState =
-        MutableStateFlow(SessionState()).observeWith(
-            scope = viewModelScope,
-            launchStrategy = FlowLaunchStrategy.Eagerly,
-        ) { state ->
-            getSessionStreamUseCase().onEach { authentication ->
-                when (authentication) {
-                    is AuthenticationStateDomain.Restoring ->
-                        state.update { oldState ->
-                            oldState.copy(reconnecting = authentication.reconnecting)
-                        }
-                    AuthenticationStateDomain.SignedOut -> {
-                        cancelIdentityWork()
-                        state.value = SessionState(stage = SessionStageUi.SIGNED_OUT)
-                    }
-                    is AuthenticationStateDomain.Authenticated -> {
-                        val userId = authentication.session.userId
-                        if (state.value.userId == userId) {
-                            state.update { oldState -> oldState.copy(reconnecting = false) }
-                        } else {
+        MutableStateFlow(SessionState())
+            .observeWith(
+                scope = viewModelScope,
+                launchStrategy = FlowLaunchStrategy.Eagerly,
+            ) { state ->
+                getSessionStreamUseCase().onEach { authentication ->
+                    when (authentication) {
+                        is AuthenticationStateDomain.Restoring ->
+                            state.update { oldState ->
+                                oldState.copy(reconnecting = authentication.reconnecting)
+                            }
+                        AuthenticationStateDomain.SignedOut -> {
                             cancelIdentityWork()
-                            state.value = SessionState(userId = userId)
-                            restoreHousehold(userId = userId, state = state)
+                            state.value = SessionState(stage = SessionStageUi.SIGNED_OUT)
+                        }
+                        is AuthenticationStateDomain.Authenticated -> {
+                            val userId = authentication.session.userId
+                            if (state.value.userId == userId) {
+                                state.update { oldState -> oldState.copy(reconnecting = false) }
+                            } else {
+                                cancelIdentityWork()
+                                state.value = SessionState(userId = userId)
+                                restoreHousehold(userId = userId, state = state)
+                            }
                         }
                     }
                 }
             }
-        }
+            .observeWith(scope = viewModelScope, launchStrategy = FlowLaunchStrategy.Eagerly) {
+                state ->
+                state
+                    .map { it.context }
+                    .distinctUntilChanged()
+                    .flatMapLatest { context ->
+                        if (context == null) emptyFlow()
+                        else
+                            getHouseholdsStreamUseCase().onEach { result ->
+                                if (
+                                    state.value.context?.id == context.id &&
+                                        state.value.userId == context.userId
+                                ) {
+                                    when (result) {
+                                        is AppResult.Success -> {
+                                            if (result.value.none { it.id == context.id }) {
+                                                onHouseholdExited(
+                                                    householdId = context.id,
+                                                    explicit = false,
+                                                )
+                                            } else
+                                                state.update { oldState ->
+                                                    oldState.copy(accessError = null)
+                                                }
+                                        }
+                                        is AppResult.Failure ->
+                                            state.update { oldState ->
+                                                oldState.copy(
+                                                    accessError =
+                                                        result.error.toHouseholdTextResource(),
+                                                )
+                                            }
+                                    }
+                                }
+                            }
+                    }
+            }
     override val state = mutableState.asStateFlow()
 
     override fun onHouseholdSelected(household: HouseholdDomain) {
@@ -76,7 +129,12 @@ class SessionScreenViewModel(
         val revision = identityRevision
         selectionJob?.cancel()
         mutableState.update { oldState ->
-            oldState.copy(context = household.toContext(userId = userId), selectionError = null)
+            oldState.copy(
+                context = household.toContext(userId = userId),
+                accessError = null,
+                selectionError = null,
+                selectionMessage = null,
+            )
         }
         selectionJob = launch {
             // A canceled device write may finish in I/O; the next write must wait for its lock.
@@ -93,6 +151,41 @@ class SessionScreenViewModel(
                     }
                 }
             }
+        }
+    }
+
+    override fun onHouseholdExited(householdId: String, explicit: Boolean) {
+        val userId = state.value.userId ?: return
+        if (state.value.context?.id != householdId || state.value.signingOut) return
+        restoreJob?.cancel()
+        selectionJob?.cancel()
+        val revision = identityRevision
+        mutableState.update { oldState ->
+            oldState.copy(
+                context = null,
+                accessError = null,
+                stage = SessionStageUi.READY,
+                selectionError =
+                    if (explicit) null else HouseholdError.AccessDenied().toHouseholdTextResource(),
+                selectionMessage =
+                    if (explicit) TextResource.Resource(Res.string.household_exited) else null,
+            )
+        }
+        selectionJob = launch {
+            selectionMutex.withLock {
+                ensureActive()
+                val result = rememberHouseholdUseCase(userId = userId, householdId = null)
+                ensureActive()
+                if (revision == identityRevision && result is AppResult.Failure)
+                    mutableState.update { oldState ->
+                        oldState.copy(selectionError = result.error.toHouseholdTextResource())
+                    }
+            }
+        }
+        feedbackJob?.cancel()
+        feedbackJob = launch {
+            delay(DEFAULT_ALERT_DURATION)
+            mutableState.update { oldState -> oldState.copy(selectionMessage = null) }
         }
     }
 
@@ -168,6 +261,7 @@ class SessionScreenViewModel(
         restoreJob?.cancel()
         selectionJob?.cancel()
         signOutJob?.cancel()
+        feedbackJob?.cancel()
     }
 
     private fun HouseholdDomain.toContext(userId: String): HouseholdContextDomain =

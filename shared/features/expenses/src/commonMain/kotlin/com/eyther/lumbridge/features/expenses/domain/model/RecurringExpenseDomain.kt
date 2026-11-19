@@ -14,6 +14,8 @@ data class RecurringExpenseDomain(
     val version: Long,
     val shares: Map<String, Long>,
     val accountId: String = "",
+    val splitMethod: ExpenseSplitMethodDomain = ExpenseSplitMethodDomain.AMOUNTS,
+    val splitValues: Map<String, Long> = shares,
 ) {
 
     val status: RecurringExpenseStatusDomain =
@@ -24,5 +26,16 @@ data class RecurringExpenseDomain(
         }
 
     fun canManage(userId: String, isOwner: Boolean): Boolean =
-        !cancelled && (isOwner || userId == paidBy || userId == createdBy)
+        !cancelled && canDelete(userId = userId, isOwner = isOwner)
+
+    fun canDelete(userId: String, isOwner: Boolean): Boolean =
+        isOwner || userId == paidBy || userId == createdBy
+
+    val split: ExpenseSplitSelectionDomain
+        get() =
+            ExpenseSplitSelectionDomain(
+                method = splitMethod,
+                participants = shares.keys,
+                values = splitValues,
+            )
 }

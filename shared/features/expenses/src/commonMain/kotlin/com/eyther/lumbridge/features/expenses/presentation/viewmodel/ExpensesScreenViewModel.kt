@@ -93,7 +93,9 @@ class ExpensesScreenViewModel(
             }
             .observeWith(viewModelScope) { state ->
                 refreshRequests
-                    .flatMapLatest { getMembersStreamUseCase(householdId = context.id) }
+                    .flatMapLatest {
+                        getMembersStreamUseCase(householdId = context.id, includeInactive = true)
+                    }
                     .updateState(state) { result ->
                         when (result) {
                             is AppResult.Success -> copy(members = result.value)
@@ -111,7 +113,7 @@ class ExpensesScreenViewModel(
     override fun onAccountsVisibilityChanged(value: Boolean) {
         if (state.value.busy) return
         mutableState.update { oldState ->
-            oldState.copy(showAccounts = value, showManageAccounts = false)
+            oldState.copy(showAccounts = value)
         }
     }
 
@@ -129,7 +131,6 @@ class ExpensesScreenViewModel(
                 balances = emptyMap(),
                 loading = true,
                 showAccounts = false,
-                showManageAccounts = false,
                 error = null,
             )
         }
@@ -148,13 +149,6 @@ class ExpensesScreenViewModel(
                         )
                     }
             }
-        }
-    }
-
-    override fun onManageAccountsVisibilityChanged(value: Boolean) {
-        if (state.value.busy) return
-        mutableState.update { oldState ->
-            oldState.copy(showManageAccounts = value, showAccounts = false)
         }
     }
 

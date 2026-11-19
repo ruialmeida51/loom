@@ -14,11 +14,13 @@ abstract class RecurringExpensesScreenViewModelContract : LoomViewModel() {
         action: RecurringExpenseActionDomain,
     )
 
-    abstract fun onCancelRequested(rule: RecurringExpenseDomain)
+    abstract fun onDeleteRequested(rule: RecurringExpenseDomain)
 
-    abstract fun onCancelDismissed()
+    abstract fun onDeleteDismissed()
 
-    abstract fun onCancelConfirmed()
+    abstract fun onDeleteConfirmed()
+
+    abstract fun onContentChanged()
 
     abstract fun onRetry()
 

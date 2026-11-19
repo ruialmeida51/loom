@@ -23,6 +23,30 @@ class DemoRecurringExpenseDataSource(private val store: DemoHouseholdStore) :
             )
         }
 
+    override suspend fun getRule(id: String, accountId: String): AppResult<RecurringExpenseDomain> =
+        safeCall {
+            store.recurring.value.firstOrNull { it.id == id && it.accountId == accountId }
+                ?: throw RecurringExpenseError.NotFound()
+        }
+
+    override suspend fun save(rule: RecurringExpenseDomain): AppResult<RecurringExpenseDomain> =
+        safeCall {
+            val current =
+                store.recurring.value.firstOrNull { it.id == rule.id }
+                    ?: throw RecurringExpenseError.NotFound()
+            if (current.version != rule.version) throw RecurringExpenseError.Changed()
+            if (current.cancelled) throw RecurringExpenseError.Cancelled()
+            val saved = rule.copy(active = current.active, version = current.version + 1)
+            store.recurring.update { rules -> rules.map { if (it.id == saved.id) saved else it } }
+            saved
+        }
+
+    override suspend fun delete(rule: RecurringExpenseDomain): AppResult<Unit> = safeCall {
+        val current = store.recurring.value.firstOrNull { it.id == rule.id } ?: return@safeCall Unit
+        if (current.version != rule.version) throw RecurringExpenseError.Changed()
+        store.recurring.update { rules -> rules.filterNot { it.id == rule.id } }
+    }
+
     override suspend fun controlSchedule(
         rule: RecurringExpenseDomain,
         action: RecurringExpenseActionDomain,

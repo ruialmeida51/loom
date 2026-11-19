@@ -19,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ActionFab
 import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
@@ -27,6 +26,7 @@ import com.eyther.lumbridge.core.presentation.components.FloatingActionContentPa
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
+import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
@@ -103,7 +103,7 @@ fun ExpensesScreen(
             onEditSettlement = onEditPayment,
             onDeleteSettlement = viewModel::onDeleteSettlementRequested,
             busy = state.busy,
-            onManage = { viewModel.onManageAccountsVisibilityChanged(true) },
+            onManage = { viewModel.onAccountsVisibilityChanged(true) },
             onView = viewModel::onViewChanged,
             onRepayment = onRecordPayment,
             onRecurringExpenses = onRecurringExpenses,
@@ -152,15 +152,17 @@ private fun InnerExpensesScreen(
 ) {
     Box(Modifier.fillMaxSize()) {
         LazyColumn(
-            modifier =
-                Modifier.fillMaxSize().padding(horizontal = 16.dp).testTag("expenses_content"),
-            contentPadding =
-                PaddingValues(top = LoomSpacing.small, bottom = FloatingActionContentPadding),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxSize().testTag("expenses_content"),
+            contentPadding = rootContentPadding(bottom = FloatingActionContentPadding),
+            verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
         ) {
             item {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.padding(bottom = LoomSpacing.small),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     SelectorButton(
+                        contentPadding = PaddingValues(),
                         text =
                             if (account == null) stringResource(Res.string.account_accounts)
                             else accountLabel(account),
@@ -194,7 +196,7 @@ private fun InnerExpensesScreen(
                     )
             }
             item {
-                Column(modifier = Modifier.padding(bottom = LoomSpacing.medium)) {
+                Column(modifier = Modifier.padding(bottom = LoomSpacing.content)) {
                     TabRow(selectedTabIndex = selectedView.ordinal) {
                         Tab(
                             modifier = Modifier.testTag("balances_view_expenses"),

@@ -5,15 +5,17 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel_schedule
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel_this_schedule
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_future_entries_will_stop_expenses_already_recorded_stay_in
-import com.eyther.lumbridge.features.expenses.generated.resources.ui_keep_schedule
+import com.eyther.lumbridge.features.expenses.generated.resources.bill_delete_message
+import com.eyther.lumbridge.features.expenses.generated.resources.bill_delete_title
+import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete
+import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.expenses.presentation.model.RecurringExpenseUi
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 data class RecurringExpensesState(
     val userId: String = "",
-    val cancellation: RecurringExpenseDomain? = null,
+    val deletion: RecurringExpenseDomain? = null,
     val account: ExpenseAccountDomain? = null,
     val rules: List<RecurringExpenseDomain> = emptyList(),
     val payerNames: Map<String, String> = emptyMap(),
@@ -25,15 +27,16 @@ data class RecurringExpensesState(
     val loadError: TextResource? = null,
 ) {
 
-    val cancellationConfirmation: DestructiveConfirmationUi? = cancellation?.let {
+    val deletionConfirmation: DestructiveConfirmationUi? = deletion?.let {
         DestructiveConfirmationUi(
-            title = TextResource.Resource(Res.string.ui_cancel_this_schedule),
+            title = TextResource.Resource(Res.string.bill_delete_title),
             message =
                 TextResource.Resource(
-                    Res.string.ui_future_entries_will_stop_expenses_already_recorded_stay_in,
+                    Res.string.bill_delete_message,
+                    args = listOf(it.title),
                 ),
-            confirmText = TextResource.Resource(Res.string.ui_cancel_schedule),
-            cancelText = TextResource.Resource(Res.string.ui_keep_schedule),
+            confirmText = TextResource.Resource(Res.string.detail_delete),
+            cancelText = TextResource.Resource(Res.string.ui_cancel),
         )
     }
 
@@ -42,12 +45,16 @@ data class RecurringExpensesState(
     val displayError: TextResource? = error ?: loadError
 
     val isOwner: Boolean = role == "owner"
-    val rows: List<RecurringExpenseUi> = rules.map { rule ->
-        RecurringExpenseUi(
-            rule = rule,
-            userId = userId,
-            role = role,
-            payerName = payerNames[rule.paidBy],
-        )
-    }
+    val rows: ImmutableList<RecurringExpenseUi> =
+        rules
+            .map { rule ->
+                RecurringExpenseUi(
+                    rule = rule,
+                    userId = userId,
+                    role = role,
+                    payerName = payerNames[rule.paidBy],
+                    currency = currency,
+                )
+            }
+            .toImmutableList()
 }

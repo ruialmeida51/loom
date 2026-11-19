@@ -1,14 +1,12 @@
 package com.eyther.lumbridge.features.tasks.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -22,6 +20,8 @@ import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.layout.RootHeading
+import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
@@ -96,18 +96,14 @@ private fun InnerTasksScreen(
     onRemove: (String) -> Unit,
 ) {
     LazyColumn(
-        modifier =
-            Modifier.fillMaxSize()
-                .padding(horizontal = LoomSpacing.content)
-                .testTag("tasks_content"),
-        contentPadding =
-            PaddingValues(top = LoomSpacing.medium, bottom = FloatingActionContentPadding),
+        modifier = Modifier.fillMaxSize().testTag("tasks_content"),
+        contentPadding = rootContentPadding(bottom = FloatingActionContentPadding),
         verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
     ) {
         item(key = "header") {
-            Text(
-                stringResource(Res.string.tasks_title),
-                style = MaterialTheme.typography.titleLarge,
+            RootHeading(
+                title = stringResource(Res.string.tasks_title),
+                modifier = Modifier.padding(bottom = LoomSpacing.content - LoomSpacing.extraSmall),
             )
         }
         error?.let { message ->

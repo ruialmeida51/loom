@@ -46,6 +46,7 @@ import org.jetbrains.compose.resources.stringResource
 fun HouseholdHost(
     context: HouseholdContextDomain,
     portalToolbar: @Composable () -> Unit,
+    onHouseholdExited: (String, Boolean) -> Unit,
 ) {
     val roots =
         setOf(
@@ -178,6 +179,7 @@ fun HouseholdHost(
                     )
                 HouseholdDestination.More ->
                     MoreHost(
+                        onHouseholdExited = { explicit -> onHouseholdExited(context.id, explicit) },
                         context = context,
                         portalToolbar = portalToolbar,
                         onRootChanged = { showTabs = it },

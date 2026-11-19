@@ -28,7 +28,9 @@ class GetExpenseFormUseCase(
                 else expenseAccountDataSource.getReferenceAccount(id = accountId).getOrThrow()
             }
             val membersRequest = async {
-                if (refreshReferences)
+                if (expenseId != null)
+                    householdDataSource.getMemberHistory(householdId = context.id).getOrThrow()
+                else if (refreshReferences)
                     householdDataSource.getMembers(householdId = context.id).getOrThrow()
                 else householdDataSource.getMemberReferences(householdId = context.id).getOrThrow()
             }
@@ -36,10 +38,17 @@ class GetExpenseFormUseCase(
                 expenseId?.let { getExpenseUseCase(id = it, accountId = accountId).getOrThrow() }
             }
             val account = accountRequest.await()
+            val expense = expenseRequest.await()
             ExpenseFormDomain(
                 account = account,
-                members = membersRequest.await().filter { it.id in account.memberIds },
-                expense = expenseRequest.await(),
+                members =
+                    membersRequest.await().filter {
+                        it.id in account.memberIds &&
+                            (it.active ||
+                                it.id == expense?.paidBy ||
+                                it.id in expense?.shares.orEmpty())
+                    },
+                expense = expense,
             )
         }
     }
