@@ -45,7 +45,7 @@ def verify(mapping, generated_id, resource, apk, aapt2, version_name, version_co
     if match is None or match.group(1) != crashlytics_id:
         raise ValueError('The packaged APK does not contain the expected Crashlytics mapping ID')
     badging = subprocess.check_output([str(aapt2), 'dump', 'badging', str(apk)], text=True)
-    package = dict(re.findall(r"(name|versionCode|versionName)='([^']*)'", badging.splitlines()[0]))
+    package = dict(re.findall(r"\b(name|versionCode|versionName)='([^']*)'", badging.splitlines()[0]))
     if package != {'name': 'com.eyther.lumbridge', 'versionCode': str(version_code), 'versionName': version_name}:
         raise ValueError('The packaged APK does not match the planned Loom release version')
     if not re.fullmatch(r'[a-fA-F0-9]{40}', source_commit):

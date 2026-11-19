@@ -26,7 +26,11 @@ class AndroidSymbolsTest(unittest.TestCase):
         with zipfile.ZipFile(self.apk, 'w') as archive:
             archive.writestr('classes.dex', b'R8 source marker: r8-map-id-' + b'a' * 64)
         self.resources = 'resource 0x1 string/com.google.firebase.crashlytics.mapping_file_id\n      () "' + 'b' * 32 + '"\n'
-        self.badging = "package: name='com.eyther.lumbridge' versionCode='63' versionName='4.0.13'\n"
+        self.badging = (
+            "package: name='com.eyther.lumbridge' versionCode='63' versionName='4.0.13' "
+            "platformBuildVersionName='17' platformBuildVersionCode='37' "
+            "compileSdkVersion='37' compileSdkVersionCodename='17'\n"
+        )
 
     def verify(self):
         return verify_android_symbols.verify(

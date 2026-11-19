@@ -7,6 +7,8 @@ collect_device_evidence() {
     mkdir -p build/device-captures
     timeout 15s adb pull /sdcard/Pictures/Loom-usability build/device-captures || true
     timeout 15s adb logcat -d > build/device-captures/logcat.txt || true
+    # Surface failing instrumentation assertions in the job log; artifacts are not always reachable.
+    find androidApp/build/outputs/androidTest-results -name '*.xml' -exec grep -h -B1 -A30 '<failure' {} + 2>/dev/null | head -200 || true
     exit "$usability_status"
 }
 trap collect_device_evidence EXIT
