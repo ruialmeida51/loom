@@ -1,6 +1,9 @@
 package com.eyther.lumbridge.authentication
 
 import android.content.Intent
+import android.util.Log
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
@@ -104,8 +107,16 @@ class SessionLifecycleDeviceTest {
             awaitStage("initial authentication") {
                 source.stream().filterIsInstance<AuthenticationStateDomain.Authenticated>().first()
             }
+            instrumentation.runOnMainSync {
+                ProcessLifecycleOwner.get()
+                    .lifecycle
+                    .addObserver(
+                        LifecycleEventObserver { _, event -> Log.i(LOG_TAG, "Process $event") },
+                    )
+            }
             repeat(2) { cycle ->
-                if (cycle == 0) device.pressHome() else device.sleep()
+                if (cycle == 0) Log.i(LOG_TAG, "pressHome=${device.pressHome()}")
+                else device.sleep()
                 awaitStage("cycle $cycle: background stops auto refresh") {
                     client.auth.sessionStatus.first { it is SessionStatus.Initializing }
                 }
@@ -156,3 +167,4 @@ class SessionLifecycleDeviceTest {
 }
 
 private const val STAGE_TIMEOUT_MILLIS = 10_000L
+private const val LOG_TAG = "SessionLifecycle"

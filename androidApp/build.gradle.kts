@@ -84,4 +84,6 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
+    // Observes the same process callbacks the Supabase SDK uses; the graph resolves the app version.
+    androidTestImplementation("androidx.lifecycle:lifecycle-process:2.8.7")
 }
