@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.15] - 2026-11-20
+
 - A fresh look: calmer colours, rounder cards and member colours.
 - Shopping lists have icons; switch lists from chips above the items.
 - Round checkboxes, with items and tasks grouped into single cards.
