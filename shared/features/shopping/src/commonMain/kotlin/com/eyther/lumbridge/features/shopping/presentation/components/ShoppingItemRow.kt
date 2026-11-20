@@ -21,44 +21,48 @@ import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
-import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
-import com.eyther.lumbridge.features.shopping.generated.resources.group_nest
-import com.eyther.lumbridge.features.shopping.generated.resources.group_unnest
-import com.eyther.lumbridge.features.shopping.generated.resources.ui_edit
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_favorite_add
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_favorite_remove
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_item_options
-import com.eyther.lumbridge.features.shopping.generated.resources.ui_move_to
+import com.eyther.lumbridge.features.shopping.generated.resources.ui_move_to_list
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_remove
-import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.stringResource
 
+/**
+ * A checklist row. Tapping the name edits it in place; grouping uses the swipe gesture and its
+ * accessibility actions, so the overflow menu keeps only favourite, move and remove.
+ */
 @Composable
 fun ShoppingItemRow(
     item: ShoppingItemDomain,
-    moveTargets: ImmutableList<ShoppingListDomain>,
     busy: Boolean,
+    canMove: Boolean,
+    onToggle: (ShoppingItemDomain) -> Unit,
+    onStartEditing: (ShoppingItemDomain) -> Unit,
+    onRemove: (ShoppingItemDomain) -> Unit,
+    onFavorite: (ShoppingItemDomain) -> Unit,
+    onMove: (ShoppingItemDomain) -> Unit,
     selectionMode: Boolean = false,
     selected: Boolean = false,
     onSelect: () -> Unit = {},
+    editing: Boolean = false,
+    editingName: String = "",
+    onEditingName: (String) -> Unit = {},
+    onEditingNext: () -> Unit = {},
+    onEditingFinished: () -> Unit = {},
     indented: Boolean = false,
     canNest: Boolean = false,
     canUnnest: Boolean = false,
     onNest: (ShoppingItemDomain) -> Unit = {},
     onUnnest: (ShoppingItemDomain) -> Unit = {},
-    onToggle: (ShoppingItemDomain) -> Unit,
-    onEdit: (ShoppingItemDomain) -> Unit,
-    onRemove: (ShoppingItemDomain) -> Unit,
-    onFavorite: (ShoppingItemDomain) -> Unit,
-    onMove: (ShoppingItemDomain, String) -> Unit,
 ) {
     ShoppingGroupingGesture(
         id = item.id,
         indented = indented,
         canNest = canNest,
         canUnnest = canUnnest,
-        enabled = !busy && !selectionMode,
+        enabled = !busy && !selectionMode && !editing,
         onNest = { onNest(item) },
         onUnnest = { onUnnest(item) },
     ) {
@@ -75,28 +79,41 @@ fun ShoppingItemRow(
                         contentDescription = item.name
                     },
             )
-            Column(
-                modifier =
-                    Modifier.weight(1f)
-                        .clickable(
-                            enabled = !busy,
-                            onClick = { if (selectionMode) onSelect() else onEdit(item) },
-                        )
-                        .testTag("edit_${item.name}"),
-            ) {
-                Text(
-                    text = item.name,
-                    style = MaterialTheme.typography.bodyLarge,
+            if (editing)
+                ShoppingLineInput(
+                    value = editingName,
+                    onValue = onEditingName,
+                    onNext = onEditingNext,
+                    onFocusLost = onEditingFinished,
                     textDecoration =
                         if (item.checked) TextDecoration.LineThrough else TextDecoration.None,
+                    modifier = Modifier.weight(1f).testTag("edit_input_${item.name}"),
                 )
-                if (item.quantity.isNotBlank())
+            else
+                Column(
+                    modifier =
+                        Modifier.weight(1f)
+                            .clickable(
+                                enabled = !busy,
+                                onClick = {
+                                    if (selectionMode) onSelect() else onStartEditing(item)
+                                },
+                            )
+                            .testTag("edit_${item.name}"),
+                ) {
                     Text(
-                        text = item.quantity,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = item.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        textDecoration =
+                            if (item.checked) TextDecoration.LineThrough else TextDecoration.None,
                     )
-            }
+                    if (item.quantity.isNotBlank())
+                        Text(
+                            text = item.quantity,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                }
             if (item.favorite) Text(text = "★", color = MaterialTheme.colorScheme.primary)
             if (!selectionMode)
                 ActionMenu(
@@ -104,13 +121,6 @@ fun ShoppingItemRow(
                     modifier = Modifier.testTag("actions_${item.name}"),
                     items =
                         buildList {
-                            add(
-                                ActionMenuItem(
-                                    text = TextResource.Resource(Res.string.ui_edit),
-                                    onClick = { if (selectionMode) onSelect() else onEdit(item) },
-                                    enabled = !busy,
-                                ),
-                            )
                             add(
                                 ActionMenuItem(
                                     text =
@@ -122,40 +132,20 @@ fun ShoppingItemRow(
                                     enabled = !busy,
                                 ),
                             )
-                            if (canNest)
+                            if (canMove)
                                 add(
                                     ActionMenuItem(
-                                        text = TextResource.Resource(Res.string.group_nest),
-                                        onClick = { onNest(item) },
+                                        text = TextResource.Resource(Res.string.ui_move_to_list),
+                                        onClick = { onMove(item) },
                                         enabled = !busy,
                                     ),
                                 )
-                            if (canUnnest)
-                                add(
-                                    ActionMenuItem(
-                                        text = TextResource.Resource(Res.string.group_unnest),
-                                        onClick = { onUnnest(item) },
-                                        enabled = !busy,
-                                    ),
-                                )
-                            moveTargets.forEach { target ->
-                                add(
-                                    ActionMenuItem(
-                                        text =
-                                            TextResource.Resource(
-                                                Res.string.ui_move_to,
-                                                args = listOf(target.name),
-                                            ),
-                                        onClick = { onMove(item, target.id) },
-                                        enabled = !busy,
-                                    ),
-                                )
-                            }
                             add(
                                 ActionMenuItem(
                                     text = TextResource.Resource(Res.string.ui_remove),
                                     onClick = { onRemove(item) },
                                     enabled = !busy,
+                                    destructive = true,
                                 ),
                             )
                         },

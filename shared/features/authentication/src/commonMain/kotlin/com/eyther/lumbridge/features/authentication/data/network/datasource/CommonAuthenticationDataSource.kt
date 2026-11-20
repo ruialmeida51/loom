@@ -19,6 +19,9 @@ import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.providers.builtin.OTP
 import io.github.jan.supabase.auth.status.SessionStatus
+import io.github.jan.supabase.auth.user.UserSession
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -94,7 +97,17 @@ class CommonAuthenticationDataSource(
                 }
                 // A background callback may have cancelled the SDK job. An active job already
                 // owns refresh-token rotation and must never race a manual refresh.
-                if (!auth.isAutoRefreshRunning && !auth.loadFromStorage()) {
+                if (auth.isAutoRefreshRunning) {
+                    // Deep sleep pauses the job's monotonic delay, so a resumed device can hold a
+                    // token past its refresh point. Re-importing replaces the job, never races it.
+                    val session = auth.currentSessionOrNull()
+                    if (
+                        auth.sessionStatus.value is SessionStatus.Authenticated &&
+                            session != null &&
+                            session.refreshDue()
+                    )
+                        auth.startAutoRefreshForCurrentSession()
+                } else if (!auth.loadFromStorage()) {
                     auth.clearSession()
                     throw CommonError.NotAuthenticated()
                 }
@@ -182,3 +195,9 @@ class CommonAuthenticationDataSource(
         }
     }
 }
+
+/** The SDK refreshes once 80% of a token's lifetime has passed. */
+private const val SDK_REFRESH_THRESHOLD = 0.8
+
+private fun UserSession.refreshDue(): Boolean =
+    expiresAt - (expiresIn * (1 - SDK_REFRESH_THRESHOLD)).seconds <= Clock.System.now()

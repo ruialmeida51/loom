@@ -17,7 +17,6 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_add_to_the_list
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_category
-import com.eyther.lumbridge.features.shopping.generated.resources.ui_edit_item
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_one_item_per_line_for_quick_entry
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_quantity_or_note
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_what_do_we_need
@@ -29,7 +28,6 @@ fun ShoppingItemBottomSheet(
     name: String,
     quantity: String,
     category: String,
-    editing: Boolean,
     busy: Boolean,
     formError: TextResource?,
     onShowAdd: (Boolean) -> Unit,
@@ -40,8 +38,7 @@ fun ShoppingItemBottomSheet(
     onDismiss: () -> Unit,
 ) {
     FormBottomSheet(
-        title =
-            stringResource(if (editing) Res.string.ui_edit_item else Res.string.ui_add_to_the_list),
+        title = stringResource(Res.string.ui_add_to_the_list),
         onAction = onSave,
         onDismiss = { onShowAdd(false) },
         busy = busy,
@@ -51,16 +48,14 @@ fun ShoppingItemBottomSheet(
             name,
             onName,
             label = { Text(stringResource(Res.string.ui_what_do_we_need)) },
-            singleLine = editing,
-            maxLines = if (editing) 1 else 5,
+            maxLines = 5,
             modifier = Modifier.fillMaxWidth(),
             enabled = !busy,
         )
-        if (!editing)
-            Text(
-                stringResource(Res.string.ui_one_item_per_line_for_quick_entry),
-                style = MaterialTheme.typography.bodySmall,
-            )
+        Text(
+            stringResource(Res.string.ui_one_item_per_line_for_quick_entry),
+            style = MaterialTheme.typography.bodySmall,
+        )
         OutlinedTextField(
             quantity,
             onQuantity,

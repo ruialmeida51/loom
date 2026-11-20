@@ -19,6 +19,7 @@ class ShoppingEntryFixtureDataSource : ShoppingDataSource {
     var deferItemWrites: Boolean = false
     val itemWrites = mutableMapOf<String, CompletableDeferred<AppResult<ShoppingItemDomain>>>()
     val requests = mutableListOf<List<ShoppingItemDomain>>()
+    val insertAnchors = mutableListOf<String>()
     val responses = Channel<AppResult<List<ShoppingItemDomain>>>(Channel.UNLIMITED)
     val snapshot =
         MutableStateFlow<AppResult<ShoppingSnapshotDomain>>(
@@ -39,6 +40,15 @@ class ShoppingEntryFixtureDataSource : ShoppingDataSource {
         items: List<ShoppingItemDomain>,
     ): AppResult<List<ShoppingItemDomain>> {
         requests += items
+        return responses.receive()
+    }
+
+    override suspend fun insertItemAfter(
+        item: ShoppingItemDomain,
+        afterId: String,
+    ): AppResult<List<ShoppingItemDomain>> {
+        requests += listOf(item)
+        insertAnchors += afterId
         return responses.receive()
     }
 

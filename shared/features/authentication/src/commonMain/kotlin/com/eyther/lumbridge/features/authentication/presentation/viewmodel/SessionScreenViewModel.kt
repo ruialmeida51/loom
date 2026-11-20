@@ -9,7 +9,6 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
 import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStreamUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RecoverSessionUseCase
-import com.eyther.lumbridge.features.authentication.domain.usecase.ResumeSessionUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
 import com.eyther.lumbridge.features.authentication.generated.resources.Res
 import com.eyther.lumbridge.features.authentication.generated.resources.household_exited
@@ -53,7 +52,6 @@ private const val STALLED_STARTUP_DELAY_MILLIS = 15_000L
 class SessionScreenViewModel(
     private val getSessionStreamUseCase: GetSessionStreamUseCase,
     private val recoverSessionUseCase: RecoverSessionUseCase,
-    private val resumeSessionUseCase: ResumeSessionUseCase,
     private val restoreHouseholdUseCase: RestoreHouseholdUseCase,
     private val rememberHouseholdUseCase: RememberHouseholdUseCase,
     private val signOutUseCase: SignOutUseCase,
@@ -154,8 +152,10 @@ class SessionScreenViewModel(
         resumeRecoveryJob = viewModelScope.launch {
             // Let the SDK's process callback finish before checking for a stopped refresh job.
             delay(RESUME_RECOVERY_DELAY_MILLIS)
+            // Best effort: offline failures stay silent while SDK/read-stream retries continue,
+            // and a confirmed revocation still arrives through the session stream.
             if (revision == identityRevision && state.value.stage == SessionStageUi.READY)
-                resumeSessionUseCase()
+                recoverSessionUseCase()
         }
     }
 

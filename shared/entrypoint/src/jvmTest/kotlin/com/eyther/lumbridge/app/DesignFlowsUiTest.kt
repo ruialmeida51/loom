@@ -8,6 +8,12 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
@@ -47,7 +53,7 @@ import org.jetbrains.skia.Image
 class DesignFlowsUiTest {
 
     @Test
-    fun shoppingSheetKeepsItsSaveActionReachableOnANarrowShortViewportWithLargerText() =
+    fun shoppingRowsEditInPlaceAndTheKeyboardArrowAddsTheNextLineBelowOnANarrowViewport() =
         runSkikoComposeUiTest(
             size = Size(360f, 540f),
             density = Density(density = 1f, fontScale = 1.3f),
@@ -58,18 +64,31 @@ class DesignFlowsUiTest {
             onNodeWithTag("navigation_shopping").performClick()
             awaitLoadedDestination(tag = "shopping_content")
             onNodeWithTag("edit_Avocados").performClick()
-            onNodeWithTag("form_sheet").assertIsDisplayed()
-            onNodeWithText("What do we need?")
-                .performScrollTo()
-                .performTextReplacement("Barista oat drink")
-            onNodeWithTag("save_shopping_item").assertIsDisplayed()
-            captureNode(tag = "modal_sheet", name = "shopping-sheet-narrow")
-            onNodeWithTag("save_shopping_item").performClick()
-            waitUntil(timeoutMillis = 5000) {
-                onAllNodesWithTag("save_shopping_item").fetchSemanticsNodes().isEmpty()
+            onNodeWithTag("form_sheet").assertDoesNotExist()
+            onNodeWithTag("edit_input_Avocados").assertIsFocused()
+            onNodeWithTag("edit_input_Avocados").performTextReplacement("Hass avocados")
+            onNodeWithTag("edit_input_Avocados").performImeAction()
+            onNodeWithTag("shopping_draft_input").assertIsFocused()
+            onNodeWithTag("shopping_draft_input").performTextInput("Limes")
+            onNodeWithTag("shopping_draft_input").performImeAction()
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodesWithTag("edit_Limes").fetchSemanticsNodes().isNotEmpty()
             }
-            onNodeWithTag("shopping_content").performScrollToNode(hasText("Barista oat drink"))
-            onNodeWithText("Barista oat drink").assertExists()
+            onNodeWithTag("shopping_draft_input").assertIsFocused()
+            captureNode(tag = "loom_app", name = "shopping-keep-entry-narrow")
+            val rows =
+                onAllNodes(hasTestTagPrefix("edit_")).fetchSemanticsNodes().map {
+                    it.config[SemanticsProperties.TestTag]
+                }
+            assertEquals(
+                rows.indexOf("edit_Hass avocados") + 1,
+                rows.indexOf("edit_Limes"),
+                "The new line sits directly below the edited row: $rows",
+            )
+            onNodeWithTag("actions_Limes").performClick()
+            onNodeWithText("Move to another list").assertDoesNotExist()
+            onNodeWithText("Group under previous item").assertDoesNotExist()
+            onNodeWithText("Remove").assertIsDisplayed()
         }
 
     @Test
@@ -217,4 +236,11 @@ class DesignFlowsUiTest {
                     .bytes,
             )
     }
+
+    private fun hasTestTagPrefix(prefix: String): SemanticsMatcher =
+        SemanticsMatcher("TestTag starts with $prefix") { node ->
+            node.config.getOrNull(SemanticsProperties.TestTag)?.let {
+                it.startsWith(prefix) && !it.startsWith("edit_input_")
+            } == true
+        }
 }

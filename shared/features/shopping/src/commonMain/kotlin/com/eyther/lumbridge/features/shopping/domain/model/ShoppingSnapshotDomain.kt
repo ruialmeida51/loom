@@ -87,6 +87,25 @@ data class ShoppingSnapshotDomain(
         return changed
     }
 
+    /**
+     * Mirrors the server's insert-below rule: [item] takes the position after [afterId] and joins
+     * the anchor's group. Returns the new row first, then every row that moved; without an active
+     * anchor in the same list the item is returned unchanged and is appended.
+     */
+    fun placeBelow(item: ShoppingItemDomain, afterId: String): List<ShoppingItemDomain> {
+        val anchor =
+            items.firstOrNull { it.id == afterId && it.listId == item.listId && !it.removed }
+                ?: return listOf(item)
+        val parentId =
+            anchor.parentId
+                ?: anchor.id.takeIf { id -> items.any { it.parentId == id && !it.removed } }
+        val moved =
+            items
+                .filter { it.listId == item.listId && it.position > anchor.position }
+                .map { it.copy(position = it.position + 1) }
+        return listOf(item.copy(parentId = parentId, position = anchor.position + 1)) + moved
+    }
+
     fun resolveActiveListId(preferredId: String): String =
         activeLists.firstOrNull { it.id == preferredId }?.id
             ?: activeLists.firstOrNull { it.name == "Groceries" }?.id

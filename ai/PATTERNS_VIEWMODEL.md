@@ -10,7 +10,7 @@ Reference style: authentication/presentation/viewmodel/LoginScreenViewModel.kt a
 - MutableStateFlow.update lambdas name oldState; fold external results into oldState, never stale captures.
 - A failed action maps its AppError through a feature mapper. Never replace all failures with a generic flag.
 - Keep initial loading, explicit refreshing and per-action progress separate. Retain loaded data on failure.
-- Use delayAtLeast/delayFirstAtLeast once for an intentional initial load or explicit refresh (300 ms). Disable the minimum on lifecycle resubscription and never delay later realtime emissions.
+- Use delayAtLeast/delayFirstAtLeast once for an intentional initial load or explicit refresh (300 ms). Disable the minimum on lifecycle resubscription and never delay later emissions, such as reloads after the app's own writes.
 - Refresh restarts the actual read, preserves drafts/selections and settles on success or typed failure.
 - Async success feedback is TextResource? plus a VM-owned cancellable timer (DEFAULT_ALERT_DURATION).
 - Use immutable presentation collections; stable keys reflect record identity, never row indexes.

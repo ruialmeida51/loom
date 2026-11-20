@@ -27,11 +27,9 @@
   <string name="ui_all_items">All items</string>
   <string name="ui_all_picked_up">All picked up.</string>
   <string name="ui_your_list_is_clear_add_something_whenever_you_think">Your list is clear. Add something whenever you think of it.</string>
-  <string name="ui_edit">Edit</string>
   <string name="ui_move">Move</string>
   <string name="ui_remove">Remove</string>
   <string name="ui_buy_again">Buy again</string>
-  <string name="ui_edit_item">Edit item</string>
   <string name="ui_add_to_the_list">Add to the list</string>
   <string name="ui_what_do_we_need">What do we need?</string>
   <string name="ui_one_item_per_line_for_quick_entry">One item per line for quick entry.</string>
@@ -66,7 +64,10 @@
   <string name="ui_favorite_add">Add to favourites</string>
   <string name="ui_favorite_remove">Remove from favourites</string>
   <string name="error_list_name_already_exists">A list with this name already exists.</string>
-  <string name="ui_move_to">Move to %1$s</string>
+  <string name="ui_move_to_list">Move to another list</string>
+  <string name="move_title">Move to list</string>
+  <string name="move_description">Choose where “%1$s” goes.</string>
+  <string name="ui_item_name">Item name</string>
   <string name="ui_item_options">Options for %1$s</string>
     <string name="checklist_add_item">Add an item</string>
     <string name="checklist_add">Add</string>

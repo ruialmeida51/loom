@@ -25,7 +25,8 @@ import com.eyther.lumbridge.features.shopping.generated.resources.group_nest
 import com.eyther.lumbridge.features.shopping.generated.resources.group_unnest
 import org.jetbrains.compose.resources.stringResource
 
-private val Indentation = 24.dp // One hierarchy level without shrinking the checkbox touch target.
+// One hierarchy level without shrinking the checkbox touch target.
+internal val ShoppingIndentation = 24.dp
 private val SwipeThreshold =
     56.dp // Require an intentional horizontal gesture before changing the group.
 
@@ -43,7 +44,7 @@ internal fun ShoppingGroupingGesture(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    val width = with(density) { Indentation.toPx() }
+    val width = with(density) { ShoppingIndentation.toPx() }
     val threshold = with(density) { SwipeThreshold.toPx() }
     val direction = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1f else 1f
     val committed = if (indented) width else 0f
@@ -59,7 +60,7 @@ internal fun ShoppingGroupingGesture(
     Box(
         modifier =
             Modifier.testTag("shopping_group_$id")
-                .padding(start = if (indented) Indentation else 0.dp)
+                .padding(start = if (indented) ShoppingIndentation else 0.dp)
                 .graphicsLayer { translationX = direction * (gesture.position - committed) }
                 .semantics {
                     customActions = buildList {

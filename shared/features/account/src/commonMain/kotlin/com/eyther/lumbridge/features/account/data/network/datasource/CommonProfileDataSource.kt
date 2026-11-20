@@ -24,7 +24,7 @@ class CommonProfileDataSource(private val access: SupabaseAccess) : ProfileDataS
     override fun stream(userId: String): Flow<AppResult<ProfileDomain>> =
         changes
             .flatMapLatest {
-                access.watch(table = "profiles", scopeId = userId) {
+                access.watch {
                     access
                         .requireClient()
                         .from("profiles")
@@ -41,15 +41,16 @@ class CommonProfileDataSource(private val access: SupabaseAccess) : ProfileDataS
         nickname: String,
     ): AppResult<ProfileDomain> = safeApiCall {
         val profile =
-            access
-                .requireClient()
-                .from("profiles")
-                .update(UpdateNicknameRequest(displayName = nickname)) {
-                    filter { eq("id", userId) }
-                    select()
-                }
-                .decodeSingle<ProfileResponse>()
-                .toDomain()
+            access.write { client ->
+                client
+                    .from("profiles")
+                    .update(UpdateNicknameRequest(displayName = nickname)) {
+                        filter { eq("id", userId) }
+                        select()
+                    }
+                    .decodeSingle<ProfileResponse>()
+                    .toDomain()
+            }
         changes.update { oldVersion -> oldVersion + 1L }
         profile
     }

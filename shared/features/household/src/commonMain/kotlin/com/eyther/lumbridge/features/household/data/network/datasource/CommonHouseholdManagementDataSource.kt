@@ -28,7 +28,7 @@ class CommonHouseholdManagementDataSource(
 ) : HouseholdManagementDataSource {
     override fun stream(): Flow<AppResult<HouseholdManagementDomain>> =
         access
-            .watch(table = "household_members", scopeId = context.id) {
+            .watch {
                 access
                     .requireClient()
                     .postgrest
@@ -43,21 +43,22 @@ class CommonHouseholdManagementDataSource(
         requestId: String,
     ): AppResult<HouseholdInvitationDomain> =
         safeApiCall(mapError = Exception::toHouseholdError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    "manage_household_invitation",
-                    ManageHouseholdInvitationRequest(
-                        householdId = context.id,
-                        action = "replace",
-                        invitationId = previous?.id,
-                        version = previous?.version,
-                        requestId = requestId,
-                    ),
-                )
-                .decodeAs<HouseholdInvitationResponse>()
-                .toDomain()
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        "manage_household_invitation",
+                        ManageHouseholdInvitationRequest(
+                            householdId = context.id,
+                            action = "replace",
+                            invitationId = previous?.id,
+                            version = previous?.version,
+                            requestId = requestId,
+                        ),
+                    )
+                    .decodeAs<HouseholdInvitationResponse>()
+                    .toDomain()
+            }
         }
 
     override suspend fun revokeInvitation(
@@ -65,19 +66,20 @@ class CommonHouseholdManagementDataSource(
         requestId: String,
     ): AppResult<Unit> =
         safeApiCall(mapError = Exception::toHouseholdError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    "manage_household_invitation",
-                    ManageHouseholdInvitationRequest(
-                        householdId = context.id,
-                        action = "revoke",
-                        invitationId = invitation.id,
-                        version = invitation.version,
-                        requestId = requestId,
-                    ),
-                )
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        "manage_household_invitation",
+                        ManageHouseholdInvitationRequest(
+                            householdId = context.id,
+                            action = "revoke",
+                            invitationId = invitation.id,
+                            version = invitation.version,
+                            requestId = requestId,
+                        ),
+                    )
+            }
             Unit
         }
 
@@ -87,35 +89,37 @@ class CommonHouseholdManagementDataSource(
         requestId: String,
     ): AppResult<Unit> =
         safeApiCall(mapError = Exception::toHouseholdError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    "change_household_member",
-                    ChangeHouseholdMemberRequest(
-                        householdId = context.id,
-                        memberId = member.id,
-                        action = action.name.lowercase(),
-                        version = member.version,
-                        requestId = requestId,
-                    ),
-                )
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        "change_household_member",
+                        ChangeHouseholdMemberRequest(
+                            householdId = context.id,
+                            memberId = member.id,
+                            action = action.name.lowercase(),
+                            version = member.version,
+                            requestId = requestId,
+                        ),
+                    )
+            }
             Unit
         }
 
     override suspend fun deleteHousehold(name: String, requestId: String): AppResult<Unit> =
         safeApiCall(mapError = Exception::toHouseholdError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    "delete_household",
-                    DeleteHouseholdRequest(
-                        householdId = context.id,
-                        name = name,
-                        requestId = requestId,
-                    ),
-                )
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        "delete_household",
+                        DeleteHouseholdRequest(
+                            householdId = context.id,
+                            name = name,
+                            requestId = requestId,
+                        ),
+                    )
+            }
             Unit
         }
 }

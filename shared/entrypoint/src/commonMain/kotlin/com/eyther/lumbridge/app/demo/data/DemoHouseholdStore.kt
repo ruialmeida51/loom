@@ -141,7 +141,9 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                         1,
                         favorite = true,
                     ),
-                ),
+                )
+                    // Like the server, every row has its own position.
+                    .mapIndexed { index, item -> item.copy(position = index + 1L) },
             ),
         )
     private val memberIds = members.map { it.id }

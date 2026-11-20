@@ -107,44 +107,47 @@ class CommonExpenseReceiptDataSource(
                     upsert = false
                     contentType = ContentType.Image.JPEG
                 }
-            client.postgrest
-                .rpc(
-                    "save_expense_receipt",
-                    SaveExpenseReceiptRequest(
-                        householdId = context.id,
-                        accountId = receipt.accountId,
-                        expenseId = receipt.expenseId,
-                        objectPath = path,
-                        version = receipt.version,
-                    ),
-                ) {
-                    single()
-                }
-                .decodeAs<ExpenseReceiptResponse>()
-                .toDomain()
+            access.write { writer ->
+                writer.postgrest
+                    .rpc(
+                        "save_expense_receipt",
+                        SaveExpenseReceiptRequest(
+                            householdId = context.id,
+                            accountId = receipt.accountId,
+                            expenseId = receipt.expenseId,
+                            objectPath = path,
+                            version = receipt.version,
+                        ),
+                    ) {
+                        single()
+                    }
+                    .decodeAs<ExpenseReceiptResponse>()
+                    .toDomain()
+            }
         }
 
     override suspend fun removePhoto(
         receipt: ExpenseReceiptDomain,
     ): AppResult<ExpenseReceiptDomain> =
         safeApiCall(mapError = Exception::toReceiptError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    "save_expense_receipt",
-                    SaveExpenseReceiptRequest(
-                        householdId = context.id,
-                        accountId = receipt.accountId,
-                        expenseId = receipt.expenseId,
-                        objectPath = null,
-                        version = receipt.version,
-                    ),
-                ) {
-                    single()
-                }
-                .decodeAs<ExpenseReceiptResponse>()
-                .toDomain()
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        "save_expense_receipt",
+                        SaveExpenseReceiptRequest(
+                            householdId = context.id,
+                            accountId = receipt.accountId,
+                            expenseId = receipt.expenseId,
+                            objectPath = null,
+                            version = receipt.version,
+                        ),
+                    ) {
+                        single()
+                    }
+                    .decodeAs<ExpenseReceiptResponse>()
+                    .toDomain()
+            }
         }
 }
 

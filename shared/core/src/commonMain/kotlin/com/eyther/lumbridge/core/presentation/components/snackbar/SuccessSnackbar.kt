@@ -27,8 +27,11 @@ import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
 
-const val DEFAULT_ALERT_DURATION: Long = 4_000L
-const val DEFAULT_ACTION_ALERT_DURATION: Long = 8_000L
+/** Plain confirmations only need a glance. */
+const val DEFAULT_ALERT_DURATION: Long = 2_500L
+
+/** Long enough to reach Undo without the message lingering over the screen. */
+const val DEFAULT_ACTION_ALERT_DURATION: Long = 5_000L
 
 /** Plannot-style transient feedback. Its lifetime is owned by the ViewModel, not composition. */
 @Composable

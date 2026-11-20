@@ -12,6 +12,7 @@ import com.eyther.lumbridge.features.shopping.presentation.components.bottomshee
 import com.eyther.lumbridge.features.shopping.presentation.components.bottomsheet.ShoppingItemBottomSheet
 import com.eyther.lumbridge.features.shopping.presentation.components.bottomsheet.ShoppingListNameBottomSheet
 import com.eyther.lumbridge.features.shopping.presentation.components.bottomsheet.ShoppingListsBottomSheet
+import com.eyther.lumbridge.features.shopping.presentation.components.bottomsheet.ShoppingMoveBottomSheet
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 
 @Composable
@@ -27,6 +28,7 @@ internal fun ShoppingSheetHost(
             state.showLists -> ShoppingSheets.ShoppingLists
             state.showAdd -> ShoppingSheets.ShoppingItem
             state.showFavorites -> ShoppingSheets.ShoppingFavorites
+            state.movingItem != null -> ShoppingSheets.ShoppingMove
             else -> null
         }
     LaunchedEffect(requestedSheet) {
@@ -38,7 +40,6 @@ internal fun ShoppingSheetHost(
             name = state.name,
             quantity = state.quantity,
             category = state.category,
-            editing = state.editing,
             busy = state.busy,
             formError = state.formError,
             onShowAdd = viewModel::onAddSheetVisibilityChanged,
@@ -85,6 +86,16 @@ internal fun ShoppingSheetHost(
             onDismissError = viewModel::onDismissError,
         )
     }
+    controller.registerBottomSheet<ShoppingSheets.ShoppingMove> {
+        state.movingItem?.let { item ->
+            ShoppingMoveBottomSheet(
+                itemName = item.name,
+                targets = state.moveTargets,
+                busy = state.busy || item.id in state.savingItemIds,
+                onMove = { listId -> viewModel.onMoveItem(item, listId) },
+            )
+        }
+    }
     BottomSheetLayout(
         controller = controller,
         dismissEnabled = !state.busy,
@@ -93,6 +104,7 @@ internal fun ShoppingSheetHost(
                 state.showListForm -> viewModel.onCloseListForm()
                 state.showLists -> viewModel.onListsVisibilityChanged(false)
                 state.showFavorites -> viewModel.onFavoritesVisibilityChanged(false)
+                state.movingItem != null -> viewModel.onMoveDismissed()
                 else -> viewModel.onAddSheetVisibilityChanged(false)
             }
         },

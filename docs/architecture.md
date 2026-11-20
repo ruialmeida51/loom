@@ -72,9 +72,9 @@ DataSource operations return `AppResult.Failure(error: AppError)` at the I/O bou
 
 Network request/response classes each have their own file in `data/network/model/request` or `response`. Every wire property declares `@SerialName`. Pure `DomainToRequest` and `ResponseToDomain` mappings live in `data/network/mapper`, separate from DTOs and Common DataSources. Sources receive Supabase access through the composition root; transport tests inject a client using Ktor's MockEngine.
 
-Read streams use `stream()` or a descriptive variant when a port offers several streams, consumed by `Get…StreamUseCase`. Fallible streams expose `Flow<AppResult<T>>`, so realtime errors follow the same typed boundary as writes. Cached session/settings streams expose their current domain state. `GetExpenseLedgerStreamUseCase` owns ledger aggregation; insights builds monthly statements in its own stream use case.
+Read streams use `stream()` or a descriptive variant when a port offers several streams, consumed by `Get…StreamUseCase`. Fallible streams expose `Flow<AppResult<T>>`, so stream errors follow the same typed boundary as writes. Cached session/settings streams expose their current domain state. `GetExpenseLedgerStreamUseCase` owns ledger aggregation; insights builds monthly statements in its own stream use case.
 
- Realtime events invalidate household queries; periodic refresh repairs missed events. Household's data package supplies keyset pagination so the Data API's row cap does not truncate balances.
+ Streams load when collected (a screen opening or pull-to-refresh) and reload after the app's own writes through `SupabaseAccess.write`. There are no realtime subscriptions or polling, to stay within free-tier limits; other members' changes appear on the next load or refresh. Household's data package supplies keyset pagination so the Data API's row cap does not truncate balances.
 
 Money is stored in integer minor units. Equal splits distribute remainder cents in a stable member-ID order; percentages use the largest-remainder method. Database transactions validate active members, share totals, authorship, and idempotency IDs. A positive balance means the member is owed money; recording a repayment decreases that credit and the sender’s debt.
 

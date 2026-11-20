@@ -34,6 +34,20 @@ class ShoppingGroupTest {
     }
 
     @Test
+    fun aLineBelowAnItemTakesTheNextPositionAndJoinsItsGroupLikeTheServer() {
+        val snapshot = snapshot()
+        val new = item(id = "new", position = 99)
+        val belowParent = snapshot.placeBelow(item = new, afterId = parent.id)
+        assertEquals(listOf("new", "bread", "apple", "banana"), belowParent.map { it.id })
+        assertEquals(2L, belowParent.first().position)
+        assertEquals(parent.id, belowParent.first().parentId, "Below a parent it becomes a child")
+        assertEquals(listOf(4L, 5L, 6L), belowParent.drop(1).map { it.position })
+        assertEquals(parent.id, snapshot.placeBelow(item = new, afterId = apple.id).first().parentId)
+        assertNull(snapshot.placeBelow(item = new, afterId = bread.id).first().parentId)
+        assertEquals(listOf(new), snapshot.placeBelow(item = new, afterId = "missing"))
+    }
+
+    @Test
     fun checkingAndMovingAParentChangesTheWholeFamilyButDeletionKeepsChildren() {
         val snapshot = snapshot()
         assertTrue(snapshot.changeGroup(parent.copy(checked = true)).all { it.checked })

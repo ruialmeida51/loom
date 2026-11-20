@@ -26,10 +26,11 @@ import org.jetbrains.compose.resources.stringResource
 fun PendingShoppingItemRow(
     name: String,
     error: TextResource?,
+    indented: Boolean,
     onRetry: () -> Unit,
     onDiscard: () -> Unit,
 ) {
-    Column {
+    Column(Modifier.padding(start = if (indented) ShoppingIndentation else 0.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(
                 checked = false,

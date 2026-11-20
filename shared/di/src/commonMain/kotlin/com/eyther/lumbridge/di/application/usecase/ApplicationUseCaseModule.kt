@@ -6,7 +6,6 @@ import com.eyther.lumbridge.features.authentication.domain.usecase.GetSessionStr
 import com.eyther.lumbridge.features.authentication.domain.usecase.RecoverSessionUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RegisterUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.RequestEmailCodeUseCase
-import com.eyther.lumbridge.features.authentication.domain.usecase.ResumeSessionUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignInWithGoogleUseCase
 import com.eyther.lumbridge.features.authentication.domain.usecase.SignOutUseCase
@@ -20,12 +19,6 @@ import org.koin.core.annotation.Single
 
 @Module
 class ApplicationUseCaseModule {
-
-    @Single
-    fun provideResumeSessionUseCase(
-        authenticationDataSource: AuthenticationDataSource,
-    ): ResumeSessionUseCase =
-        ResumeSessionUseCase(authenticationDataSource = authenticationDataSource)
 
     @Single
     fun provideRecoverSessionUseCase(

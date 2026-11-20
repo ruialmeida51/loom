@@ -74,6 +74,11 @@ class HomeShoppingPreviewTest {
                     items: List<ShoppingItemDomain>,
                 ): AppResult<List<ShoppingItemDomain>> = error("Read-only test")
 
+                override suspend fun insertItemAfter(
+                    item: ShoppingItemDomain,
+                    afterId: String,
+                ): AppResult<List<ShoppingItemDomain>> = error("Read-only test")
+
                 override suspend fun saveItem(
                     item: ShoppingItemDomain,
                 ): AppResult<ShoppingItemDomain> = error("Read-only test")

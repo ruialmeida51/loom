@@ -15,6 +15,7 @@ import com.eyther.lumbridge.features.shopping.generated.resources.list_delete_ti
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingEntryUi
 import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingFavoriteUi
+import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingRowUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
@@ -48,7 +49,11 @@ data class ShoppingState(
     val quantity: String = "",
     val category: String = "Produce",
     val showAdd: Boolean = false,
-    val editing: Boolean = false,
+    val editingItemId: String? = null,
+    val editingName: String = "",
+    val draftAfterId: String? = null,
+    val draftName: String = "",
+    val movingItem: ShoppingItemDomain? = null,
     val showChecked: Boolean = false,
     val showLists: Boolean = false,
     val showFavorites: Boolean = false,
@@ -121,6 +126,35 @@ data class ShoppingState(
                     snapshot.items.none { it.id == entry.item.id }
             }
             .toImmutableList()
+    /**
+     * Unchecked rows in display order. The newest line below a row is closest to it, matching the
+     * server, which always inserts directly below the anchor.
+     */
+    val uncheckedRows: ImmutableList<ShoppingRowUi> = buildList {
+        val anchored = visiblePendingEntries.filter { it.afterId != null }.groupBy { it.afterId }
+        val placed = mutableSetOf<String>()
+        fun addBelow(id: String, indented: Boolean) {
+            if (draftAfterId == id) add(ShoppingRowUi.Draft(indented = indented))
+            anchored[id].orEmpty().asReversed().forEach { entry ->
+                if (placed.add(entry.item.id)) {
+                    add(ShoppingRowUi.Pending(entry = entry, indented = indented))
+                    addBelow(id = entry.item.id, indented = indented)
+                }
+            }
+        }
+        uncheckedItems.forEach { item ->
+            add(ShoppingRowUi.Item(item = item, indented = item.id in indentedItemIds))
+            addBelow(
+                id = item.id,
+                indented = snapshot.placeBelow(item = item, afterId = item.id).first().parentId != null,
+            )
+        }
+        visiblePendingEntries
+            .filter { it.item.id !in placed }
+            .forEach { add(ShoppingRowUi.Pending(entry = it, indented = false)) }
+        if (draftAfterId != null && none { it is ShoppingRowUi.Draft })
+            add(ShoppingRowUi.Draft(indented = false))
+    }.toImmutableList()
     val canAddInline: Boolean =
         inlineName.isNotBlank() && selectedList != null && !busy && !refreshing
     val selectedCompletedItems: ImmutableList<ShoppingItemDomain> =
@@ -129,5 +163,5 @@ data class ShoppingState(
         completedItems.isNotEmpty() && selectedCompletedItems.size == completedItems.size
 
     val moveTargets: ImmutableList<ShoppingListDomain> =
-        activeLists.filterNot { it.id == selectedListId }.toImmutableList()
+        activeLists.filterNot { it.id == (movingItem?.listId ?: selectedListId) }.toImmutableList()
 }

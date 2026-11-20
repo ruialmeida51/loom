@@ -15,7 +15,6 @@ import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.auth.user.UserSession
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
-import io.github.jan.supabase.realtime.Realtime
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpHeaders
@@ -46,7 +45,6 @@ class HouseholdSessionRecoveryTest {
                     autoSetupPlatform = false
                 }
                 install(Postgrest) { requireValidSession = true }
-                install(Realtime)
                 httpEngine = MockEngine { request ->
                     assertEquals("Bearer resumed-token", request.headers[HttpHeaders.Authorization])
                     respond(

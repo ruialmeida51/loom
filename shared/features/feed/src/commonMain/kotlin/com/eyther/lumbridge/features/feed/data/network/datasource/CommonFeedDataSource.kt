@@ -32,7 +32,7 @@ class CommonFeedDataSource(
 
     override fun stream(): Flow<AppResult<List<ArticleDomain>>> {
         return access
-            .watch("feed_articles", context.id) {
+            .watch {
                 selectPage(query = FeedQueryDomain(pageSize = HOME_PREVIEW_SIZE), after = null)
                     .items
             }
@@ -91,7 +91,9 @@ class CommonFeedDataSource(
                     createdBy = context.userId,
                 )
 
-            access.requireClient().from("feed_subscriptions").insert(request)
+            access.write { client ->
+                client.from("feed_subscriptions").insert(request)
+            }
             try {
                 access
                     .requireClient()
@@ -119,7 +121,9 @@ class CommonFeedDataSource(
                     read = read,
                 )
 
-            access.requireClient().from("article_reads").upsert(request)
+            access.write { client ->
+                client.from("article_reads").upsert(request)
+            }
             Unit
         }
     }
