@@ -451,9 +451,10 @@ class UsabilityDeviceTest {
             compose.onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
         }
         compose
-            .onNodeWithContentDescription("Delete task: Water the plants")
+            .onNodeWithContentDescription("Task options: Water the plants")
             .performScrollTo()
             .performClick()
+        compose.onNodeWithText("Delete").performClick()
         compose.onNodeWithTag("confirm_delete_task").assertIsDisplayed()
         capture(name = "task-delete-confirmation")
         pressSystemBack()
