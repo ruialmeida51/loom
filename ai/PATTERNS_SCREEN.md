@@ -12,7 +12,7 @@ The scrollable child owns content padding and IME clearance. Forms retain explic
 
 Render exactly the relevant loading/error/empty/loaded state. A load failure retains prior content;
 initial-load failure must not become an empty success. Explicit refresh shows a short matching skeleton transition while retaining loaded data and drafts underneath.
-Background realtime updates do not remove content. Actions show button/row progress, never skeletons.
+Background reloads after writes do not remove content. Actions show button/row progress, never skeletons.
 
 Transient success uses SuccessSnackbar in the container's snackbarHost; the VM owns its lifetime.
 Existing actionable Undo snackbars retain their action and lifecycle. Persistent errors remain dismissible/retryable.

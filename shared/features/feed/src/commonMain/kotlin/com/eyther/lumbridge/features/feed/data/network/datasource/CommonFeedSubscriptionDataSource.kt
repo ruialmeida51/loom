@@ -27,7 +27,7 @@ class CommonFeedSubscriptionDataSource(
 ) : FeedSubscriptionDataSource {
     override fun stream(): Flow<AppResult<List<FeedSubscriptionDomain>>> =
         access
-            .watch(table = "feed_subscriptions", scopeId = context.id) {
+            .watch {
                 access
                     .selectHouseholdRows<FeedSubscriptionResponse>(
                         table = "feed_subscriptions_with_publisher",
@@ -55,29 +55,32 @@ class CommonFeedSubscriptionDataSource(
             val address = parseFeedUrl(value = url)
             if (address == subscription.url) return@safeApiCall subscription.id
             val replacementId = newId()
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    function = "update_feed_subscription",
-                    parameters =
-                        UpdateFeedSubscriptionRequest(
-                            householdId = context.id,
-                            id = subscription.id,
-                            expectedUrl = subscription.url,
-                            newId = replacementId,
-                            url = address,
-                        ),
-                )
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        function = "update_feed_subscription",
+                        parameters =
+                            UpdateFeedSubscriptionRequest(
+                                householdId = context.id,
+                                id = subscription.id,
+                                expectedUrl = subscription.url,
+                                newId = replacementId,
+                                url = address,
+                            ),
+                    )
+            }
             replacementId
         }
 
     override suspend fun remove(id: String): AppResult<Unit> =
         safeApiCall(mapError = Exception::toFeedError) {
-            access.requireClient().from("feed_subscriptions").delete {
-                filter {
-                    eq("household_id", context.id)
-                    eq("id", id)
+            access.write { client ->
+                client.from("feed_subscriptions").delete {
+                    filter {
+                        eq("household_id", context.id)
+                        eq("id", id)
+                    }
                 }
             }
             Unit

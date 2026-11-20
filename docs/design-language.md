@@ -63,7 +63,7 @@ records the comparisons and [redesign brief](plans/redesign-research-brief.md) r
 - Show matching skeletons during first load and explicit refresh. Sections can become useful
   independently; shopping or optional news must not hold tasks behind a page-wide skeleton.
 - Pull-to-refresh briefly shows matching skeletons, with a single approximately 300 ms minimum transition. Retain the existing data, selection, draft and scroll underneath.
-  Realtime/polling changes remain silent. A failed refresh keeps prior content and an actionable error.
+  Reloads after the app's own writes remain silent; there are no live or polled updates. A failed refresh keeps prior content and an actionable error.
 - Apply Plannot's monotonic helper once for initial/explicit loading only. Resume and background updates never add a timing floor.
 - Mutation progress belongs to its button/row, never a page skeleton. Confirm successful recurring
   task completion with a transient snackbar even when the next occurrence remains visible.
@@ -131,7 +131,7 @@ Core owns only generic layout, tokens, input, motion and sheet infrastructure. F
 forms, rows, prepared display values, errors and business models. Hosts connect typed navigation,
 ViewModels and sheets. Preview fixtures/ports stay in `app/demo`.
 
-Use stable item keys and immutable presentation collections. Serialize realtime reads and suppress
+Use stable item keys and immutable presentation collections. Serialize stream reloads and suppress
 equal snapshots; stale responses must not undo acknowledged shopping changes. Shimmer reads its
 animation in drawing rather than recomposing its entire skeleton every frame.
 

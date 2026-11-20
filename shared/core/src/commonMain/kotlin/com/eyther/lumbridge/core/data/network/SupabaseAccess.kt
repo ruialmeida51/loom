@@ -1,24 +1,15 @@
 package com.eyther.lumbridge.core.data.network
 
 import com.eyther.lumbridge.core.domain.errors.CommonError
-import com.eyther.lumbridge.core.domain.newId
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.realtime.PostgresAction
-import io.github.jan.supabase.realtime.channel
-import io.github.jan.supabase.realtime.postgresChangeFlow
-import io.github.jan.supabase.realtime.realtime
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
 
 class SupabaseAccess(
     val client: SupabaseClient?,
@@ -42,49 +33,31 @@ class SupabaseAccess(
     }
 
     /**
-     * RLS authorizes rows. Realtime invalidates this query; periodic reload also repairs missed
-     * events.
+     * Writes made through this app. Each one reloads the streams that are currently open once,
+     * so a list reflects changes saved on another screen without live server subscriptions.
      */
-    fun <T> watch(table: String, scopeId: String, load: suspend () -> T): Flow<T> = channelFlow {
+    private val localWrites =
+        MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    /** Runs a server write; on success every open [watch] reloads once. */
+    suspend fun <T> write(action: suspend (SupabaseClient) -> T): T =
+        action(requireClient()).also { localWrites.tryEmit(Unit) }
+
+    /**
+     * RLS authorizes rows. Loads when collection starts (a screen opening or a pull-to-refresh
+     * re-collecting) and after this app's own writes. There are no live server subscriptions or
+     * polling: other members' changes appear on the next screen load or refresh.
+     */
+    fun <T> watch(load: suspend () -> T): Flow<T> = channelFlow {
         val client = requireClient()
-        send(client.readAuthenticated(action = load))
-        val invalidations = Channel<Unit>(capacity = Channel.CONFLATED)
-        val channel = client.channel("loom-$table-$scopeId-${newId()}")
-        val changes =
-            channel.postgresChangeFlow<PostgresAction>(schema = "public") {
-                this.table = table
-            }
-        val listener = launch { changes.collect { invalidations.trySend(Unit) } }
-        val subscription = launch {
-            try {
-                channel.subscribe()
-                // Repair changes between the initial read and subscription becoming ready.
-                invalidations.trySend(Unit)
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Exception) {
-                // Polling still refreshes authoritative data if realtime is unavailable.
-            }
-        }
-        val poller = launch {
-            while (isActive) {
-                delay(30_000)
-                invalidations.trySend(Unit)
-            }
-        }
+        val reloads = Channel<Unit>(capacity = Channel.CONFLATED)
+        val listener = launch { localWrites.collect { reloads.trySend(Unit) } }
         try {
+            send(client.readAuthenticated(action = load))
             // One reader serializes reloads; a slower older response cannot replace a newer one.
-            for (invalidation in invalidations) {
-                send(client.readAuthenticated(action = load))
-            }
+            for (reload in reloads) send(client.readAuthenticated(action = load))
         } finally {
             listener.cancel()
-            subscription.cancel()
-            poller.cancel()
-            invalidations.close()
-            withContext(NonCancellable) {
-                withTimeoutOrNull(2_000L) { client.realtime.removeChannel(channel) }
-            }
         }
     }
         .distinctUntilChanged()

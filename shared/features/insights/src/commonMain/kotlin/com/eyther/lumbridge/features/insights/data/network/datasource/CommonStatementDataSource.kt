@@ -23,7 +23,9 @@ class CommonStatementDataSource(
                     month = "$month-01",
                 )
 
-            access.requireClient().postgrest.rpc("save_account_statement", request)
+            access.write { client ->
+                client.postgrest.rpc("save_account_statement", request)
+            }
             Unit
         }
     }

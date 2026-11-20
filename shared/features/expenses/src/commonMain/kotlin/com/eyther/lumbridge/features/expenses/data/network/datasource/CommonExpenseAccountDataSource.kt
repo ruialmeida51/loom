@@ -40,7 +40,7 @@ class CommonExpenseAccountDataSource(
     override fun stream(): Flow<AppResult<List<ExpenseAccountDomain>>> =
         changes
             .flatMapLatest {
-                access.watch(table = "expense_accounts", scopeId = context.id) {
+                access.watch {
                     val cacheKey = "${access.userId()}:${context.id}"
                     access
                         .requireClient()
@@ -78,10 +78,11 @@ class CommonExpenseAccountDataSource(
         account: ExpenseAccountDomain,
     ): AppResult<ExpenseAccountDomain> =
         safeApiCall(mapError = Exception::toExpenseError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc("save_expense_account", account.toRequest(householdId = context.id))
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("save_expense_account", account.toRequest(householdId = context.id))
+            }
             val saved = loadAccount(id = account.id)
             accounts.clear()
             changes.update { oldVersion -> oldVersion + 1 }
@@ -103,17 +104,18 @@ class CommonExpenseAccountDataSource(
 
     override suspend fun deleteAccount(account: ExpenseAccountDomain): AppResult<Unit> =
         safeApiCall(mapError = Exception::toExpenseError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    "delete_expense_account",
-                    DeleteExpenseAccountRequest(
-                        householdId = context.id,
-                        id = account.id,
-                        version = account.version,
-                    ),
-                )
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        "delete_expense_account",
+                        DeleteExpenseAccountRequest(
+                            householdId = context.id,
+                            id = account.id,
+                            version = account.version,
+                        ),
+                    )
+            }
             if (selectedId.value == account.id) {
                 PlatformStorage.put(selectionKey, context.id)
                 selectedId.value = context.id

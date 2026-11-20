@@ -27,7 +27,7 @@ class CommonRecurringExpenseDataSource(
 
     override fun stream(accountId: String): Flow<AppResult<List<RecurringExpenseDomain>>> {
         return access
-            .watch("recurring_expenses", context.id) {
+            .watch {
                 access
                     .requireClient()
                     .from("recurring_expenses")
@@ -62,27 +62,29 @@ class CommonRecurringExpenseDataSource(
 
     override suspend fun save(rule: RecurringExpenseDomain): AppResult<RecurringExpenseDomain> =
         safeApiCall(mapError = Exception::toExpenseError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc("save_recurring_expense", rule.toSaveRequest(householdId = context.id))
-                .decodeAs<RecurringExpenseResponse>()
-                .toDomain()
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("save_recurring_expense", rule.toSaveRequest(householdId = context.id))
+                    .decodeAs<RecurringExpenseResponse>()
+                    .toDomain()
+            }
         }
 
     override suspend fun delete(rule: RecurringExpenseDomain): AppResult<Unit> =
         safeApiCall(mapError = Exception::toExpenseError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    "delete_recurring_expense",
-                    DeleteRecurringExpenseRequest(
-                        householdId = context.id,
-                        id = rule.id,
-                        version = rule.version,
-                    ),
-                )
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        "delete_recurring_expense",
+                        DeleteRecurringExpenseRequest(
+                            householdId = context.id,
+                            id = rule.id,
+                            version = rule.version,
+                        ),
+                    )
+            }
             Unit
         }
 
@@ -101,12 +103,13 @@ class CommonRecurringExpenseDataSource(
                     version = rule.version,
                 )
 
-            access
-                .requireClient()
-                .postgrest
-                .rpc("control_recurring_expense", request)
-                .decodeAs<RecurringExpenseResponse>()
-                .toDomain()
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("control_recurring_expense", request)
+                    .decodeAs<RecurringExpenseResponse>()
+                    .toDomain()
+            }
         }
     }
 }

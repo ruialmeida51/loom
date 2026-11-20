@@ -5,6 +5,8 @@
 - Tap a shopping item to edit it in place; the keyboard arrow adds the next item right below it.
 - Shorter item menu, with one Move to another list option.
 - Smoother sign-in recovery after long device sleep.
+- Lists refresh when opened or pulled down, using less data and battery.
+- Shorter confirmation messages.
 
 ## [4.0.13] - 2026-11-19
 

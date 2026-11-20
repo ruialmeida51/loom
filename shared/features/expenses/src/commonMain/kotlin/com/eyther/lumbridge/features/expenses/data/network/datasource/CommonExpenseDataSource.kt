@@ -27,7 +27,7 @@ class CommonExpenseDataSource(
 ) : ExpenseDataSource {
     override fun streamExpenses(accountId: String): Flow<AppResult<List<ExpenseDomain>>> =
         access
-            .watch(table = "expenses", scopeId = context.id) {
+            .watch {
                 access
                     .requireClient()
                     .from("account_expenses_with_shares")
@@ -44,7 +44,7 @@ class CommonExpenseDataSource(
 
     override fun streamSettlements(accountId: String): Flow<AppResult<List<SettlementDomain>>> =
         access
-            .watch(table = "settlements", scopeId = context.id) {
+            .watch {
                 access
                     .requireClient()
                     .from("settlements")
@@ -93,10 +93,11 @@ class CommonExpenseDataSource(
 
     override suspend fun saveExpense(expense: ExpenseDomain): AppResult<Unit> =
         safeApiCall(mapError = Exception::toExpenseError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc("save_account_expense", expense.toRequest(householdId = context.id))
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("save_account_expense", expense.toRequest(householdId = context.id))
+            }
             Unit
         }
 
@@ -109,43 +110,48 @@ class CommonExpenseDataSource(
                     id = expense.id,
                     version = expense.version,
                 )
-            access.requireClient().postgrest.rpc("delete_account_expense", request)
+            access.write { client ->
+                client.postgrest.rpc("delete_account_expense", request)
+            }
             Unit
         }
 
     override suspend fun recordSettlement(settlement: SettlementDomain): AppResult<Unit> =
         safeApiCall(mapError = Exception::toExpenseError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc("record_account_settlement", settlement.toRequest(householdId = context.id))
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("record_account_settlement", settlement.toRequest(householdId = context.id))
+            }
             Unit
         }
 
     override suspend fun saveSettlement(settlement: SettlementDomain): AppResult<SettlementDomain> =
         safeApiCall(mapError = Exception::toExpenseError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    "save_account_settlement",
-                    settlement.toSaveRequest(householdId = context.id),
-                ) {
-                    single()
-                }
-                .decodeAs<SettlementResponse>()
-                .toDomain()
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        "save_account_settlement",
+                        settlement.toSaveRequest(householdId = context.id),
+                    ) {
+                        single()
+                    }
+                    .decodeAs<SettlementResponse>()
+                    .toDomain()
+            }
         }
 
     override suspend fun removeSettlement(settlement: SettlementDomain): AppResult<Unit> =
         safeApiCall(mapError = Exception::toExpenseError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    "delete_account_settlement",
-                    settlement.toRemoveRequest(householdId = context.id),
-                )
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        "delete_account_settlement",
+                        settlement.toRemoveRequest(householdId = context.id),
+                    )
+            }
             Unit
         }
 }

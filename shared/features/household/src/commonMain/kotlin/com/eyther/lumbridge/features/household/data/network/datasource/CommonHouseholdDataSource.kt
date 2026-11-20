@@ -46,7 +46,7 @@ class CommonHouseholdDataSource(
 
     override fun streamHouseholds(): Flow<AppResult<List<HouseholdDomain>>> =
         access
-            .watch(table = "household_members", scopeId = "households") {
+            .watch {
                 access
                     .requireClient()
                     .from("households")
@@ -58,7 +58,7 @@ class CommonHouseholdDataSource(
 
     override fun streamMemberHistory(householdId: String): Flow<AppResult<List<MemberDomain>>> =
         access
-            .watch(table = "household_members", scopeId = householdId) {
+            .watch {
                 loadMemberHistory(householdId = householdId)
             }
             .asApiResult(mapError = Exception::toHouseholdError, retryTransientFailures = true)
@@ -91,7 +91,9 @@ class CommonHouseholdDataSource(
                     timeZone = timeZone,
                 )
             val id =
-                access.requireClient().postgrest.rpc("create_household", request).decodeAs<String>()
+                access.write { client ->
+                    client.postgrest.rpc("create_household", request).decodeAs<String>()
+                }
 
             HouseholdDomain(
                 id = id,
@@ -108,12 +110,13 @@ class CommonHouseholdDataSource(
         ) {
             val request = JoinHouseholdRequest(token = token)
 
-            access
-                .requireClient()
-                .postgrest
-                .rpc("redeem_household_invitation", request)
-                .decodeAs<JoinHouseholdResponse>()
-                .requireJoined()
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("redeem_household_invitation", request)
+                    .decodeAs<JoinHouseholdResponse>()
+                    .requireJoined()
+            }
         }
     }
 
@@ -123,7 +126,7 @@ class CommonHouseholdDataSource(
         val userId = access.userId()
         emitAll(
             profileDataSource.stream(userId = userId).flatMapLatest {
-                access.watch(table = "profiles", scopeId = householdId) {
+                access.watch {
                     loadMembers(householdId = householdId)
                 }
             },
@@ -156,10 +159,11 @@ class CommonHouseholdDataSource(
 
     override suspend fun revokeInvitation(householdId: String): AppResult<Unit> =
         safeApiCall(mapError = Exception::toHouseholdError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc("revoke_household_invitation", HouseholdRequest(householdId = householdId))
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("revoke_household_invitation", HouseholdRequest(householdId = householdId))
+            }
             Unit
         }
 
@@ -169,11 +173,12 @@ class CommonHouseholdDataSource(
         ) {
             val request = HouseholdRequest(householdId = householdId)
 
-            access
-                .requireClient()
-                .postgrest
-                .rpc("create_short_household_invitation", request)
-                .decodeAs<String>()
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("create_short_household_invitation", request)
+                    .decodeAs<String>()
+            }
         }
     }
 }

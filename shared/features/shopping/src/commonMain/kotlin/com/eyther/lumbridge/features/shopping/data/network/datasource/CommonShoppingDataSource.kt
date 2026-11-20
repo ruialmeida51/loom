@@ -34,12 +34,12 @@ class CommonShoppingDataSource(
 
     override fun stream(): Flow<AppResult<ShoppingSnapshotDomain>> {
         return combine(
-                access.watch("shopping_lists", context.id) {
+                access.watch {
                     access
                         .selectHouseholdRows<ShoppingListResponse>("shopping_lists", context.id)
                         .map { it.toDomain() }
                 },
-                access.watch("shopping_items", context.id) {
+                access.watch {
                     access
                         .selectHouseholdRows<ShoppingItemResponse>("shopping_items", context.id)
                         .map { it.toDomain() }
@@ -62,12 +62,13 @@ class CommonShoppingDataSource(
                     items = items.map { it.toAddRequest() },
                 )
 
-            access
-                .requireClient()
-                .postgrest
-                .rpc("add_shopping_items", request)
-                .decodeList<ShoppingItemResponse>()
-                .map { it.toDomain() }
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("add_shopping_items", request)
+                    .decodeList<ShoppingItemResponse>()
+                    .map { it.toDomain() }
+            }
         }
     }
 
@@ -82,12 +83,13 @@ class CommonShoppingDataSource(
                     item = item.toAddRequest(),
                     afterId = afterId,
                 )
-            access
-                .requireClient()
-                .postgrest
-                .rpc("insert_shopping_item_after", request)
-                .decodeList<ShoppingItemResponse>()
-                .map { it.toDomain() }
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("insert_shopping_item_after", request)
+                    .decodeList<ShoppingItemResponse>()
+                    .map { it.toDomain() }
+            }
         }
 
     override suspend fun saveItem(item: ShoppingItemDomain): AppResult<ShoppingItemDomain> {
@@ -96,12 +98,13 @@ class CommonShoppingDataSource(
         ) {
             val request = item.toRequest(householdId = context.id)
 
-            access
-                .requireClient()
-                .postgrest
-                .rpc("save_shopping_item", request)
-                .decodeAs<ShoppingItemResponse>()
-                .toDomain()
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("save_shopping_item", request)
+                    .decodeAs<ShoppingItemResponse>()
+                    .toDomain()
+            }
         }
     }
 
@@ -109,18 +112,19 @@ class CommonShoppingDataSource(
         items: List<ShoppingItemDomain>,
     ): AppResult<List<ShoppingItemDomain>> =
         safeApiCall(mapError = Exception::toShoppingError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    "save_shopping_group",
-                    SaveShoppingGroupRequest(
-                        householdId = context.id,
-                        items = items.map { it.toGroupRequest() },
-                    ),
-                )
-                .decodeList<ShoppingItemResponse>()
-                .map { it.toDomain() }
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        "save_shopping_group",
+                        SaveShoppingGroupRequest(
+                            householdId = context.id,
+                            items = items.map { it.toGroupRequest() },
+                        ),
+                    )
+                    .decodeList<ShoppingItemResponse>()
+                    .map { it.toDomain() }
+            }
         }
 
     override suspend fun saveList(list: ShoppingListDomain): AppResult<ShoppingListDomain> {
@@ -129,12 +133,13 @@ class CommonShoppingDataSource(
         ) {
             val request = list.toRequest(householdId = context.id)
 
-            access
-                .requireClient()
-                .postgrest
-                .rpc("save_shopping_list", request)
-                .decodeAs<ShoppingListResponse>()
-                .toDomain()
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("save_shopping_list", request)
+                    .decodeAs<ShoppingListResponse>()
+                    .toDomain()
+            }
         }
     }
 
@@ -148,27 +153,29 @@ class CommonShoppingDataSource(
                     listId = items.first().listId,
                     versions = items.associate { it.id to it.version },
                 )
-            access
-                .requireClient()
-                .postgrest
-                .rpc("remove_completed_shopping_group", request)
-                .decodeList<ShoppingItemResponse>()
-                .map { it.toDomain() }
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc("remove_completed_shopping_group", request)
+                    .decodeList<ShoppingItemResponse>()
+                    .map { it.toDomain() }
+            }
         }
 
     override suspend fun deleteList(list: ShoppingListDomain): AppResult<Unit> =
         safeApiCall(mapError = Exception::toShoppingError) {
-            access
-                .requireClient()
-                .postgrest
-                .rpc(
-                    "delete_shopping_list",
-                    DeleteShoppingListRequest(
-                        householdId = context.id,
-                        id = list.id,
-                        version = list.version,
-                    ),
-                )
+            access.write { client ->
+                client
+                    .postgrest
+                    .rpc(
+                        "delete_shopping_list",
+                        DeleteShoppingListRequest(
+                            householdId = context.id,
+                            id = list.id,
+                            version = list.version,
+                        ),
+                    )
+            }
             Unit
         }
 }

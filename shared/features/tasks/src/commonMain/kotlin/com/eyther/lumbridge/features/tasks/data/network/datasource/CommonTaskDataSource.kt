@@ -25,7 +25,7 @@ class CommonTaskDataSource(
 
     override fun stream(): Flow<AppResult<List<TaskDomain>>> {
         return access
-            .watch("tasks", context.id) {
+            .watch {
                 access.selectHouseholdRows<TaskResponse>("tasks", context.id).map {
                     it.toDomain()
                 }
@@ -39,7 +39,9 @@ class CommonTaskDataSource(
         ) {
             val request = task.toRequest(householdId = context.id, userId = context.userId)
 
-            access.requireClient().from("tasks").insert(request)
+            access.write { client ->
+                client.from("tasks").insert(request)
+            }
             Unit
         }
     }
@@ -55,7 +57,9 @@ class CommonTaskDataSource(
                     expectedDueAt = task.dueAt?.toString(),
                 )
 
-            access.requireClient().postgrest.rpc("complete_task", request)
+            access.write { client ->
+                client.postgrest.rpc("complete_task", request)
+            }
             Unit
         }
     }
@@ -64,10 +68,12 @@ class CommonTaskDataSource(
         return safeApiCall(
             mapError = Exception::toTaskError,
         ) {
-            access.requireClient().from("tasks").delete {
-                filter {
-                    eq("id", id)
-                    eq("household_id", context.id)
+            access.write { client ->
+                client.from("tasks").delete {
+                    filter {
+                        eq("id", id)
+                        eq("household_id", context.id)
+                    }
                 }
             }
             Unit
