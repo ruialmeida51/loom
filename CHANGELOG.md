@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.14] - 2026-11-20
+
 - Tap a shopping item to edit it in place; the keyboard arrow adds the next item right below it.
 - Shorter item menu, with one Move to another list option.
 - Smoother sign-in recovery after long device sleep.
