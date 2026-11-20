@@ -33,4 +33,5 @@ internal fun ShoppingListDomain.toRequest(householdId: String): SaveShoppingList
     name = name,
     archived = archived,
     version = version,
+    icon = icon.key,
 )

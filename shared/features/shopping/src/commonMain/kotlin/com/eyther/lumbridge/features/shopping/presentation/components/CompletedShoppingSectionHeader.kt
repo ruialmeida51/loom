@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,6 +35,7 @@ internal fun CompletedShoppingSectionHeader(
     busy: Boolean,
     onExpanded: (Boolean) -> Unit,
     onSelecting: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val expansionState =
         stringResource(
@@ -45,10 +45,9 @@ internal fun CompletedShoppingSectionHeader(
         stringResource(
             if (selecting) Res.string.completed_cancel_selection else Res.string.completed_select,
         )
-    Column {
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+    Column(modifier = modifier) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(top = LoomSpacing.small),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             SelectorButton(

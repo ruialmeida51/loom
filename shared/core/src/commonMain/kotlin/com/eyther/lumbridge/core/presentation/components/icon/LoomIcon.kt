@@ -17,6 +17,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.generated.resources.Res
 import com.eyther.lumbridge.core.generated.resources.icon_add
+import com.eyther.lumbridge.core.generated.resources.icon_health
+import com.eyther.lumbridge.core.generated.resources.icon_pets
+import com.eyther.lumbridge.core.generated.resources.icon_travel
+import com.eyther.lumbridge.core.generated.resources.icon_gift
+import com.eyther.lumbridge.core.generated.resources.icon_produce
+import com.eyther.lumbridge.core.generated.resources.icon_cart
 import com.eyther.lumbridge.core.generated.resources.icon_bell
 import com.eyther.lumbridge.core.generated.resources.icon_calendar
 import com.eyther.lumbridge.core.generated.resources.icon_delete
@@ -66,6 +72,13 @@ fun LoomIcon(
                 Glyph.DELETE -> Res.string.icon_delete
                 Glyph.LOG_OUT -> Res.string.icon_log_out
                 Glyph.CHEVRON_DOWN -> Res.string.icon_expand
+                Glyph.CHEVRON_RIGHT -> Res.string.icon_next
+                Glyph.CART -> Res.string.icon_cart
+                Glyph.LEAF -> Res.string.icon_produce
+                Glyph.GIFT -> Res.string.icon_gift
+                Glyph.PLANE -> Res.string.icon_travel
+                Glyph.PAW -> Res.string.icon_pets
+                Glyph.HEART -> Res.string.icon_health
             },
         )
     Canvas(
@@ -139,6 +152,10 @@ fun LoomIcon(
             Glyph.CHEVRON_DOWN -> {
                 line(7f, 10f, 12f, 15f)
                 line(12f, 15f, 17f, 10f)
+            }
+            Glyph.CHEVRON_RIGHT -> {
+                line(10f, 7f, 15f, 12f)
+                line(15f, 12f, 10f, 17f)
             }
             Glyph.LOG_OUT -> {
                 line(10f, 4f, 4f, 4f)
@@ -299,6 +316,73 @@ fun LoomIcon(
             Glyph.CHECK -> {
                 line(5f, 12f, 10f, 17f)
                 line(10f, 17f, 19f, 7f)
+            }
+            Glyph.CART -> {
+                line(2f, 4f, 5f, 4f)
+                line(5f, 4f, 7.5f, 15f)
+                line(7.5f, 15f, 18f, 15f)
+                line(18f, 15f, 20.5f, 7f)
+                line(20.5f, 7f, 6f, 7f)
+                drawCircle(tint, 1.5f * s, Offset(9 * s, 19.5f * s))
+                drawCircle(tint, 1.5f * s, Offset(17 * s, 19.5f * s))
+            }
+            Glyph.LEAF -> {
+                val leaf =
+                    Path().apply {
+                        moveTo(5 * s, 19 * s)
+                        cubicTo(4 * s, 10 * s, 10 * s, 4 * s, 20 * s, 4 * s)
+                        cubicTo(20 * s, 14 * s, 14 * s, 20 * s, 5 * s, 19 * s)
+                        close()
+                    }
+                drawPath(leaf, tint, style = Stroke(1.7f * s))
+                line(5f, 19f, 14f, 10f)
+            }
+            Glyph.GIFT -> {
+                drawRoundRect(
+                    tint,
+                    Offset(4 * s, 10 * s),
+                    Size(16 * s, 11 * s),
+                    androidx.compose.ui.geometry.CornerRadius(1.5f * s),
+                    style = Stroke(1.7f * s),
+                )
+                line(3f, 7f, 21f, 7f)
+                line(3f, 7f, 3f, 10f)
+                line(21f, 7f, 21f, 10f)
+                line(3f, 10f, 21f, 10f)
+                line(12f, 7f, 12f, 21f)
+                drawArc(tint, 180f, 180f, false, Offset(7 * s, 3 * s), Size(5 * s, 8 * s), style = Stroke(1.7f * s))
+                drawArc(tint, 180f, 180f, false, Offset(12 * s, 3 * s), Size(5 * s, 8 * s), style = Stroke(1.7f * s))
+            }
+            Glyph.PLANE -> {
+                val plane =
+                    Path().apply {
+                        moveTo(2 * s, 13 * s)
+                        lineTo(21 * s, 5 * s)
+                        lineTo(16 * s, 20 * s)
+                        lineTo(11 * s, 14 * s)
+                        close()
+                    }
+                drawPath(plane, tint, style = Stroke(1.7f * s))
+                line(11f, 14f, 21f, 5f)
+            }
+            Glyph.PAW -> {
+                drawCircle(tint, 1.8f * s, Offset(6 * s, 10 * s), style = Stroke(1.7f * s))
+                drawCircle(tint, 1.8f * s, Offset(10 * s, 6 * s), style = Stroke(1.7f * s))
+                drawCircle(tint, 1.8f * s, Offset(14 * s, 6 * s), style = Stroke(1.7f * s))
+                drawCircle(tint, 1.8f * s, Offset(18 * s, 10 * s), style = Stroke(1.7f * s))
+                drawOval(tint, Offset(7.5f * s, 12 * s), Size(9 * s, 8 * s), style = Stroke(1.7f * s))
+            }
+            Glyph.HEART -> {
+                val heart =
+                    Path().apply {
+                        moveTo(12 * s, 20 * s)
+                        cubicTo(4 * s, 14 * s, 2 * s, 10 * s, 4 * s, 7 * s)
+                        cubicTo(6 * s, 4 * s, 10 * s, 4 * s, 12 * s, 8 * s)
+                        cubicTo(14 * s, 4 * s, 18 * s, 4 * s, 20 * s, 7 * s)
+                        cubicTo(22 * s, 10 * s, 20 * s, 14 * s, 12 * s, 20 * s)
+                        close()
+                    }
+                drawPath(heart, tint, style = Stroke(1.7f * s))
             }
         }
     }

@@ -37,26 +37,28 @@ internal fun loomTypography(): Typography {
             lineHeight: Int,
             weight: FontWeight,
             family: FontFamily = body,
+            tracking: Double = 0.0,
         ): TextStyle =
             TextStyle(
                 fontFamily = family,
                 fontSize = size.sp,
                 lineHeight = lineHeight.sp,
                 fontWeight = weight,
-                letterSpacing = 0.sp,
+                letterSpacing = tracking.sp,
                 fontFeatureSettings = "tnum",
             )
         Typography(
-            displayLarge = style(36, 44, FontWeight.SemiBold, heading),
-            displayMedium = style(32, 40, FontWeight.SemiBold, heading),
-            displaySmall = style(28, 36, FontWeight.SemiBold, heading),
+            // Amounts and page titles: Space Grotesk, tightened slightly at large sizes.
+            displayLarge = style(44, 48, FontWeight.SemiBold, heading, tracking = -1.0),
+            displayMedium = style(36, 42, FontWeight.SemiBold, heading, tracking = -0.8),
+            displaySmall = style(30, 36, FontWeight.SemiBold, heading, tracking = -0.5),
             headlineLarge = style(28, 36, FontWeight.SemiBold, heading),
             headlineMedium = style(24, 32, FontWeight.SemiBold, heading),
             headlineSmall = style(22, 28, FontWeight.SemiBold, heading),
             titleLarge = style(20, 26, FontWeight.SemiBold, heading),
             titleMedium = style(16, 22, FontWeight.SemiBold),
             titleSmall = style(14, 20, FontWeight.SemiBold),
-            bodyLarge = style(15, 22, FontWeight.Normal),
+            bodyLarge = style(16, 22, FontWeight.Normal),
             bodyMedium = style(14, 20, FontWeight.Normal),
             bodySmall = style(12, 18, FontWeight.Normal),
             labelLarge = style(14, 20, FontWeight.Medium),

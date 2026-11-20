@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +16,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.CheckCircle
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.resources.TextResource
@@ -70,10 +72,11 @@ fun ShoppingItemRow(
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Checkbox(
+            CheckCircle(
                 checked = if (selectionMode) selected else item.checked,
                 onCheckedChange = { if (selectionMode) onSelect() else onToggle(item) },
                 enabled = !busy,
+                square = selectionMode,
                 modifier =
                     Modifier.size(48.dp).testTag("check_${item.name}").semantics {
                         contentDescription = item.name
@@ -114,7 +117,13 @@ fun ShoppingItemRow(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                 }
-            if (item.favorite) Text(text = "★", color = MaterialTheme.colorScheme.primary)
+            if (item.favorite)
+                LoomIcon(
+                    glyph = Glyph.STAR,
+                    tint = MaterialTheme.colorScheme.primary,
+                    decorative = true,
+                    modifier = Modifier.size(16.dp),
+                )
             if (!selectionMode)
                 ActionMenu(
                     contentDescription = stringResource(Res.string.ui_item_options, item.name),

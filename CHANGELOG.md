@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+- A fresh look: calmer colours, rounder cards, clearer headings and member colours.
+- Give each shopping list an icon, and switch lists from chips above the items.
+- Round checkboxes, and items and tasks grouped into single cards.
+- Tasks grouped by Overdue, Today, Tomorrow, Later and Anytime; delete moved into each task's menu.
+- Home shows groceries as chips with a count of the rest.
+- Expenses and Balances switch with a segmented control.
+- Compact snackbars that clear sooner and can be swiped away.
+
 ## [4.0.14] - 2026-11-20
 
 - Tap a shopping item to edit it in place; the keyboard arrow adds the next item right below it.

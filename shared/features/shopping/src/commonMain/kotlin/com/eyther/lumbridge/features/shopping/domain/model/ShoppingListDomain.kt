@@ -8,6 +8,7 @@ data class ShoppingListDomain(
     val name: String,
     val archived: Boolean = false,
     val version: Long = 0,
+    val icon: ShoppingListIconDomain = ShoppingListIconDomain.BAG,
 ) {
 
     fun validated(): ShoppingListDomain {

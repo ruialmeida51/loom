@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
@@ -31,6 +33,6 @@ internal fun HomeTaskRow(task: HomeTaskUi, onClick: () -> Unit) {
             Text(task.title, style = MaterialTheme.typography.titleMedium)
             task.date?.let { TaskDueDate(date = it) }
         }
-        LoomIcon(glyph = Glyph.ARROW, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        LoomIcon(glyph = Glyph.CHEVRON_RIGHT, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(18.dp))
     }
 }

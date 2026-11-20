@@ -9,4 +9,5 @@ internal data class ShoppingListResponse(
     @SerialName("name") val name: String,
     @SerialName("archived") val archived: Boolean,
     @SerialName("version") val version: Long,
+    @SerialName("icon") val icon: String? = null,
 )

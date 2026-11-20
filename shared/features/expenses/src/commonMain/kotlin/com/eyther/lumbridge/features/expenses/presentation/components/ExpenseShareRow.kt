@@ -9,7 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.eyther.lumbridge.core.presentation.components.PersonAvatar
+import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
@@ -27,15 +27,7 @@ internal fun ExpenseShareRow(share: ExpenseShareUi) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
     ) {
-        PersonAvatar(
-            initials = share.initials,
-            containerColor =
-                if (share.isPayer) LoomColors.positiveContainer
-                else MaterialTheme.colorScheme.secondaryContainer,
-            contentColor =
-                if (share.isPayer) LoomColors.onPositiveContainer
-                else MaterialTheme.colorScheme.onSecondaryContainer,
-        )
+        MemberAvatar(memberId = share.id, initials = share.initials)
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),

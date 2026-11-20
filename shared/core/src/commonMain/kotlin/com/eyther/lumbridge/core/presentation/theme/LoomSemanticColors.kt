@@ -5,25 +5,65 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-/** Semantic feedback roles supplement Material's error roles; text must still explain the state. */
+/**
+ * Semantic roles beyond Material's: owed/positive feedback, card edges, snackbars and the stable
+ * colours that tell household members apart. Text must still explain any state colour shows.
+ */
 @Immutable
 internal data class LoomSemanticColors(
     val positive: Color,
     val positiveContainer: Color,
     val onPositiveContainer: Color,
+    val cardBorder: Color,
+    val cardShadow: Boolean,
+    val snackbar: Color,
+    val onSnackbar: Color,
+    val snackbarAction: Color,
+    val members: List<Color>,
+    val onMember: Color,
 )
 
 internal val LoomLightSemanticColors =
     LoomSemanticColors(
-        positive = Color(0xFF21643E),
-        positiveContainer = Color(0xFFD6F2DF),
-        onPositiveContainer = Color(0xFF102D1D),
+        positive = Color(0xFF1E6B57),
+        positiveContainer = Color(0xFFE2F0EB),
+        onPositiveContainer = Color(0xFF164F40),
+        cardBorder = Color.Transparent,
+        cardShadow = true,
+        snackbar = Color(0xFF1B1A17),
+        onSnackbar = Color(0xFFF5F3EE),
+        snackbarAction = Color(0xFF9FE3CC),
+        members =
+            listOf(
+                Color(0xFF1E6B57),
+                Color(0xFFB4651E),
+                Color(0xFF6A58B0),
+                Color(0xFF2E6FA8),
+                Color(0xFFA33D6E),
+                Color(0xFF5E6B1F),
+            ),
+        onMember = Color(0xFFFFFFFF),
     )
 internal val LoomDarkSemanticColors =
     LoomSemanticColors(
-        positive = Color(0xFF8CD7AA),
-        positiveContainer = Color(0xFF173D29),
-        onPositiveContainer = Color(0xFFD6F2DF),
+        positive = Color(0xFF6FD0B0),
+        positiveContainer = Color(0xFF1C3A31),
+        onPositiveContainer = Color(0xFF9FE3CC),
+        cardBorder = Color(0xFF2B2A26),
+        cardShadow = false,
+        snackbar = Color(0xFF33322E),
+        onSnackbar = Color(0xFFEDEAE3),
+        snackbarAction = Color(0xFF6FD0B0),
+        members =
+            listOf(
+                Color(0xFF6FD0B0),
+                Color(0xFFE9A367),
+                Color(0xFFAFA2EA),
+                Color(0xFF8CB8E6),
+                Color(0xFFE59BC0),
+                Color(0xFFC2CF7A),
+            ),
+        onMember = Color(0xFF121211),
     )
 internal val LocalLoomSemanticColors = staticCompositionLocalOf { LoomLightSemanticColors }
 
@@ -36,4 +76,32 @@ object LoomColors {
 
     val onPositiveContainer: Color
         @Composable get() = LocalLoomSemanticColors.current.onPositiveContainer
+
+    val cardBorder: Color
+        @Composable get() = LocalLoomSemanticColors.current.cardBorder
+
+    val cardShadow: Boolean
+        @Composable get() = LocalLoomSemanticColors.current.cardShadow
+
+    val snackbar: Color
+        @Composable get() = LocalLoomSemanticColors.current.snackbar
+
+    val onSnackbar: Color
+        @Composable get() = LocalLoomSemanticColors.current.onSnackbar
+
+    val snackbarAction: Color
+        @Composable get() = LocalLoomSemanticColors.current.snackbarAction
+
+    val onMember: Color
+        @Composable get() = LocalLoomSemanticColors.current.onMember
+
+    /** A stable colour per member id, so the same person looks the same on every screen. */
+    @Composable
+    fun member(memberId: String): Color {
+        val palette = LocalLoomSemanticColors.current.members
+        return palette[memberColorIndex(memberId = memberId, size = palette.size)]
+    }
 }
+
+internal fun memberColorIndex(memberId: String, size: Int): Int =
+    memberId.fold(0) { hash, char -> (hash * 31 + char.code) and 0x7FFFFFFF } % size

@@ -14,6 +14,7 @@ import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
 import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListIconDomain
 import com.eyther.lumbridge.features.shopping.domain.usecase.AddShoppingItemsUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.DeleteShoppingListUseCase
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
@@ -67,6 +68,7 @@ class ShoppingScreenViewModel(
         val quantity: String = "",
         val category: String = "Produce",
         val listName: String = "",
+        val listIcon: ShoppingListIconDomain = ShoppingListIconDomain.BAG,
     )
 
     private data class UndoChange(
@@ -101,6 +103,7 @@ class ShoppingScreenViewModel(
                         quantity = input.quantity,
                         category = input.category,
                         listName = input.listName,
+                        listIcon = input.listIcon,
                     )
                 }
             }
@@ -771,7 +774,10 @@ class ShoppingScreenViewModel(
         newListId = list?.id ?: newId()
 
         inputState.update { oldState ->
-            oldState.copy(listName = list?.name.orEmpty())
+            oldState.copy(
+                listName = list?.name.orEmpty(),
+                listIcon = list?.icon ?: ShoppingListIconDomain.BAG,
+            )
         }
         mutableState.update { oldState ->
             oldState.copy(showLists = false, showListForm = true, formError = null)
@@ -786,6 +792,10 @@ class ShoppingScreenViewModel(
         }
     }
 
+    override fun onListIconChanged(icon: ShoppingListIconDomain) {
+        inputState.update { oldState -> oldState.copy(listIcon = icon) }
+    }
+
     override fun onListNameChanged(value: String) {
         inputState.update { oldState ->
             oldState.copy(listName = value)
@@ -795,7 +805,7 @@ class ShoppingScreenViewModel(
     override fun onSaveList() {
         val list = editingList ?: ShoppingListDomain(id = newListId, name = "")
 
-        saveList(list.copy(name = inputState.value.listName))
+        saveList(list.copy(name = inputState.value.listName, icon = inputState.value.listIcon))
     }
 
     override fun onArchiveList(list: ShoppingListDomain) {

@@ -4,6 +4,7 @@ import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListIconDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingSnapshotDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.item_delete_confirm
@@ -59,6 +60,7 @@ data class ShoppingState(
     val showFavorites: Boolean = false,
     val showListForm: Boolean = false,
     val listName: String = "",
+    val listIcon: ShoppingListIconDomain = ShoppingListIconDomain.BAG,
     val busy: Boolean = false,
     val error: TextResource? = null,
     val loadError: TextResource? = null,

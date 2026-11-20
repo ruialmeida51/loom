@@ -9,6 +9,9 @@ import com.eyther.lumbridge.core.presentation.components.button.DefaultLoomButto
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 
 /** Secondary actions share the primary button's shape and touch height. */
+// A visible but quiet edge on both white cards and the warm grey ground.
+private const val SecondaryOutlineAlpha = 0.6f
+
 @Composable
 fun LoomSecondaryButton(
     text: String,
@@ -31,6 +34,6 @@ fun LoomSecondaryButton(
         leadingContent = leadingContent,
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        outlineColor = MaterialTheme.colorScheme.outlineVariant,
+        outlineColor = MaterialTheme.colorScheme.outline.copy(alpha = SecondaryOutlineAlpha),
     )
 }

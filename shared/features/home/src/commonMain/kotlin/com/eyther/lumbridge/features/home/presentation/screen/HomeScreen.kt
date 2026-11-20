@@ -71,6 +71,7 @@ fun HomeScreen(
         InnerHomeScreen(
             tasks = state.tasks,
             shoppingItems = state.shoppingItems,
+            moreShoppingCount = state.moreShoppingCount,
             articles = state.articles,
             tasksLoading = state.tasksLoading,
             tasksRefreshing = state.tasksRefreshing,
@@ -105,6 +106,7 @@ fun HomeScreen(
 private fun InnerHomeScreen(
     tasks: ImmutableList<HomeTaskUi>,
     shoppingItems: ImmutableList<ShoppingItemDomain>,
+    moreShoppingCount: Int,
     articles: ImmutableList<ArticlePreviewUi>,
     tasksLoading: Boolean,
     tasksRefreshing: Boolean,
@@ -199,7 +201,11 @@ private fun InnerHomeScreen(
                         )
                         if (shoppingLoading) HomeShoppingLoading()
                         else if (shoppingItems.isNotEmpty())
-                            ShoppingPreview(items = shoppingItems, onOpen = onShopping)
+                            ShoppingPreview(
+                                items = shoppingItems,
+                                onOpen = onShopping,
+                                moreCount = moreShoppingCount,
+                            )
                         else if (hasShopping && shoppingError == null)
                             IllustratedEmptyState(
                                 title = stringResource(Res.string.home_shopping_empty),

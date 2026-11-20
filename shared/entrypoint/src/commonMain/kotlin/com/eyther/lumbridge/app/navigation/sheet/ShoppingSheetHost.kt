@@ -67,10 +67,12 @@ internal fun ShoppingSheetHost(
     controller.registerBottomSheet<ShoppingSheets.ShoppingListName> {
         ShoppingListNameBottomSheet(
             listName = state.listName,
+            listIcon = state.listIcon,
             busy = state.busy,
             formError = state.formError,
             onCloseListForm = viewModel::onCloseListForm,
             onListName = viewModel::onListNameChanged,
+            onListIcon = viewModel::onListIconChanged,
             onSaveList = viewModel::onSaveList,
             onDismiss = viewModel::onDismissError,
         )

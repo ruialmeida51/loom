@@ -16,6 +16,7 @@ fun LoomTheme(mode: ThemeMode, content: @Composable () -> Unit) {
         MaterialTheme(
             colorScheme = if (darkMode) LoomDarkColorScheme else LoomLightColorScheme,
             typography = loomTypography(),
+            shapes = LoomShapes,
             content = content,
         )
     }

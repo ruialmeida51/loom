@@ -9,9 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +25,8 @@ import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
+import com.eyther.lumbridge.core.presentation.components.SegmentedTab
+import com.eyther.lumbridge.core.presentation.components.SegmentedTabs
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -206,20 +207,21 @@ private fun InnerExpensesScreen(
             }
             item {
                 Column(modifier = Modifier.padding(bottom = LoomSpacing.content)) {
-                    TabRow(selectedTabIndex = selectedView.ordinal) {
-                        Tab(
-                            modifier = Modifier.testTag("balances_view_expenses"),
-                            selected = selectedView == ExpensesViewUi.EXPENSES,
-                            onClick = { onView(ExpensesViewUi.EXPENSES) },
-                            text = { Text(stringResource(Res.string.history_expenses)) },
-                        )
-                        Tab(
-                            modifier = Modifier.testTag("balances_view_balances"),
-                            selected = selectedView == ExpensesViewUi.BALANCES,
-                            onClick = { onView(ExpensesViewUi.BALANCES) },
-                            text = { Text(stringResource(Res.string.history_balances)) },
-                        )
-                    }
+                    SegmentedTabs(
+                        tabs =
+                            listOf(
+                                SegmentedTab(
+                                    label = stringResource(Res.string.history_expenses),
+                                    tag = "balances_view_expenses",
+                                ),
+                                SegmentedTab(
+                                    label = stringResource(Res.string.history_balances),
+                                    tag = "balances_view_balances",
+                                ),
+                            ),
+                        selectedIndex = selectedView.ordinal,
+                        onSelect = { index -> onView(ExpensesViewUi.entries[index]) },
+                    )
                 }
             }
             error?.let { message ->
@@ -241,9 +243,11 @@ private fun InnerExpensesScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                items(history, key = { it.key }) { item ->
+                itemsIndexed(history, key = { _, item -> item.key }) { index, item ->
                     ExpenseHistoryRow(
                         item = item,
+                        first = index == 0,
+                        last = index == history.lastIndex,
                         onOpen = onOpenExpense,
                         onOpenPayment = onOpenPayment,
                         enabled = !busy,

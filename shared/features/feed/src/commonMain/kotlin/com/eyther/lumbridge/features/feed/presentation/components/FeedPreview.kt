@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -84,7 +85,7 @@ fun FeedPreview(articles: ImmutableList<ArticlePreviewUi>, onOpen: (ArticlePrevi
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        LoomIcon(glyph = Glyph.ARROW, decorative = true)
+                        LoomIcon(glyph = Glyph.CHEVRON_RIGHT, decorative = true, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(18.dp))
                     }
                 }
             }

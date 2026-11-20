@@ -4,6 +4,7 @@ import com.eyther.lumbridge.features.shopping.data.network.model.response.Shoppi
 import com.eyther.lumbridge.features.shopping.data.network.model.response.ShoppingListResponse
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListIconDomain
 
 internal fun ShoppingItemResponse.toDomain(): ShoppingItemDomain =
     ShoppingItemDomain(
@@ -26,4 +27,5 @@ internal fun ShoppingListResponse.toDomain(): ShoppingListDomain =
         name = name,
         archived = archived,
         version = version,
+        icon = ShoppingListIconDomain.fromKey(icon),
     )

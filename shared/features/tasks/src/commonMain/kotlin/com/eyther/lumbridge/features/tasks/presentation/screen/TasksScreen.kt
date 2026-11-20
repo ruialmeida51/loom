@@ -5,12 +5,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.ActionFab
 import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
@@ -28,10 +30,17 @@ import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.tasks.domain.model.TaskDomain
 import com.eyther.lumbridge.features.tasks.generated.resources.Res
 import com.eyther.lumbridge.features.tasks.generated.resources.tasks_completed
+import com.eyther.lumbridge.features.tasks.generated.resources.tasks_group_anytime
+import com.eyther.lumbridge.features.tasks.generated.resources.tasks_group_later
+import com.eyther.lumbridge.features.tasks.generated.resources.tasks_group_overdue
+import com.eyther.lumbridge.features.tasks.generated.resources.tasks_group_today
+import com.eyther.lumbridge.features.tasks.generated.resources.tasks_group_tomorrow
 import com.eyther.lumbridge.features.tasks.generated.resources.tasks_title
 import com.eyther.lumbridge.features.tasks.generated.resources.ui_add_a_task
 import com.eyther.lumbridge.features.tasks.generated.resources.ui_nothing_on_your_mind
 import com.eyther.lumbridge.features.tasks.presentation.components.TaskListRow
+import com.eyther.lumbridge.features.tasks.presentation.model.TaskGroupKindUi
+import com.eyther.lumbridge.features.tasks.presentation.model.TaskGroupUi
 import com.eyther.lumbridge.features.tasks.presentation.model.TaskRowUi
 import com.eyther.lumbridge.features.tasks.presentation.viewmodel.contracts.TasksScreenViewModelContract
 import kotlinx.collections.immutable.ImmutableList
@@ -54,7 +63,7 @@ fun TasksScreen(viewModel: TasksScreenViewModelContract) {
         },
     ) {
         InnerTasksScreen(
-            openRows = state.openRows,
+            openGroups = state.openGroups,
             completedRows = state.completedRows,
             showCompleted = state.showCompleted,
             completingIds = state.completingIds,
@@ -82,7 +91,7 @@ fun TasksScreen(viewModel: TasksScreenViewModelContract) {
 
 @Composable
 private fun InnerTasksScreen(
-    openRows: ImmutableList<TaskRowUi>,
+    openGroups: ImmutableList<TaskGroupUi>,
     completedRows: ImmutableList<TaskRowUi>,
     showCompleted: Boolean,
     completingIds: ImmutableSet<String>,
@@ -98,7 +107,7 @@ private fun InnerTasksScreen(
     LazyColumn(
         modifier = Modifier.fillMaxSize().testTag("tasks_content"),
         contentPadding = rootContentPadding(bottom = FloatingActionContentPadding),
-        verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
+        verticalArrangement = Arrangement.spacedBy(TaskRowSpacing),
     ) {
         item(key = "header") {
             RootHeading(
@@ -118,18 +127,27 @@ private fun InnerTasksScreen(
                 )
             }
         if (!loading) {
-            items(openRows, key = { it.task.id }, contentType = { "task" }) { row ->
-                TaskListRow(
-                    row = row,
-                    completing = row.task.id in completingIds,
-                    removing = row.task.id in removingIds,
-                    onComplete = onComplete,
-                    onRemove = onRemove,
-                )
+            openGroups.forEach { group ->
+                item(key = "group_${group.kind}", contentType = "group_header") {
+                    TaskGroupHeader(kind = group.kind, count = group.rows.size)
+                }
+                itemsIndexed(group.rows, key = { _, row -> row.task.id }, contentType = { _, _ -> "task" }) {
+                    index,
+                    row ->
+                    TaskListRow(
+                        row = row,
+                        completing = row.task.id in completingIds,
+                        removing = row.task.id in removingIds,
+                        onComplete = onComplete,
+                        onRemove = onRemove,
+                        first = index == 0,
+                        last = index == group.rows.lastIndex,
+                        gap = TaskRowSpacing,
+                    )
+                }
             }
             if (completedRows.isNotEmpty()) {
                 item(key = "completed_header") {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     SelectorButton(
                         text =
                             pluralStringResource(
@@ -145,16 +163,46 @@ private fun InnerTasksScreen(
                     )
                 }
                 if (showCompleted)
-                    items(completedRows, key = { it.task.id }, contentType = { "task" }) { row ->
+                    itemsIndexed(completedRows, key = { _, row -> row.task.id }, contentType = { _, _ -> "task" }) {
+                        index,
+                        row ->
                         TaskListRow(
                             row = row,
                             completing = row.task.id in completingIds,
                             removing = row.task.id in removingIds,
                             onComplete = onComplete,
                             onRemove = onRemove,
+                            first = index == 0,
+                            last = index == completedRows.lastIndex,
+                            gap = TaskRowSpacing,
                         )
                     }
             }
         }
     }
+}
+
+private val TaskRowSpacing = LoomSpacing.extraSmall
+
+@Composable
+private fun TaskGroupHeader(kind: TaskGroupKindUi, count: Int) {
+    Text(
+        text =
+            "${stringResource(
+                when (kind) {
+                    TaskGroupKindUi.OVERDUE -> Res.string.tasks_group_overdue
+                    TaskGroupKindUi.TODAY -> Res.string.tasks_group_today
+                    TaskGroupKindUi.TOMORROW -> Res.string.tasks_group_tomorrow
+                    TaskGroupKindUi.LATER -> Res.string.tasks_group_later
+                    TaskGroupKindUi.ANYTIME -> Res.string.tasks_group_anytime
+                },
+            )} · $count",
+        style = MaterialTheme.typography.titleSmall,
+        color =
+            if (kind == TaskGroupKindUi.OVERDUE) MaterialTheme.colorScheme.error
+            else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier =
+            Modifier.padding(top = LoomSpacing.small, bottom = 2.dp, start = 4.dp)
+                .testTag("task_group_${kind.name.lowercase()}"),
+    )
 }

@@ -10,4 +10,5 @@ internal data class SaveShoppingListRequest(
     @SerialName("p_name") val name: String,
     @SerialName("p_archived") val archived: Boolean,
     @SerialName("p_version") val version: Long,
+    @SerialName("p_icon") val icon: String,
 )
