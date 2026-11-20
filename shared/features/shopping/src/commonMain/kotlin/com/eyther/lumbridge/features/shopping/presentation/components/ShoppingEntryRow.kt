@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,6 +23,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.CheckCircle
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
@@ -41,10 +41,9 @@ fun ShoppingEntryRow(
     modifier: Modifier = Modifier,
 ) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(
+        CheckCircle(
             checked = false,
             onCheckedChange = null,
-            enabled = false,
             modifier = Modifier.size(48.dp).testTag("shopping_entry_checkbox"),
         )
         BasicTextField(

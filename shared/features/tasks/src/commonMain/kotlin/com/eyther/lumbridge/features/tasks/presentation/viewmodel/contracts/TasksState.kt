@@ -12,7 +12,11 @@ import com.eyther.lumbridge.features.tasks.generated.resources.task_delete_recur
 import com.eyther.lumbridge.features.tasks.generated.resources.task_delete_title
 import com.eyther.lumbridge.features.tasks.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.tasks.presentation.mapper.toDateUi
+import com.eyther.lumbridge.features.tasks.presentation.model.TaskDateUi
+import com.eyther.lumbridge.features.tasks.presentation.model.TaskGroupKindUi
+import com.eyther.lumbridge.features.tasks.presentation.model.TaskGroupUi
 import com.eyther.lumbridge.features.tasks.presentation.model.TaskRowUi
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
@@ -84,4 +88,20 @@ data class TasksState(
 
     val openRows = rows.filterNot { it.task.completed }.toImmutableList()
     val completedRows = rows.filter { it.task.completed }.toImmutableList()
+    val openGroups: ImmutableList<TaskGroupUi> =
+        openRows
+            .groupBy { row -> row.date.toGroupKind() }
+            .entries
+            .sortedBy { it.key.ordinal }
+            .map { (kind, groupRows) -> TaskGroupUi(kind = kind, rows = groupRows.toImmutableList()) }
+            .toImmutableList()
 }
+
+private fun TaskDateUi?.toGroupKind(): TaskGroupKindUi =
+    when {
+        this == null -> TaskGroupKindUi.ANYTIME
+        daysFromToday < 0 -> TaskGroupKindUi.OVERDUE
+        daysFromToday == 0 -> TaskGroupKindUi.TODAY
+        daysFromToday == 1 -> TaskGroupKindUi.TOMORROW
+        else -> TaskGroupKindUi.LATER
+    }

@@ -35,7 +35,11 @@ data class HomeState(
             .map { it.toHomeUi(today = today, timeZone = timeZone) }
             .toImmutableList()
     val shoppingItems: ImmutableList<ShoppingItemDomain> =
-        shoppingPreview.orEmpty().take(3).toImmutableList()
+        shoppingPreview.orEmpty().take(HOME_SHOPPING_CHIPS).toImmutableList()
+    val moreShoppingCount: Int = (shoppingPreview.orEmpty().size - shoppingItems.size).coerceAtLeast(0)
     val articles: ImmutableList<ArticlePreviewUi> =
         feedItems.orEmpty().take(3).map { it.toPreviewUi(timeZone = timeZone) }.toImmutableList()
 }
+
+/** Enough chips to recognise the list at a glance; the rest collapse into “+N more”. */
+private const val HOME_SHOPPING_CHIPS = 5

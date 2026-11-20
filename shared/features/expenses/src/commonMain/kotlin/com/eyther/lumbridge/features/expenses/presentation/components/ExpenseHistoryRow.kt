@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.cardSegment
+import com.eyther.lumbridge.core.presentation.components.cardSegmentShape
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
@@ -35,12 +38,17 @@ import com.eyther.lumbridge.features.expenses.generated.resources.history_paid_o
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import org.jetbrains.compose.resources.stringResource
 
-private val EntryIconSize = 32.dp // Compact badge, shared by expenses and recorded payments.
+private val EntryIconSize = 40.dp // Round badge, shared by expenses and recorded payments.
+
+/** Matches the overview list's item spacing, which the joined card bridges. */
+internal val HistoryRowGap = LoomSpacing.small
 
 @Composable
 internal fun ExpenseHistoryRow(
     item: ExpenseHistoryItemUi,
     enabled: Boolean,
+    first: Boolean,
+    last: Boolean,
     onOpen: (ExpenseDomain) -> Unit,
     onOpenPayment: (SettlementDomain) -> Unit,
     onEditExpense: (ExpenseDomain) -> Unit,
@@ -61,8 +69,11 @@ internal fun ExpenseHistoryRow(
                 amount = item.amount,
                 glyph = Glyph.MONEY,
                 emphasis = MaterialTheme.colorScheme.primary,
+                amountColor = MaterialTheme.colorScheme.onSurface,
                 canManage = item.canManage,
                 enabled = enabled,
+                first = first,
+                last = last,
                 tag = "expense_actions_${item.expense.id}",
                 cardTag = "expense_card_${item.expense.id}",
                 onOpen = { onOpen(item.expense) },
@@ -87,6 +98,8 @@ internal fun ExpenseHistoryRow(
                     else MaterialTheme.colorScheme.primary,
                 canManage = item.canManage,
                 enabled = enabled,
+                first = first,
+                last = last,
                 tag = "payment_actions_${item.settlement.id}",
                 cardTag = "payment_card_${item.settlement.id}",
                 onOpen = { onOpenPayment(item.settlement) },
@@ -106,25 +119,31 @@ private fun HistoryCard(
     emphasis: Color,
     canManage: Boolean,
     enabled: Boolean,
+    first: Boolean,
+    last: Boolean,
     tag: String,
     cardTag: String,
     onOpen: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    amountColor: Color = emphasis,
 ) {
     Surface(
         onClick = onOpen,
         enabled = enabled,
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.fillMaxWidth().testTag(cardTag),
+        shape = cardSegmentShape(first = first, last = last),
+        color = Color.Transparent,
+        modifier =
+            Modifier.fillMaxWidth()
+                .cardSegment(first = first, last = last, gap = HistoryRowGap)
+                .testTag(cardTag),
     ) {
         Row(
             Modifier.fillMaxWidth().padding(LoomSpacing.medium),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
         ) {
-            Surface(shape = MaterialTheme.shapes.medium, color = emphasis.copy(alpha = .12f)) {
+            Surface(shape = CircleShape, color = emphasis.copy(alpha = .12f)) {
                 Box(Modifier.size(EntryIconSize), contentAlignment = Alignment.Center) {
                     LoomIcon(glyph = glyph, tint = emphasis, decorative = true)
                 }
@@ -141,7 +160,7 @@ private fun HistoryCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
                     )
-                    Text(amount, style = MaterialTheme.typography.titleMedium, color = emphasis)
+                    Text(amount, style = MaterialTheme.typography.titleMedium, color = amountColor)
                 }
                 Text(
                     subtitle,

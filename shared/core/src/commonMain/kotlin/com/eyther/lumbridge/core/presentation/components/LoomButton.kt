@@ -23,6 +23,28 @@ fun LoomButton(
         enabled = enabled,
         loading = loading,
         glyph = glyph,
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+    )
+}
+
+/** A soft secondary action that still reads as positive, such as Settle up beside Add expense. */
+@Composable
+fun LoomTonalButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    enabled: Boolean = true,
+    loading: Boolean = false,
+    glyph: Glyph? = null,
+) {
+    DefaultLoomButton(
+        text = text,
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        loading = loading,
+        glyph = glyph,
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     )

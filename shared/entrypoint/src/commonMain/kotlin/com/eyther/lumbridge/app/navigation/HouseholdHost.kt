@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventInfo
@@ -89,8 +92,10 @@ fun HouseholdHost(
             if (showTabs)
                 BoxWithConstraints {
                     val tabWidth = maxWidth / roots.size
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surface,
+                        modifier = Modifier.padding(top = 1.dp),
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                         tonalElevation = 0.dp,
                     ) {
                         listOf(
@@ -121,13 +126,34 @@ fun HouseholdHost(
                                 ),
                             )
                             .forEach { (destination, label, glyph) ->
+                                val selected = state.activeRoot == destination
                                 NavigationBarItem(
-                                    selected = state.activeRoot == destination,
+                                    selected = selected,
                                     onClick = { navigator.navigateTo(destination) },
-                                    icon = { LoomIcon(glyph = glyph) },
+                                    colors =
+                                        NavigationBarItemDefaults.colors(
+                                            indicatorColor =
+                                                MaterialTheme.colorScheme.primaryContainer,
+                                            selectedTextColor =
+                                                MaterialTheme.colorScheme.onPrimaryContainer,
+                                            unselectedTextColor =
+                                                MaterialTheme.colorScheme.onSurfaceVariant,
+                                        ),
+                                    icon = {
+                                        LoomIcon(
+                                            glyph = glyph,
+                                            tint =
+                                                if (selected)
+                                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    },
                                     label = {
                                         Text(
                                             text = label,
+                                            fontWeight =
+                                                if (selected) FontWeight.SemiBold
+                                                else FontWeight.Medium,
                                             maxLines = 1,
                                             softWrap = false,
                                             overflow = TextOverflow.Ellipsis,

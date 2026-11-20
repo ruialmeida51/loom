@@ -27,6 +27,7 @@ import com.eyther.lumbridge.features.shopping.generated.resources.ui_new_list
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_rename
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_restore
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_shopping_lists
+import com.eyther.lumbridge.features.shopping.presentation.mapper.toGlyph
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -59,9 +60,9 @@ fun ShoppingListsBottomSheet(
                     ) {
                         NavigationRow(
                             title = list.name,
-                            glyph = Glyph.SHOPPING,
+                            glyph = list.icon.toGlyph(),
                             trailingGlyph =
-                                if (list.id == selectedListId) Glyph.CHECK else Glyph.ARROW,
+                                if (list.id == selectedListId) Glyph.CHECK else Glyph.CHEVRON_RIGHT,
                             description =
                                 if (list.archived) stringResource(Res.string.ui_archive) else null,
                             onClick = { onSelect(list.id) },

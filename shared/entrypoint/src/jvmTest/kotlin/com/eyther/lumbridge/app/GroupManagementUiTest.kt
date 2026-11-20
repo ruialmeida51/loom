@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasAnyAncestor
@@ -59,6 +60,35 @@ class GroupManagementUiTest {
                 onAllNodesWithText("Weekend groceries").fetchSemanticsNodes().isNotEmpty()
             }
             onNodeWithTag("shopping_inline_input").assertIsDisplayed()
+        }
+
+    @Test
+    fun aNewShoppingListKeepsTheIconChosenForIt() =
+        runSkikoComposeUiTest(size = Size(440f, 760f)) {
+            startApp()
+            onNodeWithTag("navigation_shopping").performClick()
+            awaitLoadedDestination(tag = "shopping_content")
+            onNodeWithTag("shopping_new_list").performClick()
+            onNodeWithText("List name").performTextInput("Holiday")
+            onNodeWithTag("list_icon_travel").performClick().assertIsSelected()
+            waitForIdle()
+            val screenshot = Image.makeFromBitmap(captureToImage().asSkiaBitmap())
+            File(
+                    System.getProperty("loom.screenshots.dir", "build/screenshots"),
+                    "shopping-list-icon-light.png",
+                )
+                .apply { parentFile.mkdirs() }
+                .writeBytes(checkNotNull(screenshot.encodeToData(EncodedImageFormat.PNG)).bytes)
+            onNodeWithTag("save_shopping_list").performClick()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithTag("list_chip_Holiday").fetchSemanticsNodes().isNotEmpty() ||
+                    onAllNodesWithText("Holiday").fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithTag("manage_lists").performClick()
+            onNodeWithTag("list_actions_Holiday").performClick()
+            onNodeWithText("Rename").performClick()
+            onNodeWithTag("list_icon_travel").assertIsSelected()
+            onNodeWithTag("list_icon_bag").assertIsNotSelected()
         }
 
     @Test

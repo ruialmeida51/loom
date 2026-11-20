@@ -14,6 +14,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
+import com.eyther.lumbridge.core.presentation.theme.LoomColors
 
 private val AvatarSize =
     32.dp // Compact identity cue; the adjacent name carries accessibility text.
@@ -42,4 +43,15 @@ fun PersonAvatar(
                 )
         }
     }
+}
+
+/** A member's initial on their stable household colour, used wherever that person appears. */
+@Composable
+fun MemberAvatar(memberId: String, initials: String, modifier: Modifier = Modifier) {
+    PersonAvatar(
+        initials = initials,
+        modifier = modifier,
+        containerColor = LoomColors.member(memberId),
+        contentColor = LoomColors.onMember,
+    )
 }

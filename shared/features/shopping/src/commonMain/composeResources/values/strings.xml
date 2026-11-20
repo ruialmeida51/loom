@@ -44,6 +44,7 @@
   <string name="ui_done">Done</string>
   <string name="ui_name_your_list">Name your list</string>
   <string name="ui_list_name">List name</string>
+  <string name="list_icon">Icon</string>
   <string name="error_active_list_required">Choose an active shopping list in this household.</string>
   <string name="error_access_denied">Household access denied.</string>
   <string name="error_list_changed">This list changed. Refresh and try again.</string>
@@ -71,6 +72,10 @@
   <string name="ui_item_options">Options for %1$s</string>
     <string name="checklist_add_item">Add an item</string>
     <string name="checklist_add">Add</string>
+    <plurals name="preview_more">
+        <item quantity="one">+%1$d more</item>
+        <item quantity="other">+%1$d more</item>
+    </plurals>
     <plurals name="checklist_completed">
         <item quantity="one">Completed (%1$d)</item>
         <item quantity="other">Completed (%1$d)</item>

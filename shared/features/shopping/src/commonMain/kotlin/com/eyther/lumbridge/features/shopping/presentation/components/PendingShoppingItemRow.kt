@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.CheckCircle
 import com.eyther.lumbridge.core.presentation.components.DestructiveIconButton
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.resources.TextResource
@@ -32,10 +32,9 @@ fun PendingShoppingItemRow(
 ) {
     Column(Modifier.padding(start = if (indented) ShoppingIndentation else 0.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(
+            CheckCircle(
                 checked = false,
                 onCheckedChange = null,
-                enabled = false,
                 modifier = Modifier.size(48.dp),
             )
             Text(name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)

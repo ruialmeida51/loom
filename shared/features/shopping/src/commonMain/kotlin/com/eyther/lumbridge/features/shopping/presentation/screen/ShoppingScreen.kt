@@ -1,8 +1,8 @@
 package com.eyther.lumbridge.features.shopping.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
@@ -35,9 +35,8 @@ import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
-import com.eyther.lumbridge.core.presentation.components.SelectorButton
+import com.eyther.lumbridge.core.presentation.components.cardSegment
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
-import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
 import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackbar
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
@@ -45,24 +44,24 @@ import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.action_undo
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_confirm
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_message
 import com.eyther.lumbridge.features.shopping.generated.resources.completed_delete_title
-import com.eyther.lumbridge.features.shopping.generated.resources.favorites_title
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_create
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_empty
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_empty_description
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_refresh_and_retry
-import com.eyther.lumbridge.features.shopping.generated.resources.ui_shopping_lists
 import com.eyther.lumbridge.features.shopping.presentation.components.CompletedShoppingActions
 import com.eyther.lumbridge.features.shopping.presentation.components.CompletedShoppingSectionHeader
 import com.eyther.lumbridge.features.shopping.presentation.components.PendingShoppingItemRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingDraftRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingEntryRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingItemRow
+import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingListChips
 import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingRowUi
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import kotlinx.collections.immutable.ImmutableList
@@ -70,8 +69,8 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
 import org.jetbrains.compose.resources.stringResource
 
-private val ChecklistRowSpacing =
-    2.dp // Keep checklist rows dense while the header uses the root rhythm.
+private val ChecklistRowSpacing = 0.dp // Rows join into one card; sections pad themselves.
+private val CardInset = 8.dp
 
 @Composable
 fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
@@ -87,11 +86,14 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
                 actionEnabled = !state.busy && state.savingItemIds.isEmpty(),
                 actionLoading = state.busy,
                 onAction = viewModel::onUndo,
+                onDismiss = viewModel::onDismissUndo,
             )
         },
     ) {
         InnerShoppingScreen(
-            selectedListName = state.selectedList?.name.orEmpty(),
+            lists = state.activeLists,
+            selectedListId = state.selectedList?.id.orEmpty(),
+            onSelectList = viewModel::onListSelected,
             uncheckedRows = state.uncheckedRows,
             nestingParentIds = state.nestingParentIds,
             indentedItemIds = state.indentedItemIds,
@@ -175,7 +177,9 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
 
 @Composable
 private fun InnerShoppingScreen(
-    selectedListName: String,
+    lists: ImmutableList<ShoppingListDomain>,
+    selectedListId: String,
+    onSelectList: (String) -> Unit,
     uncheckedRows: ImmutableList<ShoppingRowUi>,
     nestingParentIds: ImmutableMap<String, String>,
     indentedItemIds: ImmutableSet<String>,
@@ -248,28 +252,16 @@ private fun InnerShoppingScreen(
         verticalArrangement = Arrangement.spacedBy(ChecklistRowSpacing),
     ) {
         item(key = "list_selector") {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(bottom = LoomSpacing.content - ChecklistRowSpacing),
-            ) {
-                SelectorButton(
-                    contentPadding = PaddingValues(),
-                    text =
-                        selectedListName.ifBlank { stringResource(Res.string.ui_shopping_lists) },
-                    onClick = onShowLists,
-                    modifier = Modifier.weight(1f).testTag("manage_lists"),
-                )
-                LoomSecondaryButton(
-                    text = stringResource(Res.string.favorites_title),
-                    glyph = Glyph.STAR,
-                    onClick = onShowFavorites,
-                    enabled = hasList && !busy && !loading,
-                    modifier = Modifier.testTag("shopping_favorites"),
-                )
-            }
+            ShoppingListChips(
+                lists = lists,
+                selectedListId = selectedListId,
+                favoritesEnabled = hasList && !busy && !loading,
+                onSelect = onSelectList,
+                onManage = onShowLists,
+                onCreate = onCreateList,
+                onFavorites = onShowFavorites,
+                modifier = Modifier.fillMaxWidth().padding(bottom = LoomSpacing.content),
+            )
         }
         error?.let { message ->
             item {
@@ -300,7 +292,8 @@ private fun InnerShoppingScreen(
                 }
             }
         if (!loading)
-            items(uncheckedRows, key = { it.key }, contentType = { "checklist_item" }) { row ->
+            itemsIndexed(uncheckedRows, key = { _, row -> row.key }, contentType = { _, _ -> "checklist_item" }) { index, row ->
+                Box(Modifier.cardSegment(first = index == 0, last = false).padding(horizontal = CardInset)) {
                 when (row) {
                     is ShoppingRowUi.Item ->
                         ShoppingItemRow(
@@ -340,9 +333,14 @@ private fun InnerShoppingScreen(
                             onFinished = onDraftFinished,
                         )
                 }
+                }
             }
         if (hasList)
             item(key = "inline_entry") {
+                Column(
+                    Modifier.cardSegment(first = loading || uncheckedRows.isEmpty(), last = true)
+                        .padding(horizontal = CardInset)
+                ) {
                 ShoppingEntryRow(
                     value = inlineName,
                     enabled = !busy,
@@ -354,11 +352,19 @@ private fun InnerShoppingScreen(
                             entryFocused = it.hasFocus
                         },
                 )
-                inlineError?.let { Text(it.getString(), color = MaterialTheme.colorScheme.error) }
+                inlineError?.let {
+                    Text(
+                        it.getString(),
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(start = 48.dp, bottom = 12.dp),
+                    )
+                }
+                }
             }
         if (!loading && completedItems.isNotEmpty()) {
             item(key = "completed_header") {
                 CompletedShoppingSectionHeader(
+                    modifier = Modifier.padding(top = LoomSpacing.small, bottom = 4.dp),
                     count = completedItems.size,
                     expanded = showCompleted,
                     selecting = selectingCompleted,
@@ -378,7 +384,11 @@ private fun InnerShoppingScreen(
                     )
                 }
             if (showCompleted)
-                items(completedItems, key = { it.id }) { item ->
+                itemsIndexed(completedItems, key = { _, item -> item.id }) { index, item ->
+                    Box(
+                        Modifier.cardSegment(first = index == 0, last = index == completedItems.lastIndex)
+                            .padding(horizontal = CardInset)
+                    ) {
                     ShoppingItemRow(
                         item = item,
                         busy = busy || item.id in savingItemIds,
@@ -402,6 +412,7 @@ private fun InnerShoppingScreen(
                         onNest = onNest,
                         onUnnest = onUnnest,
                     )
+                    }
                 }
         }
     }

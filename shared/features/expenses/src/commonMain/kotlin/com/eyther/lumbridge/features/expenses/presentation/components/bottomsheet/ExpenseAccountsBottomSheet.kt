@@ -106,7 +106,7 @@ private fun AccountSelectionGroup(
                         title = accountLabel(account),
                         glyph = Glyph.MONEY,
                         description = account.currency,
-                        trailingGlyph = if (account.id == selectedId) Glyph.CHECK else Glyph.ARROW,
+                        trailingGlyph = if (account.id == selectedId) Glyph.CHECK else Glyph.CHEVRON_RIGHT,
                         onClick = { onSelect(account.id) },
                         enabled = !busy && !account.archived,
                         modifier =

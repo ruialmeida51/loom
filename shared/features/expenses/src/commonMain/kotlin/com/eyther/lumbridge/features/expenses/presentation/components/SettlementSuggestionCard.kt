@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -12,7 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import com.eyther.lumbridge.core.presentation.components.PersonAvatar
+import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
@@ -48,7 +50,8 @@ internal fun SettlementSuggestionCard(repayment: SuggestedRepaymentUi, onRecord:
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
             ) {
-                PersonAvatar(
+                MemberAvatar(
+                    memberId = repayment.counterpartyId,
                     initials = repayment.counterpartyInitials,
                 )
                 Column(modifier = Modifier.weight(1f)) {
@@ -90,7 +93,7 @@ internal fun SettlementSuggestionCard(repayment: SuggestedRepaymentUi, onRecord:
                             else -> MaterialTheme.colorScheme.onSurface
                         },
                 )
-                if (repayment.canRecord) LoomIcon(glyph = Glyph.ARROW, decorative = true)
+                if (repayment.canRecord) LoomIcon(glyph = Glyph.CHEVRON_RIGHT, decorative = true, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(18.dp))
             }
         }
     }

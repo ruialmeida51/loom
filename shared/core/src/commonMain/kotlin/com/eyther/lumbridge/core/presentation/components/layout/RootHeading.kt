@@ -19,6 +19,6 @@ fun RootHeading(title: String, modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxWidth().heightIn(min = RootHeadingMinimumHeight),
         contentAlignment = Alignment.CenterStart,
     ) {
-        Text(text = title, style = MaterialTheme.typography.titleLarge)
+        Text(text = title, style = MaterialTheme.typography.displaySmall)
     }
 }

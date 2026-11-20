@@ -21,4 +21,11 @@ enum class Glyph {
     DELETE,
     LOG_OUT,
     CHEVRON_DOWN,
+    CHEVRON_RIGHT,
+    CART,
+    LEAF,
+    GIFT,
+    PLANE,
+    PAW,
+    HEART,
 }

@@ -194,7 +194,7 @@ internal fun ExpenseReceiptSection(
                                                 )
                                         },
                                 )
-                            else LoomIcon(glyph = Glyph.ARROW, decorative = true)
+                            else LoomIcon(glyph = Glyph.CHEVRON_RIGHT, decorative = true, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(18.dp))
                         },
                     )
                 }

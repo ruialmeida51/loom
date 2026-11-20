@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts
 import com.eyther.lumbridge.core.viewmodel.LoomViewModel
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListIconDomain
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class ShoppingScreenViewModelContract : LoomViewModel() {
@@ -98,6 +99,8 @@ abstract class ShoppingScreenViewModelContract : LoomViewModel() {
     abstract fun onCloseListForm()
 
     abstract fun onListNameChanged(value: String)
+
+    abstract fun onListIconChanged(icon: ShoppingListIconDomain)
 
     abstract fun onSaveList()
 

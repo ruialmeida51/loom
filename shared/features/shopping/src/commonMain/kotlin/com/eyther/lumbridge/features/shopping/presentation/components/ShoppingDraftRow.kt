@@ -5,12 +5,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.CheckCircle
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.checklist_add_item
 import org.jetbrains.compose.resources.stringResource
@@ -33,10 +33,9 @@ fun ShoppingDraftRow(
                 .padding(start = if (indented) ShoppingIndentation else 0.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Checkbox(
+        CheckCircle(
             checked = false,
             onCheckedChange = null,
-            enabled = false,
             modifier = Modifier.size(48.dp),
         )
         ShoppingLineInput(

@@ -10,7 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.eyther.lumbridge.core.presentation.components.PersonAvatar
+import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.household.generated.resources.Res
@@ -30,15 +30,7 @@ internal fun HouseholdMemberRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
     ) {
-        PersonAvatar(
-            initials = member.initials,
-            containerColor =
-                if (member.isCurrentUser) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.secondaryContainer,
-            contentColor =
-                if (member.isCurrentUser) MaterialTheme.colorScheme.onPrimaryContainer
-                else MaterialTheme.colorScheme.onSecondaryContainer,
-        )
+        MemberAvatar(memberId = member.id, initials = member.initials)
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
