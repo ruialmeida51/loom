@@ -19,6 +19,8 @@ import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.FloatingActionContentPadding
 import com.eyther.lumbridge.core.presentation.components.IllustratedEmptyState
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
+import com.eyther.lumbridge.core.presentation.components.SegmentedTab
+import com.eyther.lumbridge.core.presentation.components.SegmentedTabs
 import com.eyther.lumbridge.core.presentation.components.SelectorButton
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -29,6 +31,8 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.tasks.domain.model.TaskDomain
 import com.eyther.lumbridge.features.tasks.generated.resources.Res
+import com.eyther.lumbridge.features.tasks.generated.resources.task_filter_all
+import com.eyther.lumbridge.features.tasks.generated.resources.task_filter_mine
 import com.eyther.lumbridge.features.tasks.generated.resources.tasks_completed
 import com.eyther.lumbridge.features.tasks.generated.resources.tasks_group_anytime
 import com.eyther.lumbridge.features.tasks.generated.resources.tasks_group_later
@@ -39,6 +43,7 @@ import com.eyther.lumbridge.features.tasks.generated.resources.tasks_title
 import com.eyther.lumbridge.features.tasks.generated.resources.ui_add_a_task
 import com.eyther.lumbridge.features.tasks.generated.resources.ui_nothing_on_your_mind
 import com.eyther.lumbridge.features.tasks.presentation.components.TaskListRow
+import com.eyther.lumbridge.features.tasks.presentation.model.TaskFilterUi
 import com.eyther.lumbridge.features.tasks.presentation.model.TaskGroupKindUi
 import com.eyther.lumbridge.features.tasks.presentation.model.TaskGroupUi
 import com.eyther.lumbridge.features.tasks.presentation.model.TaskRowUi
@@ -75,6 +80,11 @@ fun TasksScreen(viewModel: TasksScreenViewModelContract) {
             onDismiss = viewModel::onDismissError,
             onComplete = viewModel::onCompleteTask,
             onRemove = viewModel::onRemoveTask,
+            onAssign = viewModel::onAssignRequested,
+            showsPeople = state.showsPeople,
+            userId = state.userId,
+            filter = state.filter,
+            onFilter = viewModel::onFilterChanged,
         )
     }
     state.deleteConfirmation?.let { confirmation ->
@@ -103,6 +113,11 @@ private fun InnerTasksScreen(
     onDismiss: () -> Unit,
     onComplete: (TaskDomain) -> Unit,
     onRemove: (String) -> Unit,
+    onAssign: (TaskDomain) -> Unit = {},
+    showsPeople: Boolean = false,
+    userId: String = "",
+    filter: TaskFilterUi = TaskFilterUi.ALL,
+    onFilter: (TaskFilterUi) -> Unit = {},
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().testTag("tasks_content"),
@@ -115,6 +130,25 @@ private fun InnerTasksScreen(
                 modifier = Modifier.padding(bottom = LoomSpacing.content - LoomSpacing.extraSmall),
             )
         }
+        if (showsPeople)
+            item(key = "filter") {
+                SegmentedTabs(
+                    tabs =
+                        listOf(
+                            SegmentedTab(
+                                label = stringResource(Res.string.task_filter_all),
+                                tag = "tasks_filter_all",
+                            ),
+                            SegmentedTab(
+                                label = stringResource(Res.string.task_filter_mine),
+                                tag = "tasks_filter_mine",
+                            ),
+                        ),
+                    selectedIndex = filter.ordinal,
+                    onSelect = { index -> onFilter(TaskFilterUi.entries[index]) },
+                    modifier = Modifier.padding(bottom = LoomSpacing.small),
+                )
+            }
         error?.let { message ->
             item(key = "error") { ErrorNotice(message = message, onDismiss = onDismiss) }
         }
@@ -140,6 +174,9 @@ private fun InnerTasksScreen(
                         removing = row.task.id in removingIds,
                         onComplete = onComplete,
                         onRemove = onRemove,
+                        onAssign = onAssign,
+                        showsPeople = showsPeople,
+                        userId = userId,
                         first = index == 0,
                         last = index == group.rows.lastIndex,
                         gap = TaskRowSpacing,
@@ -172,6 +209,9 @@ private fun InnerTasksScreen(
                             removing = row.task.id in removingIds,
                             onComplete = onComplete,
                             onRemove = onRemove,
+                            onAssign = onAssign,
+                            showsPeople = showsPeople,
+                            userId = userId,
                             first = index == 0,
                             last = index == completedRows.lastIndex,
                             gap = TaskRowSpacing,

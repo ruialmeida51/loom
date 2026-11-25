@@ -20,6 +20,7 @@ import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateO
 import com.eyther.lumbridge.core.viewmodel.rememberHostViewModelStoreOwner
 import com.eyther.lumbridge.features.settings.presentation.screen.NotificationsPrimeScreen
 import com.eyther.lumbridge.features.settings.presentation.viewmodel.contracts.NotificationsPrimeScreenViewModelContract
+import com.eyther.lumbridge.features.tasks.presentation.components.bottomsheet.TaskAssignBottomSheet
 import com.eyther.lumbridge.features.tasks.presentation.components.bottomsheet.TaskBottomSheet
 import com.eyther.lumbridge.features.tasks.presentation.viewmodel.contracts.TasksScreenViewModelContract
 import org.koin.compose.viewmodel.koinViewModel
@@ -52,6 +53,7 @@ internal fun TasksSheetHost(
     val requestedSheet =
         when {
             state.showAdd -> TasksSheets.Task
+            state.assigningTask != null -> TasksSheets.Assign
             notificationState.visible -> TasksSheets.Notifications
             else -> null
         }
@@ -79,17 +81,42 @@ internal fun TasksSheetHost(
             onRecurrence = viewModel::onRecurrenceChanged,
             onDismiss = viewModel::onDismissError,
             onAdd = viewModel::onSaveTask,
+            members = state.members,
+            userId = state.userId,
+            assigneeId = state.assigneeId,
+            takesTurns = state.takesTurns,
+            canTakeTurns = state.canTakeTurns,
+            onAssignee = viewModel::onAssigneeChanged,
+            onTakesTurns = viewModel::onTakesTurnsChanged,
         )
+    }
+    controller.registerBottomSheet<TasksSheets.Assign> {
+        state.assigningTask?.let { task ->
+            TaskAssignBottomSheet(
+                task = task,
+                members = state.members,
+                userId = state.userId,
+                assigneeId = state.assignDraftId,
+                takesTurns = state.assignDraftTurns,
+                canTakeTurns = state.assignCanTakeTurns,
+                busy = state.assigning,
+                onAssignee = viewModel::onAssignDraftChanged,
+                onTakesTurns = viewModel::onAssignDraftTurnsChanged,
+                onSave = viewModel::onAssignConfirmed,
+                onDismiss = viewModel::onAssignDismissed,
+            )
+        }
     }
     controller.registerBottomSheet<TasksSheets.Notifications> {
         NotificationsPrimeScreen(viewModel = notificationViewModel)
     }
     BottomSheetLayout(
         controller = controller,
-        dismissEnabled = !state.busy && !notificationState.busy,
+        dismissEnabled = !state.busy && !state.assigning && !notificationState.busy,
         onDismissed = {
             when (requestedSheet) {
                 TasksSheets.Task -> viewModel.onAddSheetVisibilityChanged(false)
+                TasksSheets.Assign -> viewModel.onAssignDismissed()
                 TasksSheets.Notifications -> notificationViewModel.onNotNow()
                 null -> Unit
             }

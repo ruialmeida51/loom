@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.CheckCircle
+import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.components.cardSegment
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
@@ -31,8 +32,14 @@ import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.tasks.domain.model.TaskDomain
 import com.eyther.lumbridge.features.tasks.domain.model.TaskRecurrenceDomain
 import com.eyther.lumbridge.features.tasks.generated.resources.Res
+import com.eyther.lumbridge.features.tasks.generated.resources.task_assign_action
+import com.eyther.lumbridge.features.tasks.generated.resources.task_assigned_to
 import com.eyther.lumbridge.features.tasks.generated.resources.task_delete_action
+import com.eyther.lumbridge.features.tasks.generated.resources.task_former_member
 import com.eyther.lumbridge.features.tasks.generated.resources.task_options
+import com.eyther.lumbridge.features.tasks.generated.resources.task_turn_then
+import com.eyther.lumbridge.features.tasks.generated.resources.task_you
+import com.eyther.lumbridge.features.tasks.generated.resources.task_your_turn_then
 import com.eyther.lumbridge.features.tasks.generated.resources.ui_repeats_1_s
 import com.eyther.lumbridge.features.tasks.presentation.mapper.taskRecurrenceLabel
 import com.eyther.lumbridge.features.tasks.presentation.model.TaskRowUi
@@ -49,6 +56,9 @@ internal fun TaskListRow(
     removing: Boolean,
     onComplete: (TaskDomain) -> Unit,
     onRemove: (String) -> Unit,
+    onAssign: (TaskDomain) -> Unit = {},
+    showsPeople: Boolean = false,
+    userId: String = "",
     first: Boolean = true,
     last: Boolean = true,
     gap: Dp = 0.dp,
@@ -95,6 +105,7 @@ internal fun TaskListRow(
                         else MaterialTheme.colorScheme.onSurface,
                 )
                 row.date?.let { TaskDueDate(date = it) }
+                if (showsPeople) TaskPeopleLine(row = row, userId = userId)
                 if (task.recurrence != TaskRecurrenceDomain.NONE)
                     Text(
                         stringResource(
@@ -115,7 +126,13 @@ internal fun TaskListRow(
                 contentDescription = stringResource(Res.string.task_options, task.title),
                 modifier = Modifier.testTag("task_actions_${task.id}"),
                 items =
-                    listOf(
+                    listOfNotNull(
+                        ActionMenuItem(
+                                text = TextResource.Resource(Res.string.task_assign_action),
+                                onClick = { onAssign(task) },
+                                enabled = !completing && !task.completed,
+                            )
+                            .takeIf { showsPeople },
                         ActionMenuItem(
                             text = TextResource.Resource(Res.string.task_delete_action),
                             onClick = { onRemove(task.id) },
@@ -124,6 +141,46 @@ internal fun TaskListRow(
                         ),
                     ),
             )
+    }
+}
+
+/** Whose job it is, and for turns who goes next, beside their avatar. */
+@Composable
+private fun TaskPeopleLine(row: TaskRowUi, userId: String) {
+    val assignee = row.assignee
+    if (assignee == null && !row.assigneeMissing) return
+    val you = stringResource(Res.string.task_you)
+    val name =
+        when {
+            assignee == null -> stringResource(Res.string.task_former_member)
+            assignee.id == userId -> you
+            else -> assignee.name
+        }
+    val next = row.next?.let { if (it.id == userId) you else it.name }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier.testTag("task_people_${row.task.id}"),
+    ) {
+        if (assignee != null)
+            MemberAvatar(
+                memberId = assignee.id,
+                initials = assignee.name.trim().take(1).uppercase(),
+                picturePath = assignee.avatarPath,
+                modifier = Modifier.size(18.dp),
+            )
+        Text(
+            text =
+                when {
+                    next == null -> stringResource(Res.string.task_assigned_to, name)
+                    assignee?.id == userId -> stringResource(Res.string.task_your_turn_then, next)
+                    else -> stringResource(Res.string.task_turn_then, name, next)
+                },
+            style = MaterialTheme.typography.labelMedium,
+            color =
+                if (row.isMine) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

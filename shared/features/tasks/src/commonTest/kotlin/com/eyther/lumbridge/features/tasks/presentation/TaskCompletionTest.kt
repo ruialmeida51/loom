@@ -3,8 +3,10 @@ package com.eyther.lumbridge.features.tasks.presentation
 import androidx.lifecycle.ViewModelStore
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import com.eyther.lumbridge.features.tasks.data.fixtures.MemberFixtureDataSource
 import com.eyther.lumbridge.features.tasks.data.fixtures.TaskCompletionFixtureDataSource
 import com.eyther.lumbridge.features.tasks.domain.usecase.AddTaskUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.AssignTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.CompleteTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.GetTasksStreamUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.RemoveTaskUseCase
@@ -49,6 +51,8 @@ class TaskCompletionTest {
                     addTaskUseCase = AddTaskUseCase(taskDataSource = source, context = context),
                     completeTaskUseCase = CompleteTaskUseCase(taskDataSource = source),
                     removeTaskUseCase = RemoveTaskUseCase(taskDataSource = source),
+                    assignTaskUseCase = AssignTaskUseCase(taskDataSource = source),
+                    getMembersStreamUseCase = MemberFixtureDataSource().useCase,
                 )
                 .also { store.put("tasks", it) }
         try {

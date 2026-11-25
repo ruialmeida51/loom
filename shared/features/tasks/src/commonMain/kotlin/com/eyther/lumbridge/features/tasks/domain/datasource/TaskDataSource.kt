@@ -12,4 +12,7 @@ interface TaskDataSource {
     suspend fun completeTask(task: TaskDomain): AppResult<Unit>
 
     suspend fun removeTask(id: String): AppResult<Unit>
+
+    /** Sets whose job [task] is and who takes turns at it. */
+    suspend fun assignTask(task: TaskDomain): AppResult<Unit>
 }

@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.tasks.presentation.viewmodel.contracts
 import com.eyther.lumbridge.core.domain.todayIso
 import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.tasks.domain.model.TaskDomain
 import com.eyther.lumbridge.features.tasks.domain.model.TaskRecurrenceDomain
 import com.eyther.lumbridge.features.tasks.generated.resources.Res
@@ -13,6 +14,7 @@ import com.eyther.lumbridge.features.tasks.generated.resources.task_delete_title
 import com.eyther.lumbridge.features.tasks.generated.resources.ui_cancel
 import com.eyther.lumbridge.features.tasks.presentation.mapper.toDateUi
 import com.eyther.lumbridge.features.tasks.presentation.model.TaskDateUi
+import com.eyther.lumbridge.features.tasks.presentation.model.TaskFilterUi
 import com.eyther.lumbridge.features.tasks.presentation.model.TaskGroupKindUi
 import com.eyther.lumbridge.features.tasks.presentation.model.TaskGroupUi
 import com.eyther.lumbridge.features.tasks.presentation.model.TaskRowUi
@@ -25,6 +27,17 @@ import kotlinx.datetime.LocalTime
 
 data class TasksState(
     val items: List<TaskDomain> = emptyList(),
+    val userId: String = "",
+    /** Current household members, in the order turns go round. */
+    val members: List<MemberDomain> = emptyList(),
+    val filter: TaskFilterUi = TaskFilterUi.ALL,
+    val assigneeId: String? = null,
+    val takesTurns: Boolean = false,
+    /** The task whose people are being changed, with the draft choice. */
+    val assigningTask: TaskDomain? = null,
+    val assignDraftId: String? = null,
+    val assignDraftTurns: Boolean = false,
+    val assigning: Boolean = false,
     val timeZone: String = "UTC",
     val today: String = todayIso(),
     val refreshing: Boolean = false,
@@ -66,7 +79,10 @@ data class TasksState(
 
     val displayError: TextResource? = error ?: loadError
     val showEmpty: Boolean =
-        !loading && !refreshing && items.none { !it.completed } && displayError == null
+        !loading &&
+            !refreshing &&
+            items.none { !it.completed && (filter == TaskFilterUi.ALL || it.assigneeId == userId) } &&
+            displayError == null
 
     val orderedTasks: List<TaskDomain> =
         items.sortedWith(
@@ -76,15 +92,31 @@ data class TasksState(
                 .thenBy { it.id },
         )
 
+    /** People are worth showing once someone else shares the household. */
+    val showsPeople: Boolean = members.size > 1
+
     val rows =
         orderedTasks
-            .map {
+            .filter { filter == TaskFilterUi.ALL || it.assigneeId == userId }
+            .map { task ->
+                val assignee = members.firstOrNull { it.id == task.assigneeId }
+                val activeIds = members.map { it.id }.toSet()
                 TaskRowUi(
-                    task = it,
-                    date = it.toDateUi(today = LocalDate.parse(today), timeZone = timeZone),
+                    task = task,
+                    date = task.toDateUi(today = LocalDate.parse(today), timeZone = timeZone),
+                    assignee = assignee,
+                    assigneeMissing = task.assigneeId != null && assignee == null,
+                    next =
+                        task.nextAssignee(activeIds)?.let { id -> members.firstOrNull { it.id == id } },
+                    isMine = task.assigneeId == userId,
                 )
             }
             .toImmutableList()
+
+    /** The add form says who takes turns: everyone, starting with the chosen person. */
+    val canTakeTurns: Boolean = assigneeId != null && recurrence != TaskRecurrenceDomain.NONE
+    val assignCanTakeTurns: Boolean =
+        assignDraftId != null && assigningTask?.recurrence != TaskRecurrenceDomain.NONE
 
     val openRows = rows.filterNot { it.task.completed }.toImmutableList()
     val completedRows = rows.filter { it.task.completed }.toImmutableList()

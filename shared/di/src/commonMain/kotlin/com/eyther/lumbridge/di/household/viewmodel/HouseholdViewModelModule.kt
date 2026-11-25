@@ -96,6 +96,7 @@ import com.eyther.lumbridge.features.shopping.domain.usecase.SelectShoppingListU
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.ShoppingScreenViewModel
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import com.eyther.lumbridge.features.tasks.domain.usecase.AddTaskUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.AssignTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.CompleteTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.GetTasksStreamUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.RemoveTaskUseCase
@@ -226,6 +227,8 @@ class HouseholdViewModelModule {
         addTaskUseCase: AddTaskUseCase,
         completeTaskUseCase: CompleteTaskUseCase,
         removeTaskUseCase: RemoveTaskUseCase,
+        assignTaskUseCase: AssignTaskUseCase,
+        getMembersStreamUseCase: GetMembersStreamUseCase,
         context: HouseholdContextDomain,
     ): TasksScreenViewModelContract =
         TasksScreenViewModel(
@@ -234,6 +237,8 @@ class HouseholdViewModelModule {
             addTaskUseCase = addTaskUseCase,
             completeTaskUseCase = completeTaskUseCase,
             removeTaskUseCase = removeTaskUseCase,
+            assignTaskUseCase = assignTaskUseCase,
+            getMembersStreamUseCase = getMembersStreamUseCase,
         )
 
     @KoinViewModel(binds = [HouseholdDetailsScreenViewModelContract::class])
