@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.17] - 2026-11-25
+
 - Member photos on expense details, balances, the split sheet and Home.
 - A clearer groceries card on Home with the list's name, count and next items.
 - Lighter photos that load faster.
