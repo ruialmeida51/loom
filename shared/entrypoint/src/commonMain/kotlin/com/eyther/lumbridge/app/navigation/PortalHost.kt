@@ -25,6 +25,7 @@ import com.eyther.lumbridge.features.diagnostics.domain.datasource.DiagnosticsDa
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
+import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
 import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
 import kotlinx.serialization.modules.subclass
 import org.koin.compose.KoinIsolatedContext
@@ -88,6 +89,9 @@ internal fun PortalHost(
             koinViewModel(key = "account-$userId", viewModelStoreOwner = accountViewModelScope) {
                 parametersOf(AccountScreenViewModelContract.Params(userId = userId))
             }
+        // The toolbar renders inside the household graph, so its household list is resolved here.
+        val householdsViewModel: HouseholdScreenViewModelContract =
+            koinViewModel(key = "toolbar-households-$userId", viewModelStoreOwner = accountViewModelScope)
         val state =
             rememberNavigationState(startRoot = PortalDestination.Household) {
                 subclass(PortalDestination.Household::class)
@@ -103,7 +107,13 @@ internal fun PortalHost(
         }
         val portalToolbar: @Composable () -> Unit = {
             val accountState by accountViewModel.state.collectAsState()
+            val householdsState by householdsViewModel.state.collectAsState()
             PortalToolbar(
+                householdId = context?.id,
+                householdPicturePath =
+                    householdsState.items.firstOrNull { it.id == context?.id }?.imagePath,
+                userId = userId,
+                avatarPath = accountState.profile?.avatarPath,
                 householdName = context?.name,
                 nickname = accountState.profile?.nickname.orEmpty(),
                 loadingProfile = accountState.loading,
@@ -141,6 +151,7 @@ internal fun PortalHost(
                         },
                         onBack = navigator::goBack,
                         onAccount = { navigator.navigateTo(PortalDestination.Account) },
+                        currentHouseholdId = context?.id,
                     )
                 PortalDestination.Account ->
                     AccountHost(

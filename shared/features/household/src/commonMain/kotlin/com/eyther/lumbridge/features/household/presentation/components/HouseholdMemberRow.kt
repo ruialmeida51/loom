@@ -30,7 +30,11 @@ internal fun HouseholdMemberRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
     ) {
-        MemberAvatar(memberId = member.id, initials = member.initials)
+        MemberAvatar(
+            memberId = member.id,
+            initials = member.initials,
+            picturePath = member.avatarPath,
+        )
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),

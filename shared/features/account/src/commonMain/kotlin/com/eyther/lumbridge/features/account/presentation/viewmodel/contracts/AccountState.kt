@@ -21,6 +21,7 @@ data class AccountState(
     val loading: Boolean = true,
     val refreshing: Boolean = false,
     val busy: Boolean = false,
+    val savingPicture: Boolean = false,
     val error: TextResource? = null,
     val loadError: TextResource? = null,
 ) {
@@ -37,6 +38,8 @@ data class AccountState(
         ThemeMode.entries.firstOrNull { it.name == preferences.theme } ?: ThemeMode.SYSTEM
     val displayError: TextResource? = error ?: loadError
     val canEditNickname: Boolean = profile != null && !busy
+    val hasPicture: Boolean = profile?.avatarPath != null
+    val canChangePicture: Boolean = profile != null && !busy && !savingPicture
     val canSaveNickname: Boolean =
         nickname.trim().isNotEmpty() && nickname.trim() != profile?.nickname && !busy
 }

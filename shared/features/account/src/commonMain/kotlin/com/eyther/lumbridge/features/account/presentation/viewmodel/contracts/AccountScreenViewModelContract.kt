@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.account.presentation.viewmodel.contracts
 
+import com.eyther.lumbridge.core.domain.errors.PictureError
 import com.eyther.lumbridge.core.viewmodel.LoomViewModel
 import kotlinx.coroutines.flow.StateFlow
 
@@ -23,6 +24,14 @@ abstract class AccountScreenViewModelContract : LoomViewModel() {
     abstract fun onThemeSelected(value: String)
 
     abstract fun onNotificationsChanged(enabled: Boolean)
+
+    /** A photo picked from the library becomes the profile picture. */
+    abstract fun onPicturePicked(bytes: ByteArray)
+
+    abstract fun onRemovePicture()
+
+    /** The picker could not read the chosen photo. */
+    abstract fun onPictureError(error: PictureError)
 
     abstract fun onRetry()
 

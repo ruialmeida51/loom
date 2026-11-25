@@ -31,6 +31,7 @@ import com.eyther.lumbridge.features.household.generated.resources.ui_choose_a_h
 import com.eyther.lumbridge.features.household.generated.resources.ui_create_household
 import com.eyther.lumbridge.features.household.generated.resources.ui_join_household
 import com.eyther.lumbridge.features.household.generated.resources.ui_make_yourself_at_home
+import com.eyther.lumbridge.features.household.presentation.components.HouseholdChoiceCard
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdScreenViewModelContract
 import org.jetbrains.compose.resources.stringResource
 
@@ -40,6 +41,7 @@ fun HouseholdScreen(
     onSelect: (HouseholdDomain) -> Unit,
     onCreate: () -> Unit,
     onJoin: () -> Unit,
+    currentHouseholdId: String? = null,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     PullToRefreshContentContainer(
@@ -47,6 +49,7 @@ fun HouseholdScreen(
         onRefresh = viewModel::onRefresh,
     ) {
         InnerHouseholdScreen(
+            currentHouseholdId = currentHouseholdId,
             items = state.items,
             busy = state.loading,
             error = state.error,
@@ -60,6 +63,7 @@ fun HouseholdScreen(
 
 @Composable
 private fun InnerHouseholdScreen(
+    currentHouseholdId: String?,
     items: List<HouseholdDomain>,
     busy: Boolean,
     error: TextResource?,
@@ -84,16 +88,13 @@ private fun InnerHouseholdScreen(
         }
         if (busy) LoadingRows()
         else if (items.isNotEmpty()) {
-            GroupedSurface {
-                items.forEachIndexed { index, household ->
-                    if (index > 0)
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    NavigationRow(
-                        title = household.name,
-                        glyph = Glyph.HOME,
-                        description = household.currency,
-                        onClick = { onSelect(household) },
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                items.forEach { household ->
+                    HouseholdChoiceCard(
+                        household = household,
+                        current = household.id == currentHouseholdId,
                         enabled = !busy,
+                        onClick = { onSelect(household) },
                     )
                 }
             }

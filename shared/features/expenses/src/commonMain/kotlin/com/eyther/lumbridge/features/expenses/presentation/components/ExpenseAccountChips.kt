@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.AddPill
 import com.eyther.lumbridge.core.presentation.components.PillChip
 import com.eyther.lumbridge.core.presentation.components.bleedHorizontally
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -24,6 +25,7 @@ import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_accounts
+import com.eyther.lumbridge.features.expenses.generated.resources.account_new
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
 import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.stringResource
@@ -38,6 +40,7 @@ internal fun ExpenseAccountChips(
     selected: ExpenseAccountDomain?,
     onSelect: (String) -> Unit,
     onManage: () -> Unit,
+    onCreate: () -> Unit,
     menu: List<ActionMenuItem>,
     modifier: Modifier = Modifier,
 ) {
@@ -74,6 +77,11 @@ internal fun ExpenseAccountChips(
                         else Modifier.testTag("account_chip_${account.name}"),
                 )
             }
+            AddPill(
+                description = stringResource(Res.string.account_new),
+                onClick = onCreate,
+                modifier = Modifier.testTag("expense_new_account"),
+            )
         }
         ActionMenu(modifier = Modifier.testTag("balances_actions"), items = menu)
         Spacer(Modifier.width(LoomSpacing.content - 12.dp))

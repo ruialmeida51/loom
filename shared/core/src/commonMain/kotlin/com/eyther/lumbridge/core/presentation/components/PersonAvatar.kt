@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.core.presentation.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +15,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
+import com.eyther.lumbridge.core.presentation.components.picture.RemotePicture
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
 
 private val AvatarSize =
@@ -47,11 +49,19 @@ fun PersonAvatar(
 
 /** A member's initial on their stable household colour, used wherever that person appears. */
 @Composable
-fun MemberAvatar(memberId: String, initials: String, modifier: Modifier = Modifier) {
-    PersonAvatar(
-        initials = initials,
-        modifier = modifier,
-        containerColor = LoomColors.member(memberId),
-        contentColor = LoomColors.onMember,
-    )
+fun MemberAvatar(
+    memberId: String,
+    initials: String,
+    modifier: Modifier = Modifier,
+    picturePath: String? = null,
+) {
+    // The stored photo, when there is one, replaces the coloured initials.
+    RemotePicture(path = picturePath, shape = CircleShape, modifier = modifier.size(AvatarSize)) {
+        PersonAvatar(
+            initials = initials,
+            modifier = Modifier.fillMaxSize(),
+            containerColor = LoomColors.member(memberId),
+            contentColor = LoomColors.onMember,
+        )
+    }
 }

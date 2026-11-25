@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -91,7 +92,7 @@ class PortalFlowUiTest {
             onNodeWithTag("household_switch").assertIsDisplayed()
             onNodeWithText("A new home").assertExists()
             onNodeWithTag("open_my_account").performClick()
-            onNodeWithText("Yara").assertExists()
+            onAllNodesWithText("Yara").onFirst().assertExists()
         }
 
     @Test

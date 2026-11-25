@@ -20,6 +20,7 @@ import com.eyther.lumbridge.features.account.presentation.screen.AccountScreen
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
 import com.eyther.lumbridge.features.legal.domain.usecase.GetLegalDocumentsUseCase
+import com.eyther.lumbridge.features.settings.domain.model.NotificationPermissionDomain
 import com.eyther.lumbridge.features.settings.presentation.screen.NotificationsPrimeScreen
 import com.eyther.lumbridge.features.settings.presentation.screen.UsageDataConsentScreen
 import com.eyther.lumbridge.features.settings.presentation.viewmodel.contracts.NotificationsPrimeScreenViewModelContract
@@ -106,6 +107,8 @@ internal fun AccountHost(
                 onSignOutDismissed = onSignOutDismissed,
                 onUsageData = consentViewModel::onOpen,
                 onAllowNotifications = notificationViewModel::onOpen,
+                notificationsBlocked =
+                    notificationState.permission == NotificationPermissionDomain.DENIED,
                 onOpenLegalDocument = { document ->
                     uriHandler.openUri(legalDocuments().url(document = document))
                 },

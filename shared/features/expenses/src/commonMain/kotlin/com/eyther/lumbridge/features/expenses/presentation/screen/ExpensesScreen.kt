@@ -77,6 +77,7 @@ fun ExpensesScreen(
     onEditPayment: (SettlementDomain) -> Unit,
     onRecordPayment: (SuggestedSettlementDomain) -> Unit,
     onRecurringExpenses: () -> Unit,
+    onCreateAccount: () -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     PullToRefreshContentContainer(
@@ -95,6 +96,7 @@ fun ExpensesScreen(
             account = state.account,
             accounts = state.activeAccounts,
             onSelectAccount = viewModel::onAccountSelected,
+            onCreateAccount = onCreateAccount,
             history = state.history,
             selectedView = state.selectedView,
             memberBalances = state.memberBalances,
@@ -140,6 +142,7 @@ private fun InnerExpensesScreen(
     account: ExpenseAccountDomain?,
     accounts: ImmutableList<ExpenseAccountDomain>,
     onSelectAccount: (String) -> Unit,
+    onCreateAccount: () -> Unit,
     history: ImmutableList<ExpenseHistoryItemUi>,
     selectedView: ExpensesViewUi,
     memberBalances: ImmutableList<MemberBalanceUi>,
@@ -177,6 +180,7 @@ private fun InnerExpensesScreen(
                     selected = account,
                     onSelect = onSelectAccount,
                     onManage = onAccounts,
+                    onCreate = onCreateAccount,
                     menu =
                         listOf(
                             ActionMenuItem(

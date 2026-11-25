@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.household.data.network.datasource
 
 import com.eyther.lumbridge.core.data.local.ReferenceSnapshot
+import com.eyther.lumbridge.core.data.network.PictureStorage
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.asApiResult
 import com.eyther.lumbridge.core.data.network.safeApiCall
@@ -12,6 +13,7 @@ import com.eyther.lumbridge.features.household.data.network.mapper.toHouseholdEr
 import com.eyther.lumbridge.features.household.data.network.model.request.CreateHouseholdRequest
 import com.eyther.lumbridge.features.household.data.network.model.request.HouseholdRequest
 import com.eyther.lumbridge.features.household.data.network.model.request.JoinHouseholdRequest
+import com.eyther.lumbridge.features.household.data.network.model.request.SetHouseholdPictureRequest
 import com.eyther.lumbridge.features.household.data.network.model.response.HouseholdResponse
 import com.eyther.lumbridge.features.household.data.network.model.response.JoinHouseholdResponse
 import com.eyther.lumbridge.features.household.data.network.model.response.MemberResponse
@@ -21,6 +23,7 @@ import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -31,6 +34,7 @@ import kotlinx.coroutines.flow.flow
 class CommonHouseholdDataSource(
     private val access: SupabaseAccess,
     private val profileDataSource: ProfileDataSource,
+    private val pictures: PictureStorage,
 ) : HouseholdDataSource {
     private val members = ReferenceSnapshot<List<MemberDomain>>()
 
@@ -156,6 +160,24 @@ class CommonHouseholdDataSource(
             .map { it.toDomain() }
             .also { members.put(key = "$userId:$householdId", value = it) }
     }
+
+    override suspend fun setPicture(householdId: String, bytes: ByteArray?): AppResult<Unit> =
+        safeApiCall(mapError = Exception::toHouseholdError) {
+            val path = bytes?.let { pictures.upload(folder = "households/$householdId", bytes = it) }
+            try {
+                // The server links the new picture and queues the previous one for deletion.
+                access.write { client ->
+                    client.postgrest.rpc(
+                        "set_household_picture",
+                        SetHouseholdPictureRequest(householdId = householdId, path = path),
+                    )
+                }
+            } catch (error: Exception) {
+                if (error !is CancellationException) path?.let { pictures.discard(it) }
+                throw error
+            }
+            members.clear()
+        }
 
     override suspend fun revokeInvitation(householdId: String): AppResult<Unit> =
         safeApiCall(mapError = Exception::toHouseholdError) {

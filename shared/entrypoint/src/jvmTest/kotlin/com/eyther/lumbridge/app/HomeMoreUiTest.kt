@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -45,6 +46,16 @@ class HomeMoreUiTest {
                 onAllNodesWithTag("home_balance_amount").fetchSemanticsNodes().isNotEmpty()
             }
             capture("home-light")
+            onNodeWithTag("household_switch").performClick()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithTag("household_choice_The little nest").fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithTag("household_choice_The little nest").assertIsSelected()
+            capture("household-chooser-light")
+            onNodeWithContentDescription("Back").performClick()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty()
+            }
             onNodeWithText("Feed").assertDoesNotExist()
             onNodeWithTag("home_add_task").performScrollTo().performClick()
             onNodeWithTag("form_sheet").assertIsDisplayed()

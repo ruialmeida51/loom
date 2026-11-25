@@ -55,6 +55,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
     }
 
     val deleted = MutableStateFlow(false)
+    val picturePath = MutableStateFlow<String?>(null)
 
     var members =
         listOf(

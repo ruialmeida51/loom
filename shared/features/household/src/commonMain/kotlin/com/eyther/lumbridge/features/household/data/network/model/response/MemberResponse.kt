@@ -10,4 +10,5 @@ internal data class MemberResponse(
     @SerialName("role") val role: String,
     @SerialName("active") val active: Boolean = true,
     @SerialName("version") val version: Long = 1,
+    @SerialName("avatar_path") val avatarPath: String? = null,
 )

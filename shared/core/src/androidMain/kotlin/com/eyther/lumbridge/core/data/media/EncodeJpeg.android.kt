@@ -1,16 +1,15 @@
-package com.eyther.lumbridge.features.expenses.data.media
+package com.eyther.lumbridge.core.data.media
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.ExifInterface
-import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 
 /** Sample before allocating pixels; full-resolution camera images can exhaust the app heap. */
-internal actual suspend fun encodeReceiptPhoto(
+actual suspend fun encodeJpeg(
     bytes: ByteArray,
     maximumEdge: Int,
     jpegQualities: List<Int>,
@@ -18,13 +17,13 @@ internal actual suspend fun encodeReceiptPhoto(
 ): ByteArray? {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw ReceiptError.InvalidPhoto()
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw IllegalArgumentException(UNREADABLE_IMAGE)
     var sample = 1
     while (maxOf(bounds.outWidth, bounds.outHeight) / sample > maximumEdge) sample *= 2
     val options = BitmapFactory.Options().apply { inSampleSize = sample }
     val decoded =
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
-            ?: throw ReceiptError.InvalidPhoto()
+            ?: throw IllegalArgumentException(UNREADABLE_IMAGE)
     var oriented: Bitmap? = null
     try {
         val orientation =
@@ -63,10 +62,10 @@ internal actual suspend fun encodeReceiptPhoto(
             val encoded =
                 ByteArrayOutputStream().use { output ->
                     if (!oriented.compress(Bitmap.CompressFormat.JPEG, jpegQuality, output))
-                        throw ReceiptError.InvalidPhoto()
+                        throw IllegalArgumentException(UNREADABLE_IMAGE)
                     output.toByteArray()
                 }
-            if (encoded.isEmpty()) throw ReceiptError.InvalidPhoto()
+            if (encoded.isEmpty()) throw IllegalArgumentException(UNREADABLE_IMAGE)
             if (encoded.size <= maximumBytes) return encoded
         }
         return null

@@ -22,16 +22,28 @@ import kotlinx.coroutines.withContext
 actual object PushPlatform {
     private var permissionOwner: Any? = null
     private var permissionRequester: (((Boolean) -> Unit) -> Unit)? = null
+    private var canAskAgain: (() -> Boolean)? = null
 
-    fun attachPermissionRequester(owner: Any, requester: ((Boolean) -> Unit) -> Unit) {
+    /**
+     * [canAskAgainAfterDenial] is the Activity's shouldShowRequestPermissionRationale: after one
+     * denial Android still shows its prompt, and only after the second do we send people to
+     * settings.
+     */
+    fun attachPermissionRequester(
+        owner: Any,
+        canAskAgainAfterDenial: () -> Boolean = { false },
+        requester: ((Boolean) -> Unit) -> Unit,
+    ) {
         permissionOwner = owner
         permissionRequester = requester
+        canAskAgain = canAskAgainAfterDenial
     }
 
     fun detachPermissionRequester(owner: Any) {
         if (permissionOwner !== owner) return
         permissionOwner = null
         permissionRequester = null
+        canAskAgain = null
     }
 
     actual suspend fun getPermission(): NotificationPermissionDomain {
@@ -44,11 +56,15 @@ actual object PushPlatform {
         val notificationsEnabled =
             (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
                 .areNotificationsEnabled()
+        val requestedBefore = PlatformStorage.get("notification-os-requested") == "true"
         return when {
             permissionGranted && notificationsEnabled -> NotificationPermissionDomain.GRANTED
-            permissionGranted && !notificationsEnabled ||
-                PlatformStorage.get("notification-os-requested") == "true" ||
-                Build.VERSION.SDK_INT < 33 -> NotificationPermissionDomain.DENIED
+            // Turned off for the app, or below Android 13 where there is no runtime prompt.
+            permissionGranted || Build.VERSION.SDK_INT < 33 -> NotificationPermissionDomain.DENIED
+            // Denied once: the system prompt can still appear, so ask in the app first.
+            requestedBefore && canAskAgain?.invoke() == true ->
+                NotificationPermissionDomain.NOT_REQUESTED
+            requestedBefore -> NotificationPermissionDomain.DENIED
             else -> NotificationPermissionDomain.NOT_REQUESTED
         }
     }

@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.di.householdsetup
 
 import com.eyther.lumbridge.features.household.domain.usecase.CreateHouseholdUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.JoinHouseholdUseCase
 import com.eyther.lumbridge.features.household.presentation.viewmodel.CreateHouseholdScreenViewModel
@@ -17,9 +18,11 @@ class HouseholdSetupViewModelModule {
     @KoinViewModel(binds = [HouseholdScreenViewModelContract::class])
     fun provideHouseholdScreenViewModel(
         getHouseholdsUseCase: GetHouseholdsUseCase,
+        getHouseholdsStreamUseCase: GetHouseholdsStreamUseCase,
     ): HouseholdScreenViewModelContract =
         HouseholdScreenViewModel(
             getHouseholdsUseCase = getHouseholdsUseCase,
+            getHouseholdsStreamUseCase = getHouseholdsStreamUseCase,
         )
 
     @KoinViewModel(binds = [CreateHouseholdScreenViewModelContract::class])

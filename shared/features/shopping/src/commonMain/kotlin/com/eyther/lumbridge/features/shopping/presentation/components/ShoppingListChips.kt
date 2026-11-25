@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.AddPill
 import com.eyther.lumbridge.core.presentation.components.PillChip
 import com.eyther.lumbridge.core.presentation.components.bleedHorizontally
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -86,26 +87,11 @@ fun ShoppingListChips(
                         else Modifier.testTag("list_chip_${list.name}"),
                 )
             }
-            val newList = stringResource(Res.string.ui_new_list)
-            Surface(
+            AddPill(
+                description = stringResource(Res.string.ui_new_list),
                 onClick = onCreate,
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)),
-                modifier =
-                    Modifier.size(ChipHeight).testTag("shopping_new_list").semantics {
-                        contentDescription = newList
-                        role = Role.Button
-                    },
-            ) {
-                LoomIcon(
-                    glyph = Glyph.PLUS,
-                    tint = LocalContentColor.current,
-                    decorative = true,
-                    modifier = Modifier.padding(11.dp),
-                )
-            }
+                modifier = Modifier.testTag("shopping_new_list"),
+            )
         }
         val favourites = stringResource(Res.string.favorites_title)
         Surface(

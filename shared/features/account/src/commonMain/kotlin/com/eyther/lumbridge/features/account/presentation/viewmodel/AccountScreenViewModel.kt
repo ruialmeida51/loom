@@ -6,6 +6,8 @@ import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.account.domain.usecase.GetProfileStreamUseCase
+import com.eyther.lumbridge.core.domain.errors.PictureError
+import com.eyther.lumbridge.features.account.domain.usecase.SetProfilePictureUseCase
 import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCase
 import com.eyther.lumbridge.features.account.presentation.mapper.toAccountTextResource
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
@@ -28,6 +30,7 @@ class AccountScreenViewModel(
     private val getSettingsStreamUseCase: GetSettingsStreamUseCase,
     private val setThemeUseCase: SetThemeUseCase,
     private val setNotificationsUseCase: SetNotificationsUseCase,
+    private val setProfilePictureUseCase: SetProfilePictureUseCase,
 ) : AccountScreenViewModelContract() {
     private data class InnerInputState(val nickname: String = "")
 
@@ -117,6 +120,32 @@ class AccountScreenViewModel(
                             nicknameError = result.error.toAccountTextResource(),
                         )
                 }
+            }
+        }
+    }
+
+    override fun onPicturePicked(bytes: ByteArray) {
+        savePicture(bytes = bytes)
+    }
+
+    override fun onRemovePicture() {
+        savePicture(bytes = null)
+    }
+
+    override fun onPictureError(error: PictureError) {
+        mutableState.update { oldState -> oldState.copy(error = error.toAccountTextResource()) }
+    }
+
+    private fun savePicture(bytes: ByteArray?) {
+        if (!state.value.canChangePicture) return
+        mutableState.update { oldState -> oldState.copy(savingPicture = true, error = null) }
+        launch {
+            val result = setProfilePictureUseCase(userId = params.userId, bytes = bytes)
+            mutableState.update { oldState ->
+                oldState.copy(
+                    savingPicture = false,
+                    error = (result as? AppResult.Failure)?.error?.toAccountTextResource(),
+                )
             }
         }
     }

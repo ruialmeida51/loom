@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.settings.presentation
 import androidx.lifecycle.ViewModelStore
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.settings.data.fixtures.NotificationFixtureDataSource
+import com.eyther.lumbridge.features.settings.domain.errors.SettingsError
 import com.eyther.lumbridge.features.settings.domain.model.NotificationPermissionDomain
 import com.eyther.lumbridge.features.settings.domain.usecase.GetNotificationPermissionUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
@@ -13,6 +14,7 @@ import com.eyther.lumbridge.features.settings.presentation.viewmodel.Notificatio
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +64,56 @@ class NotificationsPrimeTest {
             runCurrent()
             assertEquals(1, source.registrationCalls)
             assertFalse(vm.state.value.visible)
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun refusingTheSystemPromptOffersSettingsWithoutARepeatedError() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source =
+            NotificationFixtureDataSource().apply {
+                registration =
+                    CompletableDeferred<AppResult<Unit>>().apply {
+                        complete(AppResult.Failure(SettingsError.PermissionDenied()))
+                    }
+            }
+        val store = ViewModelStore()
+        val vm = viewModel(source).also { store.put("notifications", it) }
+        try {
+            vm.onOpen()
+            runCurrent()
+            source.permission = NotificationPermissionDomain.DENIED
+            vm.onEnable()
+            runCurrent()
+            assertTrue(vm.state.value.visible, "The sheet stays to offer settings")
+            assertEquals(NotificationPermissionDomain.DENIED, vm.state.value.permission)
+            assertNull(vm.state.value.error, "The sheet's own message explains the refusal")
+            vm.onEnable()
+            runCurrent()
+            assertEquals(1, source.settingsCalls, "The next tap opens the phone's settings")
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun resumingRefreshesThePhonesAnswerEvenWhenNotificationsAreOff() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val source =
+            NotificationFixtureDataSource().apply {
+                permission = NotificationPermissionDomain.DENIED
+            }
+        val store = ViewModelStore()
+        val vm = viewModel(source).also { store.put("notifications", it) }
+        try {
+            vm.onResume()
+            runCurrent()
+            assertEquals(NotificationPermissionDomain.DENIED, vm.state.value.permission)
+            assertEquals(0, source.registrationCalls)
         } finally {
             store.clear()
             Dispatchers.resetMain()

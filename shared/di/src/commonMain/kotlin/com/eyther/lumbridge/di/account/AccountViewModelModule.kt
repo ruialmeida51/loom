@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.di.account
 
+import com.eyther.lumbridge.features.account.domain.usecase.SetProfilePictureUseCase
 import com.eyther.lumbridge.features.account.domain.usecase.GetProfileStreamUseCase
 import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCase
 import com.eyther.lumbridge.features.account.presentation.viewmodel.AccountScreenViewModel
@@ -21,6 +22,7 @@ class AccountViewModelModule {
         getSettingsStreamUseCase: GetSettingsStreamUseCase,
         setThemeUseCase: SetThemeUseCase,
         setNotificationsUseCase: SetNotificationsUseCase,
+        setProfilePictureUseCase: SetProfilePictureUseCase,
     ): AccountScreenViewModelContract =
         AccountScreenViewModel(
             params = params,
@@ -29,5 +31,6 @@ class AccountViewModelModule {
             getSettingsStreamUseCase = getSettingsStreamUseCase,
             setThemeUseCase = setThemeUseCase,
             setNotificationsUseCase = setNotificationsUseCase,
+            setProfilePictureUseCase = setProfilePictureUseCase,
         )
 }

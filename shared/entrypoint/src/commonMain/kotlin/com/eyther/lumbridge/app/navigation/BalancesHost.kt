@@ -111,6 +111,9 @@ internal fun BalancesHost(
                         ) {
                             ExpensesScreen(
                                 viewModel = overviewViewModel,
+                                onCreateAccount = {
+                                    navigator.navigateTo(BalancesDestination.AccountForm())
+                                },
                                 onAddExpense = {
                                     overviewViewModel.state.value.account?.let {
                                         navigator.navigateTo(

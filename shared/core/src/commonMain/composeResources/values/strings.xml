@@ -49,4 +49,7 @@
     <string name="action_cancel">Cancel</string>
     <string name="icon_photo">Photo</string>
     <string name="icon_calendar">Calendar</string>
+    <string name="error_picture_unreadable">That picture couldn’t be opened. Try another one.</string>
+    <string name="error_picture_too_large">That picture is too large. Try a smaller one.</string>
+    <string name="error_picture_rejected">That picture couldn’t be saved. Try again.</string>
 </resources>

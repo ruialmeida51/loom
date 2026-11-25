@@ -2,6 +2,7 @@ package com.eyther.lumbridge.core.data.network.mapper
 
 import com.eyther.lumbridge.core.domain.errors.AppError
 import com.eyther.lumbridge.core.domain.errors.CommonError
+import com.eyther.lumbridge.core.domain.errors.PictureError
 import io.github.jan.supabase.auth.exception.SessionRequiredException
 import io.github.jan.supabase.auth.exception.TokenExpiredException
 import io.github.jan.supabase.exceptions.HttpRequestException
@@ -27,6 +28,9 @@ fun Exception.toAppError(): AppError =
                     CommonError.NotAuthenticated(this)
                 code == "P0001" && error == "Please sign in." -> CommonError.NotAuthenticated(this)
                 code == "P0001" && error == "Household access denied." ->
+                    CommonError.AccessDenied(this)
+                code == "P0001" && error == "pictures.invalid_picture" -> PictureError.Rejected(this)
+                code == "P0001" && error == "pictures.access_denied" ->
                     CommonError.AccessDenied(this)
                 else -> toHttpError()
             }

@@ -12,7 +12,9 @@ class DemoProfileDataSource(private val stores: Collection<DemoHouseholdStore>) 
     override fun stream(userId: String): Flow<AppResult<ProfileDomain>> =
         stores.first().memberUpdates.map { members ->
             val member = members.first { it.id == userId }
-            AppResult.Success(ProfileDomain(id = member.id, nickname = member.name))
+            AppResult.Success(
+                ProfileDomain(id = member.id, nickname = member.name, avatarPath = member.avatarPath),
+            )
         }
 
     override suspend fun updateNickname(
@@ -27,5 +29,17 @@ class DemoProfileDataSource(private val stores: Collection<DemoHouseholdStore>) 
             store.memberUpdates.value = store.members
         }
         ProfileDomain(id = userId, nickname = nickname)
+    }
+
+    override suspend fun setPicture(userId: String, bytes: ByteArray?): AppResult<Unit> = safeCall {
+        val previous = stores.first().members.firstOrNull { it.id == userId }?.avatarPath
+        val path = DemoPictures.replace(folder = "profiles/$userId", bytes = bytes, previous = previous)
+        stores.forEach { store ->
+            store.members =
+                store.members.map { member ->
+                    if (member.id == userId) member.copy(avatarPath = path) else member
+                }
+            store.memberUpdates.value = store.members
+        }
     }
 }

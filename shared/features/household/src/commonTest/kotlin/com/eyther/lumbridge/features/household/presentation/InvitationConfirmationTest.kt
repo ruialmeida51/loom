@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.household.presentation
 import androidx.lifecycle.ViewModelStore
 import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.household.data.fixtures.FakeHouseholdDataSource
 import com.eyther.lumbridge.features.household.data.fixtures.FakeHouseholdManagementDataSource
 import com.eyther.lumbridge.features.household.domain.errors.HouseholdError
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
@@ -11,8 +12,10 @@ import com.eyther.lumbridge.features.household.domain.model.HouseholdMemberActio
 import com.eyther.lumbridge.features.household.domain.usecase.ChangeHouseholdMemberUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.DeleteHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdManagementStreamUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.ReplaceHouseholdInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RevokeHouseholdInvitationUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.SetHouseholdPictureUseCase
 import com.eyther.lumbridge.features.household.presentation.viewmodel.HouseholdDetailsScreenViewModel
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -212,6 +215,8 @@ class InvitationConfirmationTest {
                     revokeHouseholdInvitationUseCase = RevokeHouseholdInvitationUseCase(source),
                     changeHouseholdMemberUseCase = ChangeHouseholdMemberUseCase(source),
                     deleteHouseholdUseCase = DeleteHouseholdUseCase(source),
+                    getHouseholdsStreamUseCase = GetHouseholdsStreamUseCase(FakeHouseholdDataSource()),
+                    setHouseholdPictureUseCase = SetHouseholdPictureUseCase(FakeHouseholdDataSource()),
                 )
                 .also { store.put("home", it) }
         try {

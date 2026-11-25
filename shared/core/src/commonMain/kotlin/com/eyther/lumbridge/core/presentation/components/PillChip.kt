@@ -19,6 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -96,6 +99,30 @@ fun PillChip(
                 )
             }
         }
+    }
+}
+
+/** The dashed "+" at the end of a pill row that creates another peer (a list, an account). */
+@Composable
+fun AddPill(description: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)),
+        modifier =
+            modifier.size(PillHeight).semantics {
+                contentDescription = description
+                role = Role.Button
+            },
+    ) {
+        LoomIcon(
+            glyph = Glyph.PLUS,
+            tint = LocalContentColor.current,
+            decorative = true,
+            modifier = Modifier.padding(11.dp),
+        )
     }
 }
 

@@ -29,6 +29,7 @@ import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
+import com.eyther.lumbridge.core.presentation.components.picture.rememberPicturePicker
 import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackbar
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
@@ -59,6 +60,7 @@ import com.eyther.lumbridge.features.household.generated.resources.management_le
 import com.eyther.lumbridge.features.household.generated.resources.management_promote
 import com.eyther.lumbridge.features.household.generated.resources.management_remove
 import com.eyther.lumbridge.features.household.presentation.components.HouseholdMemberRow
+import com.eyther.lumbridge.features.household.presentation.components.HouseholdPictureHeader
 import com.eyther.lumbridge.features.household.presentation.model.HouseholdInvitationUi
 import com.eyther.lumbridge.features.household.presentation.model.HouseholdMemberUi
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdDetailsScreenViewModelContract
@@ -71,12 +73,23 @@ fun HouseholdDetailsScreen(
     context: HouseholdContextDomain,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
+    val pickPicture =
+        rememberPicturePicker(
+            onPicked = viewModel::onPicturePicked,
+            onError = viewModel::onPictureError,
+        )
     PullToRefreshContentContainer(
         isRefreshing = state.refreshing,
         onRefresh = viewModel::onRefresh,
         snackbarHost = { SuccessSnackbar(message = state.successMessage) },
     ) {
         InnerHouseholdDetailsScreen(
+            householdId = context.id,
+            picturePath = state.picturePath,
+            canChangePicture = state.canChangePicture,
+            savingPicture = state.savingPicture,
+            onChangePicture = pickPicture,
+            onRemovePicture = viewModel::onRemovePicture,
             name = context.name,
             currency = context.currency,
             timeZone = context.timeZone,
@@ -101,6 +114,12 @@ fun HouseholdDetailsScreen(
 
 @Composable
 private fun InnerHouseholdDetailsScreen(
+    householdId: String,
+    picturePath: String?,
+    canChangePicture: Boolean,
+    savingPicture: Boolean,
+    onChangePicture: () -> Unit,
+    onRemovePicture: () -> Unit,
     name: String,
     currency: String,
     timeZone: String,
@@ -125,7 +144,17 @@ private fun InnerHouseholdDetailsScreen(
         contentPadding = rootContentPadding(),
         verticalArrangement = Arrangement.spacedBy(LoomSpacing.content),
     ) {
-        item(key = "summary") { Text(text = name, style = MaterialTheme.typography.titleLarge) }
+        item(key = "summary") {
+            HouseholdPictureHeader(
+                householdId = householdId,
+                name = name,
+                picturePath = picturePath,
+                enabled = canChangePicture,
+                saving = savingPicture,
+                onChange = onChangePicture,
+                onRemove = onRemovePicture,
+            )
+        }
         error?.let { item(key = "error") { ErrorNotice(message = it, onDismiss = onDismiss) } }
         item(key = "context") {
             GroupedSurface {

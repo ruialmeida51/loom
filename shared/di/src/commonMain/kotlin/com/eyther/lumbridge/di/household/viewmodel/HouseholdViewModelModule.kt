@@ -71,9 +71,11 @@ import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDoma
 import com.eyther.lumbridge.features.household.domain.usecase.ChangeHouseholdMemberUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.DeleteHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdManagementStreamUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.ReplaceHouseholdInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RevokeHouseholdInvitationUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.SetHouseholdPictureUseCase
 import com.eyther.lumbridge.features.household.presentation.viewmodel.HouseholdDetailsScreenViewModel
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdDetailsScreenViewModelContract
 import com.eyther.lumbridge.features.insights.domain.usecase.ExportStatementUseCase
@@ -238,6 +240,8 @@ class HouseholdViewModelModule {
         revokeHouseholdInvitationUseCase: RevokeHouseholdInvitationUseCase,
         changeHouseholdMemberUseCase: ChangeHouseholdMemberUseCase,
         deleteHouseholdUseCase: DeleteHouseholdUseCase,
+        getHouseholdsStreamUseCase: GetHouseholdsStreamUseCase,
+        setHouseholdPictureUseCase: SetHouseholdPictureUseCase,
     ): HouseholdDetailsScreenViewModelContract =
         HouseholdDetailsScreenViewModel(
             context = context,
@@ -246,6 +250,8 @@ class HouseholdViewModelModule {
             revokeHouseholdInvitationUseCase = revokeHouseholdInvitationUseCase,
             changeHouseholdMemberUseCase = changeHouseholdMemberUseCase,
             deleteHouseholdUseCase = deleteHouseholdUseCase,
+            getHouseholdsStreamUseCase = getHouseholdsStreamUseCase,
+            setHouseholdPictureUseCase = setHouseholdPictureUseCase,
         )
 
     @KoinViewModel(binds = [MemberAccountPositionsScreenViewModelContract::class])
