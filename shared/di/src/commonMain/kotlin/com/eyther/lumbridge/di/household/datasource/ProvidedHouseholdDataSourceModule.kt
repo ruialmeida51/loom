@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.di.household.datasource
 
+import com.eyther.lumbridge.core.domain.features.FeatureGate
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
@@ -39,7 +40,10 @@ class ProvidedHouseholdDataSourceModule(
     private val statementDataSource: StatementDataSource,
     private val statementExportDataSource: StatementExportDataSource,
     private val settingsDataSource: SettingsDataSource,
+    private val featureGate: FeatureGate = FeatureGate.AllOn,
 ) {
+
+    @Single fun provideFeatureGate(): FeatureGate = featureGate
 
     @Single
     fun provideHouseholdManagementDataSource(): HouseholdManagementDataSource =

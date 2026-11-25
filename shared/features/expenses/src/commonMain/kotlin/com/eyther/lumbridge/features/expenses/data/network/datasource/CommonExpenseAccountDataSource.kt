@@ -10,10 +10,14 @@ import com.eyther.lumbridge.features.expenses.data.network.mapper.toDomain
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toExpenseError
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.request.DeleteExpenseAccountRequest
+import com.eyther.lumbridge.features.expenses.data.network.model.request.RemoveAccountGuestRequest
+import com.eyther.lumbridge.features.expenses.data.network.model.request.SaveAccountGuestRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.response.ExpenseAccountResponse
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
@@ -123,5 +127,54 @@ class CommonExpenseAccountDataSource(
             accounts.clear()
             changes.update { oldVersion -> oldVersion + 1 }
             Unit
+        }
+
+    override suspend fun saveGuest(
+        accountId: String,
+        guest: ExpenseGuestDomain,
+    ): AppResult<ExpenseAccountDomain> =
+        writeGuest(accountId = accountId) { client ->
+            client
+                .postgrest
+                .rpc(
+                    "save_account_guest",
+                    SaveAccountGuestRequest(
+                        householdId = context.id,
+                        accountId = accountId,
+                        id = guest.id,
+                        name = guest.name,
+                        version = guest.version,
+                    ),
+                )
+        }
+
+    override suspend fun removeGuest(
+        accountId: String,
+        guest: ExpenseGuestDomain,
+    ): AppResult<ExpenseAccountDomain> =
+        writeGuest(accountId = accountId) { client ->
+            client
+                .postgrest
+                .rpc(
+                    "remove_account_guest",
+                    RemoveAccountGuestRequest(
+                        householdId = context.id,
+                        accountId = accountId,
+                        id = guest.id,
+                        version = guest.version,
+                    ),
+                )
+        }
+
+    private suspend fun writeGuest(
+        accountId: String,
+        call: suspend (SupabaseClient) -> Unit,
+    ): AppResult<ExpenseAccountDomain> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access.write { client -> call(client) }
+            val saved = loadAccount(id = accountId)
+            accounts.clear()
+            changes.update { oldVersion -> oldVersion + 1 }
+            saved
         }
 }

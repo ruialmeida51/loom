@@ -42,8 +42,8 @@ class GetExpenseFormUseCase(
             ExpenseFormDomain(
                 account = account,
                 members =
-                    membersRequest.await().filter {
-                        it.id in account.memberIds &&
+                    account.withGuests(membersRequest.await()).filter {
+                        it.id in account.participantIds &&
                             (it.active ||
                                 it.id == expense?.paidBy ||
                                 it.id in expense?.shares.orEmpty())

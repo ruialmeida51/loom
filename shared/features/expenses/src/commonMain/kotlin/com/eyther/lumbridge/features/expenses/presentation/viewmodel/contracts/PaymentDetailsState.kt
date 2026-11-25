@@ -30,7 +30,7 @@ data class PaymentDetailsState(
     val deleted: Boolean = false,
 ) {
     val details: PaymentDetailsUi? = account?.let {
-        payment?.toDetailsUi(account = it, members = members, userId = userId)
+        payment?.toDetailsUi(account = it, members = it.withGuests(members), userId = userId)
     }
     val canEdit: Boolean =
         !busy &&

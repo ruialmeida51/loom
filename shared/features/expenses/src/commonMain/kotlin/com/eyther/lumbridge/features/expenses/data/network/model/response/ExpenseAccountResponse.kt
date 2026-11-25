@@ -13,4 +13,5 @@ internal data class ExpenseAccountResponse(
     @SerialName("archived") val archived: Boolean,
     @SerialName("version") val version: Long,
     @SerialName("created_by") val createdBy: String,
+    @SerialName("guests") val guests: List<ExpenseGuestResponse> = emptyList(),
 )

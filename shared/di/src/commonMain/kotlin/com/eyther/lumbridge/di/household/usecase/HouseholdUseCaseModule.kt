@@ -27,9 +27,11 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementUseCas
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveAccountGuestUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplitUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveAccountGuestUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
@@ -472,6 +474,18 @@ class HouseholdUseCaseModule {
             getMembersUseCase = getMembersUseCase,
             context = context,
         )
+
+    @Single
+    fun provideSaveAccountGuestUseCase(
+        expenseAccountDataSource: ExpenseAccountDataSource,
+    ): SaveAccountGuestUseCase =
+        SaveAccountGuestUseCase(expenseAccountDataSource = expenseAccountDataSource)
+
+    @Single
+    fun provideRemoveAccountGuestUseCase(
+        expenseAccountDataSource: ExpenseAccountDataSource,
+    ): RemoveAccountGuestUseCase =
+        RemoveAccountGuestUseCase(expenseAccountDataSource = expenseAccountDataSource)
 
     @Single
     fun provideGetExpenseAccountUseCase(

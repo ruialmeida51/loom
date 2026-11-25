@@ -10,6 +10,7 @@ import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDa
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
@@ -91,6 +92,16 @@ class ExpenseFormFixture {
 
             override suspend fun deleteAccount(account: ExpenseAccountDomain): AppResult<Unit> =
                 error("Not used")
+
+            override suspend fun saveGuest(
+                accountId: String,
+                guest: ExpenseGuestDomain,
+            ): AppResult<ExpenseAccountDomain> = error("Not used")
+
+            override suspend fun removeGuest(
+                accountId: String,
+                guest: ExpenseGuestDomain,
+            ): AppResult<ExpenseAccountDomain> = error("Not used")
         }
     val household: HouseholdDataSource =
         object : HouseholdDataSource {

@@ -6,6 +6,7 @@ import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDa
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpensesStreamUseCase
@@ -112,6 +113,12 @@ class InsightsScreenViewModelTest {
                     AppResult.Success(Unit)
 
                 override suspend fun saveAccount(account: ExpenseAccountDomain) =
+                    AppResult.Success(account)
+
+                override suspend fun saveGuest(accountId: String, guest: ExpenseGuestDomain) =
+                    AppResult.Success(account)
+
+                override suspend fun removeGuest(accountId: String, guest: ExpenseGuestDomain) =
                     AppResult.Success(account)
             }
         val statementSource =

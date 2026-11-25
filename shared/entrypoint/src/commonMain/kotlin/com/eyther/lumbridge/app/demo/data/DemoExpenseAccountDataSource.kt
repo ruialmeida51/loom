@@ -6,6 +6,7 @@ import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseAccountError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -40,5 +41,52 @@ class DemoExpenseAccountDataSource(private val store: DemoHouseholdStore) :
         store.recurring.update { items -> items.filterNot { it.accountId == account.id } }
         accounts.update { items -> items.filterNot { it.id == account.id } }
         if (selected.value == account.id) selected.value = store.context.id
+    }
+
+    override suspend fun saveGuest(accountId: String, guest: ExpenseGuestDomain) = safeCall {
+        val account = accounts.value.first { it.id == accountId }
+        requireDomain(account.acceptsGuests) { ExpenseAccountError.GuestsNotOnEveryday() }
+        val saved = guest.copy(version = guest.version + 1)
+        val guests =
+            if (account.guests.any { it.id == guest.id })
+                account.guests.map { if (it.id == guest.id) saved else it }
+            else account.guests + saved
+        replace(account.copy(guests = guests))
+    }
+
+    override suspend fun removeGuest(accountId: String, guest: ExpenseGuestDomain) = safeCall {
+        val account = accounts.value.first { it.id == accountId }
+        val spent =
+            store.expenses.value
+                .filter { it.accountId == accountId }
+                .sumOf { expense ->
+                    (if (expense.paidBy == guest.id) expense.amountMinor else 0L) -
+                        (expense.shares[guest.id] ?: 0L)
+                }
+        val settled =
+            store.settlements.value
+                .filter { it.accountId == accountId }
+                .sumOf { settlement ->
+                    when (guest.id) {
+                        settlement.from -> settlement.amountMinor
+                        settlement.to -> -settlement.amountMinor
+                        else -> 0L
+                    }
+                }
+        requireDomain(spent + settled == 0L) { ExpenseAccountError.GuestHasBalance() }
+        replace(
+            account.copy(
+                guests =
+                    account.guests.map {
+                        if (it.id == guest.id) it.copy(removed = true, version = it.version + 1)
+                        else it
+                    },
+            ),
+        )
+    }
+
+    private fun replace(account: ExpenseAccountDomain): ExpenseAccountDomain {
+        accounts.update { items -> items.map { if (it.id == account.id) account else it } }
+        return account
     }
 }

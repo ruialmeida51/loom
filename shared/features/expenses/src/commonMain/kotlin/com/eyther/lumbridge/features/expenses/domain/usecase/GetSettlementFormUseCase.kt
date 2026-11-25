@@ -39,7 +39,10 @@ class GetSettlementFormUseCase(
             val account = accountRequest.await()
             SettlementFormDomain(
                 account = account,
-                members = membersRequest.await().filter { it.id in account.memberIds },
+                members =
+                    account.withGuests(membersRequest.await()).filter {
+                        it.id in account.participantIds
+                    },
                 settlement = settlementRequest.await(),
             )
         }
