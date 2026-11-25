@@ -27,7 +27,11 @@ internal fun ExpenseShareRow(share: ExpenseShareUi) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
     ) {
-        MemberAvatar(memberId = share.id, initials = share.initials)
+        MemberAvatar(
+            memberId = share.id,
+            initials = share.initials,
+            picturePath = share.avatarPath,
+        )
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),

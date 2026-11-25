@@ -20,6 +20,7 @@ data class HomeCounterpartyUi(
     val name: String?,
     val amount: String,
     val owesYou: Boolean,
+    val avatarPath: String? = null,
 )
 
 @Immutable

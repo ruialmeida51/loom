@@ -13,6 +13,7 @@ data class SuggestedRepaymentUi(
     val isCurrentUserRecipient: Boolean,
     val canRecord: Boolean = false,
     val recordEnabled: Boolean = canRecord,
+    val counterpartyAvatarPath: String? = null,
 ) {
     val counterpartyId: String = if (isCurrentUserSender) settlement.to else settlement.from
     val counterpartyInitials: String =

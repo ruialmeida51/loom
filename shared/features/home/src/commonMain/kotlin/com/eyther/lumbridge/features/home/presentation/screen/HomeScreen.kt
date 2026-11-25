@@ -31,8 +31,8 @@ import com.eyther.lumbridge.features.feed.presentation.components.FeedPreview
 import com.eyther.lumbridge.features.feed.presentation.components.FeedPreviewLoading
 import com.eyther.lumbridge.features.feed.presentation.model.ArticlePreviewUi
 import com.eyther.lumbridge.features.home.generated.resources.Res
-import com.eyther.lumbridge.features.home.generated.resources.home_all_news
 import com.eyther.lumbridge.features.home.generated.resources.home_add_task
+import com.eyther.lumbridge.features.home.generated.resources.home_all_news
 import com.eyther.lumbridge.features.home.generated.resources.home_all_tasks
 import com.eyther.lumbridge.features.home.generated.resources.home_choose_sources
 import com.eyther.lumbridge.features.home.generated.resources.home_greeting_afternoon
@@ -58,6 +58,7 @@ import com.eyther.lumbridge.features.home.presentation.model.HomeGreetingUi
 import com.eyther.lumbridge.features.home.presentation.model.HomeTaskUi
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingPreview
 import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.stringResource
@@ -89,6 +90,8 @@ fun HomeScreen(
             tasks = state.tasks,
             shoppingItems = state.shoppingItems,
             moreShoppingCount = state.moreShoppingCount,
+            shoppingList = state.shoppingList,
+            shoppingCount = state.shoppingCount,
             articles = state.articles,
             tasksLoading = state.tasksLoading,
             tasksRefreshing = state.tasksRefreshing,
@@ -133,6 +136,8 @@ private fun InnerHomeScreen(
     tasks: ImmutableList<HomeTaskUi>,
     shoppingItems: ImmutableList<ShoppingItemDomain>,
     moreShoppingCount: Int,
+    shoppingList: ShoppingListDomain?,
+    shoppingCount: Int,
     articles: ImmutableList<ArticlePreviewUi>,
     tasksLoading: Boolean,
     tasksRefreshing: Boolean,
@@ -259,9 +264,11 @@ private fun InnerHomeScreen(
                         if (shoppingLoading) HomeShoppingLoading()
                         else if (shoppingItems.isNotEmpty())
                             ShoppingPreview(
+                                list = shoppingList,
                                 items = shoppingItems,
-                                onOpen = onShopping,
+                                totalCount = shoppingCount,
                                 moreCount = moreShoppingCount,
+                                onOpen = onShopping,
                             )
                         else if (hasShopping && shoppingError == null)
                             IllustratedEmptyState(

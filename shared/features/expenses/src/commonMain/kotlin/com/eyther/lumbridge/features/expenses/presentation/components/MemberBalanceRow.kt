@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.expenses.presentation.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -8,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
@@ -27,8 +29,14 @@ internal fun MemberBalanceRow(member: MemberBalanceUi) {
         }
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
         modifier = Modifier.padding(vertical = LoomSpacing.small),
     ) {
+        MemberAvatar(
+            memberId = member.member.id,
+            initials = member.member.name.trim().take(1).uppercase(),
+            picturePath = member.member.avatarPath,
+        )
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 member.member.name.ifBlank { stringResource(Res.string.former_member) },

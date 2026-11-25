@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
@@ -59,6 +60,11 @@ internal fun ExpenseSplitParticipantRow(
             checked = selected,
             onCheckedChange = { onToggle() },
             modifier = Modifier.semantics { contentDescription = member.name },
+        )
+        MemberAvatar(
+            memberId = member.id,
+            initials = member.name.trim().take(1).uppercase(),
+            picturePath = member.avatarPath,
         )
         Column(
             Modifier.weight(1f),

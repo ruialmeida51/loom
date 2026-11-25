@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.home.presentation.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.LoomTonalButton
+import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.extensions.shimmer
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
@@ -41,7 +41,7 @@ import com.eyther.lumbridge.features.home.presentation.model.HomeBalanceUi
 import org.jetbrains.compose.resources.stringResource
 
 private val CardPadding = 20.dp
-private val MemberDotSize = 8.dp
+private val MemberAvatarSize = 24.dp
 
 /**
  * Home's hero: the user's position on the everyday account, who they settle with, and the two
@@ -122,9 +122,11 @@ private fun BalanceSummary(balance: HomeBalanceUi) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Box(
-                        Modifier.size(MemberDotSize)
-                            .background(LoomColors.member(person.memberId), CircleShape),
+                    MemberAvatar(
+                        memberId = person.memberId,
+                        initials = (person.name ?: former).take(1).uppercase(),
+                        picturePath = person.avatarPath,
+                        modifier = Modifier.size(MemberAvatarSize),
                     )
                     Text(
                         stringResource(
