@@ -4,6 +4,8 @@
 
 - Add guests to trips and events: people outside the household who can pay, share costs and settle up in that account only.
 - Guests show a Guest tag in splits, payers, expense details and balances.
+- Recurring bills are easier to find and set up: "Repeat every month" sits next to the date, and the Money tab shows what's due next.
+- New expenses show which account they're added to, and you can switch it there, including from Home.
 
 ## [4.0.17] - 2026-11-25
 

@@ -30,6 +30,7 @@ import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.resources.calendarDateText
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
@@ -60,6 +61,7 @@ import com.eyther.lumbridge.features.expenses.presentation.model.ReceiptPhotoUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.household.presentation.components.MemberPickerRow
+import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -96,7 +98,12 @@ fun ExpenseFormScreen(
         title = state.title,
         amount = state.amount,
         paidBy = state.paidBy,
-        date = state.occurredOn,
+        date =
+            state.occurredOn
+                .takeIf { it.isNotEmpty() }
+                ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+                ?.let { calendarDateText(it) }
+                ?: state.occurredOn,
         category = state.category,
         recurring = state.recurring,
         repeatDay = state.repeatDay,
