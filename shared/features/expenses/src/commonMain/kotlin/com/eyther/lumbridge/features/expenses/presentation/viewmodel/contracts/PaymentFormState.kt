@@ -33,7 +33,8 @@ data class PaymentFormState(
             to.isNotBlank() &&
             from != to &&
             amount.isNotBlank() &&
-            (payment == null ||
+            (payment == null && account.canRecordPayment(userId, from, to) ||
+                payment != null &&
                 payment.canManage(
                     userId = userId,
                     isOwner = members.any { it.id == userId && it.role == "owner" },

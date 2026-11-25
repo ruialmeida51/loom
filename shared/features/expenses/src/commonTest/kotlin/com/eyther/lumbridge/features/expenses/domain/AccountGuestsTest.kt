@@ -47,6 +47,14 @@ class AccountGuestsTest {
     }
 
     @Test
+    fun anyAccountMemberRecordsAGuestsPaymentButNotOtherMembersPayments() {
+        assertTrue(trip.canRecordPayment(userId = "you", from = "marta", to = "alex"))
+        assertTrue(trip.canRecordPayment(userId = "you", from = "you", to = "alex"))
+        assertFalse(trip.canRecordPayment(userId = "you", from = "alex", to = "sam"))
+        assertFalse(trip.canRecordPayment(userId = "outsider", from = "marta", to = "alex"))
+    }
+
+    @Test
     fun guestNamesAreTrimmedAndBoundedBeforeReachingTheServer() = runTest {
         val source = GuestSource(trip)
         val save = SaveAccountGuestUseCase(source)

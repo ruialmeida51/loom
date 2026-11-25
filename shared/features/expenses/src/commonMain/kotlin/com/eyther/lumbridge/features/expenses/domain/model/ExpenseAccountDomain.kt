@@ -24,6 +24,12 @@ data class ExpenseAccountDomain(
 
     fun canAddExpense(userId: String): Boolean = !archived && userId in memberIds
 
+    /** People record their own repayments; any member records a guest's, who has no app. */
+    fun canRecordPayment(userId: String, from: String, to: String): Boolean =
+        userId == from ||
+            userId == to ||
+            (userId in memberIds && guests.any { it.id == from || it.id == to })
+
     /** [members] followed by this account's guests, as one participant list. */
     fun withGuests(members: List<MemberDomain>): List<MemberDomain> =
         members + guests.map { it.asParticipant() }.filter { guest -> members.none { it.id == guest.id } }

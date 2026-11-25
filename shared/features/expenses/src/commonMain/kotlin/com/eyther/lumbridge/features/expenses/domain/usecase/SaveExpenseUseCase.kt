@@ -48,19 +48,22 @@ class SaveExpenseUseCase(
             val accountRequest = async {
                 expenseAccountDataSource.getAccount(id = expense.accountId).getOrThrow()
             }
-            val memberIds = memberRequest.await()
-            requireDomain(
-                expense.paidBy in memberIds && memberIds.containsAll(expense.shares.keys),
-            ) {
-                ExpenseError.InvalidMembers()
-            }
             val account = accountRequest.await()
             requireDomain(account.canAddExpense(userId = context.userId)) {
                 ExpenseAccountError.Archived()
             }
+            // Guests take part like members, inside their own account only.
+            val people =
+                memberRequest.await() +
+                    account.guests
+                        .filter { !it.removed || expense.version > 0 }
+                        .map { it.id }
+            requireDomain(expense.paidBy in people && people.containsAll(expense.shares.keys)) {
+                ExpenseError.InvalidMembers()
+            }
             requireDomain(
-                expense.paidBy in account.memberIds &&
-                    account.memberIds.containsAll(expense.shares.keys),
+                expense.paidBy in account.participantIds &&
+                    account.participantIds.containsAll(expense.shares.keys),
             ) {
                 ExpenseAccountError.InvalidMembers()
             }
