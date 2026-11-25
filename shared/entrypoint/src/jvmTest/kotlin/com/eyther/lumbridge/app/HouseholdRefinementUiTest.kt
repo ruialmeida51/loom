@@ -16,6 +16,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.LoomDemoApp
@@ -58,7 +59,9 @@ class HouseholdRefinementUiTest {
     fun shoppingPreviewOpensTheExistingRootAndProfileGroupsHaveSeparateLayouts() =
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
             startApp()
-            onNodeWithTag("home_shopping_preview").performScrollTo().assertIsDisplayed()
+            awaitLoadedDestination(tag = "home_content")
+            onNodeWithTag("home_content").performScrollToNode(hasTestTag("home_shopping_preview"))
+            onNodeWithTag("home_shopping_preview").assertIsDisplayed()
             onNodeWithText("Coffee beans").assertDoesNotExist()
             capture("home-shopping-preview")
             onNode(hasText("View all") and hasAnyAncestor(hasTestTag("home_shopping_preview")))

@@ -17,17 +17,21 @@ internal class EmptyHomeViewModel : HomeScreenViewModelContract() {
                 tasksLoading = false,
                 shoppingLoading = false,
                 feedLoading = false,
+                balances = emptyMap(),
+                balanceLoading = false,
             ),
         )
     override val state = mutableState.asStateFlow()
 
     override fun onRetry() = Unit
 
-    override fun onArticleOpened(id: String) = Unit
+    override fun onArticleReadChanged(id: String, read: Boolean) = Unit
 
     override fun onTasksErrorDismissed() = Unit
 
     override fun onShoppingErrorDismissed() = Unit
 
     override fun onFeedErrorDismissed() = Unit
+
+    override fun onBalanceErrorDismissed() = Unit
 }

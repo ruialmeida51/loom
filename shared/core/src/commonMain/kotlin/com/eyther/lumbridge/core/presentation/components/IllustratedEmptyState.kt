@@ -30,19 +30,7 @@ fun IllustratedEmptyState(title: String, glyph: Glyph, modifier: Modifier = Modi
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
         ) {
-            Surface(
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.secondaryContainer,
-            ) {
-                Box(modifier = Modifier.size(36.dp), contentAlignment = Alignment.Center) {
-                    LoomIcon(
-                        glyph = glyph,
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        decorative = true,
-                    )
-                }
-            }
+            IconTile(glyph = glyph)
             Text(title, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
         }
     }

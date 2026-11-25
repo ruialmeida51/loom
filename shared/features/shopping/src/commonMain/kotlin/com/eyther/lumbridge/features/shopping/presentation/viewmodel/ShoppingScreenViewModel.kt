@@ -28,6 +28,7 @@ import com.eyther.lumbridge.features.shopping.generated.resources.completed_dele
 import com.eyther.lumbridge.features.shopping.generated.resources.favorite_updated
 import com.eyther.lumbridge.features.shopping.generated.resources.item_moved
 import com.eyther.lumbridge.features.shopping.generated.resources.item_removed
+import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingRowUi
 import com.eyther.lumbridge.features.shopping.generated.resources.item_restored
 import com.eyther.lumbridge.features.shopping.generated.resources.item_updated
 import com.eyther.lumbridge.features.shopping.presentation.mapper.toShoppingTextResource
@@ -460,8 +461,59 @@ class ShoppingScreenViewModel(
         }
     }
 
-    override fun onEditingFinished() {
-        commitEditing()
+    override fun onEditingFinished(itemId: String) {
+        if (state.value.editingItemId == itemId) commitEditing()
+    }
+
+    /**
+     * Keep parity: erasing past the start of an empty line removes that item (with Undo) and
+     * continues editing the line above, or the one below when it was the first.
+     */
+    override fun onEditingDeleteEmpty() {
+        val id = state.value.editingItemId ?: return
+        if (inputState.value.editingName.isNotEmpty()) return
+        val item = state.value.snapshot.items.firstOrNull { it.id == id } ?: return
+        val neighbour = focusNeighbour(item)
+        mutableState.update { oldState -> oldState.copy(editingItemId = null) }
+        saveItem(
+            item = item.copy(removed = true),
+            message = TextResource.Resource(Res.string.item_removed),
+        )
+        neighbour?.let(::editInPlace)
+    }
+
+    override fun onDraftDeleteEmpty() {
+        val afterId = state.value.draftAfterId ?: return
+        if (inputState.value.draftName.isNotEmpty()) return
+        mutableState.update { oldState -> oldState.copy(draftAfterId = null) }
+        state.value.snapshot.items
+            .firstOrNull { it.id == afterId && !it.checked && !it.removed }
+            ?.let(::editInPlace)
+    }
+
+    override fun onEntryDeleteEmpty() {
+        if (inputState.value.inlineName.isNotEmpty()) return
+        state.value.uncheckedRows
+            .filterIsInstance<ShoppingRowUi.Item>()
+            .lastOrNull()
+            ?.let { editInPlace(it.item) }
+    }
+
+    /** The line above in the same section, else the line below. */
+    private fun focusNeighbour(item: ShoppingItemDomain): ShoppingItemDomain? {
+        val section =
+            if (item.checked) state.value.completedItems
+            else state.value.uncheckedRows.filterIsInstance<ShoppingRowUi.Item>().map { it.item }
+        val index = section.indexOfFirst { it.id == item.id }
+        if (index < 0) return null
+        return section.getOrNull(index - 1) ?: section.getOrNull(index + 1)
+    }
+
+    private fun editInPlace(item: ShoppingItemDomain) {
+        inputState.update { oldState -> oldState.copy(editingName = item.name) }
+        mutableState.update { oldState ->
+            oldState.copy(editingItemId = item.id, draftAfterId = null)
+        }
     }
 
     /** Renames are visible in place, so they save without an Undo snackbar; blank text reverts. */

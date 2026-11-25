@@ -9,6 +9,8 @@ data class SettlementDomain(
     val accountId: String = "",
     val createdBy: String = "",
     val version: Long = 0,
+    /** ISO-8601 instant the record was entered; empty until the server stores it. */
+    val createdAt: String = "",
 ) {
     fun canManage(userId: String, isOwner: Boolean): Boolean =
         isOwner || userId == createdBy || userId == from || userId == to

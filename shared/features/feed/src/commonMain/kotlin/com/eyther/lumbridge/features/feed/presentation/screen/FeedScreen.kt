@@ -175,6 +175,7 @@ private fun InnerFeedScreen(
                         onOpen(article.url)
                     },
                     onReadChanged = { onMarkRead(article.id, !article.read) },
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         if (!loading && hasMore)

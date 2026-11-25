@@ -185,6 +185,7 @@ fun HouseholdHost(
                         onRootChanged = { showTabs = it },
                         onShopping = { navigator.navigateTo(HouseholdDestination.Shopping) },
                         onTasks = { navigator.navigateTo(HouseholdDestination.Tasks) },
+                        onMoney = { navigator.navigateTo(HouseholdDestination.Balances) },
                     )
                 HouseholdDestination.Shopping ->
                     ShoppingHost(

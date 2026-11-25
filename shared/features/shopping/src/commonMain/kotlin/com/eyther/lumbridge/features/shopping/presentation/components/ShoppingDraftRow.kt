@@ -23,6 +23,7 @@ fun ShoppingDraftRow(
     onValue: (String) -> Unit,
     onNext: () -> Unit,
     onFinished: () -> Unit,
+    onDeleteEmpty: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -43,6 +44,7 @@ fun ShoppingDraftRow(
             onValue = onValue,
             onNext = onNext,
             onFocusLost = onFinished,
+            onDeleteEmpty = onDeleteEmpty,
             placeholder = stringResource(Res.string.checklist_add_item),
             modifier = Modifier.weight(1f).testTag("shopping_draft_input"),
         )

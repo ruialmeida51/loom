@@ -18,4 +18,5 @@ internal data class ExpenseResponse(
     @SerialName("occurred_on") val occurredOn: String,
     @SerialName("shares") val shares: Map<String, Long>,
     @SerialName("recurring") val recurring: Boolean,
+    @SerialName("created_at") val createdAt: String = "",
 )

@@ -62,6 +62,7 @@ import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedScreenViewM
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedSubscriptionsScreenViewModel
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedSubscriptionsScreenViewModelContract
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeBalanceStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCase
 import com.eyther.lumbridge.features.home.presentation.viewmodel.HomeScreenViewModel
@@ -185,6 +186,8 @@ class HouseholdViewModelModule {
         getHomeShoppingStreamUseCase: GetHomeShoppingStreamUseCase,
         getFeedStreamUseCase: GetFeedStreamUseCase,
         markArticleReadUseCase: MarkArticleReadUseCase,
+        getHomeBalanceStreamUseCase: GetHomeBalanceStreamUseCase,
+        getMembersStreamUseCase: GetMembersStreamUseCase,
         context: HouseholdContextDomain,
     ): HomeScreenViewModelContract =
         HomeScreenViewModel(
@@ -192,6 +195,8 @@ class HouseholdViewModelModule {
             getHomeShoppingStreamUseCase = getHomeShoppingStreamUseCase,
             getFeedStreamUseCase = getFeedStreamUseCase,
             markArticleReadUseCase = markArticleReadUseCase,
+            getHomeBalanceStreamUseCase = getHomeBalanceStreamUseCase,
+            getMembersStreamUseCase = getMembersStreamUseCase,
             context = context,
         )
 

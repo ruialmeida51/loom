@@ -47,6 +47,7 @@ import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedSubscription
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RemoveFeedSubscriptionUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.UpdateFeedSubscriptionUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeBalanceStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCase
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
@@ -273,6 +274,18 @@ class HouseholdUseCaseModule {
     ): GetHomeTasksStreamUseCase =
         GetHomeTasksStreamUseCase(
             getTasksStreamUseCase = getTasksStreamUseCase,
+            context = context,
+        )
+
+    @Single
+    fun provideGetHomeBalanceStreamUseCase(
+        getExpensesStreamUseCase: GetExpensesStreamUseCase,
+        getSettlementsStreamUseCase: GetSettlementsStreamUseCase,
+        context: HouseholdContextDomain,
+    ): GetHomeBalanceStreamUseCase =
+        GetHomeBalanceStreamUseCase(
+            getExpensesStreamUseCase = getExpensesStreamUseCase,
+            getSettlementsStreamUseCase = getSettlementsStreamUseCase,
             context = context,
         )
 

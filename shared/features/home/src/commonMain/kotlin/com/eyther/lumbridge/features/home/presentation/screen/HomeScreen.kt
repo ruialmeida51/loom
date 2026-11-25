@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ import com.eyther.lumbridge.core.presentation.components.RefreshSkeletonContent
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.layout.RootHeading
 import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
@@ -30,8 +32,12 @@ import com.eyther.lumbridge.features.feed.presentation.components.FeedPreviewLoa
 import com.eyther.lumbridge.features.feed.presentation.model.ArticlePreviewUi
 import com.eyther.lumbridge.features.home.generated.resources.Res
 import com.eyther.lumbridge.features.home.generated.resources.home_all_news
+import com.eyther.lumbridge.features.home.generated.resources.home_add_task
 import com.eyther.lumbridge.features.home.generated.resources.home_all_tasks
 import com.eyther.lumbridge.features.home.generated.resources.home_choose_sources
+import com.eyther.lumbridge.features.home.generated.resources.home_greeting_afternoon
+import com.eyther.lumbridge.features.home.generated.resources.home_greeting_evening
+import com.eyther.lumbridge.features.home.generated.resources.home_greeting_morning
 import com.eyther.lumbridge.features.home.generated.resources.home_news
 import com.eyther.lumbridge.features.home.generated.resources.home_news_empty
 import com.eyther.lumbridge.features.home.generated.resources.home_nothing_due
@@ -39,12 +45,16 @@ import com.eyther.lumbridge.features.home.generated.resources.home_shopping
 import com.eyther.lumbridge.features.home.generated.resources.home_shopping_empty
 import com.eyther.lumbridge.features.home.generated.resources.home_shopping_view_all
 import com.eyther.lumbridge.features.home.generated.resources.home_tasks
+import com.eyther.lumbridge.features.home.generated.resources.home_today
 import com.eyther.lumbridge.features.home.generated.resources.ui_try_again
-import com.eyther.lumbridge.features.home.presentation.components.HomeQuickActions
+import com.eyther.lumbridge.features.home.presentation.components.HomeAddTaskRow
+import com.eyther.lumbridge.features.home.presentation.components.HomeBalanceCard
 import com.eyther.lumbridge.features.home.presentation.components.HomeRefreshLoading
 import com.eyther.lumbridge.features.home.presentation.components.HomeShoppingLoading
 import com.eyther.lumbridge.features.home.presentation.components.HomeTaskRow
 import com.eyther.lumbridge.features.home.presentation.components.HomeTasksLoading
+import com.eyther.lumbridge.features.home.presentation.model.HomeBalanceUi
+import com.eyther.lumbridge.features.home.presentation.model.HomeGreetingUi
 import com.eyther.lumbridge.features.home.presentation.model.HomeTaskUi
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
@@ -59,6 +69,7 @@ fun HomeScreen(
     onTasks: () -> Unit,
     onAddExpense: () -> Unit,
     onAddTask: () -> Unit,
+    onBalances: () -> Unit,
     onFeed: () -> Unit,
     onOpenStory: (String) -> Unit,
 ) {
@@ -69,6 +80,12 @@ fun HomeScreen(
         coverContentOnRefresh = false,
     ) {
         InnerHomeScreen(
+            greeting = state.greeting,
+            balance = state.balance,
+            balanceRefreshing = state.balanceRefreshing,
+            balanceError = state.balanceError,
+            onDismissBalanceError = viewModel::onBalanceErrorDismissed,
+            onBalances = onBalances,
             tasks = state.tasks,
             shoppingItems = state.shoppingItems,
             moreShoppingCount = state.moreShoppingCount,
@@ -94,8 +111,11 @@ fun HomeScreen(
             onAddExpense = onAddExpense,
             onAddTask = onAddTask,
             onFeed = onFeed,
+            onArticleReadChanged = { article ->
+                viewModel.onArticleReadChanged(id = article.id, read = !article.read)
+            },
             onOpenStory = { article ->
-                viewModel.onArticleOpened(id = article.id)
+                viewModel.onArticleReadChanged(id = article.id, read = true)
                 onOpenStory(article.url)
             },
         )
@@ -104,6 +124,12 @@ fun HomeScreen(
 
 @Composable
 private fun InnerHomeScreen(
+    greeting: HomeGreetingUi,
+    balance: HomeBalanceUi?,
+    balanceRefreshing: Boolean,
+    balanceError: TextResource?,
+    onDismissBalanceError: () -> Unit,
+    onBalances: () -> Unit,
     tasks: ImmutableList<HomeTaskUi>,
     shoppingItems: ImmutableList<ShoppingItemDomain>,
     moreShoppingCount: Int,
@@ -129,6 +155,7 @@ private fun InnerHomeScreen(
     onAddExpense: () -> Unit,
     onAddTask: () -> Unit,
     onFeed: () -> Unit,
+    onArticleReadChanged: (ArticlePreviewUi) -> Unit,
     onOpenStory: (ArticlePreviewUi) -> Unit,
 ) {
     LazyColumn(
@@ -136,9 +163,33 @@ private fun InnerHomeScreen(
         contentPadding = rootContentPadding(horizontal = 0.dp),
         verticalArrangement = Arrangement.spacedBy(LoomSpacing.section),
     ) {
-        item(key = "quick_actions") {
-            Column(Modifier.padding(horizontal = LoomSpacing.content)) {
-                HomeQuickActions(onAddExpense = onAddExpense, onAddTask = onAddTask)
+        item(key = "greeting") {
+            RootHeading(
+                title =
+                    stringResource(
+                        when (greeting) {
+                            HomeGreetingUi.MORNING -> Res.string.home_greeting_morning
+                            HomeGreetingUi.AFTERNOON -> Res.string.home_greeting_afternoon
+                            HomeGreetingUi.EVENING -> Res.string.home_greeting_evening
+                        },
+                    ),
+                modifier =
+                    Modifier.padding(horizontal = LoomSpacing.content).testTag("home_greeting"),
+            )
+        }
+        item(key = "balance") {
+            Column(
+                Modifier.padding(horizontal = LoomSpacing.content),
+                verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+            ) {
+                HomeBalanceCard(
+                    balance = if (balanceRefreshing) null else balance,
+                    onAddExpense = onAddExpense,
+                    onBalances = onBalances,
+                )
+                balanceError?.let {
+                    HomeSectionError(message = it, onDismiss = onDismissBalanceError, onRetry = onRetry)
+                }
             }
         }
         item(key = "tasks") {
@@ -148,30 +199,36 @@ private fun InnerHomeScreen(
             ) {
                 Column(
                     Modifier.padding(horizontal = LoomSpacing.content),
-                    verticalArrangement = Arrangement.spacedBy(LoomSpacing.content),
+                    verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
                 ) {
                     SectionTitle(
-                        title = stringResource(Res.string.home_tasks),
+                        title = stringResource(Res.string.home_today),
                         action = stringResource(Res.string.home_all_tasks),
                         onAction = onTasks,
                     )
                     if (tasksLoading) HomeTasksLoading()
-                    else if (tasks.isNotEmpty())
+                    else if (tasksError == null || hasTasks)
                         GroupedSurface {
-                            tasks.forEachIndexed { index, task ->
+                            tasks.forEach { task ->
                                 HomeTaskRow(task = task, onClick = onTasks)
-                                if (index < tasks.lastIndex)
-                                    HorizontalDivider(
-                                        color = MaterialTheme.colorScheme.outlineVariant,
-                                    )
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             }
+                            if (tasks.isEmpty() && hasTasks) {
+                                Text(
+                                    stringResource(Res.string.home_nothing_due),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier =
+                                        Modifier.padding(LoomSpacing.content)
+                                            .testTag("home_tasks_empty"),
+                                )
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            }
+                            HomeAddTaskRow(
+                                label = stringResource(Res.string.home_add_task),
+                                onClick = onAddTask,
+                            )
                         }
-                    else if (hasTasks && tasksError == null)
-                        IllustratedEmptyState(
-                            title = stringResource(Res.string.home_nothing_due),
-                            glyph = Glyph.CHECK,
-                            modifier = Modifier.testTag("home_tasks_empty"),
-                        )
                     tasksError?.let {
                         HomeSectionError(
                             message = it,
@@ -189,7 +246,7 @@ private fun InnerHomeScreen(
                     skeleton = { HomeRefreshLoading() },
                 ) {
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(LoomSpacing.content),
+                        verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
                         modifier =
                             Modifier.padding(horizontal = LoomSpacing.content)
                                 .testTag("home_shopping_preview"),
@@ -245,7 +302,11 @@ private fun InnerHomeScreen(
                     )
                     if (feedLoading) FeedPreviewLoading()
                     else if (articles.isNotEmpty())
-                        FeedPreview(articles = articles, onOpen = onOpenStory)
+                        FeedPreview(
+                            articles = articles,
+                            onOpen = onOpenStory,
+                            onReadChanged = onArticleReadChanged,
+                        )
                     else if (hasFeed && feedError == null)
                         Column(Modifier.padding(horizontal = LoomSpacing.content)) {
                             GroupedSurface {

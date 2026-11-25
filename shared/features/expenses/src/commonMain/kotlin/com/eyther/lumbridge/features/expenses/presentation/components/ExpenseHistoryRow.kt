@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -18,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.IconTile
 import com.eyther.lumbridge.core.presentation.components.cardSegment
 import com.eyther.lumbridge.core.presentation.components.cardSegmentShape
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -143,11 +143,7 @@ private fun HistoryCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
         ) {
-            Surface(shape = CircleShape, color = emphasis.copy(alpha = .12f)) {
-                Box(Modifier.size(EntryIconSize), contentAlignment = Alignment.Center) {
-                    LoomIcon(glyph = glyph, tint = emphasis, decorative = true)
-                }
-            }
+            IconTile(glyph = glyph, size = EntryIconSize, tint = emphasis)
             Column(
                 Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),

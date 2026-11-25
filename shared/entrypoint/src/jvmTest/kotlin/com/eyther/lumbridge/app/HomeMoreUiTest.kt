@@ -31,7 +31,7 @@ import org.jetbrains.skia.Image
 @OptIn(ExperimentalTestApi::class)
 class HomeMoreUiTest {
     @Test
-    fun squareActionsKeepHomeAndTheFullTaskListHasItsOwnTab() =
+    fun homeLeadsWithTheBalanceAndTheFullTaskListHasItsOwnTab() =
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
             ThemePreferences.set("LIGHT")
             setContent { LoomDemoApp() }
@@ -39,20 +39,18 @@ class HomeMoreUiTest {
                 onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
                     onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
-            for (tag in listOf("home_action_icon_MONEY", "home_action_icon_TASKS")) {
-                val bounds =
-                    onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-                assertTrue(
-                    abs(bounds.width - bounds.height) < 1f,
-                    "Quick action icons keep their square target",
-                )
+            onNodeWithTag("home_greeting").assertIsDisplayed()
+            onNodeWithTag("home_balance_card").assertIsDisplayed()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithTag("home_balance_amount").fetchSemanticsNodes().isNotEmpty()
             }
+            capture("home-light")
             onNodeWithText("Feed").assertDoesNotExist()
-            onNodeWithTag("home_add_task").performClick()
+            onNodeWithTag("home_add_task").performScrollTo().performClick()
             onNodeWithTag("form_sheet").assertIsDisplayed()
             onNodeWithText("Cancel").performClick()
             onNodeWithContentDescription("Back").assertDoesNotExist()
-            onNodeWithTag("home_add_expense").assertIsDisplayed()
+            onNodeWithTag("home_add_expense").performScrollTo().assertIsDisplayed()
             onNodeWithTag("navigation_more").performClick()
             capture("more-light")
             onNodeWithTag("more_content").assertIsDisplayed()

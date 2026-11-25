@@ -46,24 +46,24 @@ internal val LoomLightSemanticColors =
     )
 internal val LoomDarkSemanticColors =
     LoomSemanticColors(
-        positive = Color(0xFF6FD0B0),
-        positiveContainer = Color(0xFF1C3A31),
-        onPositiveContainer = Color(0xFF9FE3CC),
-        cardBorder = Color(0xFF2B2A26),
+        positive = Color(0xFF7FDABD),
+        positiveContainer = Color(0xFF1E4D40),
+        onPositiveContainer = Color(0xFFADF0D8),
+        cardBorder = Color.Transparent,
         cardShadow = false,
-        snackbar = Color(0xFF33322E),
-        onSnackbar = Color(0xFFEDEAE3),
-        snackbarAction = Color(0xFF6FD0B0),
+        snackbar = Color(0xFF3A3936),
+        onSnackbar = Color(0xFFEFECE6),
+        snackbarAction = Color(0xFF7FDABD),
         members =
             listOf(
-                Color(0xFF6FD0B0),
-                Color(0xFFE9A367),
-                Color(0xFFAFA2EA),
-                Color(0xFF8CB8E6),
-                Color(0xFFE59BC0),
-                Color(0xFFC2CF7A),
+                Color(0xFF7FDABD),
+                Color(0xFFF0B07A),
+                Color(0xFFB8ACF0),
+                Color(0xFF94C1EE),
+                Color(0xFFEDA3C8),
+                Color(0xFFC9D684),
             ),
-        onMember = Color(0xFF121211),
+        onMember = Color(0xFF141413),
     )
 internal val LocalLoomSemanticColors = staticCompositionLocalOf { LoomLightSemanticColors }
 
