@@ -36,6 +36,27 @@ class AccountGuestsUiTest {
         }
 
     @Test
+    fun anExpenseSplitWithAGuestSaves() =
+        runSkikoComposeUiTest(size = Size(440f, 900f)) {
+            startApp()
+            onNodeWithTag("navigation_money").performClick()
+            awaitLoadedDestination(tag = "expenses_content")
+            onNodeWithTag("account_chip_Porto weekend").performClick()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithText("Guesthouse").fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithTag("add_expense").performClick()
+            onNodeWithTag("expense_title").performTextInput("Port tasting")
+            onNodeWithTag("expense_amount").performTextInput("30.00")
+            onNodeWithText("3 people", substring = true).assertExists()
+            onNodeWithTag("save_expense").performClick()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithText("Port tasting").fetchSemanticsNodes().isNotEmpty() &&
+                    onAllNodesWithTag("save_expense").fetchSemanticsNodes().isEmpty()
+            }
+        }
+
+    @Test
     fun guestsAddedWhileCreatingATripAreSavedWithIt() =
         runSkikoComposeUiTest(size = Size(440f, 900f)) {
             startApp()
