@@ -14,6 +14,13 @@ abstract class ExpenseAccountFormScreenViewModelContract : LoomViewModel() {
 
     abstract fun onParticipantToggled(id: String)
 
+    /** Adds a guest: straight away when editing, with the account when creating it. */
+    abstract fun onGuestAdded(name: String)
+
+    abstract fun onGuestRenamed(id: String, name: String)
+
+    abstract fun onGuestRemoved(id: String)
+
     abstract fun onSave()
 
     abstract fun onRetry()

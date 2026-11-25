@@ -17,9 +17,11 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpense
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveAccountGuestUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplitUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveAccountGuestUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
@@ -340,6 +342,8 @@ class HouseholdViewModelModule {
         getExpenseAccountFormUseCase: GetExpenseAccountFormUseCase,
         saveExpenseAccountUseCase: SaveExpenseAccountUseCase,
         selectExpenseAccountUseCase: SelectExpenseAccountUseCase,
+        saveAccountGuestUseCase: SaveAccountGuestUseCase,
+        removeAccountGuestUseCase: RemoveAccountGuestUseCase,
         context: HouseholdContextDomain,
     ): ExpenseAccountFormScreenViewModelContract =
         ExpenseAccountFormScreenViewModel(
@@ -347,6 +351,8 @@ class HouseholdViewModelModule {
             getExpenseAccountFormUseCase = getExpenseAccountFormUseCase,
             saveExpenseAccountUseCase = saveExpenseAccountUseCase,
             selectExpenseAccountUseCase = selectExpenseAccountUseCase,
+            saveAccountGuestUseCase = saveAccountGuestUseCase,
+            removeAccountGuestUseCase = removeAccountGuestUseCase,
             context = context,
         )
 

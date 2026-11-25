@@ -46,6 +46,7 @@ internal fun ExpenseDomain.toDetailsUi(
                                 .formatted(),
                         isCurrentUser = id == userId,
                         avatarPath = memberPictures[id],
+                        isGuest = account.guests.any { it.id == id },
                         isPayer = id == paidBy,
                     )
                 }

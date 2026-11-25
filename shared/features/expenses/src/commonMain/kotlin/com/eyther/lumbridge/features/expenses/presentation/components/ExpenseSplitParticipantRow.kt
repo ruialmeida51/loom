@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
+import com.eyther.lumbridge.features.expenses.domain.model.isGuest
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.split_decrease
 import com.eyther.lumbridge.features.expenses.generated.resources.split_increase
@@ -70,7 +71,11 @@ internal fun ExpenseSplitParticipantRow(
             Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
         ) {
-            Text(member.name, style = MaterialTheme.typography.titleSmall)
+            NameWithGuestTag(
+                name = member.name,
+                isGuest = member.isGuest,
+                style = MaterialTheme.typography.titleSmall,
+            )
             amount?.let {
                 Text(
                     it,

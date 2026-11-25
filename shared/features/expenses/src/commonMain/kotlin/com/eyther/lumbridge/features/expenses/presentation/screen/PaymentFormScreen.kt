@@ -39,6 +39,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.ui_amount_1_s
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_money_sent_by
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_received_by
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_this_records_a_payment_you_ve_already_made_or
+import com.eyther.lumbridge.features.expenses.presentation.components.guestQualifier
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentFormScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.household.presentation.components.MemberPickerRow
@@ -128,6 +129,7 @@ private fun InnerPaymentFormScreen(
                     MemberPickerRow(
                         label = stringResource(Res.string.ui_money_sent_by),
                         members = members,
+                        qualifier = guestQualifier(),
                         selectedId = from,
                         currentUserId = userId,
                         onSelected = onFrom,
@@ -139,6 +141,7 @@ private fun InnerPaymentFormScreen(
                     MemberPickerRow(
                         label = stringResource(Res.string.ui_received_by),
                         members = members,
+                        qualifier = guestQualifier(),
                         selectedId = to,
                         currentUserId = userId,
                         onSelected = onTo,

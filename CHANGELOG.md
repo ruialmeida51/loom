@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Add guests to trips and events: people outside the household who can pay, share costs and settle up in that account only.
+- Guests show a Guest tag in splits, payers, expense details and balances.
+
 ## [4.0.17] - 2026-11-25
 
 - Member photos on expense details, balances, the split sheet and Home.

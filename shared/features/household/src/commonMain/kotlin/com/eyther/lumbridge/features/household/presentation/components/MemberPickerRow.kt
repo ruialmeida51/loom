@@ -34,6 +34,8 @@ fun MemberPickerRow(
     enabled: Boolean = true,
     currentUserId: String? = null,
     emphasisColor: Color = Color.Unspecified,
+    /** A short qualifier shown after a name, such as "Guest" for people outside the household. */
+    qualifier: (MemberDomain) -> String? = { null },
 ) {
     var expanded by remember { mutableStateOf(false) }
     val selectedMember = members.firstOrNull { it.id == selectedId }
@@ -41,7 +43,10 @@ fun MemberPickerRow(
     NavigationRow(
         title =
             if (selectedMember != null && selectedMember.id == currentUserId) you
-            else selectedMember?.name ?: stringResource(Res.string.member_selector_choose),
+            else
+                selectedMember?.let { member ->
+                    qualifier(member)?.let { "${member.name} · $it" } ?: member.name
+                } ?: stringResource(Res.string.member_selector_choose),
         description = label,
         glyph = Glyph.PERSON,
         onClick = { expanded = true },
@@ -59,7 +64,10 @@ fun MemberPickerRow(
                     members.forEach { member ->
                         DropdownMenuItem(
                             modifier = Modifier.semantics { selected = member.id == selectedId },
-                            text = { Text(if (member.id == currentUserId) you else member.name) },
+                            text = {
+                                val name = if (member.id == currentUserId) you else member.name
+                                Text(qualifier(member)?.let { "$name · $it" } ?: name)
+                            },
                             trailingIcon = {
                                 if (member.id == selectedId)
                                     LoomIcon(glyph = Glyph.CHECK, decorative = true)

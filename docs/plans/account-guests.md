@@ -1,6 +1,6 @@
 # Guests on trip and event accounts
 
-Status: draft for approval · Target: 4.0.18 · Gate: `account_guests` (on for everyone at launch)
+Status: approved, implemented · Target: 4.0.18 · Gate: `account_guests` (on for everyone at launch)
 
 ## Problem
 

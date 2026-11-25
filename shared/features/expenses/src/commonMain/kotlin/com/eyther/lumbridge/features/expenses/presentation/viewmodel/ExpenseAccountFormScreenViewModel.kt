@@ -9,7 +9,10 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
 import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveAccountGuestUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveAccountGuestUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesTextResource
@@ -25,12 +28,15 @@ class ExpenseAccountFormScreenViewModel(
     private val getExpenseAccountFormUseCase: GetExpenseAccountFormUseCase,
     private val saveExpenseAccountUseCase: SaveExpenseAccountUseCase,
     private val selectExpenseAccountUseCase: SelectExpenseAccountUseCase,
+    private val saveAccountGuestUseCase: SaveAccountGuestUseCase,
+    private val removeAccountGuestUseCase: RemoveAccountGuestUseCase,
     private val context: HouseholdContextDomain,
 ) : ExpenseAccountFormScreenViewModelContract() {
     private data class InnerInputState(
         val name: String = "",
         val currency: String,
         val selected: Set<String> = emptySet(),
+        val draftGuests: List<ExpenseGuestDomain> = emptyList(),
     )
 
     private val inputState = MutableStateFlow(InnerInputState(currency = context.currency))
@@ -42,7 +48,12 @@ class ExpenseAccountFormScreenViewModel(
             )
             .observeWith(viewModelScope) { state ->
                 inputState.updateState(state) { input ->
-                    copy(name = input.name, currency = input.currency, selected = input.selected)
+                    copy(
+                        name = input.name,
+                        currency = input.currency,
+                        selected = input.selected,
+                        guests = account?.activeGuests ?: input.draftGuests,
+                    )
                 }
             }
             .launchWith(viewModelScope) { state -> loadInitialData(state = state) }
@@ -67,6 +78,77 @@ class ExpenseAccountFormScreenViewModel(
         }
     }
 
+    override fun onGuestAdded(name: String) {
+        if (!state.value.canAddGuest) return
+        val guest = ExpenseGuestDomain(id = newId(), name = name.trim())
+        val account = state.value.account
+        if (account == null) {
+            if (!guest.hasValidName()) return
+            inputState.update { oldState ->
+                oldState.copy(draftGuests = oldState.draftGuests + guest)
+            }
+            return
+        }
+        saveGuest(id = guest.id) { saveAccountGuestUseCase(account = account, guest = guest) }
+    }
+
+    override fun onGuestRenamed(id: String, name: String) {
+        val account = state.value.account
+        if (account == null) {
+            inputState.update { oldState ->
+                oldState.copy(
+                    draftGuests =
+                        oldState.draftGuests.map {
+                            if (it.id == id && it.copy(name = name).hasValidName())
+                                it.copy(name = name.trim())
+                            else it
+                        },
+                )
+            }
+            return
+        }
+        val guest = account.guests.firstOrNull { it.id == id } ?: return
+        if (guest.name == name.trim()) return
+        saveGuest(id = id) {
+            saveAccountGuestUseCase(account = account, guest = guest.copy(name = name))
+        }
+    }
+
+    override fun onGuestRemoved(id: String) {
+        val account = state.value.account
+        if (account == null) {
+            inputState.update { oldState ->
+                oldState.copy(draftGuests = oldState.draftGuests.filterNot { it.id == id })
+            }
+            return
+        }
+        val guest = account.guests.firstOrNull { it.id == id } ?: return
+        saveGuest(id = id) { removeAccountGuestUseCase(account = account, guest = guest) }
+    }
+
+    private fun saveGuest(id: String, call: suspend () -> AppResult<ExpenseAccountDomain>) {
+        if (state.value.guestBusyId != null) return
+        mutableState.update { oldState -> oldState.copy(guestBusyId = id, error = null) }
+        launch {
+            val result = call()
+            mutableState.update { oldState ->
+                when (result) {
+                    is AppResult.Success ->
+                        oldState.copy(
+                            guestBusyId = null,
+                            account = result.value,
+                            guests = result.value.activeGuests,
+                        )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            guestBusyId = null,
+                            error = result.error.toExpensesTextResource(),
+                        )
+                }
+            }
+        }
+    }
+
     override fun onSave() {
         if (!state.value.canSave) return
         val input = inputState.value
@@ -83,7 +165,12 @@ class ExpenseAccountFormScreenViewModel(
                             memberIds = input.selected,
                             createdBy = context.userId,
                         )
-                val saved = saveExpenseAccountUseCase(account = account).getOrThrow()
+                val saved =
+                    saveExpenseAccountUseCase(
+                            account = account,
+                            newGuests = if (before == null) input.draftGuests else emptyList(),
+                        )
+                        .getOrThrow()
                 selectExpenseAccountUseCase(id = saved.id).getOrThrow()
                 saved.id
             }
@@ -123,6 +210,8 @@ class ExpenseAccountFormScreenViewModel(
                     oldState.copy(
                         account = data.account,
                         members = data.members,
+                        guests = data.account?.activeGuests ?: inputState.value.draftGuests,
+                        guestsEnabled = data.guestsEnabled,
                         loading = false,
                         error = null,
                     )

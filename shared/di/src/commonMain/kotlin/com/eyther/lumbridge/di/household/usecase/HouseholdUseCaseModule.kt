@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.di.household.usecase
 
+import com.eyther.lumbridge.core.domain.features.FeatureGate
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
@@ -468,11 +469,13 @@ class HouseholdUseCaseModule {
         expenseAccountDataSource: ExpenseAccountDataSource,
         getMembersUseCase: GetMembersUseCase,
         context: HouseholdContextDomain,
+        saveAccountGuestUseCase: SaveAccountGuestUseCase,
     ): SaveExpenseAccountUseCase =
         SaveExpenseAccountUseCase(
             expenseAccountDataSource = expenseAccountDataSource,
             getMembersUseCase = getMembersUseCase,
             context = context,
+            saveAccountGuestUseCase = saveAccountGuestUseCase,
         )
 
     @Single
@@ -520,11 +523,13 @@ class HouseholdUseCaseModule {
         getExpenseAccountUseCase: GetExpenseAccountUseCase,
         getMembersUseCase: GetMembersUseCase,
         context: HouseholdContextDomain,
+        featureGate: FeatureGate,
     ): GetExpenseAccountFormUseCase =
         GetExpenseAccountFormUseCase(
             getExpenseAccountUseCase = getExpenseAccountUseCase,
             getMembersUseCase = getMembersUseCase,
             context = context,
+            featureGate = featureGate,
         )
 
     @Single

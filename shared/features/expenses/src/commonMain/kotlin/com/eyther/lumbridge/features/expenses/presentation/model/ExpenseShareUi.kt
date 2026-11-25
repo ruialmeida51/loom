@@ -11,4 +11,5 @@ data class ExpenseShareUi(
     val isCurrentUser: Boolean,
     val isPayer: Boolean,
     val avatarPath: String? = null,
+    val isGuest: Boolean = false,
 )

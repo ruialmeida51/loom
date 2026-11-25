@@ -47,6 +47,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.split_particip
 import com.eyther.lumbridge.features.expenses.generated.resources.split_summary
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_who_paid
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseCaptureFields
+import com.eyther.lumbridge.features.expenses.presentation.components.guestQualifier
 import com.eyther.lumbridge.features.expenses.presentation.components.receipt.ExpenseReceiptSection
 import com.eyther.lumbridge.features.expenses.presentation.components.receipt.rememberReceiptPickers
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
@@ -210,6 +211,7 @@ private fun InnerExpenseFormScreen(
                     MemberPickerRow(
                         label = stringResource(Res.string.ui_who_paid),
                         members = members,
+                        qualifier = guestQualifier(),
                         selectedId = paidBy,
                         onSelected = onPayer,
                         enabled = !busy && !receiptPending,
