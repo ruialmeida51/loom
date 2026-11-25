@@ -28,4 +28,5 @@ enum class Glyph {
     PLANE,
     PAW,
     HEART,
+    EDIT,
 }

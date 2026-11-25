@@ -83,8 +83,5 @@
   <string name="management_error_share">Sharing is unavailable here. You can copy the code instead.</string>
   <string name="invitation_expiry_details">%1$s, %2$s:%3$s</string>
     <string name="household_current">Current household</string>
-    <string name="household_picture_add">Add a photo</string>
-    <string name="household_picture_change">Change photo</string>
-    <string name="household_picture_remove">Remove</string>
     <string name="household_picture_description">Photo of %1$s</string>
 </resources>
