@@ -380,6 +380,9 @@ class UsabilityDeviceTest {
     @Test
     fun titleOnlyTaskSavesFromHomeAndSystemBackFromTasksReturnsHome() {
         val taskTitle = "Check hallway smoke alarm"
+        awaitDestination(tag = "home_content")
+        // Add task now sits below Home's balance card; bring it fully on screen first.
+        compose.onNodeWithTag("home_content").performScrollToNode(hasTestTag("home_add_task"))
         compose.onNodeWithTag("home_add_task").performClick()
         compose.onNodeWithTag("task_title").performTextInput(taskTitle)
         compose.onNodeWithTag("task_notification").assertDoesNotExist()
