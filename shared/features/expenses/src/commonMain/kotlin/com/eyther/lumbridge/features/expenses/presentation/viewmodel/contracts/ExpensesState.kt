@@ -149,6 +149,13 @@ data class ExpensesState(
                     recordEnabled =
                         canRecordSettlement &&
                             (userId == settlement.from || userId == settlement.to),
+                    counterpartyAvatarPath =
+                        members
+                            .firstOrNull {
+                                it.id ==
+                                    if (userId == settlement.from) settlement.to else settlement.from
+                            }
+                            ?.avatarPath,
                 )
             }
             .toImmutableList()

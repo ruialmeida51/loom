@@ -4,6 +4,7 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
 import com.eyther.lumbridge.features.feed.presentation.mapper.toPreviewUi
 import com.eyther.lumbridge.features.feed.presentation.model.ArticlePreviewUi
+import com.eyther.lumbridge.features.home.domain.model.HomeShoppingDomain
 import com.eyther.lumbridge.features.home.presentation.mapper.homeBalanceUi
 import com.eyther.lumbridge.features.home.presentation.mapper.toHomeUi
 import com.eyther.lumbridge.features.home.presentation.model.HomeBalanceUi
@@ -11,6 +12,7 @@ import com.eyther.lumbridge.features.home.presentation.model.HomeGreetingUi
 import com.eyther.lumbridge.features.home.presentation.model.HomeTaskUi
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
+import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.tasks.domain.model.TaskDomain
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -27,7 +29,7 @@ data class HomeState(
     val balanceRefreshing: Boolean = false,
     val balanceError: TextResource? = null,
     val taskItems: List<TaskDomain>? = null,
-    val shoppingPreview: List<ShoppingItemDomain>? = null,
+    val shoppingPreview: HomeShoppingDomain? = null,
     val feedItems: List<ArticleDomain>? = null,
     val tasksLoading: Boolean = true,
     val shoppingLoading: Boolean = true,
@@ -50,6 +52,7 @@ data class HomeState(
                 userId = userId,
                 currency = currency,
                 memberNames = members.associate { member -> member.id to member.name },
+                memberPictures = members.associate { member -> member.id to member.avatarPath },
             )
         }
     val tasks: ImmutableList<HomeTaskUi> =
@@ -59,11 +62,13 @@ data class HomeState(
             .map { it.toHomeUi(today = today, timeZone = timeZone) }
             .toImmutableList()
     val shoppingItems: ImmutableList<ShoppingItemDomain> =
-        shoppingPreview.orEmpty().take(HOME_SHOPPING_CHIPS).toImmutableList()
-    val moreShoppingCount: Int = (shoppingPreview.orEmpty().size - shoppingItems.size).coerceAtLeast(0)
+        shoppingPreview?.items.orEmpty().take(HOME_SHOPPING_ROWS).toImmutableList()
+    val shoppingCount: Int = shoppingPreview?.items?.size ?: 0
+    val moreShoppingCount: Int = (shoppingCount - shoppingItems.size).coerceAtLeast(0)
+    val shoppingList: ShoppingListDomain? = shoppingPreview?.list
     val articles: ImmutableList<ArticlePreviewUi> =
         feedItems.orEmpty().take(3).map { it.toPreviewUi(timeZone = timeZone) }.toImmutableList()
 }
 
-/** Enough chips to recognise the list at a glance; the rest collapse into “+N more”. */
-private const val HOME_SHOPPING_CHIPS = 5
+/** Enough lines to recognise the list at a glance; the rest collapse into “+N more”. */
+private const val HOME_SHOPPING_ROWS = 4

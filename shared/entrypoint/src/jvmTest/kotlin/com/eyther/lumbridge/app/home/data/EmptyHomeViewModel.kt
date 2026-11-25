@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.app.home.data
 
+import com.eyther.lumbridge.features.home.domain.model.HomeShoppingDomain
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +13,7 @@ internal class EmptyHomeViewModel : HomeScreenViewModelContract() {
                 today = "2026-11-16",
                 timeZone = "UTC",
                 taskItems = emptyList(),
-                shoppingPreview = emptyList(),
+                shoppingPreview = HomeShoppingDomain(list = null, items = emptyList()),
                 feedItems = emptyList(),
                 tasksLoading = false,
                 shoppingLoading = false,

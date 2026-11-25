@@ -7,6 +7,7 @@ import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -50,8 +51,15 @@ class TasksUiTest {
             onNodeWithContentDescription("Fix hallway lamp").performClick()
             onNodeWithText("Fix hallway lamp completed").assertExists()
             onNodeWithContentDescription("Fix hallway lamp").assertDoesNotExist()
+            // The completion snackbar can sit over the Completed header; let it clear first.
+            waitUntil(timeoutMillis = 6_000) {
+                onAllNodesWithTag("success_snackbar").fetchSemanticsNodes().isEmpty()
+            }
             onNodeWithTag("tasks_completed").performScrollTo().performClick()
-            onNodeWithContentDescription("Fix hallway lamp").performScrollTo().performClick()
+            // Completed rows are lazy: scroll the list until the reopened task is composed.
+            onNodeWithTag("tasks_content")
+                .performScrollToNode(hasContentDescription("Fix hallway lamp"))
+            onNodeWithContentDescription("Fix hallway lamp").performClick()
             onNodeWithText("Fix hallway lamp reopened").assertExists()
             onNodeWithTag("tasks_completed").assertDoesNotExist()
             onNodeWithTag("tasks_content").performScrollToNode(hasText("Fix hallway lamp"))

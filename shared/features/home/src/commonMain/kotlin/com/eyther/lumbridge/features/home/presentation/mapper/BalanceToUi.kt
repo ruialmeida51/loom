@@ -17,6 +17,7 @@ internal fun homeBalanceUi(
     userId: String,
     currency: String,
     memberNames: Map<String, String>,
+    memberPictures: Map<String, String?> = emptyMap(),
 ): HomeBalanceUi {
     val own = balances[userId] ?: 0L
     val counterparties =
@@ -32,6 +33,7 @@ internal fun homeBalanceUi(
                     name = memberNames[other]?.ifBlank { null },
                     amount = MoneyDomain(suggestion.amountMinor, currency).formattedMagnitude(),
                     owesYou = owesYou,
+                    avatarPath = memberPictures[other],
                 )
             }
             .take(HOME_COUNTERPARTIES)

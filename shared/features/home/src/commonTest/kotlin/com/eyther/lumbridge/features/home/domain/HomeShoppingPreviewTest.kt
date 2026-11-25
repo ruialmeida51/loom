@@ -39,9 +39,9 @@ class HomeShoppingPreviewTest {
                     ),
             )
         val useCase = overview(selection = selection, shopping = AppResult.Success(snapshot))
-        assertEquals(listOf("coffee"), useCase().first().getOrThrow().map { it.name })
+        assertEquals(listOf("coffee"), useCase().first().getOrThrow().items.map { it.name })
         selection.value = "groceries"
-        assertEquals(listOf("milk"), useCase().first().getOrThrow().map { it.name })
+        assertEquals(listOf("milk"), useCase().first().getOrThrow().items.map { it.name })
     }
 
     @Test

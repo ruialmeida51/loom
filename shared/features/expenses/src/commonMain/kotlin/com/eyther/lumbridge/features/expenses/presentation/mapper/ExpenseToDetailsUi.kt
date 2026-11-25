@@ -12,6 +12,7 @@ internal fun ExpenseDomain.toDetailsUi(
     account: ExpenseAccountDomain,
     userId: String,
     memberNames: Map<String, String>,
+    memberPictures: Map<String, String?> = emptyMap(),
 ): ExpenseDetailsUi =
     ExpenseDetailsUi(
         title = title,
@@ -44,6 +45,7 @@ internal fun ExpenseDomain.toDetailsUi(
                             MoneyDomain(minorUnits = amount, currency = account.currency)
                                 .formatted(),
                         isCurrentUser = id == userId,
+                        avatarPath = memberPictures[id],
                         isPayer = id == paidBy,
                     )
                 }

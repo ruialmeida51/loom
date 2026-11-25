@@ -76,6 +76,7 @@ data class ExpenseDetailsState(
             account = it,
             userId = userId,
             memberNames = memberNames,
+            memberPictures = members.associate { member -> member.id to member.avatarPath },
         )
     }
 

@@ -53,6 +53,7 @@ internal fun SettlementSuggestionCard(repayment: SuggestedRepaymentUi, onRecord:
                 MemberAvatar(
                     memberId = repayment.counterpartyId,
                     initials = repayment.counterpartyInitials,
+                    picturePath = repayment.counterpartyAvatarPath,
                 )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
