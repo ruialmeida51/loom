@@ -26,7 +26,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PlatformStorage.initialize(applicationContext)
-        PushPlatform.attachPermissionRequester(owner = this) { callback ->
+        PushPlatform.attachPermissionRequester(
+            owner = this,
+            canAskAgainAfterDenial = {
+                Build.VERSION.SDK_INT >= 33 &&
+                    shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+            },
+        ) { callback ->
             if (
                 Build.VERSION.SDK_INT < 33 ||
                     checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==

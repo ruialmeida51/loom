@@ -29,6 +29,7 @@ internal fun HomeHost(
     onRootChanged: (Boolean) -> Unit,
     onShopping: () -> Unit,
     onTasks: () -> Unit,
+    onMoney: () -> Unit,
 ) {
     val state =
         rememberNavigationState(startRoot = HomeDestination.Home) {
@@ -57,6 +58,7 @@ internal fun HomeHost(
                                 onFeed = { navigator.navigateTo(HomeDestination.Feed) },
                                 onOpenStory = uriHandler::openUri,
                                 onTasks = onTasks,
+                                onBalances = onMoney,
                                 onAddExpense = {
                                     navigator.navigateTo(
                                         HomeDestination.ExpenseForm(accountId = context.id),

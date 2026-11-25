@@ -45,6 +45,8 @@ kotlin {
             api(libs.supabase.postgrest)
             api(libs.supabase.functions)
             api(libs.supabase.storage)
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

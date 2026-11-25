@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.household.presentation.viewmodel.contracts
 
+import com.eyther.lumbridge.core.domain.errors.PictureError
 import com.eyther.lumbridge.core.viewmodel.LoomViewModel
 import com.eyther.lumbridge.features.household.domain.model.HouseholdMemberActionDomain
 import kotlinx.coroutines.flow.StateFlow
@@ -30,4 +31,11 @@ abstract class HouseholdDetailsScreenViewModelContract : LoomViewModel() {
     abstract fun onShareUnavailable()
 
     abstract fun onDismissError()
+
+    /** A photo picked from the library becomes the household picture. */
+    abstract fun onPicturePicked(bytes: ByteArray)
+
+    abstract fun onRemovePicture()
+
+    abstract fun onPictureError(error: PictureError)
 }

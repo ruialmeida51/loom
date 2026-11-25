@@ -22,6 +22,7 @@ import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.picture.rememberPicturePicker
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
@@ -29,6 +30,7 @@ import com.eyther.lumbridge.features.account.generated.resources.Res
 import com.eyther.lumbridge.features.account.generated.resources.account_deletion_description
 import com.eyther.lumbridge.features.account.generated.resources.delete_account
 import com.eyther.lumbridge.features.account.generated.resources.nickname_description
+import com.eyther.lumbridge.features.account.generated.resources.notifications_blocked_description
 import com.eyther.lumbridge.features.account.generated.resources.notifications_description
 import com.eyther.lumbridge.features.account.generated.resources.notifications_title
 import com.eyther.lumbridge.features.account.generated.resources.preferences_title
@@ -40,6 +42,7 @@ import com.eyther.lumbridge.features.account.generated.resources.usage_data_desc
 import com.eyther.lumbridge.features.account.generated.resources.usage_data_title
 import com.eyther.lumbridge.features.account.presentation.components.AccountPreferenceRow
 import com.eyther.lumbridge.features.account.presentation.components.AppearancePreferenceRow
+import com.eyther.lumbridge.features.account.presentation.components.ProfilePictureHeader
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
 import com.eyther.lumbridge.features.legal.domain.model.LegalDocumentDomain
 import com.eyther.lumbridge.features.legal.presentation.components.LegalLinks
@@ -52,18 +55,32 @@ fun AccountScreen(
     onSignOut: () -> Unit,
     onUsageData: () -> Unit,
     onAllowNotifications: () -> Unit,
+    notificationsBlocked: Boolean = false,
     onOpenLegalDocument: (LegalDocumentDomain) -> Unit,
     signingOut: Boolean = false,
     signOutError: TextResource? = null,
     onSignOutDismissed: () -> Unit = {},
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
+    val pickPicture =
+        rememberPicturePicker(
+            onPicked = viewModel::onPicturePicked,
+            onError = viewModel::onPictureError,
+        )
     PullToRefreshContentContainer(isRefreshing = state.refreshing, onRefresh = viewModel::onRetry) {
         InnerAccountScreen(
+            userId = state.profile?.id.orEmpty(),
+            avatarPath = state.profile?.avatarPath,
+            hasPicture = state.hasPicture,
+            canChangePicture = state.canChangePicture,
+            savingPicture = state.savingPicture,
+            onChangePicture = pickPicture,
+            onRemovePicture = viewModel::onRemovePicture,
             nickname = state.profile?.nickname.orEmpty(),
             canEditNickname = state.canEditNickname,
             loading = state.loading,
             preferences = state.preferences,
+            notificationsBlocked = notificationsBlocked,
             theme = state.theme,
             busy = state.busy || signingOut,
             error = state.displayError,
@@ -98,10 +115,18 @@ fun AccountScreen(
 
 @Composable
 private fun InnerAccountScreen(
+    userId: String,
+    avatarPath: String?,
+    hasPicture: Boolean,
+    canChangePicture: Boolean,
+    savingPicture: Boolean,
+    onChangePicture: () -> Unit,
+    onRemovePicture: () -> Unit,
     nickname: String,
     canEditNickname: Boolean,
     loading: Boolean,
     preferences: SettingsDomain,
+    notificationsBlocked: Boolean,
     theme: ThemeMode,
     busy: Boolean,
     error: TextResource?,
@@ -129,6 +154,19 @@ private fun InnerAccountScreen(
                 )
             }
         }
+        if (!loading)
+            item(key = "picture") {
+                ProfilePictureHeader(
+                    userId = userId,
+                    nickname = nickname,
+                    avatarPath = avatarPath,
+                    hasPicture = hasPicture,
+                    enabled = canChangePicture,
+                    saving = savingPicture,
+                    onChange = onChangePicture,
+                    onRemove = onRemovePicture,
+                )
+            }
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionTitle(title = stringResource(Res.string.profile_title))
@@ -156,8 +194,15 @@ private fun InnerAccountScreen(
                     AccountPreferenceRow(
                         title = stringResource(Res.string.notifications_title),
                         glyph = Glyph.BELL,
-                        description = stringResource(Res.string.notifications_description),
-                        checked = preferences.notifications,
+                        // The phone can block reminders the preference allows; say so and let
+                        // the switch lead to settings.
+                        description =
+                            stringResource(
+                                if (notificationsBlocked && preferences.notifications)
+                                    Res.string.notifications_blocked_description
+                                else Res.string.notifications_description,
+                            ),
+                        checked = preferences.notifications && !notificationsBlocked,
                         onCheckedChange = onNotifications,
                         enabled = !busy,
                     )

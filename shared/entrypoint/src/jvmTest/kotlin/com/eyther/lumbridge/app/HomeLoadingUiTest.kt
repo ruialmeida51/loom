@@ -3,8 +3,11 @@ package com.eyther.lumbridge.app
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.app.home.data.HomeRetryFixture
@@ -30,6 +33,7 @@ class HomeLoadingUiTest {
                             onTasks = {},
                             onAddExpense = {},
                             onAddTask = {},
+                            onBalances = {},
                             onFeed = {},
                             onOpenStory = {},
                         )
@@ -42,7 +46,9 @@ class HomeLoadingUiTest {
                 onNodeWithText("Water the plants").assertIsDisplayed()
                 fixture.releaseSecondaryReads()
                 waitUntil(timeoutMillis = 5000) { !viewModel.state.value.refreshing }
+                onNodeWithTag("home_content").performScrollToNode(hasText("Avocados"))
                 onNodeWithText("Avocados").assertIsDisplayed()
+                onNodeWithTag("home_content").performScrollToNode(hasTestTag("home_feed_preview"))
                 onNodeWithTag("home_feed_preview").assertExists()
             } finally {
                 viewModel.viewModelScope.cancel()

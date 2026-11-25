@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.household.domain.datasource
 
+import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
@@ -32,6 +33,10 @@ interface HouseholdDataSource {
 
     suspend fun getMemberHistory(householdId: String): AppResult<List<MemberDomain>> =
         getMembers(householdId = householdId)
+
+    /** Replaces the household picture with [bytes], or removes it when null. */
+    suspend fun setPicture(householdId: String, bytes: ByteArray?): AppResult<Unit> =
+        AppResult.Failure(CommonError.ServiceUnavailable())
 
     suspend fun revokeInvitation(householdId: String): AppResult<Unit>
 

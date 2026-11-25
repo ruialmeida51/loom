@@ -145,6 +145,7 @@ class DesignFlowsUiTest {
                             onTasks = {},
                             onShopping = {},
                             onAddTask = {},
+                            onBalances = {},
                             onFeed = {},
                             onOpenStory = {},
                         )
@@ -173,6 +174,7 @@ class DesignFlowsUiTest {
                             onTasks = {},
                             onShopping = {},
                             onAddTask = {},
+                            onBalances = {},
                             onFeed = {},
                             onOpenStory = {},
                         )

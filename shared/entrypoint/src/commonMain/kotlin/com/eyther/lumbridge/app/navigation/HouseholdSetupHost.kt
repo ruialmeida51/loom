@@ -33,6 +33,7 @@ internal fun HouseholdSetupHost(
     onSelect: (HouseholdDomain) -> Unit,
     onBack: (() -> Unit)? = null,
     onAccount: (() -> Unit)? = null,
+    currentHouseholdId: String? = null,
 ) {
     ScreenAnalyticsEffect(screen = AnalyticsScreenDomain.HOUSEHOLDS)
     val selectionViewModel: HouseholdScreenViewModelContract =
@@ -82,6 +83,7 @@ internal fun HouseholdSetupHost(
                             onSelect = onSelect,
                             onCreate = { navigator.navigateTo(HouseholdSetupDestination.Create) },
                             onJoin = { navigator.navigateTo(HouseholdSetupDestination.Join) },
+                            currentHouseholdId = currentHouseholdId,
                         )
                     }
                 }

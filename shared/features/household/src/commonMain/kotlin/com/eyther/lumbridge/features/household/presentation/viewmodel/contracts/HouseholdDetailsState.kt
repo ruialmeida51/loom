@@ -29,11 +29,14 @@ data class HouseholdDetailsState(
     val successMessage: TextResource? = null,
     val exited: Boolean = false,
     val exitExplicit: Boolean = false,
+    val picturePath: String? = null,
+    val savingPicture: Boolean = false,
 ) {
     val invitationUi: HouseholdInvitationUi? = invitation?.let(::HouseholdInvitationUi)
     private val management = HouseholdManagementDomain(members = members, invitation = invitation)
     val isOwner: Boolean = management.isOwner(userId = userId)
     val canInvite: Boolean = isOwner && !busy && !loading
+    val canChangePicture: Boolean = !busy && !savingPicture
     val canLeave: Boolean = management.canLeave(userId = userId)
     val confirmationContent = confirmation?.toConfirmation()
     private val confirmationAllowed: Boolean =
@@ -77,6 +80,7 @@ data class HouseholdDetailsState(
                     isOwner = member.isOwner,
                     isCurrentUser = member.id == userId,
                     canManage = management.canManageMember(actorId = userId, memberId = member.id),
+                    avatarPath = member.avatarPath,
                 )
             }
             .sortedWith(

@@ -41,4 +41,16 @@
     <string name="home_all_news">All news</string>
     <string name="home_choose_sources">Choose your feeds</string>
     <string name="home_news_empty">A little reading, when you fancy it.</string>
+    <string name="home_greeting_morning">Good morning</string>
+    <string name="home_greeting_afternoon">Good afternoon</string>
+    <string name="home_greeting_evening">Good evening</string>
+    <string name="home_balance_owed">You’re owed</string>
+    <string name="home_balance_owes">You owe</string>
+    <string name="home_balance_settled">All settled up</string>
+    <string name="home_balance_settled_amount">Nothing owed either way</string>
+    <string name="home_counterparty_owes_you">%1$s owes you %2$s</string>
+    <string name="home_counterparty_you_owe">You owe %1$s %2$s</string>
+    <string name="home_former_member">A former member</string>
+    <string name="home_balances">Details</string>
+    <string name="home_today">Today</string>
 </resources>

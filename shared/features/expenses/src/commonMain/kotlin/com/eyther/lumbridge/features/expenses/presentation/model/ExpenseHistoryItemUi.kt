@@ -9,6 +9,9 @@ import kotlinx.datetime.LocalDate
 sealed interface ExpenseHistoryItemUi {
     val key: String
     val date: String
+
+    /** When the record was entered, which orders the ledger. */
+    val addedAt: String
     val calendarDate: LocalDate
     val amount: String
 
@@ -21,6 +24,7 @@ sealed interface ExpenseHistoryItemUi {
     ) : ExpenseHistoryItemUi {
         override val key: String = "expense-${expense.id}"
         override val date: String = expense.occurredOn
+        override val addedAt: String = expense.createdAt
         override val calendarDate: LocalDate = LocalDate.parse(date)
     }
 
@@ -36,6 +40,7 @@ sealed interface ExpenseHistoryItemUi {
     ) : ExpenseHistoryItemUi {
         override val key: String = "settlement-${settlement.id}"
         override val date: String = settlement.occurredOn
+        override val addedAt: String = settlement.createdAt
         override val calendarDate: LocalDate = LocalDate.parse(date)
     }
 }

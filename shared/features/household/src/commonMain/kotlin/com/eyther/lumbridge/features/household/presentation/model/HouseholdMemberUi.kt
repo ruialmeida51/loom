@@ -10,4 +10,5 @@ data class HouseholdMemberUi(
     val isOwner: Boolean,
     val isCurrentUser: Boolean,
     val canManage: Boolean = false,
+    val avatarPath: String? = null,
 )

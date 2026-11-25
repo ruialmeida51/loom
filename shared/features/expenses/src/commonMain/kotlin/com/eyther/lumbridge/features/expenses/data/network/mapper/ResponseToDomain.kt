@@ -22,6 +22,7 @@ internal fun ExpenseResponse.toDomain(): ExpenseDomain =
         createdBy = createdBy,
         splitMethod = splitMethod.toSplitMethod(),
         splitValues = splitValues,
+        createdAt = createdAt,
     )
 
 internal fun SettlementResponse.toDomain(): SettlementDomain =
@@ -34,6 +35,7 @@ internal fun SettlementResponse.toDomain(): SettlementDomain =
         occurredOn = occurredOn,
         createdBy = createdBy,
         version = version,
+        createdAt = createdAt,
     )
 
 internal fun RecurringExpenseResponse.toDomain(): RecurringExpenseDomain =

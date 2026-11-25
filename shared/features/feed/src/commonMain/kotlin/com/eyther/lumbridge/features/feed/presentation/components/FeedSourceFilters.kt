@@ -1,13 +1,16 @@
 package com.eyther.lumbridge.features.feed.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.PillChip
+import com.eyther.lumbridge.core.presentation.components.bleedHorizontally
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.feed.generated.resources.Res
 import com.eyther.lumbridge.features.feed.generated.resources.feed_all_sources
@@ -26,31 +29,37 @@ internal fun FeedSourceFilters(
     onAll: () -> Unit,
     onUnreadOnly: (Boolean) -> Unit,
 ) {
+    // The same pills as shopping lists and Money, scrolling to the screen edges.
     LazyRow(
+        contentPadding = PaddingValues(horizontal = LoomSpacing.content, vertical = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
-        modifier = Modifier.testTag("feed_source_filters"),
+        modifier =
+            Modifier.bleedHorizontally(LoomSpacing.content).testTag("feed_source_filters"),
     ) {
         item(key = "all") {
-            FilterChip(
+            PillChip(
+                text = stringResource(Res.string.feed_all_sources),
                 selected = selectedIds.isEmpty(),
                 onClick = onAll,
-                label = { Text(stringResource(Res.string.feed_all_sources)) },
+                role = Role.Checkbox,
                 modifier = Modifier.testTag("feed_all_sources"),
             )
         }
         item(key = "unread") {
-            FilterChip(
+            PillChip(
+                text = stringResource(Res.string.ui_unread_only),
                 selected = unreadOnly,
                 onClick = { onUnreadOnly(!unreadOnly) },
-                label = { Text(stringResource(Res.string.ui_unread_only)) },
+                role = Role.Checkbox,
                 modifier = Modifier.testTag("feed_unread_filter"),
             )
         }
         items(items = sources, key = { it.id }) { source ->
-            FilterChip(
+            PillChip(
+                text = source.label,
                 selected = source.id in selectedIds,
                 onClick = { onSource(source.id) },
-                label = { Text(source.label) },
+                role = Role.Checkbox,
                 modifier = Modifier.testTag("feed_source_${source.id}"),
             )
         }

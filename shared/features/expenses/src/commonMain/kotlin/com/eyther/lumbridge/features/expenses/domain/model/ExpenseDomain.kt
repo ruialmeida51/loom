@@ -14,6 +14,8 @@ data class ExpenseDomain(
     val createdBy: String = "",
     val splitMethod: ExpenseSplitMethodDomain = ExpenseSplitMethodDomain.AMOUNTS,
     val splitValues: Map<String, Long> = emptyMap(),
+    /** ISO-8601 instant the record was entered; empty until the server stores it. */
+    val createdAt: String = "",
 ) {
     fun canManage(userId: String, isOwner: Boolean): Boolean =
         userId == createdBy || userId == paidBy || isOwner

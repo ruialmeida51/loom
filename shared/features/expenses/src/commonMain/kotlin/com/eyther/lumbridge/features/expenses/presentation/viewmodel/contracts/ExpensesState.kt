@@ -197,6 +197,11 @@ data class ExpensesState(
                         amount = MoneyDomain(it.amountMinor, currency).formatted(),
                     )
                 })
-            .sortedWith(compareByDescending<ExpenseHistoryItemUi> { it.date }.thenBy { it.key })
+            // Newest entry first, in the order people added them, whatever date they carry.
+            .sortedWith(
+                compareByDescending<ExpenseHistoryItemUi> { it.addedAt }
+                    .thenByDescending { it.date }
+                    .thenBy { it.key },
+            )
             .toImmutableList()
 }

@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { cleanupReceipts } from "./receipts.ts";
+import { cleanupPictures, cleanupReceipts } from "./receipts.ts";
 
 function fixture(paths: string[], failRemoval = false) {
   const calls: { path: string; body: Record<string, unknown> }[] = [];
@@ -13,18 +13,27 @@ function fixture(paths: string[], failRemoval = false) {
           const path = new URL(String(input)).pathname;
           const body = JSON.parse(String(options?.body ?? "{}"));
           calls.push({ path, body });
-          if (path.endsWith("claim_receipt_deletions")) {
+          if (
+            path.endsWith("claim_receipt_deletions") ||
+            path.endsWith("claim_picture_deletions")
+          ) {
             return Response.json(
               paths,
             );
           }
-          if (path.endsWith("finish_receipt_deletions")) {
+          if (
+            path.endsWith("finish_receipt_deletions") ||
+            path.endsWith("finish_picture_deletions")
+          ) {
             return new Response(
               null,
               { status: 204 },
             );
           }
-          if (path === "/storage/v1/object/expense-receipts") {
+          if (
+            path === "/storage/v1/object/expense-receipts" ||
+            path === "/storage/v1/object/pictures"
+          ) {
             return failRemoval
               ? Response.json({ message: "Unavailable", statusCode: "503" }, {
                 status: 503,
@@ -62,4 +71,16 @@ Deno.test("empty receipt cleanup never calls Storage", async () => {
   if (await cleanupReceipts(database) !== 0 || calls.length !== 1) {
     throw new Error("Empty cleanup must be cheap");
   }
+});
+Deno.test("picture cleanup removes replaced pictures from their own bucket", async () => {
+  const { database, calls } = fixture(["profiles/user/old.jpg"]);
+  if (await cleanupPictures(database) !== 1) {
+    throw new Error("One picture should be removed");
+  }
+  if (
+    !calls[0].path.endsWith("claim_picture_deletions") ||
+    calls[1].path !== "/storage/v1/object/pictures" ||
+    !calls[2].path.endsWith("finish_picture_deletions") ||
+    calls[2].body.p_success !== true
+  ) throw new Error("Pictures use their own queue and bucket");
 });

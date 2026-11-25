@@ -52,6 +52,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.history_empty
 import com.eyther.lumbridge.features.expenses.generated.resources.history_expenses
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_add_expense
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_recurring_expenses
+import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseAccountChips
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseHistoryRow
 import com.eyther.lumbridge.features.expenses.presentation.components.MemberBalanceRow
 import com.eyther.lumbridge.features.expenses.presentation.components.PersonalBalanceCard
@@ -76,6 +77,7 @@ fun ExpensesScreen(
     onEditPayment: (SettlementDomain) -> Unit,
     onRecordPayment: (SuggestedSettlementDomain) -> Unit,
     onRecurringExpenses: () -> Unit,
+    onCreateAccount: () -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     PullToRefreshContentContainer(
@@ -92,6 +94,9 @@ fun ExpensesScreen(
     ) {
         InnerExpensesScreen(
             account = state.account,
+            accounts = state.activeAccounts,
+            onSelectAccount = viewModel::onAccountSelected,
+            onCreateAccount = onCreateAccount,
             history = state.history,
             selectedView = state.selectedView,
             memberBalances = state.memberBalances,
@@ -135,6 +140,9 @@ fun ExpensesScreen(
 @Composable
 private fun InnerExpensesScreen(
     account: ExpenseAccountDomain?,
+    accounts: ImmutableList<ExpenseAccountDomain>,
+    onSelectAccount: (String) -> Unit,
+    onCreateAccount: () -> Unit,
     history: ImmutableList<ExpenseHistoryItemUi>,
     selectedView: ExpensesViewUi,
     memberBalances: ImmutableList<MemberBalanceUi>,
@@ -167,38 +175,25 @@ private fun InnerExpensesScreen(
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
         ) {
             item {
-                Row(
+                ExpenseAccountChips(
+                    accounts = accounts,
+                    selected = account,
+                    onSelect = onSelectAccount,
+                    onManage = onAccounts,
+                    onCreate = onCreateAccount,
+                    menu =
+                        listOf(
+                            ActionMenuItem(
+                                text = TextResource.Resource(Res.string.ui_recurring_expenses),
+                                onClick = onRecurringExpenses,
+                            ),
+                            ActionMenuItem(
+                                text = TextResource.Resource(Res.string.account_manage),
+                                onClick = onManage,
+                            ),
+                        ),
                     modifier = Modifier.padding(bottom = LoomSpacing.small),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    SelectorButton(
-                        contentPadding = PaddingValues(),
-                        text =
-                            if (account == null) stringResource(Res.string.account_accounts)
-                            else accountLabel(account),
-                        onClick = onAccounts,
-                        modifier = Modifier.weight(1f).testTag("expense_accounts"),
-                    )
-                    ActionMenu(
-                        modifier = Modifier.testTag("balances_actions"),
-                        items =
-                            buildList {
-                                add(
-                                    ActionMenuItem(
-                                        text =
-                                            TextResource.Resource(Res.string.ui_recurring_expenses),
-                                        onClick = onRecurringExpenses,
-                                    ),
-                                )
-                                add(
-                                    ActionMenuItem(
-                                        text = TextResource.Resource(Res.string.account_manage),
-                                        onClick = onManage,
-                                    ),
-                                )
-                            },
-                    )
-                }
+                )
                 if (account?.archived == true)
                     Text(
                         stringResource(Res.string.account_archived),

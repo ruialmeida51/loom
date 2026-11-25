@@ -11,6 +11,7 @@ internal fun HouseholdResponse.toDomain(): HouseholdDomain =
         name = name,
         currency = currency,
         timeZone = timeZone,
+        imagePath = imagePath,
     )
 
 internal fun MemberResponse.toDomain(): MemberDomain =
@@ -20,4 +21,5 @@ internal fun MemberResponse.toDomain(): MemberDomain =
         role = role,
         active = active,
         version = version,
+        avatarPath = avatarPath,
     )

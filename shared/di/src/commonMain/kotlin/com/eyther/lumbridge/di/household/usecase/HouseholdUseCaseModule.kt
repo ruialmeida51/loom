@@ -47,6 +47,7 @@ import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedSubscription
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RemoveFeedSubscriptionUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.UpdateFeedSubscriptionUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeBalanceStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCase
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
@@ -56,11 +57,13 @@ import com.eyther.lumbridge.features.household.domain.usecase.ChangeHouseholdMem
 import com.eyther.lumbridge.features.household.domain.usecase.CreateInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.DeleteHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdManagementStreamUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.ReplaceHouseholdInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RevokeHouseholdInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RevokeInvitationUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.SetHouseholdPictureUseCase
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementDataSource
 import com.eyther.lumbridge.features.insights.domain.datasource.StatementExportDataSource
 import com.eyther.lumbridge.features.insights.domain.usecase.ExportStatementUseCase
@@ -119,6 +122,16 @@ class HouseholdUseCaseModule {
         householdManagementDataSource: HouseholdManagementDataSource,
     ): ChangeHouseholdMemberUseCase =
         ChangeHouseholdMemberUseCase(householdManagementDataSource = householdManagementDataSource)
+
+    @Single
+    fun provideSetHouseholdPictureUseCase(
+        householdDataSource: HouseholdDataSource,
+    ): SetHouseholdPictureUseCase = SetHouseholdPictureUseCase(householdDataSource = householdDataSource)
+
+    @Single
+    fun provideHouseholdPicturesStreamUseCase(
+        householdDataSource: HouseholdDataSource,
+    ): GetHouseholdsStreamUseCase = GetHouseholdsStreamUseCase(householdDataSource = householdDataSource)
 
     @Single
     fun provideDeleteHouseholdUseCase(
@@ -273,6 +286,18 @@ class HouseholdUseCaseModule {
     ): GetHomeTasksStreamUseCase =
         GetHomeTasksStreamUseCase(
             getTasksStreamUseCase = getTasksStreamUseCase,
+            context = context,
+        )
+
+    @Single
+    fun provideGetHomeBalanceStreamUseCase(
+        getExpensesStreamUseCase: GetExpensesStreamUseCase,
+        getSettlementsStreamUseCase: GetSettlementsStreamUseCase,
+        context: HouseholdContextDomain,
+    ): GetHomeBalanceStreamUseCase =
+        GetHomeBalanceStreamUseCase(
+            getExpensesStreamUseCase = getExpensesStreamUseCase,
+            getSettlementsStreamUseCase = getSettlementsStreamUseCase,
             context = context,
         )
 

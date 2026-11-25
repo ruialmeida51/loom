@@ -55,6 +55,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
     }
 
     val deleted = MutableStateFlow(false)
+    val picturePath = MutableStateFlow<String?>(null)
 
     var members =
         listOf(
@@ -158,6 +159,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     "Groceries",
                     todayIso(context.timeZone),
                     ExpenseSplitDomain.equal(8645, memberIds),
+                    createdAt = (Clock.System.now() - 3.hours).toString(),
                 ),
                 ExpenseDomain(
                     newId(),
@@ -171,6 +173,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     splitMethod = ExpenseSplitMethodDomain.EQUAL,
                     splitValues = emptyMap(),
                     recurring = true,
+                    createdAt = (Clock.System.now() - 2.hours).toString(),
                 ),
                 ExpenseDomain(
                     newId(),
@@ -180,6 +183,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     "Food & drink",
                     todayIso(context.timeZone),
                     ExpenseSplitDomain.equal(5400, memberIds),
+                    createdAt = (Clock.System.now() - 1.hours).toString(),
                 ),
             ),
         )

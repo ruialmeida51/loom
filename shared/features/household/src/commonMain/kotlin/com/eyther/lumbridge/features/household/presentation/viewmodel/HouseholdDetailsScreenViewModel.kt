@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
+import com.eyther.lumbridge.core.domain.errors.PictureError
 import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.mapToResult
@@ -16,8 +17,10 @@ import com.eyther.lumbridge.features.household.domain.model.HouseholdMemberActio
 import com.eyther.lumbridge.features.household.domain.usecase.ChangeHouseholdMemberUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.DeleteHouseholdUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdManagementStreamUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.GetHouseholdsStreamUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.ReplaceHouseholdInvitationUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.RevokeHouseholdInvitationUseCase
+import com.eyther.lumbridge.features.household.domain.usecase.SetHouseholdPictureUseCase
 import com.eyther.lumbridge.features.household.generated.resources.Res
 import com.eyther.lumbridge.features.household.generated.resources.invitation_copied
 import com.eyther.lumbridge.features.household.generated.resources.management_updated
@@ -42,6 +45,8 @@ class HouseholdDetailsScreenViewModel(
     private val revokeHouseholdInvitationUseCase: RevokeHouseholdInvitationUseCase,
     private val changeHouseholdMemberUseCase: ChangeHouseholdMemberUseCase,
     private val deleteHouseholdUseCase: DeleteHouseholdUseCase,
+    private val getHouseholdsStreamUseCase: GetHouseholdsStreamUseCase,
+    private val setHouseholdPictureUseCase: SetHouseholdPictureUseCase,
 ) : HouseholdDetailsScreenViewModelContract() {
     private data class InnerInputState(val confirmationName: String = "")
 
@@ -87,7 +92,43 @@ class HouseholdDetailsScreenViewModel(
                         }
                     }
             }
+            .observeWith(viewModelScope) { state ->
+                getHouseholdsStreamUseCase().updateState(state) { result ->
+                    when (result) {
+                        is AppResult.Success ->
+                            copy(picturePath = result.value.firstOrNull { it.id == context.id }?.imagePath)
+                        // The picture is decoration; the badge falls back to the initial.
+                        is AppResult.Failure -> this
+                    }
+                }
+            }
     override val state = mutableState.asStateFlow()
+
+    override fun onPicturePicked(bytes: ByteArray) {
+        savePicture(bytes = bytes)
+    }
+
+    override fun onRemovePicture() {
+        savePicture(bytes = null)
+    }
+
+    override fun onPictureError(error: PictureError) {
+        mutableState.update { oldState -> oldState.copy(error = error.toHouseholdTextResource()) }
+    }
+
+    private fun savePicture(bytes: ByteArray?) {
+        if (!state.value.canChangePicture) return
+        mutableState.update { oldState -> oldState.copy(savingPicture = true, error = null) }
+        launch {
+            val result = setHouseholdPictureUseCase(householdId = context.id, bytes = bytes)
+            mutableState.update { oldState ->
+                oldState.copy(
+                    savingPicture = false,
+                    error = (result as? AppResult.Failure)?.error?.toHouseholdTextResource(),
+                )
+            }
+        }
+    }
 
     override fun onRefresh() {
         if (state.value.refreshing || state.value.busy) return

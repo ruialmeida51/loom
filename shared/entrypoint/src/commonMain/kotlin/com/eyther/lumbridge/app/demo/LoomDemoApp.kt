@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +16,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
+import com.eyther.lumbridge.app.demo.data.DemoPictures
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.picture.LocalPictureLoader
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
@@ -33,23 +36,25 @@ fun LoomDemoApp() {
     var selectedId by remember { mutableStateOf(DemoHouseholdStore.households.first().id) }
     var started by remember { mutableStateOf(true) }
     val theme by ThemePreferences.mode.collectAsState()
-    LoomTheme(ThemeMode.valueOf(theme)) {
-        Surface {
-            Column {
-                Text(
-                    stringResource(Res.string.ui_loom_preview_sample_data),
-                    Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-                if (started)
-                    DemoPortalHost(
-                        stores = stores,
-                        selectedId = selectedId,
-                        onSelect = { selectedId = it },
-                        onSignOut = { started = false },
+    CompositionLocalProvider(LocalPictureLoader provides DemoPictures) {
+        LoomTheme(ThemeMode.valueOf(theme)) {
+            Surface {
+                Column {
+                    Text(
+                        stringResource(Res.string.ui_loom_preview_sample_data),
+                        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary,
                     )
-                else LoomButton(stringResource(Res.string.ui_open_preview), { started = true })
+                    if (started)
+                        DemoPortalHost(
+                            stores = stores,
+                            selectedId = selectedId,
+                            onSelect = { selectedId = it },
+                            onSignOut = { started = false },
+                        )
+                    else LoomButton(stringResource(Res.string.ui_open_preview), { started = true })
+                }
             }
         }
     }

@@ -39,6 +39,7 @@ fun ShoppingEntryRow(
     onValue: (String) -> Unit,
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
+    onDeleteEmpty: () -> Unit = {},
 ) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         CheckCircle(
@@ -84,6 +85,13 @@ fun ShoppingEntryRow(
                             (event.key == Key.Enter || event.key == Key.NumPadEnter)
                     ) {
                         onSubmit()
+                        true
+                    } else if (
+                        event.type == KeyEventType.KeyDown &&
+                            event.key == Key.Backspace &&
+                            value.isEmpty()
+                    ) {
+                        onDeleteEmpty()
                         true
                     } else false
                 },

@@ -49,7 +49,17 @@ abstract class ShoppingScreenViewModelContract : LoomViewModel() {
     /** Keyboard action: keeps the edit and opens a new line directly below, as in Google Keep. */
     abstract fun onEditingNext()
 
-    abstract fun onEditingFinished()
+    /** [itemId] is the row whose field lost focus; a newer edit elsewhere is left open. */
+    abstract fun onEditingFinished(itemId: String)
+
+    /** Backspace on an empty edited line removes the item and moves to the line above. */
+    abstract fun onEditingDeleteEmpty()
+
+    /** Backspace on an empty new line closes it and returns to the line above. */
+    abstract fun onDraftDeleteEmpty()
+
+    /** Backspace in the empty add field continues editing the last item. */
+    abstract fun onEntryDeleteEmpty()
 
     abstract fun onDraftNameChanged(value: String)
 

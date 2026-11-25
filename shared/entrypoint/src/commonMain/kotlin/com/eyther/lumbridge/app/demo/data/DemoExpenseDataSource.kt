@@ -10,6 +10,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MonthlyRecurrenceDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
+import kotlin.time.Clock
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDate
@@ -41,9 +42,13 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
         }
 
     override suspend fun saveExpense(expense: ExpenseDomain) = safeCall {
-        val exists = store.expenses.value.any { it.id == expense.id }
+        val previous = store.expenses.value.firstOrNull { it.id == expense.id }
+        val exists = previous != null
+        // Like the server, an edit keeps the original entry time and a new record gets now.
+        val createdAt = previous?.createdAt ?: Clock.System.now().toString()
         store.expenses.update { expenses ->
-            expenses.filterNot { it.id == expense.id } + expense.copy(version = expense.version + 1)
+            expenses.filterNot { it.id == expense.id } +
+                expense.copy(version = expense.version + 1, createdAt = createdAt)
         }
         if (!exists) {
             if (expense.recurring) {
@@ -101,7 +106,12 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
     override suspend fun saveSettlement(settlement: SettlementDomain) = safeCall {
         val before = store.settlements.value.first { it.id == settlement.id }
         requireDomain(before.version == settlement.version) { SettlementError.Changed() }
-        val saved = settlement.copy(version = before.version + 1, createdBy = before.createdBy)
+        val saved =
+            settlement.copy(
+                version = before.version + 1,
+                createdBy = before.createdBy,
+                createdAt = before.createdAt,
+            )
         store.settlements.update { values -> values.map { if (it.id == saved.id) saved else it } }
         saved
     }
@@ -117,7 +127,11 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
     override suspend fun recordSettlement(settlement: SettlementDomain) = safeCall {
         store.settlements.update {
             it.filterNot { row -> row.id == settlement.id } +
-                settlement.copy(version = 1, createdBy = store.context.userId)
+                settlement.copy(
+                    version = 1,
+                    createdBy = store.context.userId,
+                    createdAt = Clock.System.now().toString(),
+                )
         }
         Unit
     }

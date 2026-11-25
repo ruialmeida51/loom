@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.settings.presentation.viewmodel
 
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.settings.domain.errors.SettingsError
 import com.eyther.lumbridge.features.settings.domain.model.NotificationPermissionDomain
 import com.eyther.lumbridge.features.settings.domain.usecase.GetNotificationPermissionUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
@@ -88,13 +89,16 @@ class NotificationsPrimeScreenViewModel(
             val result =
                 if (registrationResult is AppResult.Success) markAnswered() else registrationResult
             val permission = getPermission()
+            val error = (result as? AppResult.Failure)?.error
             mutableState.update { oldState ->
                 oldState.copy(
                     busy = false,
                     visible = result !is AppResult.Success,
                     waitingForSettings = false,
                     permission = (permission as? AppResult.Success)?.value ?: oldState.permission,
-                    error = (result as? AppResult.Failure)?.error?.toSettingsTextResource(),
+                    // A refusal is explained by the sheet itself, which now offers settings.
+                    error = error?.takeUnless { it is SettingsError.PermissionDenied }
+                        ?.toSettingsTextResource(),
                 )
             }
         }
@@ -118,11 +122,14 @@ class NotificationsPrimeScreenViewModel(
 
     override fun onResume() {
         if (state.value.busy || checking) return
-        if (!state.value.waitingForSettings && !getSettings().value.notifications) return
         checking = true
         launch {
             val result = getPermission()
             checking = false
+            // Keep the phone's current answer, so My account can show when it blocks reminders.
+            if (result is AppResult.Success)
+                mutableState.update { oldState -> oldState.copy(permission = result.value) }
+            if (!state.value.waitingForSettings && !getSettings().value.notifications) return@launch
             if (
                 result is AppResult.Success &&
                     result.value == NotificationPermissionDomain.GRANTED &&

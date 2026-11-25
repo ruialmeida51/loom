@@ -7,4 +7,5 @@ import kotlinx.serialization.Serializable
 internal data class ProfileResponse(
     @SerialName("id") val id: String,
     @SerialName("display_name") val displayName: String,
+    @SerialName("avatar_path") val avatarPath: String? = null,
 )

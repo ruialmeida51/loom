@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.account.data.network
 
+import com.eyther.lumbridge.core.data.network.PictureStorage
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
@@ -49,7 +50,10 @@ class ProfileNicknameDataSourceTest {
                 }
             }
         try {
-            val source = CommonProfileDataSource(access = SupabaseAccess(client = client))
+            val source = CommonProfileDataSource(
+                    access = SupabaseAccess(client = client),
+                    pictures = PictureStorage(access = SupabaseAccess(client = client)),
+                )
             assertIs<AppResult.Success<ProfileDomain>>(
                 source.updateNickname(userId = userId, nickname = "José"),
             )
@@ -72,7 +76,10 @@ class ProfileNicknameDataSourceTest {
             }
         try {
             assertIs<AppResult.Failure>(
-                CommonProfileDataSource(access = SupabaseAccess(client = client))
+                CommonProfileDataSource(
+                    access = SupabaseAccess(client = client),
+                    pictures = PictureStorage(access = SupabaseAccess(client = client)),
+                )
                     .updateNickname(userId = userId, nickname = "Rui"),
             )
         } finally {
@@ -95,7 +102,10 @@ class ProfileNicknameDataSourceTest {
             }
         try {
             val result =
-                CommonProfileDataSource(access = SupabaseAccess(client = client))
+                CommonProfileDataSource(
+                    access = SupabaseAccess(client = client),
+                    pictures = PictureStorage(access = SupabaseAccess(client = client)),
+                )
                     .updateNickname(userId = userId, nickname = "Rui")
             assertIs<CommonError.AccessDenied>(assertIs<AppResult.Failure>(result).error)
         } finally {

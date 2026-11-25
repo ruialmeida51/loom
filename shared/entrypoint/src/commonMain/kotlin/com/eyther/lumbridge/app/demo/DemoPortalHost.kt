@@ -1,6 +1,8 @@
 package com.eyther.lumbridge.app.demo
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -9,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.app.demo.data.DemoAnalyticsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoDiagnosticsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseAccountDataSource
@@ -42,6 +45,8 @@ import com.eyther.lumbridge.core.viewmodel.rememberHostViewModelStoreOwner
 import com.eyther.lumbridge.di.providedAccountModules
 import com.eyther.lumbridge.di.providedHouseholdModules
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
+import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
+import com.eyther.lumbridge.features.household.presentation.components.HouseholdChoiceCard
 import com.eyther.lumbridge.features.insights.data.export.CommonStatementExportDataSource
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_choose_a_preview_household
@@ -134,7 +139,12 @@ internal fun DemoPortalHost(
         }
         val portalToolbar: @Composable () -> Unit = {
             val accountState by accountViewModel.state.collectAsState()
+            val householdPicture by store.picturePath.collectAsState()
             PortalToolbar(
+                householdId = store.context.id,
+                householdPicturePath = householdPicture,
+                userId = store.context.userId,
+                avatarPath = accountState.profile?.avatarPath,
                 householdName = store.context.name,
                 nickname = accountState.profile?.nickname.orEmpty(),
                 loadingProfile = accountState.loading,
@@ -170,7 +180,10 @@ internal fun DemoPortalHost(
                         title = stringResource(Res.string.ui_choose_a_preview_household),
                         onBack = navigator::goBack,
                     ) {
-                        Column {
+                        Column(
+                            Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
                             stores.values
                                 .filter {
                                     !it.deleted.value &&
@@ -179,13 +192,21 @@ internal fun DemoPortalHost(
                                         }
                                 }
                                 .forEach { household ->
-                                    LoomSecondaryButton(
-                                        text = household.context.name,
+                                    HouseholdChoiceCard(
+                                        household =
+                                            HouseholdDomain(
+                                                id = household.context.id,
+                                                name = household.context.name,
+                                                currency = household.context.currency,
+                                                timeZone = household.context.timeZone,
+                                                imagePath = household.picturePath.value,
+                                            ),
+                                        current = household.context.id == store.context.id,
+                                        enabled = true,
                                         onClick = {
                                             onSelect(household.context.id)
                                             navigator.resetTo(PortalDestination.Household)
                                         },
-                                        modifier = Modifier,
                                     )
                                 }
                         }

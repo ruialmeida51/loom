@@ -1,19 +1,25 @@
 package com.eyther.lumbridge.app.home.data
 
+import com.eyther.lumbridge.app.demo.data.DemoExpenseDataSource
 import com.eyther.lumbridge.app.demo.data.DemoFeedDataSource
+import com.eyther.lumbridge.app.demo.data.DemoHouseholdDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
 import com.eyther.lumbridge.app.demo.data.DemoShoppingDataSource
 import com.eyther.lumbridge.app.demo.data.DemoShoppingSelectionDataSource
 import com.eyther.lumbridge.app.demo.data.DemoTaskDataSource
 import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpensesStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetHomeBalanceStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCase
 import com.eyther.lumbridge.features.home.presentation.viewmodel.HomeScreenViewModel
+import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
 import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSource
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingSnapshotDomain
 import com.eyther.lumbridge.features.shopping.domain.usecase.GetShoppingSelectionStreamUseCase
@@ -54,6 +60,7 @@ internal class HomeRetryFixture(
     }
 
     private val tasks = DemoTaskDataSource(store = store)
+    private val expenses = DemoExpenseDataSource(store = store)
     private val failingTasks =
         object : TaskDataSource by tasks {
             override fun stream(): Flow<AppResult<List<TaskDomain>>> =
@@ -83,6 +90,15 @@ internal class HomeRetryFixture(
                 ),
             getFeedStreamUseCase = GetFeedStreamUseCase(feedDataSource = feed),
             markArticleReadUseCase = MarkArticleReadUseCase(feedDataSource = feed),
+            getHomeBalanceStreamUseCase =
+                GetHomeBalanceStreamUseCase(
+                    getExpensesStreamUseCase = GetExpensesStreamUseCase(expenseDataSource = expenses),
+                    getSettlementsStreamUseCase =
+                        GetSettlementsStreamUseCase(expenseDataSource = expenses),
+                    context = context,
+                ),
+            getMembersStreamUseCase =
+                GetMembersStreamUseCase(householdDataSource = DemoHouseholdDataSource(store = store)),
             context = context,
         )
 }

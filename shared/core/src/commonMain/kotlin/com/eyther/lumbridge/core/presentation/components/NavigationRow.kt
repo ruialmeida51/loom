@@ -29,10 +29,7 @@ private val MinimumRowHeight = 56.dp // Compact single-line rows retain a full t
 private val MaximumSummaryWidth = 180.dp // Keep the row title readable on a compact phone.
 
 private val IconTileSize = 36.dp
-private val IconInTileSize = 20.dp
-private val IconTileShape = RoundedCornerShape(12.dp)
 private val TrailingIconSize = 18.dp
-private const val EmphasisTileAlpha = 0.12f
 
 /**
  * Compact navigation/action row; emphasisColor can identify a destructive action without relying on
@@ -68,28 +65,12 @@ fun NavigationRow(
         horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
     ) {
         glyph?.let {
-            // Icons sit in a soft tile so a list of rows scans by shape and colour.
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier =
-                    Modifier.size(IconTileSize)
-                        .clip(IconTileShape)
-                        .background(
-                            if (emphasisColor == Color.Unspecified)
-                                MaterialTheme.colorScheme.primaryContainer
-                            else emphasisColor.copy(alpha = EmphasisTileAlpha),
-                        ),
-            ) {
-                LoomIcon(
-                    glyph = it,
-                    tint =
-                        if (emphasisColor == Color.Unspecified)
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        else iconColor,
-                    decorative = true,
-                    modifier = Modifier.size(IconInTileSize),
-                )
-            }
+            // Icons sit in a squircle tile so a list of rows scans by shape and colour.
+            IconTile(
+                glyph = it,
+                size = IconTileSize,
+                tint = if (emphasisColor == Color.Unspecified) null else iconColor,
+            )
         }
         Column(
             modifier = Modifier.weight(1f),

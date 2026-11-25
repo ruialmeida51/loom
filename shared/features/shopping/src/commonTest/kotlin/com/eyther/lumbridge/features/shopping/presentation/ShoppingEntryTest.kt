@@ -730,6 +730,100 @@ class ShoppingEntryTest {
     }
 
     @Test
+    fun backspaceOnAnEmptyLineRemovesItAndEditsTheLineAbove() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val store = ViewModelStore()
+        try {
+            val viewModel = createViewModel(source = keepSource()).also { store.put("shopping", it) }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            val (first, second) = viewModel.state.value.uncheckedItems.take(2)
+            viewModel.onStartEditing(second)
+            viewModel.onEditingNameChanged("x")
+            viewModel.onEditingDeleteEmpty()
+            runCurrent()
+            assertEquals(second.id, viewModel.state.value.editingItemId, "Text remains to erase")
+            viewModel.onEditingNameChanged("")
+            viewModel.onEditingDeleteEmpty()
+            runCurrent()
+            assertEquals(first.id, viewModel.state.value.editingItemId, "Focus moves up a line")
+            assertEquals(first.name, viewModel.state.value.editingName)
+            assertEquals(listOf(first.id), viewModel.state.value.uncheckedItems.map { it.id })
+            // The removed row losing focus must not close the line now being edited.
+            viewModel.onEditingFinished(second.id)
+            assertEquals(first.id, viewModel.state.value.editingItemId)
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun backspaceOnTheFirstEmptyLineEditsTheLineBelow() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val store = ViewModelStore()
+        try {
+            val viewModel = createViewModel(source = keepSource()).also { store.put("shopping", it) }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            val (first, second) = viewModel.state.value.uncheckedItems.take(2)
+            viewModel.onStartEditing(first)
+            viewModel.onEditingNameChanged("")
+            viewModel.onEditingDeleteEmpty()
+            runCurrent()
+            assertEquals(second.id, viewModel.state.value.editingItemId)
+            assertEquals(listOf(second.id), viewModel.state.value.uncheckedItems.map { it.id })
+            assertTrue(viewModel.state.value.undoMessage != null, "Removal offers Undo")
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
+    fun backspaceOnAnEmptyNewLineReturnsToTheLineAbove() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val store = ViewModelStore()
+        try {
+            val viewModel = createViewModel(source = keepSource()).also { store.put("shopping", it) }
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.state.collect()
+            }
+            runCurrent()
+            advanceTimeBy(300)
+            runCurrent()
+            val first = viewModel.state.value.uncheckedItems.first()
+            viewModel.onStartEditing(first)
+            viewModel.onEditingNext()
+            runCurrent()
+            assertEquals(first.id, viewModel.state.value.draftAfterId)
+            viewModel.onDraftDeleteEmpty()
+            runCurrent()
+            assertNull(viewModel.state.value.draftAfterId)
+            assertEquals(first.id, viewModel.state.value.editingItemId)
+            viewModel.onEditingFinished(first.id)
+            viewModel.onEntryDeleteEmpty()
+            runCurrent()
+            assertEquals(
+                viewModel.state.value.uncheckedItems.last().id,
+                viewModel.state.value.editingItemId,
+                "Backspace in the empty add field edits the last item",
+            )
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
+    @Test
     fun aBlankRenameRevertsWhenTheRowLosesFocus() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val source = keepSource()
@@ -743,9 +837,10 @@ class ShoppingEntryTest {
             runCurrent()
             advanceTimeBy(300)
             runCurrent()
-            viewModel.onStartEditing(viewModel.state.value.uncheckedItems.first())
+            val first = viewModel.state.value.uncheckedItems.first()
+            viewModel.onStartEditing(first)
             viewModel.onEditingNameChanged("   ")
-            viewModel.onEditingFinished()
+            viewModel.onEditingFinished(first.id)
             runCurrent()
             assertNull(viewModel.state.value.editingItemId)
             assertNull(viewModel.state.value.draftAfterId)

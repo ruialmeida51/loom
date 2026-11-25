@@ -4,4 +4,4 @@ import com.eyther.lumbridge.features.account.data.network.model.response.Profile
 import com.eyther.lumbridge.features.account.domain.model.ProfileDomain
 
 internal fun ProfileResponse.toDomain(): ProfileDomain =
-    ProfileDomain(id = id, nickname = displayName)
+    ProfileDomain(id = id, nickname = displayName, avatarPath = avatarPath)

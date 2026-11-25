@@ -8,6 +8,8 @@
   <string name="ui_a_fresh_page">A fresh page.</string>
   <string name="ui_follow_an_rss_or_atom_feed_to_bring_your">Follow an RSS or Atom feed to bring your favourite stories here.</string>
   <string name="ui_mark_unread">Mark unread</string>
+  <string name="article_options">Article options: %1$s</string>
+  <string name="article_unread">Unread</string>
   <string name="ui_mark_as_read">Mark as read</string>
   <string name="ui_read_story">Read story</string>
   <string name="ui_follow_a_feed_a533eb8">Follow a feed</string>

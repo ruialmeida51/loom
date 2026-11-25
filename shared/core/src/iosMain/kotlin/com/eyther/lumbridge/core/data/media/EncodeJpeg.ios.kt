@@ -1,10 +1,9 @@
-package com.eyther.lumbridge.features.expenses.data.media
+package com.eyther.lumbridge.core.data.media
 
-import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.compressImage
 
-internal actual suspend fun encodeReceiptPhoto(
+actual suspend fun encodeJpeg(
     bytes: ByteArray,
     maximumEdge: Int,
     jpegQualities: List<Int>,
@@ -18,7 +17,7 @@ internal actual suspend fun encodeReceiptPhoto(
                 maxWidth = maximumEdge,
                 maxHeight = maximumEdge,
             )
-        if (encoded.isEmpty()) throw ReceiptError.InvalidPhoto()
+        if (encoded.isEmpty()) throw IllegalArgumentException(UNREADABLE_IMAGE)
         if (encoded.size <= maximumBytes) return encoded
     }
     return null

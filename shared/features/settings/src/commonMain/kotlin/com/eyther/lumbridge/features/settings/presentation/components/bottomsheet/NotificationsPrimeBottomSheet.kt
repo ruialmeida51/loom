@@ -12,6 +12,7 @@ import com.eyther.lumbridge.features.settings.domain.model.NotificationPermissio
 import com.eyther.lumbridge.features.settings.generated.resources.Res
 import com.eyther.lumbridge.features.settings.generated.resources.notifications_prime_enable
 import com.eyther.lumbridge.features.settings.generated.resources.notifications_prime_footnote
+import com.eyther.lumbridge.features.settings.generated.resources.notifications_prime_denied_message
 import com.eyther.lumbridge.features.settings.generated.resources.notifications_prime_message
 import com.eyther.lumbridge.features.settings.generated.resources.notifications_prime_not_now
 import com.eyther.lumbridge.features.settings.generated.resources.notifications_prime_settings
@@ -42,7 +43,11 @@ fun NotificationsPrimeBottomSheet(
         actionModifier = Modifier.testTag("notifications_enable"),
     ) {
         Text(
-            stringResource(Res.string.notifications_prime_message),
+            stringResource(
+                if (permission == NotificationPermissionDomain.DENIED)
+                    Res.string.notifications_prime_denied_message
+                else Res.string.notifications_prime_message,
+            ),
             style = MaterialTheme.typography.bodyMedium,
         )
         Text(

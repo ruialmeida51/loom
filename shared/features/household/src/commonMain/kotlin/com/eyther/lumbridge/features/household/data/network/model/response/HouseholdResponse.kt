@@ -9,4 +9,5 @@ internal data class HouseholdResponse(
     @SerialName("name") val name: String,
     @SerialName("currency") val currency: String,
     @SerialName("time_zone") val timeZone: String,
+    @SerialName("image_path") val imagePath: String? = null,
 )

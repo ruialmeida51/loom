@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,6 +17,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
+import com.eyther.lumbridge.core.presentation.theme.LoomSquircle
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListIconDomain
 import com.eyther.lumbridge.features.shopping.presentation.mapper.toGlyph
 
@@ -42,7 +42,7 @@ fun ShoppingListIconPicker(
                 contentAlignment = Alignment.Center,
                 modifier =
                     Modifier.size(IconChoiceSize)
-                        .clip(CircleShape)
+                        .clip(LoomSquircle)
                         .background(
                             if (isSelected) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.surfaceContainer,

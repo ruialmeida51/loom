@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -31,7 +32,7 @@ import org.jetbrains.skia.Image
 @OptIn(ExperimentalTestApi::class)
 class HomeMoreUiTest {
     @Test
-    fun squareActionsKeepHomeAndTheFullTaskListHasItsOwnTab() =
+    fun homeLeadsWithTheBalanceAndTheFullTaskListHasItsOwnTab() =
         runSkikoComposeUiTest(size = Size(440f, 760f)) {
             ThemePreferences.set("LIGHT")
             setContent { LoomDemoApp() }
@@ -39,20 +40,28 @@ class HomeMoreUiTest {
                 onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
                     onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
-            for (tag in listOf("home_action_icon_MONEY", "home_action_icon_TASKS")) {
-                val bounds =
-                    onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-                assertTrue(
-                    abs(bounds.width - bounds.height) < 1f,
-                    "Quick action icons keep their square target",
-                )
+            onNodeWithTag("home_greeting").assertIsDisplayed()
+            onNodeWithTag("home_balance_card").assertIsDisplayed()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithTag("home_balance_amount").fetchSemanticsNodes().isNotEmpty()
+            }
+            capture("home-light")
+            onNodeWithTag("household_switch").performClick()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithTag("household_choice_The little nest").fetchSemanticsNodes().isNotEmpty()
+            }
+            onNodeWithTag("household_choice_The little nest").assertIsSelected()
+            capture("household-chooser-light")
+            onNodeWithContentDescription("Back").performClick()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty()
             }
             onNodeWithText("Feed").assertDoesNotExist()
-            onNodeWithTag("home_add_task").performClick()
+            onNodeWithTag("home_add_task").performScrollTo().performClick()
             onNodeWithTag("form_sheet").assertIsDisplayed()
             onNodeWithText("Cancel").performClick()
             onNodeWithContentDescription("Back").assertDoesNotExist()
-            onNodeWithTag("home_add_expense").assertIsDisplayed()
+            onNodeWithTag("home_add_expense").performScrollTo().assertIsDisplayed()
             onNodeWithTag("navigation_more").performClick()
             capture("more-light")
             onNodeWithTag("more_content").assertIsDisplayed()

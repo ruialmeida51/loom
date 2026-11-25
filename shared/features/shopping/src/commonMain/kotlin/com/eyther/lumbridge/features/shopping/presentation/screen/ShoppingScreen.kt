@@ -133,6 +133,9 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
             onEditingName = viewModel::onEditingNameChanged,
             onEditingNext = viewModel::onEditingNext,
             onEditingFinished = viewModel::onEditingFinished,
+            onEditingDeleteEmpty = viewModel::onEditingDeleteEmpty,
+            onDraftDeleteEmpty = viewModel::onDraftDeleteEmpty,
+            onEntryDeleteEmpty = viewModel::onEntryDeleteEmpty,
             onDraftName = viewModel::onDraftNameChanged,
             onSubmitDraft = viewModel::onSubmitDraft,
             onDraftFinished = viewModel::onDraftFinished,
@@ -218,7 +221,10 @@ private fun InnerShoppingScreen(
     onStartEditing: (ShoppingItemDomain) -> Unit,
     onEditingName: (String) -> Unit,
     onEditingNext: () -> Unit,
-    onEditingFinished: () -> Unit,
+    onEditingFinished: (String) -> Unit,
+    onEditingDeleteEmpty: () -> Unit,
+    onDraftDeleteEmpty: () -> Unit,
+    onEntryDeleteEmpty: () -> Unit,
     onDraftName: (String) -> Unit,
     onSubmitDraft: () -> Unit,
     onDraftFinished: () -> Unit,
@@ -310,6 +316,7 @@ private fun InnerShoppingScreen(
                             onEditingName = onEditingName,
                             onEditingNext = onEditingNext,
                             onEditingFinished = onEditingFinished,
+                            onEditingDeleteEmpty = onEditingDeleteEmpty,
                             indented = row.indented,
                             canNest = row.item.id in nestingParentIds,
                             canUnnest = row.item.parentId != null,
@@ -331,6 +338,7 @@ private fun InnerShoppingScreen(
                             onValue = onDraftName,
                             onNext = onSubmitDraft,
                             onFinished = onDraftFinished,
+                            onDeleteEmpty = onDraftDeleteEmpty,
                         )
                 }
                 }
@@ -347,6 +355,7 @@ private fun InnerShoppingScreen(
                     canSubmit = canAddInline,
                     onValue = onName,
                     onSubmit = onAdd,
+                    onDeleteEmpty = onEntryDeleteEmpty,
                     modifier =
                         Modifier.bringIntoViewRequester(entryVisibility).onFocusChanged {
                             entryFocused = it.hasFocus
@@ -406,6 +415,7 @@ private fun InnerShoppingScreen(
                         onEditingName = onEditingName,
                         onEditingNext = onEditingNext,
                         onEditingFinished = onEditingFinished,
+                        onEditingDeleteEmpty = onEditingDeleteEmpty,
                         indented = item.id in indentedItemIds,
                         canNest = item.id in nestingParentIds,
                         canUnnest = item.parentId != null,

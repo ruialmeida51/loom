@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.household.data.network
 
+import com.eyther.lumbridge.core.data.network.PictureStorage
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
@@ -59,6 +60,7 @@ class HouseholdSessionRecoveryTest {
                 CommonHouseholdDataSource(
                     access = SupabaseAccess(client = client),
                     profileDataSource = profiles(requestedUsers = profileUsers),
+                    pictures = PictureStorage(access = SupabaseAccess(client = client)),
                 )
             // This previously threw before any flow could be collected or catch attached.
             val members = dataSource.streamMembers(householdId = "home")
@@ -108,6 +110,7 @@ class HouseholdSessionRecoveryTest {
                 CommonHouseholdDataSource(
                         access = SupabaseAccess(client = client),
                         profileDataSource = profiles(requestedUsers = requestedUsers),
+                        pictures = PictureStorage(access = SupabaseAccess(client = client)),
                     )
                     .streamMembers(householdId = "home")
             val result = withContext(Dispatchers.Default) { withTimeout(3000) { members.first() } }

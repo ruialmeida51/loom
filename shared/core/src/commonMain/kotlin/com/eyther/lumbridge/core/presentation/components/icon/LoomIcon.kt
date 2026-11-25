@@ -17,6 +17,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.generated.resources.Res
 import com.eyther.lumbridge.core.generated.resources.icon_add
+import com.eyther.lumbridge.core.generated.resources.icon_edit
 import com.eyther.lumbridge.core.generated.resources.icon_health
 import com.eyther.lumbridge.core.generated.resources.icon_pets
 import com.eyther.lumbridge.core.generated.resources.icon_travel
@@ -79,6 +80,7 @@ fun LoomIcon(
                 Glyph.PLANE -> Res.string.icon_travel
                 Glyph.PAW -> Res.string.icon_pets
                 Glyph.HEART -> Res.string.icon_health
+                Glyph.EDIT -> Res.string.icon_edit
             },
         )
     Canvas(
@@ -152,6 +154,15 @@ fun LoomIcon(
             Glyph.CHEVRON_DOWN -> {
                 line(7f, 10f, 12f, 15f)
                 line(12f, 15f, 17f, 10f)
+            }
+            Glyph.EDIT -> {
+                // A pencil: barrel, tip and the eraser band.
+                line(4f, 20f, 5f, 15f)
+                line(4f, 20f, 9f, 19f)
+                line(5f, 15f, 16f, 4f)
+                line(9f, 19f, 20f, 8f)
+                line(16f, 4f, 20f, 8f)
+                line(13f, 7f, 17f, 11f)
             }
             Glyph.CHEVRON_RIGHT -> {
                 line(10f, 7f, 15f, 12f)

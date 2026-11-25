@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+- Add a photo to your profile and to each household.
+- Home leads with your balance, today's tasks and groceries.
+- Money accounts and feed filters use pills like shopping lists.
+- Backspace on an empty shopping line removes it, like Google Keep.
+- Expenses list in the order they were added.
+- Tap anywhere on an article to open it.
+- A clearer household switcher, softer dark mode and matching icons.
+- Clearer help when notifications are blocked on your phone.
+
 ## [4.0.15] - 2026-11-20
 
 - A fresh look: calmer colours, rounder cards and member colours.

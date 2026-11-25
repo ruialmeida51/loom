@@ -36,6 +36,7 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * A single checklist line edited in place. It takes focus when it appears, with the cursor at the
  * end; the keyboard's next action (or Enter) continues below, and leaving the line finishes it.
+ * Backspace in an already empty line calls [onDeleteEmpty], as Google Keep removes the line.
  */
 @Composable
 internal fun ShoppingLineInput(
@@ -46,6 +47,7 @@ internal fun ShoppingLineInput(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     textDecoration: TextDecoration = TextDecoration.None,
+    onDeleteEmpty: (() -> Unit)? = null,
 ) {
     val focusRequester = remember { FocusRequester() }
     var field by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
@@ -93,6 +95,14 @@ internal fun ShoppingLineInput(
                             (event.key == Key.Enter || event.key == Key.NumPadEnter)
                     ) {
                         onNext()
+                        true
+                    } else if (
+                        onDeleteEmpty != null &&
+                            event.type == KeyEventType.KeyDown &&
+                            event.key == Key.Backspace &&
+                            shown.text.isEmpty()
+                    ) {
+                        onDeleteEmpty()
                         true
                     } else false
                 }

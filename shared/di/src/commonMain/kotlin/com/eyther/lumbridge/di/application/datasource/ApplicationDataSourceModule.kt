@@ -1,7 +1,9 @@
 package com.eyther.lumbridge.di.application.datasource
 
+import com.eyther.lumbridge.core.data.network.PictureStorage
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.createLoomSupabaseClient
+import com.eyther.lumbridge.core.domain.media.PictureLoader
 import com.eyther.lumbridge.features.account.data.network.datasource.CommonProfileDataSource
 import com.eyther.lumbridge.features.account.domain.datasource.ProfileDataSource
 import com.eyther.lumbridge.features.analytics.data.local.datasource.CommonAnalyticsDataSource
@@ -29,8 +31,15 @@ class ApplicationDataSourceModule {
     fun provideDiagnosticsDataSource(): DiagnosticsDataSource = CommonDiagnosticsDataSource()
 
     @Single
-    fun provideProfileDataSource(access: SupabaseAccess): ProfileDataSource =
-        CommonProfileDataSource(access = access)
+    fun providePictureStorage(access: SupabaseAccess): PictureStorage = PictureStorage(access = access)
+
+    @Single fun providePictureLoader(pictures: PictureStorage): PictureLoader = pictures
+
+    @Single
+    fun provideProfileDataSource(
+        access: SupabaseAccess,
+        pictures: PictureStorage,
+    ): ProfileDataSource = CommonProfileDataSource(access = access, pictures = pictures)
 
     @Single
     fun provideSupabaseAccess(): SupabaseAccess =
@@ -71,10 +80,12 @@ class ApplicationDataSourceModule {
     fun provideHouseholdDataSource(
         access: SupabaseAccess,
         profileDataSource: ProfileDataSource,
+        pictures: PictureStorage,
     ): HouseholdDataSource =
         CommonHouseholdDataSource(
             access = access,
             profileDataSource = profileDataSource,
+            pictures = pictures,
         )
 
     @Single
