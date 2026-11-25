@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.16] - 2026-11-25
+
 - Add a photo to your profile and to each household.
 - Home leads with your balance, today's tasks and groceries.
 - Money accounts and feed filters use pills like shopping lists.
