@@ -17,6 +17,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
@@ -63,6 +64,8 @@ class NestingAndReceiptsUiTest {
             awaitLoadedDestination("home_content")
             onNodeWithTag("navigation_money").performClick()
             awaitLoadedDestination("expenses_content")
+            // Scroll to the end, where the list's bottom padding lifts the last row above the button.
+            onNodeWithTag("expenses_content").performTouchInput { swipeUp() }
             onNodeWithText("The weekly shop").performClick()
             awaitLoadedDestination("expense_details_content")
             waitUntil(timeoutMillis = 5_000) {

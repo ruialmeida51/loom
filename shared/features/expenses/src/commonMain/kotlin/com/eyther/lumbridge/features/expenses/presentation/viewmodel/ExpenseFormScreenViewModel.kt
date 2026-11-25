@@ -55,8 +55,13 @@ class ExpenseFormScreenViewModel(
 
     private val inputState =
         MutableStateFlow(
-            InnerInputState(paidBy = context.userId, occurredOn = todayIso(context.timeZone)),
+            InnerInputState(
+                paidBy = context.userId,
+                occurredOn = todayIso(context.timeZone),
+                recurring = params.recurring && params.expenseId == null,
+            ),
         )
+    private var accountId: String = params.accountId
     private val expenseId: String = params.expenseId ?: newId()
     private var receiptAtDraft: ExpenseReceiptDomain? = null
     private var initialized: Boolean = false
@@ -152,7 +157,7 @@ class ExpenseFormScreenViewModel(
     }
 
     private suspend fun loadReceipt() {
-        val result = getExpenseReceiptUseCase(expenseId = expenseId, accountId = params.accountId)
+        val result = getExpenseReceiptUseCase(expenseId = expenseId, accountId = accountId)
         mutableState.update { oldState ->
             when (result) {
                 is AppResult.Success ->
@@ -200,6 +205,46 @@ class ExpenseFormScreenViewModel(
         if (state.value.receiptPending || state.value.busy) return
         if (state.value.expense != null) return
         inputState.update { oldState -> oldState.copy(recurring = value) }
+    }
+
+    override fun onAccountChanged(id: String) {
+        if (!state.value.canChooseAccount || id == accountId) return
+        mutableState.update { oldState -> oldState.copy(switchingAccount = true, error = null) }
+        launch {
+            val result = getExpenseFormUseCase(accountId = id, expenseId = null)
+            if (result is AppResult.Success) {
+                val data = result.value
+                accountId = data.account.id
+                inputState.update { oldState ->
+                    oldState.copy(
+                        paidBy =
+                            if (data.members.any { it.id == oldState.paidBy }) oldState.paidBy
+                            else context.userId,
+                        split =
+                            ExpenseSplitSelectionDomain(
+                                method = ExpenseSplitMethodDomain.EQUAL,
+                                participants = data.members.map { it.id }.toSet(),
+                            ),
+                    )
+                }
+            }
+            mutableState.update { oldState ->
+                when (result) {
+                    is AppResult.Success ->
+                        oldState.copy(
+                            switchingAccount = false,
+                            account = result.value.account,
+                            members = result.value.members,
+                            receipt = oldState.receipt?.copy(accountId = result.value.account.id),
+                        )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            switchingAccount = false,
+                            error = result.error.toExpensesTextResource(),
+                        )
+                }
+            }
+        }
     }
 
     override fun onEditSplit() {
@@ -327,7 +372,7 @@ class ExpenseFormScreenViewModel(
         when (
             val result =
                 getExpenseFormUseCase(
-                    accountId = params.accountId,
+                    accountId = accountId,
                     expenseId = params.expenseId,
                     refreshReferences = refreshReferences,
                 )
@@ -368,6 +413,7 @@ class ExpenseFormScreenViewModel(
                 state.update { oldState ->
                     oldState.copy(
                         account = data.account,
+                        accounts = data.accounts,
                         members = data.members,
                         expense = if (oldState.expense == null) data.expense else oldState.expense,
                         loading = false,

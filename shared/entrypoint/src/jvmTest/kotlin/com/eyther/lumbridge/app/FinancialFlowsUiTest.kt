@@ -203,8 +203,7 @@ class FinancialFlowsUiTest {
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Cottage rent").fetchSemanticsNodes().isNotEmpty()
             }
-            onNodeWithTag("balances_actions").performClick()
-            onNodeWithText("Recurring expenses").performClick()
+            onNodeWithTag("recurring_bills_row").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("£90.00", substring = true).fetchSemanticsNodes().isNotEmpty()
             }
@@ -223,7 +222,10 @@ class FinancialFlowsUiTest {
             onNodeWithText("£100.00", substring = true).assertExists()
             onNodeWithTag("recurring_actions_Cottage rent").performClick()
             onNodeWithText("Resume").performClick()
-            onNodeWithText("Active").assertExists()
+            waitUntil(timeoutMillis = 5000) {
+                onAllNodesWithText("Paused").fetchSemanticsNodes().isEmpty()
+            }
+            onNodeWithText("Next on", substring = true).assertExists()
             capture("trip-recurring-light")
             onNodeWithTag("recurring_actions_Cottage rent").performClick()
             onNodeWithText("Delete").performClick()

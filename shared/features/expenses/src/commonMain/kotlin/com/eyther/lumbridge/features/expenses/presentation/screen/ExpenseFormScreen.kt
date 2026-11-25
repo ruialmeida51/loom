@@ -27,6 +27,7 @@ import com.eyther.lumbridge.core.presentation.components.LoadingRow
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
+import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
@@ -39,6 +40,8 @@ import com.eyther.lumbridge.features.expenses.generated.resources.form_category
 import com.eyther.lumbridge.features.expenses.generated.resources.form_date
 import com.eyther.lumbridge.features.expenses.generated.resources.form_monthly
 import com.eyther.lumbridge.features.expenses.generated.resources.form_recurring_unchanged
+import com.eyther.lumbridge.features.expenses.generated.resources.form_repeat_off
+import com.eyther.lumbridge.features.expenses.generated.resources.form_repeat_on
 import com.eyther.lumbridge.features.expenses.generated.resources.form_save
 import com.eyther.lumbridge.features.expenses.generated.resources.form_split
 import com.eyther.lumbridge.features.expenses.generated.resources.receipt_keep_expense
@@ -46,11 +49,11 @@ import com.eyther.lumbridge.features.expenses.generated.resources.receipt_pendin
 import com.eyther.lumbridge.features.expenses.generated.resources.split_participant_count
 import com.eyther.lumbridge.features.expenses.generated.resources.split_summary
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_who_paid
+import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseAccountPickerRow
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseCaptureFields
 import com.eyther.lumbridge.features.expenses.presentation.components.guestQualifier
 import com.eyther.lumbridge.features.expenses.presentation.components.receipt.ExpenseReceiptSection
 import com.eyther.lumbridge.features.expenses.presentation.components.receipt.rememberReceiptPickers
-import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
 import com.eyther.lumbridge.features.expenses.presentation.mapper.expenseCategoryLabel
 import com.eyther.lumbridge.features.expenses.presentation.mapper.splitMethodLabel
 import com.eyther.lumbridge.features.expenses.presentation.model.ReceiptPhotoUi
@@ -96,6 +99,10 @@ fun ExpenseFormScreen(
         date = state.occurredOn,
         category = state.category,
         recurring = state.recurring,
+        repeatDay = state.repeatDay,
+        accounts = state.accounts,
+        canChooseAccount = state.canChooseAccount,
+        onAccount = viewModel::onAccountChanged,
         splitMethod = state.split.method,
         participantCount = state.split.participants.size,
         editing = state.editing,
@@ -142,6 +149,10 @@ private fun InnerExpenseFormScreen(
     date: String,
     category: String,
     recurring: Boolean,
+    repeatDay: Int?,
+    accounts: List<ExpenseAccountDomain>,
+    canChooseAccount: Boolean,
+    onAccount: (String) -> Unit,
     splitMethod: ExpenseSplitMethodDomain,
     participantCount: Int,
     editing: Boolean,
@@ -202,11 +213,15 @@ private fun InnerExpenseFormScreen(
             }
             if (loading && account == null && readyForInput) LoadingRow()
             if (account != null) {
-                Text(
-                    accountLabel(account),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                GroupedSurface {
+                    ExpenseAccountPickerRow(
+                        account = account,
+                        accounts = accounts,
+                        canChoose = canChooseAccount,
+                        editing = editing,
+                        onSelected = onAccount,
+                    )
+                }
                 GroupedSurface {
                     MemberPickerRow(
                         label = stringResource(Res.string.ui_who_paid),
@@ -239,6 +254,28 @@ private fun InnerExpenseFormScreen(
                         onClick = onDate,
                         enabled = !busy && !receiptPending,
                     )
+                    if (!editing) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        NavigationRow(
+                            title = stringResource(Res.string.form_monthly),
+                            description =
+                                if (recurring && repeatDay != null)
+                                    stringResource(Res.string.form_repeat_on, repeatDay)
+                                else stringResource(Res.string.form_repeat_off),
+                            glyph = Glyph.REPEAT,
+                            onClick = { onRecurring(!recurring) },
+                            enabled = !busy && !receiptPending,
+                            modifier = Modifier.testTag("expense_repeat_row"),
+                            trailingContent = {
+                                Switch(
+                                    modifier = Modifier.testTag("expense_recurring"),
+                                    checked = recurring,
+                                    onCheckedChange = onRecurring,
+                                    enabled = !busy && !receiptPending,
+                                )
+                            },
+                        )
+                    }
                 }
                 Text(
                     text = stringResource(Res.string.form_category),
@@ -288,20 +325,7 @@ private fun InnerExpenseFormScreen(
                         modifier = Modifier.testTag("keep_expense"),
                     )
                 }
-                if (!editing)
-                    Row {
-                        Text(
-                            stringResource(Res.string.form_monthly),
-                            modifier = Modifier.weight(1f),
-                        )
-                        Switch(
-                            modifier = Modifier.testTag("expense_recurring"),
-                            checked = recurring,
-                            onCheckedChange = onRecurring,
-                            enabled = !busy && !receiptPending,
-                        )
-                    }
-                else if (recurring)
+                if (editing && recurring)
                     Text(
                         stringResource(Res.string.form_recurring_unchanged),
                         style = MaterialTheme.typography.bodySmall,

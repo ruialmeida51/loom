@@ -28,13 +28,18 @@ import org.koin.core.parameter.parametersOf
 internal fun ExpenseFormHost(
     accountId: String,
     expenseId: String?,
+    recurring: Boolean = false,
     onBack: () -> Unit,
     onSaved: () -> Unit,
     onViewReceipt: () -> Unit = {},
 ) {
     val viewModel: ExpenseFormScreenViewModelContract = koinViewModel {
         parametersOf(
-            ExpenseFormScreenViewModelContract.Params(accountId = accountId, expenseId = expenseId),
+            ExpenseFormScreenViewModelContract.Params(
+                accountId = accountId,
+                expenseId = expenseId,
+                recurring = recurring,
+            ),
         )
     }
     val formState by viewModel.state.platformCollectAsStateOnStart()

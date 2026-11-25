@@ -29,4 +29,5 @@ enum class Glyph {
     PAW,
     HEART,
     EDIT,
+    REPEAT,
 }

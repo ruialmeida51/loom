@@ -132,9 +132,11 @@ class HouseholdViewModelModule {
         removeSettlementUseCase: RemoveSettlementUseCase,
         deleteExpenseUseCase: DeleteExpenseUseCase,
         getMembersStreamUseCase: GetMembersStreamUseCase,
+        getRecurringExpensesStreamUseCase: GetRecurringExpensesStreamUseCase,
         context: HouseholdContextDomain,
     ): ExpensesScreenViewModelContract =
         ExpensesScreenViewModel(
+            getRecurringExpensesStreamUseCase = getRecurringExpensesStreamUseCase,
             getExpenseLedgerStreamUseCase = getExpenseLedgerStreamUseCase,
             getExpenseAccountsStreamUseCase = getExpenseAccountsStreamUseCase,
             selectExpenseAccountUseCase = selectExpenseAccountUseCase,
