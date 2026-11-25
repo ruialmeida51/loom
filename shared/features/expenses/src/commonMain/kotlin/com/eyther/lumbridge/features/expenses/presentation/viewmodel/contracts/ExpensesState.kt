@@ -147,10 +147,12 @@ data class ExpensesState(
                     isCurrentUserRecipient = userId == settlement.to,
                     canRecord =
                         settlementAvailable &&
-                            (userId == settlement.from || userId == settlement.to),
+                            account?.canRecordPayment(userId, settlement.from, settlement.to) ==
+                                true,
                     recordEnabled =
                         canRecordSettlement &&
-                            (userId == settlement.from || userId == settlement.to),
+                            account?.canRecordPayment(userId, settlement.from, settlement.to) ==
+                                true,
                     counterpartyAvatarPath =
                         participants
                             .firstOrNull {
