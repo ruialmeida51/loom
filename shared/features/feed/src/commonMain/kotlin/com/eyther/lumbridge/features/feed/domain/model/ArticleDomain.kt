@@ -11,4 +11,6 @@ data class ArticleDomain(
     val publishedAt: Instant,
     val read: Boolean,
     val subscriptionId: String,
+    /** The publisher's picture for the story (https), when the feed offers one. */
+    val imageUrl: String? = null,
 )

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- News stories show their pictures, and Today’s reads now sit right under your balance on Home.
+- Photos no longer flicker back to initials when you switch tabs.
+
 ## [4.0.19] - 2026-11-26
 
 - Share your MB Way, Revolut or PayPal so housemates can pay you back: MB Way copies your number and opens the app.

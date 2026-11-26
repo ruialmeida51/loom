@@ -2,6 +2,8 @@ package com.eyther.lumbridge.di.application.datasource
 
 import com.eyther.lumbridge.core.data.network.PictureStorage
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
+import com.eyther.lumbridge.core.data.network.WebPictures
+import com.eyther.lumbridge.core.data.network.isWebPicture
 import com.eyther.lumbridge.core.data.network.createLoomSupabaseClient
 import com.eyther.lumbridge.core.domain.media.PictureLoader
 import com.eyther.lumbridge.features.account.data.network.datasource.CommonProfileDataSource
@@ -33,7 +35,12 @@ class ApplicationDataSourceModule {
     @Single
     fun providePictureStorage(access: SupabaseAccess): PictureStorage = PictureStorage(access = access)
 
-    @Single fun providePictureLoader(pictures: PictureStorage): PictureLoader = pictures
+    @Single fun provideWebPictures(): WebPictures = WebPictures()
+
+    /** Story pictures are public web addresses; every other picture lives in the bucket. */
+    @Single
+    fun providePictureLoader(pictures: PictureStorage, web: WebPictures): PictureLoader =
+        PictureLoader { path -> if (isWebPicture(path)) web.load(path) else pictures.load(path) }
 
     @Single
     fun provideProfileDataSource(

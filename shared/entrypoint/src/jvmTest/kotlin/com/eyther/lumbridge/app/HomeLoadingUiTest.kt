@@ -40,9 +40,11 @@ class HomeLoadingUiTest {
                     }
                 }
                 waitUntil(timeoutMillis = 5000) { viewModel.state.value.taskItems != null }
+                onNodeWithTag("home_content").performScrollToNode(hasText("Water the plants"))
                 onNodeWithText("Water the plants").assertIsDisplayed()
                 viewModel.onRetry()
                 waitUntil(timeoutMillis = 5000) { !viewModel.state.value.tasksRefreshing }
+                onNodeWithTag("home_content").performScrollToNode(hasText("Water the plants"))
                 onNodeWithText("Water the plants").assertIsDisplayed()
                 fixture.releaseSecondaryReads()
                 waitUntil(timeoutMillis = 5000) { !viewModel.state.value.refreshing }
