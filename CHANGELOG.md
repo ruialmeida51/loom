@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- The news list loads more stories as you scroll, and a page that fails to load offers Try again without hiding what you were reading.
+
 ## [4.0.20] - 2026-11-26
 
 - Trips abroad: enter an expense in the currency you paid in, converted at today's rate (or yours).

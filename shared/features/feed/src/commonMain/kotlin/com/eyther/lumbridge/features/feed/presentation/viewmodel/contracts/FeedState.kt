@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts
 
+import com.eyther.lumbridge.core.presentation.components.pagination.PaginationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
 import com.eyther.lumbridge.features.feed.domain.model.FeedCursorDomain
@@ -25,7 +26,7 @@ data class FeedState(
     val selectedSourceIds: PersistentSet<String> = persistentSetOf(),
     val nextCursor: FeedCursorDomain? = null,
     val loadingMore: Boolean = false,
-    val pageError: TextResource? = null,
+    val loadMoreError: TextResource? = null,
     val sourcesError: TextResource? = null,
     val suggestions: ImmutableList<StarterFeedDomain> = persistentListOf(),
     val url: String = "",
@@ -53,4 +54,12 @@ data class FeedState(
     val articleCards = visibleArticles.map { it.toPreviewUi(timeZone = timeZone) }.toImmutableList()
 
     val canFollow: Boolean = url.isNotBlank()
+
+    val pagination: PaginationUi =
+        PaginationUi(
+            hasMore = nextCursor != null,
+            loadingMore = loadingMore,
+            loadMoreError = loadMoreError,
+            enabled = hasLoaded && !loading && !refreshing && loadError == null,
+        )
 }

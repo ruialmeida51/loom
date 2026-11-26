@@ -10,6 +10,7 @@ Adapted from Plannot `ai/PATTERNS_COMPONENTS.md`; [design language](../docs/desi
 | Data refresh container | core container/PullToRefreshContentContainer |
 | Transient success | core snackbar/SuccessSnackbar; lifetime in VM |
 | Actionable Undo | core snackbar/SuccessSnackbar optional action; bounded lifetime and target in the feature VM |
+| Paged list | core pagination/PaginatedLazyColumn + PaginationUi; never a hand-rolled LazyColumn end check or "Load more" button |
 | Content skeleton | core LoadingLine/LoadingRow/LoadingRows/LoadingForm; feed owns its preview skeleton |
 | Refresh preserving focus/geometry | core RefreshSkeletonContent; Home scopes it per section |
 | Illustrated empty state | core IllustratedEmptyState, feature-owned copy/glyph |

@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
 import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
+import com.eyther.lumbridge.core.presentation.components.pagination.PaginationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
@@ -46,6 +47,7 @@ data class ExpensesState(
     /** Older ledger records exist beyond the loaded pages. */
     val hasMoreHistory: Boolean = false,
     val loadingMoreHistory: Boolean = false,
+    val loadMoreHistoryError: TextResource? = null,
     val recurring: List<RecurringExpenseDomain> = emptyList(),
     val selectedView: ExpensesViewUi = ExpensesViewUi.EXPENSES,
     val showAccounts: Boolean = false,
@@ -122,6 +124,15 @@ data class ExpensesState(
             else -> null
         }
     val displayError: TextResource? = error ?: loadError
+
+    /** Only the Expenses view pages; balances and suggestions come whole from the server. */
+    val historyPagination: PaginationUi =
+        PaginationUi(
+            hasMore = hasMoreHistory,
+            loadingMore = loadingMoreHistory,
+            loadMoreError = loadMoreHistoryError,
+            enabled = !loading && loadError == null && selectedView == ExpensesViewUi.EXPENSES,
+        )
     val activeAccounts: ImmutableList<ExpenseAccountDomain> =
         accounts
             .filterNot { it.archived }

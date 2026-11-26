@@ -28,11 +28,11 @@ import com.eyther.lumbridge.features.shopping.generated.resources.completed_dele
 import com.eyther.lumbridge.features.shopping.generated.resources.favorite_updated
 import com.eyther.lumbridge.features.shopping.generated.resources.item_moved
 import com.eyther.lumbridge.features.shopping.generated.resources.item_removed
-import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingRowUi
 import com.eyther.lumbridge.features.shopping.generated.resources.item_restored
 import com.eyther.lumbridge.features.shopping.generated.resources.item_updated
 import com.eyther.lumbridge.features.shopping.presentation.mapper.toShoppingTextResource
 import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingEntryUi
+import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingRowUi
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingState
 import kotlinx.collections.immutable.persistentSetOf
@@ -284,7 +284,7 @@ class ShoppingScreenViewModel(
     }
 
     init {
-        viewModelScope.launch {
+        launch {
             // Preserve Enter order even when a network round trip takes longer than typing.
             for (entry in entryRequests) submitInlineItem(entry = entry)
         }

@@ -22,6 +22,7 @@ import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -44,6 +45,9 @@ class FeedScreenViewModel(
     private val sourcesRefreshRequests = MutableStateFlow(0)
     private val inputState = MutableStateFlow(InnerInputState())
     private var requestGeneration = 0
+
+    /** The in-flight next-page read; touched on the main thread only. */
+    private var loadMoreJob: Job? = null
 
     private val mutableState =
         MutableStateFlow(
@@ -125,6 +129,7 @@ class FeedScreenViewModel(
     }
 
     private fun requestFirstPage(clearItems: Boolean) {
+        loadMoreJob?.cancel()
         val generation = ++requestGeneration
         val query = state.value.query
         mutableState.update { oldState ->
@@ -134,7 +139,7 @@ class FeedScreenViewModel(
                 loading = clearItems || !oldState.hasLoaded,
                 hasLoaded = !clearItems && oldState.hasLoaded,
                 loadingMore = false,
-                pageError = null,
+                loadMoreError = null,
                 loadError = null,
                 refreshing = false,
             )
@@ -166,7 +171,7 @@ class FeedScreenViewModel(
                         items = result.value.items,
                         nextCursor = result.value.nextCursor,
                         loadError = null,
-                        pageError = null,
+                        loadMoreError = null,
                         loading = false,
                         loadingMore = false,
                         refreshing = false,
@@ -184,13 +189,15 @@ class FeedScreenViewModel(
     }
 
     override fun onLoadMore() {
+        // The job, not a state flag, stops a second read of the same page.
+        if (loadMoreJob?.isActive == true) return
         val current = state.value
         val cursor = current.nextCursor ?: return
-        if (current.loading || current.loadingMore || current.refreshing) return
+        if (!current.pagination.canLoadMore) return
         val generation = requestGeneration
         val query = current.query
-        mutableState.update { oldState -> oldState.copy(loadingMore = true, pageError = null) }
-        launch {
+        mutableState.update { oldState -> oldState.copy(loadingMore = true, loadMoreError = null) }
+        loadMoreJob = launch {
             val result = getFeedPageUseCase(query = query, after = cursor)
             if (generation != requestGeneration) return@launch
             mutableState.update { oldState ->
@@ -204,22 +211,28 @@ class FeedScreenViewModel(
                     is AppResult.Failure ->
                         oldState.copy(
                             loadingMore = false,
-                            pageError = result.error.toFeedTextResource(),
+                            loadMoreError = result.error.toFeedTextResource(),
                         )
                 }
             }
         }
     }
 
+    override fun onRetryLoadMore() {
+        mutableState.update { oldState -> oldState.copy(loadMoreError = null) }
+        onLoadMore()
+    }
+
     override fun onRetry() {
         if (state.value.refreshing) return
+        loadMoreJob?.cancel()
         val generation = ++requestGeneration
         val query = state.value.query
         mutableState.update { oldState ->
             oldState.copy(
                 refreshing = true,
                 loadingMore = false,
-                pageError = null,
+                loadMoreError = null,
             )
         }
         launch {
@@ -265,7 +278,7 @@ class FeedScreenViewModel(
                 loadError = null,
                 formError = null,
                 sourcesError = null,
-                pageError = null,
+                loadMoreError = null,
             )
         }
     }

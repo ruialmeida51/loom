@@ -139,10 +139,13 @@ class AccountLedgerStreamTest {
         source.pageFailure = CommonError.NoConnection()
         loadMore.tryEmit(Unit)
         runCurrent()
-        assertIs<AppResult.Failure>(results.last())
+        // Only the older page failed: the loaded records stay and the error rides along.
+        assertIs<CommonError.NoConnection>(latest.loadMoreError)
+        assertEquals(allKeys().take(50), latest.history.records.map { it.key })
         source.pageFailure = null
         loadMore.tryEmit(Unit)
         runCurrent()
         assertEquals(allKeys().take(100), latest.history.records.map { it.key })
+        assertNull(latest.loadMoreError)
     }
 }

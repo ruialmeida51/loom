@@ -149,7 +149,7 @@ class SessionScreenViewModel(
         if (state.value.stage != SessionStageUi.READY) return
         resumeRecoveryJob?.cancel()
         val revision = identityRevision
-        resumeRecoveryJob = viewModelScope.launch {
+        resumeRecoveryJob = launch {
             // Let the SDK's process callback finish before checking for a stopped refresh job.
             delay(RESUME_RECOVERY_DELAY_MILLIS)
             // Best effort: offline failures stay silent while SDK/read-stream retries continue,
@@ -164,7 +164,7 @@ class SessionScreenViewModel(
     }
 
     init {
-        viewModelScope.launch {
+        launch {
             delay(STALLED_STARTUP_DELAY_MILLIS)
             mutableState.update { oldState ->
                 if (oldState.userId == null && oldState.stage == SessionStageUi.RESTORING)
@@ -181,7 +181,7 @@ class SessionScreenViewModel(
             oldState.copy(recoveringSession = true, sessionRecoveryError = null)
         }
         val revision = identityRevision
-        sessionRecoveryJob = viewModelScope.launch {
+        sessionRecoveryJob = launch {
             val result = recoverSessionUseCase()
             ensureActive()
             if (revision != identityRevision || state.value.stage != SessionStageUi.RESTORING)

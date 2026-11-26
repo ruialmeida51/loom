@@ -9,6 +9,7 @@
     <string name="icon_pets">Pets</string>
     <string name="icon_health">Health</string>
     <string name="ui_dismiss">Dismiss</string>
+    <string name="ui_try_again">Try again</string>
     <string name="ui_something_went_wrong_please_try_again">Something went wrong. Please try again.</string>
     <string name="icon_home">Home</string>
     <string name="icon_feed">Feed</string>

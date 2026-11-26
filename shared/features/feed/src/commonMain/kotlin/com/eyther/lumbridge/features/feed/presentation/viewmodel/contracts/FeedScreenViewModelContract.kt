@@ -20,6 +20,8 @@ abstract class FeedScreenViewModelContract : LoomViewModel() {
 
     abstract fun onLoadMore()
 
+    abstract fun onRetryLoadMore()
+
     abstract fun onUrlChanged(value: String)
 
     abstract fun onFollowSheetVisibilityChanged(value: Boolean)

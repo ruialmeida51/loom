@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.expenses.domain.usecase
 
+import com.eyther.lumbridge.core.domain.errors.AppError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
 import com.eyther.lumbridge.core.domain.wrapper.mapToResult
@@ -30,7 +31,11 @@ class GetAccountLedgerStreamUseCase(
     private val getAccountBalancesStreamUseCase: GetAccountBalancesStreamUseCase,
     private val getSelectedExpenseAccountStreamUseCase: GetSelectedExpenseAccountStreamUseCase,
 ) {
-    private data class LoadedHistory(val page: LedgerPageDomain, val loadingMore: Boolean = false)
+    private data class LoadedHistory(
+        val page: LedgerPageDomain,
+        val loadingMore: Boolean = false,
+        val loadMoreError: AppError? = null,
+    )
 
     /**
      * @param loadMoreRequests each emission loads the next older page, when there is one.
@@ -60,6 +65,7 @@ class GetAccountLedgerStreamUseCase(
                                 history = loaded.page,
                                 balances = balances.getOrThrow(),
                                 loadingMore = loaded.loadingMore,
+                                loadMoreError = loaded.loadMoreError,
                             )
                         }
                     }
@@ -92,7 +98,14 @@ class GetAccountLedgerStreamUseCase(
                             loaded = next
                             send(AppResult.Success(LoadedHistory(page = next)))
                         }
-                        is AppResult.Failure -> send(older)
+                        // The loaded pages stay; only the older page failed, and it is retried
+                        // by the next load-more request.
+                        is AppResult.Failure ->
+                            send(
+                                AppResult.Success(
+                                    LoadedHistory(page = current, loadMoreError = older.error),
+                                )
+                            )
                     }
                 }
             }

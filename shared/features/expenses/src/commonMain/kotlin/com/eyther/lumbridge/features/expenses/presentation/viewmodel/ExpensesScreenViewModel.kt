@@ -84,6 +84,8 @@ class ExpensesScreenViewModel(
                                     balances = result.value.balances,
                                     hasMoreHistory = result.value.history.nextCursor != null,
                                     loadingMoreHistory = result.value.loadingMore,
+                                    loadMoreHistoryError =
+                                        result.value.loadMoreError?.toExpensesTextResource(),
                                     loading = false,
                                     refreshing = false,
                                     loadError = null,
@@ -93,6 +95,7 @@ class ExpensesScreenViewModel(
                                     loading = false,
                                     refreshing = false,
                                     loadingMoreHistory = false,
+                                    loadMoreHistoryError = null,
                                     loadError = result.error.toExpensesTextResource(),
                                 )
                         }
@@ -164,6 +167,7 @@ class ExpensesScreenViewModel(
                 balances = emptyMap(),
                 hasMoreHistory = false,
                 loadingMoreHistory = false,
+                loadMoreHistoryError = null,
                 loading = true,
                 showAccounts = false,
                 error = null,
@@ -337,17 +341,16 @@ class ExpensesScreenViewModel(
     }
 
     override fun onLoadMoreHistory() {
-        val current = state.value
         // After a failure the reader retries explicitly, rather than every scroll asking again.
-        if (
-            !current.hasMoreHistory ||
-                current.loadingMoreHistory ||
-                current.loading ||
-                current.loadError != null
-        )
-            return
+        // The flag is set before the request on the main thread, so a second call returns here.
+        if (!state.value.historyPagination.canLoadMore) return
         mutableState.update { oldState -> oldState.copy(loadingMoreHistory = true) }
         loadMoreRequests.tryEmit(Unit)
+    }
+
+    override fun onRetryLoadMoreHistory() {
+        mutableState.update { oldState -> oldState.copy(loadMoreHistoryError = null) }
+        onLoadMoreHistory()
     }
 
     override fun onContentChanged() {

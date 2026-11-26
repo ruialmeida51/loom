@@ -36,21 +36,22 @@ import org.jetbrains.skia.Image
 @OptIn(ExperimentalTestApi::class)
 class FeedReaderUiTest {
     @Test
-    fun loadMoreAppendsPagesAndStopsAfterTheLastStory() =
+    fun scrollingAppendsPagesAndStopsAfterTheLastStory() =
         runSkikoComposeUiTest(size = Size(440f, 800f)) {
             val fixture = FeedReaderFixture()
             try {
                 startReader(fixture, ThemeMode.LIGHT)
                 assertEquals(20, fixture.viewModel.state.value.items.size)
                 capture("feed-paged-light")
-                onNodeWithTag("feed_content").performScrollToNode(hasTestTag("feed_load_more"))
-                onNodeWithTag("feed_load_more").performClick()
+                // Scrolling near the end loads the next page; there is no button to press.
+                val first = fixture.viewModel.state.value.items.last().id
+                onNodeWithTag("feed_content").performScrollToNode(hasTestTag("article_card_$first"))
                 waitUntil(timeoutMillis = 5_000) { fixture.viewModel.state.value.items.size == 40 }
-                onNodeWithTag("feed_content").performScrollToNode(hasTestTag("feed_load_more"))
-                onNodeWithTag("feed_load_more").performClick()
+                val second = fixture.viewModel.state.value.items.last().id
+                onNodeWithTag("feed_content").performScrollToNode(hasTestTag("article_card_$second"))
                 waitUntil(timeoutMillis = 5_000) { fixture.viewModel.state.value.items.size == 45 }
                 assertNull(fixture.viewModel.state.value.nextCursor)
-                onNodeWithTag("feed_load_more").assertDoesNotExist()
+                onNodeWithTag("pagination_loading").assertDoesNotExist()
             } finally {
                 fixture.close()
             }

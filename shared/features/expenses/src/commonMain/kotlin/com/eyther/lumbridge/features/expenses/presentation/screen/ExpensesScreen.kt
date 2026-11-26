@@ -7,17 +7,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -26,7 +23,6 @@ import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.FloatingActionContentPadding
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
-import com.eyther.lumbridge.core.presentation.components.LoadingRow
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
@@ -39,6 +35,8 @@ import com.eyther.lumbridge.core.presentation.components.layout.rootContentPaddi
 import com.eyther.lumbridge.core.presentation.components.menu.ActionMenu
 import com.eyther.lumbridge.core.presentation.components.menu.model.ActionMenuItem
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
+import com.eyther.lumbridge.core.presentation.components.pagination.PaginatedLazyColumn
+import com.eyther.lumbridge.core.presentation.components.pagination.PaginationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
@@ -87,6 +85,7 @@ fun ExpensesScreen(
     onCreateAccount: () -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
+    val listState = rememberLazyListState()
     PullToRefreshContentContainer(
         isRefreshing = state.refreshing,
         onRefresh = viewModel::onRefresh,
@@ -100,14 +99,15 @@ fun ExpensesScreen(
         },
     ) {
         InnerExpensesScreen(
+            listState = listState,
             account = state.account,
             accounts = state.activeAccounts,
             onSelectAccount = viewModel::onAccountSelected,
             onCreateAccount = onCreateAccount,
             history = state.history,
-            hasMoreHistory = state.hasMoreHistory,
-            loadingMoreHistory = state.loadingMoreHistory,
+            historyPagination = state.historyPagination,
             onLoadMoreHistory = viewModel::onLoadMoreHistory,
+            onRetryLoadMoreHistory = viewModel::onRetryLoadMoreHistory,
             recurringSummary = state.recurringSummary,
             selectedView = state.selectedView,
             memberBalances = state.memberBalances,
@@ -150,14 +150,15 @@ fun ExpensesScreen(
 
 @Composable
 private fun InnerExpensesScreen(
+    listState: LazyListState,
     account: ExpenseAccountDomain?,
     accounts: ImmutableList<ExpenseAccountDomain>,
     onSelectAccount: (String) -> Unit,
     onCreateAccount: () -> Unit,
     history: ImmutableList<ExpenseHistoryItemUi>,
-    hasMoreHistory: Boolean,
-    loadingMoreHistory: Boolean,
+    historyPagination: PaginationUi,
     onLoadMoreHistory: () -> Unit,
+    onRetryLoadMoreHistory: () -> Unit,
     selectedView: ExpensesViewUi,
     memberBalances: ImmutableList<MemberBalanceUi>,
     suggestions: ImmutableList<SuggestedRepaymentUi>,
@@ -183,23 +184,12 @@ private fun InnerExpensesScreen(
     onRetry: () -> Unit,
     recurringSummary: RecurringSummaryUi? = null,
 ) {
-    val listState = rememberLazyListState()
-    // The next page loads as the reader nears the end of the list, not when they reach it.
-    val nearEnd by remember(listState) {
-        derivedStateOf {
-            val layout = listState.layoutInfo
-            val lastVisible = layout.visibleItemsInfo.lastOrNull()?.index
-            lastVisible != null && lastVisible >= layout.totalItemsCount - LOAD_MORE_THRESHOLD
-        }
-    }
-    val canLoadMore =
-        hasMoreHistory && !loading && error == null && selectedView == ExpensesViewUi.EXPENSES
-    LaunchedEffect(nearEnd, canLoadMore, loadingMoreHistory) {
-        if (nearEnd && canLoadMore && !loadingMoreHistory) onLoadMoreHistory()
-    }
     Box(Modifier.fillMaxSize()) {
-        LazyColumn(
-            state = listState,
+        PaginatedLazyColumn(
+            listState = listState,
+            pagination = historyPagination,
+            onLoadMore = onLoadMoreHistory,
+            onRetryLoadMore = onRetryLoadMoreHistory,
             modifier = Modifier.fillMaxSize().testTag("expenses_content"),
             contentPadding = rootContentPadding(bottom = FloatingActionContentPadding),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
@@ -289,10 +279,6 @@ private fun InnerExpensesScreen(
                         onDeleteSettlement = onDeleteSettlement,
                     )
                 }
-                if (loadingMoreHistory)
-                    item(key = "history_loading_more") {
-                        LoadingRow(modifier = Modifier.testTag("history_loading_more"))
-                    }
             } else if (account != null) {
                 if (showPersonalSummary)
                     item(key = "current_position") {
@@ -336,4 +322,3 @@ private fun InnerExpensesScreen(
 }
 
 /** How many rows before the end of the list the next ledger page starts loading. */
-private const val LOAD_MORE_THRESHOLD = 10
