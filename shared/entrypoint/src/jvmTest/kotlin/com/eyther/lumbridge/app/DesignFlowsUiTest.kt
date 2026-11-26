@@ -7,18 +7,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.ComposeUiTest
-import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
-import androidx.compose.ui.test.performTextInput
-import androidx.compose.ui.test.performImeAction
-import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -26,8 +25,10 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.unit.Density
@@ -153,9 +154,11 @@ class DesignFlowsUiTest {
                 }
             }
             onNodeWithTag("home_tasks_empty").assertExists()
+            onNodeWithTag("home_content").performScrollToNode(hasTestTag("home_shopping_preview"))
             onNodeWithTag("home_shopping_preview").assertExists()
             onNodeWithText("Nothing to pick up. You’re all stocked up.").assertExists()
             captureNode(tag = "empty_home", name = "home-empty-light")
+            onNodeWithTag("home_content").performScrollToNode(hasTestTag("home_add_expense"))
             onNodeWithTag("home_add_expense").performClick()
             assertTrue(openedExpense)
         }
@@ -185,6 +188,7 @@ class DesignFlowsUiTest {
                 }
                 onNodeWithText("Check your connection and try again.").assertExists()
                 onNodeWithTag("home_tasks_empty").assertDoesNotExist()
+                onNodeWithTag("home_content").performScrollToNode(hasTestTag("home_shopping_preview"))
                 onNodeWithTag("home_shopping_preview").assertExists()
                 onNodeWithText("All settled up").assertDoesNotExist()
                 onNodeWithText("Try again").performClick()

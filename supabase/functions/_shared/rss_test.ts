@@ -72,3 +72,45 @@ Deno.test("DTD and active article URLs are refused", () => {
   );
   assert(articles.length === 0);
 });
+
+Deno.test("Pictures come from Media RSS, the widest first", () => {
+  const [article] = parseFeed(
+    `<rss xmlns:media="http://search.yahoo.com/mrss/"><channel><title>Pics</title><item><title>One</title><link>https://example.org/one</link><media:content url="https://img.example.org/small.jpg?a=1&amp;b=2" width="140" medium="image"/><media:content url="https://img.example.org/large.jpg" width="1200" medium="image"/><media:content url="https://img.example.org/clip.mp4" medium="video"/></item></channel></rss>`,
+    "https://example.org/rss",
+  );
+  assert(article.image_url === "https://img.example.org/large.jpg", article.image_url ?? "none");
+});
+
+Deno.test("Pictures fall back to thumbnails, enclosures and the story's first image", () => {
+  const articles = parseFeed(
+    `<rss xmlns:media="http://search.yahoo.com/mrss/"><channel><title>Pics</title>
+      <item><guid>a</guid><title>Thumb</title><link>https://example.org/a</link><media:thumbnail url="https://img.example.org/a.jpg?w=240&amp;q=80" width="240"/></item>
+      <item><guid>b</guid><title>Enclosure</title><link>https://example.org/b</link><enclosure url="https://img.example.org/b.png" type="image/png" length="1"/></item>
+      <item><guid>c</guid><title>Inline</title><link>https://example.org/c</link><description><![CDATA[<p><img alt="" src="/images/c.jpg"> Words</p>]]></description></item>
+      <item><guid>d</guid><title>Insecure</title><link>https://example.org/d</link><enclosure url="http://img.example.org/d.jpg" type="image/jpeg"/></item>
+      <item><guid>e</guid><title>Audio</title><link>https://example.org/e</link><enclosure url="https://img.example.org/e.mp3" type="audio/mpeg"/></item>
+    </channel></rss>`,
+    "https://example.org/rss",
+  );
+  assert(articles[0].image_url === "https://img.example.org/a.jpg?w=240&q=80", articles[0].image_url ?? "none");
+  assert(articles[1].image_url === "https://img.example.org/b.png");
+  assert(articles[2].image_url === "https://example.org/images/c.jpg", articles[2].image_url ?? "none");
+  assert(articles[2].summary === "Words");
+  assert(articles[3].image_url === null && articles[4].image_url === null);
+});
+
+Deno.test("Atom pictures come from image enclosures", () => {
+  const [article] = parseFeed(
+    `<feed><title>Atom</title><entry><id>x</id><title>X</title><link href="https://example.org/x"/><link rel="enclosure" type="image/jpeg" href="https://img.example.org/x.jpg"/></entry></feed>`,
+    "https://example.org/atom",
+  );
+  assert(article.url === "https://example.org/x" && article.image_url === "https://img.example.org/x.jpg");
+});
+
+Deno.test("BBC thumbnails are asked for at a readable size", () => {
+  const [article] = parseFeed(
+    `<rss xmlns:media="http://search.yahoo.com/mrss/"><channel><title>BBC</title><item><title>B</title><link>https://www.bbc.co.uk/news/b</link><media:thumbnail width="240" height="135" url="https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/abc/live/x.jpg"/></item></channel></rss>`,
+    "https://feeds.bbci.co.uk/news/rss.xml",
+  );
+  assert(article.image_url === "https://ichef.bbci.co.uk/ace/standard/800/cpsprodpb/abc/live/x.jpg", article.image_url ?? "none");
+});

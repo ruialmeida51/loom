@@ -10,4 +10,5 @@ data class ArticlePreviewUi(
     val publishedOn: LocalDate?,
     val summary: String = "",
     val read: Boolean = false,
+    val imageUrl: String? = null,
 )

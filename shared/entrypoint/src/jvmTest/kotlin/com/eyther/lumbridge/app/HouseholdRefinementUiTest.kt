@@ -82,7 +82,8 @@ class HouseholdRefinementUiTest {
     fun completingARecurringTaskAcknowledgesTheOccurrenceOnANarrowScreen() =
         runSkikoComposeUiTest(size = Size(360f, 740f), density = Density(1f, fontScale = 1.2f)) {
             startApp()
-            onNodeWithText("All tasks").performScrollTo().performClick()
+            onNodeWithTag("home_content").performScrollToNode(hasText("All tasks"))
+            onNodeWithText("All tasks").performClick()
             awaitLoadedDestination("tasks_content")
             onAllNodes(isToggleable())[0].performClick()
             waitUntil(timeoutMillis = 5_000) {

@@ -116,6 +116,63 @@ export interface FeedArticle {
   url: string;
   source: string;
   published_at: string;
+  image_url: string | null;
+}
+
+const maxImageUrlLength = 2048;
+
+/** An absolute https picture address, or null; entities stay encoded because the parser keeps them. */
+function imageAddress(value: unknown, base: string): string | null {
+  const raw = text(value).trim().replace(/&amp;/g, "&");
+  if (!raw) return null;
+  try {
+    const url = new URL(raw, base);
+    if (url.protocol !== "https:" || url.username || url.password) return null;
+    // BBC only lists 240px thumbnails; the same picture is served wider by changing the size.
+    if (url.hostname === "ichef.bbci.co.uk") {
+      url.pathname = url.pathname.replace(/\/(standard|branded_news)\/240\//, "/$1/800/");
+    }
+    return url.href.length <= maxImageUrlLength ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function isImage(media: XmlRecord): boolean {
+  const type = text(media["@_type"]).toLowerCase();
+  const medium = text(media["@_medium"]).toLowerCase();
+  return medium === "image" || type.startsWith("image/") || (!type && !medium);
+}
+
+/**
+ * The story's picture, in the order publishers usually offer it: Media RSS content (the widest
+ * one), its thumbnail, an image enclosure, and finally the first picture in the story's HTML.
+ */
+export function articleImage(entry: XmlRecord, base: string): string | null {
+  const groups = [entry, ...list(entry["media:group"]).map(record)];
+  const contents = groups.flatMap((group) => list(group["media:content"]).map(record))
+    .filter(isImage)
+    .sort((a, b) => (Number(b["@_width"]) || 0) - (Number(a["@_width"]) || 0));
+  const thumbnails = groups.flatMap((group) => list(group["media:thumbnail"]).map(record))
+    .sort((a, b) => (Number(b["@_width"]) || 0) - (Number(a["@_width"]) || 0));
+  const enclosures = [
+    ...list(entry.enclosure).map(record),
+    ...list(entry.link).map(record).filter((link) => link["@_rel"] === "enclosure"),
+  ].filter((enclosure) => text(enclosure["@_type"]).toLowerCase().startsWith("image/"));
+  for (const media of [...contents, ...thumbnails]) {
+    const address = imageAddress(media["@_url"], base);
+    if (address) return address;
+  }
+  for (const enclosure of enclosures) {
+    const address = imageAddress(enclosure["@_url"] ?? enclosure["@_href"], base);
+    if (address) return address;
+  }
+  for (const html of [entry["content:encoded"], entry.content, entry.description, entry.summary]) {
+    const source = /<img\b[^>]*?\bsrc\s*=\s*["']([^"']+)["']/i.exec(text(html))?.[1];
+    const address = imageAddress(source, base);
+    if (address) return address;
+  }
+  return null;
 }
 
 export function parseFeed(
@@ -187,6 +244,7 @@ export function parseFeed(
       published_at: Number.isFinite(date.getTime())
         ? date.toISOString()
         : now.toISOString(),
+      image_url: articleImage(entry, url.href),
     });
   }
   return result;

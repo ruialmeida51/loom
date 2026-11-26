@@ -197,6 +197,57 @@ private fun InnerHomeScreen(
                 }
             }
         }
+        item(key = "news") {
+            RefreshSkeletonContent(
+                isRefreshing = feedRefreshing,
+                skeleton = {
+                    Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.content)) {
+                        SectionTitle(
+                            title = stringResource(Res.string.home_news),
+                            action = stringResource(Res.string.home_all_news),
+                            onAction = onFeed,
+                            modifier = Modifier.padding(horizontal = LoomSpacing.content),
+                        )
+                        FeedPreviewLoading()
+                    }
+                },
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.content)) {
+                    SectionTitle(
+                        title = stringResource(Res.string.home_news),
+                        action = stringResource(Res.string.home_all_news),
+                        onAction = onFeed,
+                        modifier = Modifier.padding(horizontal = LoomSpacing.content),
+                    )
+                    if (feedLoading) FeedPreviewLoading()
+                    else if (articles.isNotEmpty())
+                        FeedPreview(
+                            articles = articles,
+                            onOpen = onOpenStory,
+                            onReadChanged = onArticleReadChanged,
+                        )
+                    else if (hasFeed && feedError == null)
+                        Column(Modifier.padding(horizontal = LoomSpacing.content)) {
+                            GroupedSurface {
+                                NavigationRow(
+                                    title = stringResource(Res.string.home_choose_sources),
+                                    description = stringResource(Res.string.home_news_empty),
+                                    onClick = onFeed,
+                                )
+                            }
+                        }
+                    feedError?.let {
+                        Column(Modifier.padding(horizontal = LoomSpacing.content)) {
+                            HomeSectionError(
+                                message = it,
+                                onDismiss = if (hasFeed) onDismissFeedError else null,
+                                onRetry = onRetry,
+                            )
+                        }
+                    }
+                }
+            }
+        }
         item(key = "tasks") {
             RefreshSkeletonContent(
                 isRefreshing = tasksRefreshing,
@@ -285,57 +336,6 @@ private fun InnerHomeScreen(
                     }
                 }
             }
-        item(key = "news") {
-            RefreshSkeletonContent(
-                isRefreshing = feedRefreshing,
-                skeleton = {
-                    Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.content)) {
-                        SectionTitle(
-                            title = stringResource(Res.string.home_news),
-                            action = stringResource(Res.string.home_all_news),
-                            onAction = onFeed,
-                            modifier = Modifier.padding(horizontal = LoomSpacing.content),
-                        )
-                        FeedPreviewLoading()
-                    }
-                },
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.content)) {
-                    SectionTitle(
-                        title = stringResource(Res.string.home_news),
-                        action = stringResource(Res.string.home_all_news),
-                        onAction = onFeed,
-                        modifier = Modifier.padding(horizontal = LoomSpacing.content),
-                    )
-                    if (feedLoading) FeedPreviewLoading()
-                    else if (articles.isNotEmpty())
-                        FeedPreview(
-                            articles = articles,
-                            onOpen = onOpenStory,
-                            onReadChanged = onArticleReadChanged,
-                        )
-                    else if (hasFeed && feedError == null)
-                        Column(Modifier.padding(horizontal = LoomSpacing.content)) {
-                            GroupedSurface {
-                                NavigationRow(
-                                    title = stringResource(Res.string.home_choose_sources),
-                                    description = stringResource(Res.string.home_news_empty),
-                                    onClick = onFeed,
-                                )
-                            }
-                        }
-                    feedError?.let {
-                        Column(Modifier.padding(horizontal = LoomSpacing.content)) {
-                            HomeSectionError(
-                                message = it,
-                                onDismiss = if (hasFeed) onDismissFeedError else null,
-                                onRetry = onRetry,
-                            )
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 

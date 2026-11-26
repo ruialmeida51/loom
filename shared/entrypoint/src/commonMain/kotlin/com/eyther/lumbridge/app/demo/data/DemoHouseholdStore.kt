@@ -321,6 +321,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     Clock.System.now(),
                     false,
                     subscriptionId = "weekend",
+                    imageUrl = DEMO_NEWS_PICTURES + "news-sunday.jpg",
                 ),
                 ArticleDomain(
                     newId(),
@@ -331,6 +332,18 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     Clock.System.now(),
                     false,
                     subscriptionId = "table",
+                    imageUrl = DEMO_NEWS_PICTURES + "news-food.jpg",
+                ),
+                ArticleDomain(
+                    newId(),
+                    "Rents steady across the city this autumn",
+                    "What the latest figures mean if your lease is up for renewal.",
+                    "https://www.theguardian.com/money",
+                    "The weekend edit",
+                    Clock.System.now() - 3.hours,
+                    false,
+                    subscriptionId = "weekend",
+                    imageUrl = DEMO_NEWS_PICTURES + "news-city.jpg",
                 ),
             ),
         )

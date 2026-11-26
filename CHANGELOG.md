@@ -2,8 +2,10 @@
 
 ## [Unreleased]
 
-- On trips abroad, enter an expense in the currency you paid in: Loom converts it at today's rate, which you can change.
+- Trips abroad: enter an expense in the currency you paid in, converted at today's rate (or yours).
 - Long Money histories load faster, and balances stay right however many expenses you add.
+- News stories show their pictures, and Today’s reads now sit right under your balance on Home.
+- Photos no longer flicker back to initials when you switch tabs.
 
 ## [4.0.19] - 2026-11-26
 

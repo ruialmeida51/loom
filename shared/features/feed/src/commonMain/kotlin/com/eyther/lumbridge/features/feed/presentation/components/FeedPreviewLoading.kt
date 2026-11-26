@@ -1,9 +1,11 @@
 package com.eyther.lumbridge.features.feed.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -11,8 +13,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.eyther.lumbridge.core.presentation.components.LoadingLine
+import com.eyther.lumbridge.core.presentation.extensions.shimmer
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 
 /**
@@ -31,17 +36,25 @@ fun FeedPreviewLoading() {
                 shape = MaterialTheme.shapes.large,
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
             ) {
-                Column(
-                    Modifier.padding(LoomSpacing.content),
-                    verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
-                ) {
-                    LoadingLine(widthFraction = .5f, style = MaterialTheme.typography.labelMedium)
-                    Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall)) {
-                        repeat(FeedPreviewTitleLines) {
-                            LoadingLine(style = MaterialTheme.typography.titleMedium)
+                Column {
+                    Box(
+                        Modifier.fillMaxWidth()
+                            .height(ArticlePictureHeight)
+                            .clearAndSetSemantics {}
+                            .shimmer(shouldShimmer = true, shape = RectangleShape)
+                    )
+                    Column(
+                        Modifier.padding(LoomSpacing.content),
+                        verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+                    ) {
+                        LoadingLine(widthFraction = .5f, style = MaterialTheme.typography.labelMedium)
+                        Column(verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall)) {
+                            repeat(FeedPreviewTitleLines) {
+                                LoadingLine(style = MaterialTheme.typography.titleMedium)
+                            }
                         }
+                        LoadingLine(widthFraction = .6f, style = MaterialTheme.typography.bodySmall)
                     }
-                    LoadingLine(widthFraction = .6f, style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
