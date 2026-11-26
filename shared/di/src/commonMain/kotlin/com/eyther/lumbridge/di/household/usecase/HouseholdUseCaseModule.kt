@@ -3,6 +3,7 @@ package com.eyther.lumbridge.di.household.usecase
 import com.eyther.lumbridge.core.domain.features.FeatureGate
 import com.eyther.lumbridge.features.account.domain.datasource.PaymentHandlesDataSource
 import com.eyther.lumbridge.features.account.domain.usecase.GetPaymentHandlesUseCase
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
@@ -13,6 +14,9 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccoun
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountBalancesStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountLedgerStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExchangeRateUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
@@ -218,6 +222,26 @@ class HouseholdUseCaseModule {
         )
 
     @Single
+    fun provideGetAccountBalancesStreamUseCase(
+        expenseDataSource: ExpenseDataSource,
+    ): GetAccountBalancesStreamUseCase =
+        GetAccountBalancesStreamUseCase(
+            expenseDataSource = expenseDataSource,
+        )
+
+    @Single
+    fun provideGetAccountLedgerStreamUseCase(
+        expenseDataSource: ExpenseDataSource,
+        getAccountBalancesStreamUseCase: GetAccountBalancesStreamUseCase,
+        getSelectedExpenseAccountStreamUseCase: GetSelectedExpenseAccountStreamUseCase,
+    ): GetAccountLedgerStreamUseCase =
+        GetAccountLedgerStreamUseCase(
+            expenseDataSource = expenseDataSource,
+            getAccountBalancesStreamUseCase = getAccountBalancesStreamUseCase,
+            getSelectedExpenseAccountStreamUseCase = getSelectedExpenseAccountStreamUseCase,
+        )
+
+    @Single
     fun provideGetExpensesStreamUseCase(
         expenseDataSource: ExpenseDataSource,
     ): GetExpensesStreamUseCase =
@@ -297,13 +321,11 @@ class HouseholdUseCaseModule {
 
     @Single
     fun provideGetHomeBalanceStreamUseCase(
-        getExpensesStreamUseCase: GetExpensesStreamUseCase,
-        getSettlementsStreamUseCase: GetSettlementsStreamUseCase,
+        getAccountBalancesStreamUseCase: GetAccountBalancesStreamUseCase,
         context: HouseholdContextDomain,
     ): GetHomeBalanceStreamUseCase =
         GetHomeBalanceStreamUseCase(
-            getExpensesStreamUseCase = getExpensesStreamUseCase,
-            getSettlementsStreamUseCase = getSettlementsStreamUseCase,
+            getAccountBalancesStreamUseCase = getAccountBalancesStreamUseCase,
             context = context,
         )
 
@@ -496,6 +518,11 @@ class HouseholdUseCaseModule {
         expenseAccountDataSource: ExpenseAccountDataSource,
     ): RemoveAccountGuestUseCase =
         RemoveAccountGuestUseCase(expenseAccountDataSource = expenseAccountDataSource)
+
+    @Single
+    fun provideGetExchangeRateUseCase(
+        exchangeRateDataSource: ExchangeRateDataSource,
+    ): GetExchangeRateUseCase = GetExchangeRateUseCase(exchangeRateDataSource = exchangeRateDataSource)
 
     @Single
     fun provideGetExpenseAccountUseCase(

@@ -11,8 +11,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
+import com.eyther.lumbridge.features.expenses.generated.resources.detail_original
 import com.eyther.lumbridge.features.expenses.generated.resources.detail_recurring
 import com.eyther.lumbridge.features.expenses.generated.resources.detail_your_share
 import com.eyther.lumbridge.features.expenses.presentation.mapper.expenseCategoryLabel
@@ -56,6 +58,15 @@ internal fun ExpenseDetailsSummaryCard(details: ExpenseDetailsUi) {
                 style = MaterialTheme.typography.displaySmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
+            details.originalAmount?.let { paid ->
+                Text(
+                    text =
+                        stringResource(Res.string.detail_original, paid, details.originalRate.orEmpty()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.testTag("expense_original_amount"),
+                )
+            }
             details.ownShare?.let { share ->
                 Row(horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium)) {
                     Text(

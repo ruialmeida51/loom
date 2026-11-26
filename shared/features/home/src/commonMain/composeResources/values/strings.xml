@@ -37,7 +37,7 @@
     <string name="home_tasks">Tasks</string>
     <string name="home_shopping">Shopping</string>
     <string name="home_shopping_view_all">View all</string>
-    <string name="home_news">News</string>
+    <string name="home_news">Today’s reads</string>
     <string name="home_all_news">All news</string>
     <string name="home_choose_sources">Choose your feeds</string>
     <string name="home_news_empty">A little reading, when you fancy it.</string>

@@ -51,6 +51,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.split_particip
 import com.eyther.lumbridge.features.expenses.generated.resources.split_summary
 import com.eyther.lumbridge.features.expenses.generated.resources.split_unevenly
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_who_paid
+import com.eyther.lumbridge.features.expenses.presentation.components.ConversionUi
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseAccountPickerRow
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseCaptureFields
 import com.eyther.lumbridge.features.expenses.presentation.components.SplitBetweenSection
@@ -108,6 +109,22 @@ fun ExpenseFormScreen(
                 ?: state.occurredOn,
         category = state.category,
         recurring = state.recurring,
+        amountCurrency = state.amountCurrency.takeIf { state.account != null },
+        canChooseCurrency = state.canChooseCurrency,
+        onCurrency = viewModel::onEntryCurrencyChanged,
+        onRate = viewModel::onRateChanged,
+        conversion =
+            state.entryCurrency?.let { from ->
+                ConversionUi(
+                    from = from,
+                    to = state.currency,
+                    converted = state.convertedAmount,
+                    rate = state.rate,
+                    custom = state.rateIsCustom,
+                    loading = state.rateLoading,
+                    error = state.rateError,
+                )
+            },
         repeatDay = state.repeatDay,
         accounts = state.accounts,
         canChooseAccount = state.canChooseAccount,
@@ -161,6 +178,11 @@ private fun InnerExpenseFormScreen(
     date: String,
     category: String,
     recurring: Boolean,
+    amountCurrency: String?,
+    canChooseCurrency: Boolean,
+    onCurrency: (String) -> Unit,
+    onRate: (String) -> Unit,
+    conversion: ConversionUi?,
     repeatDay: Int?,
     accounts: List<ExpenseAccountDomain>,
     canChooseAccount: Boolean,
@@ -211,10 +233,13 @@ private fun InnerExpenseFormScreen(
                 ExpenseCaptureFields(
                     amount = amount,
                     title = title,
-                    currency = account?.currency,
+                    currency = amountCurrency ?: account?.currency,
                     enabled = !busy && !receiptPending,
                     onAmount = onAmount,
                     onTitle = onTitle,
+                    onCurrency = if (canChooseCurrency && account != null) onCurrency else null,
+                    conversion = conversion,
+                    onChangeRate = onRate,
                 )
             } else if (loading) LoadingForm()
             error?.let { message ->

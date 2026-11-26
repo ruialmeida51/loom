@@ -16,6 +16,8 @@ data class ExpenseDomain(
     val splitValues: Map<String, Long> = emptyMap(),
     /** ISO-8601 instant the record was entered; empty until the server stores it. */
     val createdAt: String = "",
+    /** Set when the expense was paid in another currency; [amountMinor] is then its conversion. */
+    val original: OriginalAmountDomain? = null,
 ) {
     fun canManage(userId: String, isOwner: Boolean): Boolean =
         userId == createdBy || userId == paidBy || isOwner

@@ -23,6 +23,9 @@ internal fun ExpenseDomain.toDetailsUi(
         accountName = account.name,
         isEveryday = account.isDefault,
         recurring = recurring,
+        originalAmount =
+            original?.let { MoneyDomain(minorUnits = it.amountMinor, currency = it.currency).formatted() },
+        originalRate = original?.let { "1 ${it.currency} = ${it.rate} ${account.currency}" },
         splitMethod = splitMethod,
         ownShare =
             shares[userId]?.let {

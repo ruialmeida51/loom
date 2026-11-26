@@ -16,6 +16,7 @@ internal fun ArticleResponse.toDomain(): ArticleDomain =
         publishedAt = Instant.parse(publishedAt),
         read = read,
         subscriptionId = subscriptionId,
+        imageUrl = imageUrl?.takeIf { it.startsWith("https://") },
     )
 
 internal fun List<ArticleResponse>.toPage(pageSize: Int): FeedPageDomain {

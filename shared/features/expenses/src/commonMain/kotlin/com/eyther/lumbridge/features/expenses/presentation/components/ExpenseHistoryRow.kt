@@ -35,6 +35,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.detail_delete
 import com.eyther.lumbridge.features.expenses.generated.resources.former_member
 import com.eyther.lumbridge.features.expenses.generated.resources.history_edit
+import com.eyther.lumbridge.features.expenses.generated.resources.history_original
 import com.eyther.lumbridge.features.expenses.generated.resources.history_paid_on
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import org.jetbrains.compose.resources.stringResource
@@ -63,10 +64,15 @@ internal fun ExpenseHistoryRow(
                 title = item.expense.title,
                 subtitle =
                     stringResource(
-                        Res.string.history_paid_on,
-                        item.payerName ?: stringResource(Res.string.former_member),
-                        calendarDateText(item.calendarDate),
-                    ),
+                            Res.string.history_paid_on,
+                            item.payerName ?: stringResource(Res.string.former_member),
+                            calendarDateText(item.calendarDate),
+                        )
+                        .let { paid ->
+                            item.originalAmount?.let {
+                                stringResource(Res.string.history_original, paid, it)
+                            } ?: paid
+                        },
                 amount = item.amount,
                 glyph = if (item.expense.recurring) Glyph.REPEAT else Glyph.MONEY,
                 person =

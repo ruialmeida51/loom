@@ -30,6 +30,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.error_future_p
 import com.eyther.lumbridge.features.expenses.generated.resources.error_incorrect_split_total
 import com.eyther.lumbridge.features.expenses.generated.resources.error_invalid_amount
 import com.eyther.lumbridge.features.expenses.generated.resources.error_invalid_amount_precision
+import com.eyther.lumbridge.features.expenses.generated.resources.error_invalid_conversion
 import com.eyther.lumbridge.features.expenses.generated.resources.error_invalid_members
 import com.eyther.lumbridge.features.expenses.generated.resources.error_invalid_payment_date
 import com.eyther.lumbridge.features.expenses.generated.resources.error_invalid_percentages
@@ -38,6 +39,8 @@ import com.eyther.lumbridge.features.expenses.generated.resources.error_invalid_
 import com.eyther.lumbridge.features.expenses.generated.resources.error_invalid_share
 import com.eyther.lumbridge.features.expenses.generated.resources.error_invalid_title
 import com.eyther.lumbridge.features.expenses.generated.resources.error_no_participants
+import com.eyther.lumbridge.features.expenses.generated.resources.error_rate_unavailable
+import com.eyther.lumbridge.features.expenses.generated.resources.error_recurring_single_currency
 import com.eyther.lumbridge.features.expenses.generated.resources.error_settlement_not_permitted
 import com.eyther.lumbridge.features.expenses.generated.resources.error_unbalanced_ledger
 import com.eyther.lumbridge.features.expenses.generated.resources.error_unsupported_currency
@@ -119,6 +122,11 @@ fun AppError.toExpensesTextResource(): TextResource =
             TextResource.Resource(Res.string.error_incorrect_split_total)
         is ExpenseError.AccessDenied -> TextResource.Resource(Res.string.error_access_denied)
         is ExpenseError.AlreadyRecorded -> TextResource.Resource(Res.string.error_already_recorded)
+        is ExpenseError.InvalidConversion ->
+            TextResource.Resource(Res.string.error_invalid_conversion)
+        is ExpenseError.RecurringSingleCurrency ->
+            TextResource.Resource(Res.string.error_recurring_single_currency)
+        is ExpenseError.RateUnavailable -> TextResource.Resource(Res.string.error_rate_unavailable)
         is RecurringExpenseError.Cancelled ->
             TextResource.Resource(Res.string.recurring_error_cancelled)
         is RecurringExpenseError.NotFound ->

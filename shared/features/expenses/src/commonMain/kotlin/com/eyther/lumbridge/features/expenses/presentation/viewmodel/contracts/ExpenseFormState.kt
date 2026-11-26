@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.expenses.domain.model.EnteredAmountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseReceiptDomain
@@ -26,6 +27,11 @@ data class ExpenseFormState(
     val paidBy: String = "",
     val category: String = "Other",
     val recurring: Boolean = false,
+    val entryCurrency: String? = null,
+    val rate: String? = null,
+    val rateIsCustom: Boolean = false,
+    val rateLoading: Boolean = false,
+    val rateError: TextResource? = null,
     val split: ExpenseSplitSelectionDomain =
         ExpenseSplitSelectionDomain(ExpenseSplitMethodDomain.EQUAL, emptySet()),
     val loading: Boolean = true,
@@ -46,16 +52,40 @@ data class ExpenseFormState(
 
     val currency: String = account?.currency ?: "EUR"
 
+    /** The currency the amount is typed in. */
+    val amountCurrency: String = entryCurrency ?: currency
+
+    val enteredAmount: EnteredAmountDomain =
+        EnteredAmountDomain(
+            text = amount,
+            currency = amountCurrency,
+            accountCurrency = currency,
+            rate = rate,
+        )
+
+    /** "= €55.42 in this account" while the amount is in another currency and can be converted. */
+    val convertedAmount: String? =
+        if (!enteredAmount.isForeign || rate == null) null
+        else
+            runCatching {
+                    MoneyDomain(minorUnits = enteredAmount.accountMinor(), currency = currency)
+                        .formatted()
+                }
+                .getOrNull()
+
+    /** Other currencies are for one-off expenses; recurring bills stay in the account's. */
+    val canChooseCurrency: Boolean = !recurring && !busy && !receiptPending
+
     /** Each person's share while splitting equally, once an amount is typed. */
     val equalShare: String? =
         if (split.method != ExpenseSplitMethodDomain.EQUAL || split.participants.isEmpty()) null
         else
             runCatching {
-                    val total = MoneyDomain.parse(text = amount, currency = currency)
+                    val total = MoneyDomain.parse(text = amount, currency = amountCurrency)
                     ExpenseSplitDomain.equal(total.minorUnits, split.participants.toList())
                         .values
                         .minOrNull()
-                        ?.let { MoneyDomain(minorUnits = it, currency = currency).formatted() }
+                        ?.let { MoneyDomain(minorUnits = it, currency = amountCurrency).formatted() }
                 }
                 .getOrNull()
 
@@ -70,6 +100,7 @@ data class ExpenseFormState(
             !loading &&
             !busy &&
             !switchingAccount &&
+            (!enteredAmount.isForeign || rate != null) &&
             title.isNotBlank() &&
             amount.isNotBlank() &&
             account?.canAddExpense(userId = userId) == true

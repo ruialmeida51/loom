@@ -79,6 +79,16 @@ Deno.serve(async (request) => {
           { onConflict: "subscription_id,guid", ignoreDuplicates: true },
         );
         if (error) throw new Error("Could not save feed articles");
+        // New stories arrive with their picture; this backfills ones saved before pictures were kept.
+        const images = articles.filter((article) => article.image_url).map((
+          article,
+        ) => ({ guid: article.guid, image_url: article.image_url }));
+        if (images.length) {
+          await database.rpc("fill_article_images", {
+            p_subscription_id: subscription.id,
+            p_images: images,
+          });
+        }
       }
       const { error } = await database.from("feed_subscriptions").update({
         last_fetched_at: new Date().toISOString(),

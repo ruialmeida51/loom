@@ -7,10 +7,16 @@ import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.errors.SettlementError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.HouseholdLedgerDomain
+import com.eyther.lumbridge.features.expenses.domain.model.LedgerCursorDomain
+import com.eyther.lumbridge.features.expenses.domain.model.LedgerPageDomain
+import com.eyther.lumbridge.features.expenses.domain.model.LedgerRecordDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MonthlyRecurrenceDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import kotlin.time.Clock
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.LocalDate
@@ -19,27 +25,78 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
 
     override fun streamExpenses(accountId: String) =
         store.expenses.map { expenses ->
-            AppResult.Success(
-                expenses
-                    .filter { it.accountId.ifBlank { store.context.id } == accountId }
-                    .map {
-                        it.copy(
-                            accountId = accountId,
-                            version = maxOf(1, it.version),
-                            createdBy = it.createdBy.ifBlank { store.context.userId },
-                        )
-                    },
-            )
+            AppResult.Success(accountExpenses(expenses = expenses, accountId = accountId))
         }
 
     override fun streamSettlements(accountId: String) =
         store.settlements.map { settlements ->
+            AppResult.Success(accountSettlements(settlements = settlements, accountId = accountId))
+        }
+
+    /** Adds the account up in memory, as the server's balances view does. */
+    override fun streamBalances(accountId: String): Flow<AppResult<Map<String, Long>>> =
+        combine(store.expenses, store.settlements) { expenses, settlements ->
+            safeCall {
+                HouseholdLedgerDomain.balances(
+                    expenses = accountExpenses(expenses = expenses, accountId = accountId),
+                    settlements = accountSettlements(settlements = settlements, accountId = accountId),
+                )
+            }
+        }
+
+    override fun streamLedgerPage(
+        accountId: String,
+        limit: Int,
+    ): Flow<AppResult<LedgerPageDomain>> =
+        combine(store.expenses, store.settlements) { expenses, settlements ->
             AppResult.Success(
-                settlements
-                    .filter { it.accountId.ifBlank { store.context.id } == accountId }
-                    .map { it.copy(accountId = accountId) },
+                LedgerPageDomain.merge(
+                    expenses = accountExpenses(expenses = expenses, accountId = accountId),
+                    settlements = accountSettlements(settlements = settlements, accountId = accountId),
+                    limit = limit,
+                ),
             )
         }
+
+    override suspend fun getLedgerPage(
+        accountId: String,
+        after: LedgerCursorDomain,
+        limit: Int,
+    ): AppResult<LedgerPageDomain> = safeCall {
+        LedgerPageDomain.merge(
+            expenses =
+                accountExpenses(expenses = store.expenses.value, accountId = accountId).filter {
+                    LedgerRecordDomain.Purchase(expense = it).isAfter(cursor = after)
+                },
+            settlements =
+                accountSettlements(settlements = store.settlements.value, accountId = accountId)
+                    .filter { LedgerRecordDomain.Repayment(settlement = it).isAfter(cursor = after) },
+            limit = limit,
+        )
+    }
+
+    private fun accountExpenses(expenses: List<ExpenseDomain>, accountId: String): List<ExpenseDomain> {
+        val account = accountId.ifBlank { store.context.id }
+        return expenses
+            .filter { it.accountId.ifBlank { store.context.id } == account }
+            .map {
+                it.copy(
+                    accountId = account,
+                    version = maxOf(1, it.version),
+                    createdBy = it.createdBy.ifBlank { store.context.userId },
+                )
+            }
+    }
+
+    private fun accountSettlements(
+        settlements: List<SettlementDomain>,
+        accountId: String,
+    ): List<SettlementDomain> {
+        val account = accountId.ifBlank { store.context.id }
+        return settlements
+            .filter { it.accountId.ifBlank { store.context.id } == account }
+            .map { it.copy(accountId = account) }
+    }
 
     override suspend fun saveExpense(expense: ExpenseDomain) = safeCall {
         val previous = store.expenses.value.firstOrNull { it.id == expense.id }

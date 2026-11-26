@@ -7,6 +7,7 @@ import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -57,11 +58,13 @@ class HomeMoreUiTest {
                 onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty()
             }
             onNodeWithText("Feed").assertDoesNotExist()
-            onNodeWithTag("home_add_task").performScrollTo().performClick()
+            onNodeWithTag("home_content").performScrollToNode(hasTestTag("home_add_task"))
+            onNodeWithTag("home_add_task").performClick()
             onNodeWithTag("form_sheet").assertIsDisplayed()
             onNodeWithText("Cancel").performClick()
             onNodeWithContentDescription("Back").assertDoesNotExist()
-            onNodeWithTag("home_add_expense").performScrollTo().assertIsDisplayed()
+            onNodeWithTag("home_content").performScrollToNode(hasTestTag("home_add_expense"))
+            onNodeWithTag("home_add_expense").assertIsDisplayed()
             onNodeWithTag("navigation_more").performClick()
             capture("more-light")
             onNodeWithTag("more_content").assertIsDisplayed()
@@ -97,8 +100,7 @@ class HomeMoreUiTest {
                 onAllNodesWithTag("home_content").fetchSemanticsNodes().isNotEmpty() &&
                     onAllNodesWithTag("loading_rows").fetchSemanticsNodes().isEmpty()
             }
-            onNodeWithTag("home_content").performScrollToNode(hasText("All news"))
-            onNodeWithTag("home_content").performTouchInput { swipeUp() }
+            onNodeWithTag("home_content").performScrollToNode(hasTestTag("home_feed_preview"))
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithTag("home_feed_preview").fetchSemanticsNodes().isNotEmpty()
             }

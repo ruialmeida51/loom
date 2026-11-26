@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.app.demo.data.DemoAnalyticsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoDiagnosticsDataSource
+import com.eyther.lumbridge.app.demo.data.DemoExchangeRateDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseAccountDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseDataSource
 import com.eyther.lumbridge.app.demo.data.DemoExpenseReceiptDataSource
@@ -115,6 +116,7 @@ internal fun DemoPortalHost(
                         statementExportDataSource = CommonStatementExportDataSource(),
                         settingsDataSource = settings,
                         paymentHandlesDataSource = paymentHandles,
+                        exchangeRateDataSource = DemoExchangeRateDataSource(),
                     ),
                 )
             }

@@ -30,6 +30,8 @@ internal fun Exception.toExpenseError(): AppError {
         "features.unavailable" -> ExpenseAccountError.GuestsUnavailable(cause = this)
         "expenses.invalid_title" -> ExpenseError.InvalidTitle(cause = this)
         "expenses.invalid_split" -> ExpenseError.InvalidShare(cause = this)
+        "expenses.invalid_conversion" -> ExpenseError.InvalidConversion(cause = this)
+        "expenses.recurring_single_currency" -> ExpenseError.RecurringSingleCurrency(cause = this)
         "expenses.message_payment_date_future" -> ExpenseError.FuturePaymentDate(cause = this)
         "expenses.message_household_access_denied" -> ExpenseError.AccessDenied(cause = this)
         "expenses.message_a_cancelled_schedule_cannot_be_resumed" ->

@@ -10,10 +10,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -22,6 +26,7 @@ import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.FloatingActionContentPadding
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.LoadingRow
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
@@ -100,6 +105,9 @@ fun ExpensesScreen(
             onSelectAccount = viewModel::onAccountSelected,
             onCreateAccount = onCreateAccount,
             history = state.history,
+            hasMoreHistory = state.hasMoreHistory,
+            loadingMoreHistory = state.loadingMoreHistory,
+            onLoadMoreHistory = viewModel::onLoadMoreHistory,
             recurringSummary = state.recurringSummary,
             selectedView = state.selectedView,
             memberBalances = state.memberBalances,
@@ -147,6 +155,9 @@ private fun InnerExpensesScreen(
     onSelectAccount: (String) -> Unit,
     onCreateAccount: () -> Unit,
     history: ImmutableList<ExpenseHistoryItemUi>,
+    hasMoreHistory: Boolean,
+    loadingMoreHistory: Boolean,
+    onLoadMoreHistory: () -> Unit,
     selectedView: ExpensesViewUi,
     memberBalances: ImmutableList<MemberBalanceUi>,
     suggestions: ImmutableList<SuggestedRepaymentUi>,
@@ -172,8 +183,23 @@ private fun InnerExpensesScreen(
     onRetry: () -> Unit,
     recurringSummary: RecurringSummaryUi? = null,
 ) {
+    val listState = rememberLazyListState()
+    // The next page loads as the reader nears the end of the list, not when they reach it.
+    val nearEnd by remember(listState) {
+        derivedStateOf {
+            val layout = listState.layoutInfo
+            val lastVisible = layout.visibleItemsInfo.lastOrNull()?.index
+            lastVisible != null && lastVisible >= layout.totalItemsCount - LOAD_MORE_THRESHOLD
+        }
+    }
+    val canLoadMore =
+        hasMoreHistory && !loading && error == null && selectedView == ExpensesViewUi.EXPENSES
+    LaunchedEffect(nearEnd, canLoadMore, loadingMoreHistory) {
+        if (nearEnd && canLoadMore && !loadingMoreHistory) onLoadMoreHistory()
+    }
     Box(Modifier.fillMaxSize()) {
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize().testTag("expenses_content"),
             contentPadding = rootContentPadding(bottom = FloatingActionContentPadding),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.small),
@@ -263,6 +289,10 @@ private fun InnerExpensesScreen(
                         onDeleteSettlement = onDeleteSettlement,
                     )
                 }
+                if (loadingMoreHistory)
+                    item(key = "history_loading_more") {
+                        LoadingRow(modifier = Modifier.testTag("history_loading_more"))
+                    }
             } else if (account != null) {
                 if (showPersonalSummary)
                     item(key = "current_position") {
@@ -304,3 +334,6 @@ private fun InnerExpensesScreen(
         }
     }
 }
+
+/** How many rows before the end of the list the next ledger page starts loading. */
+private const val LOAD_MORE_THRESHOLD = 10
