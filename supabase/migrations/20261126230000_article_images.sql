@@ -14,11 +14,12 @@ left join public.article_reads r on r.article_id = a.id and r.user_id = (select 
 
 -- Stories saved before pictures were kept pick theirs up on the next refresh. Only empty pictures
 -- are filled, so a refresh does not rewrite rows (or wake every reader) when nothing changed.
--- Called only by the refresh-feed function (service role).
+-- Called only by the refresh-feed function. It runs with its caller's rights (the service role
+-- may already write stories), so it grants nothing; members cannot execute it at all.
 create function public.fill_article_images(p_subscription_id uuid, p_images jsonb)
 returns integer
 language sql
-security definer
+security invoker
 set search_path = ''
 as $$
     with filled as (
