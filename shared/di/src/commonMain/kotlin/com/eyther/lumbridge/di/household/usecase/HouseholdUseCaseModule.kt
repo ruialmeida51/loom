@@ -88,6 +88,7 @@ import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingListUse
 import com.eyther.lumbridge.features.shopping.domain.usecase.SelectShoppingListUseCase
 import com.eyther.lumbridge.features.tasks.domain.datasource.TaskDataSource
 import com.eyther.lumbridge.features.tasks.domain.usecase.AddTaskUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.AssignTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.CompleteTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.GetTasksStreamUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.RemoveTaskUseCase
@@ -381,6 +382,10 @@ class HouseholdUseCaseModule {
         GetTasksStreamUseCase(
             taskDataSource = taskDataSource,
         )
+
+    @Single
+    fun provideAssignTaskUseCase(taskDataSource: TaskDataSource): AssignTaskUseCase =
+        AssignTaskUseCase(taskDataSource = taskDataSource)
 
     @Single
     fun provideRemoveTaskUseCase(

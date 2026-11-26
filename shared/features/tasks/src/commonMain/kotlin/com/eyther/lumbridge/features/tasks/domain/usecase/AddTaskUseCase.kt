@@ -24,6 +24,9 @@ class AddTaskUseCase(
         time: LocalTime,
         recurrence: TaskRecurrenceDomain,
         notificationEnabled: Boolean = false,
+        assigneeId: String? = null,
+        takesTurns: Boolean = false,
+        memberIds: List<String> = emptyList(),
     ): AppResult<TaskDomain> {
         if (title.trim().length !in 1..MAX_TITLE_LENGTH)
             return AppResult.Failure(
@@ -47,7 +50,10 @@ class AddTaskUseCase(
                 recurrence = recurrence,
                 completed = false,
                 notificationEnabled = notificationEnabled,
+                assigneeId = assigneeId,
+                rotation = TaskDomain.rotationFor(assigneeId, takesTurns, memberIds),
             )
+        if (!task.hasValidPeople()) return AppResult.Failure(TaskError.InvalidAssignee())
         return when (val result = taskDataSource.addTask(task)) {
             is AppResult.Success -> AppResult.Success(task)
             is AppResult.Failure -> result

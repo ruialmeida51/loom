@@ -269,6 +269,9 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     recurrence = TaskRecurrenceDomain.WEEKLY,
                     completed = false,
                     notificationEnabled = true,
+                    // Everyone takes turns; it is Alex's week.
+                    assigneeId = ALEX,
+                    rotation = listOf(USER, ALEX, SAM),
                 ),
                 TaskDomain(
                     id = newId(),

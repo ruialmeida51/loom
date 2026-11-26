@@ -13,4 +13,6 @@ internal data class TaskResponse(
     @SerialName("completed") val completed: Boolean,
     @SerialName("created_by") val createdBy: String,
     @SerialName("notification_enabled") val notificationEnabled: Boolean = true,
+    @SerialName("assignee_id") val assigneeId: String? = null,
+    @SerialName("rotation") val rotation: List<String> = emptyList(),
 )

@@ -9,9 +9,11 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.presentation.components.snackbar.DEFAULT_ALERT_DURATION
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUseCase
 import com.eyther.lumbridge.features.tasks.domain.model.TaskDomain
 import com.eyther.lumbridge.features.tasks.domain.model.TaskRecurrenceDomain
 import com.eyther.lumbridge.features.tasks.domain.usecase.AddTaskUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.AssignTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.CompleteTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.GetTasksStreamUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.RemoveTaskUseCase
@@ -21,6 +23,7 @@ import com.eyther.lumbridge.features.tasks.generated.resources.task_completed
 import com.eyther.lumbridge.features.tasks.generated.resources.task_removed
 import com.eyther.lumbridge.features.tasks.generated.resources.task_reopened
 import com.eyther.lumbridge.features.tasks.presentation.mapper.toTasksTextResource
+import com.eyther.lumbridge.features.tasks.presentation.model.TaskFilterUi
 import com.eyther.lumbridge.features.tasks.presentation.viewmodel.contracts.TasksScreenViewModelContract
 import com.eyther.lumbridge.features.tasks.presentation.viewmodel.contracts.TasksState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,6 +44,8 @@ class TasksScreenViewModel(
     private val addTaskUseCase: AddTaskUseCase,
     private val completeTaskUseCase: CompleteTaskUseCase,
     private val removeTaskUseCase: RemoveTaskUseCase,
+    private val assignTaskUseCase: AssignTaskUseCase,
+    private val getMembersStreamUseCase: GetMembersStreamUseCase,
 ) : TasksScreenViewModelContract() {
 
     private data class InnerInputState(
@@ -50,6 +55,8 @@ class TasksScreenViewModel(
         val recurrence: TaskRecurrenceDomain = TaskRecurrenceDomain.NONE,
         val hasDueDate: Boolean = false,
         val notificationEnabled: Boolean = false,
+        val assigneeId: String? = null,
+        val takesTurns: Boolean = false,
     )
 
     private val refreshRequests = MutableStateFlow(0)
@@ -59,7 +66,11 @@ class TasksScreenViewModel(
 
     private val mutableState =
         MutableStateFlow(
-                TasksState(timeZone = context.timeZone, today = todayIso(context.timeZone)),
+                TasksState(
+                    timeZone = context.timeZone,
+                    today = todayIso(context.timeZone),
+                    userId = context.userId,
+                ),
             )
             .observeWith(viewModelScope) { state ->
                 inputState.updateState(state) { input ->
@@ -70,8 +81,21 @@ class TasksScreenViewModel(
                         recurrence = input.recurrence,
                         hasDueDate = input.hasDueDate,
                         notificationEnabled = input.notificationEnabled,
+                        assigneeId = input.assigneeId,
+                        takesTurns = input.takesTurns,
                     )
                 }
+            }
+            .observeWith(viewModelScope) { state ->
+                // Names are a nicety; a failure leaves tasks usable without them.
+                refreshRequests
+                    .flatMapLatest { getMembersStreamUseCase(householdId = context.id) }
+                    .updateState(state) { result ->
+                        when (result) {
+                            is AppResult.Success -> copy(members = result.value)
+                            is AppResult.Failure -> this
+                        }
+                    }
             }
             .observeWith(viewModelScope) { state ->
                 refreshRequests
@@ -164,6 +188,84 @@ class TasksScreenViewModel(
         }
     }
 
+    override fun onAssigneeChanged(id: String?) {
+        inputState.update { oldState ->
+            oldState.copy(assigneeId = id, takesTurns = id != null && oldState.takesTurns)
+        }
+    }
+
+    override fun onTakesTurnsChanged(value: Boolean) {
+        inputState.update { oldState -> oldState.copy(takesTurns = value) }
+    }
+
+    override fun onFilterChanged(value: TaskFilterUi) {
+        mutableState.update { oldState -> oldState.copy(filter = value) }
+    }
+
+    override fun onAssignRequested(task: TaskDomain) {
+        mutableState.update { oldState ->
+            oldState.copy(
+                assigningTask = task,
+                assignDraftId = task.assigneeId,
+                assignDraftTurns = task.takesTurns,
+                error = null,
+            )
+        }
+    }
+
+    override fun onAssignDraftChanged(id: String?) {
+        mutableState.update { oldState ->
+            oldState.copy(
+                assignDraftId = id,
+                assignDraftTurns = id != null && oldState.assignDraftTurns,
+            )
+        }
+    }
+
+    override fun onAssignDraftTurnsChanged(value: Boolean) {
+        mutableState.update { oldState -> oldState.copy(assignDraftTurns = value) }
+    }
+
+    override fun onAssignDismissed() {
+        if (state.value.assigning) return
+        mutableState.update { oldState -> oldState.copy(assigningTask = null) }
+    }
+
+    override fun onAssignConfirmed() {
+        val current = state.value
+        val task = current.assigningTask ?: return
+        if (current.assigning) return
+        mutableState.update { oldState -> oldState.copy(assigning = true) }
+        launch {
+            val result =
+                assignTaskUseCase(
+                    task = task,
+                    assigneeId = current.assignDraftId,
+                    takesTurns = current.assignDraftTurns && current.assignCanTakeTurns,
+                    memberIds = current.members.map { it.id },
+                )
+            mutableState.update { oldState ->
+                when (result) {
+                    is AppResult.Success ->
+                        oldState.copy(
+                            assigning = false,
+                            assigningTask = null,
+                            items =
+                                oldState.items.map {
+                                    if (it.id == result.value.id) result.value else it
+                                },
+                        )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            assigning = false,
+                            assigningTask = null,
+                            error = result.error.toTasksTextResource(),
+                        )
+                }
+            }
+        }
+    }
+
     override fun onSaveTask() {
         if (state.value.busy) return
         val input = inputState.value
@@ -181,6 +283,9 @@ class TasksScreenViewModel(
                         time = input.time,
                         recurrence = input.recurrence,
                         notificationEnabled = input.notificationEnabled,
+                        assigneeId = input.assigneeId,
+                        takesTurns = input.takesTurns && state.value.canTakeTurns,
+                        memberIds = state.value.members.map { it.id },
                     )
             ) {
                 is AppResult.Success -> {

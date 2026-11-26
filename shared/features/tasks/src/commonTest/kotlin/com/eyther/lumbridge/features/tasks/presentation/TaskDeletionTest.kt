@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModelStore
 import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import com.eyther.lumbridge.features.tasks.data.fixtures.MemberFixtureDataSource
 import com.eyther.lumbridge.features.tasks.data.fixtures.TaskCompletionFixtureDataSource
 import com.eyther.lumbridge.features.tasks.domain.usecase.AddTaskUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.AssignTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.CompleteTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.GetTasksStreamUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.RemoveTaskUseCase
@@ -51,6 +53,8 @@ class TaskDeletionTest {
                     addTaskUseCase = AddTaskUseCase(taskDataSource = source, context = context),
                     completeTaskUseCase = CompleteTaskUseCase(source),
                     removeTaskUseCase = RemoveTaskUseCase(source),
+                    assignTaskUseCase = AssignTaskUseCase(source),
+                    getMembersStreamUseCase = MemberFixtureDataSource().useCase,
                 )
                 .also { store.put("tasks", it) }
         try {

@@ -22,4 +22,6 @@ internal fun TaskDomain.toRequest(
         completed = completed,
         createdBy = userId,
         notificationEnabled = notificationEnabled,
+        assigneeId = assigneeId,
+        rotation = rotation,
     )
