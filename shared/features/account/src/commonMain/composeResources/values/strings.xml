@@ -26,4 +26,18 @@
     <string name="usage_data_description">Choose analytics and crash reporting</string>
     <string name="picture_description">Your photo, shown to your households</string>
     <string name="notifications_blocked_description">Turned off in your phone’s settings. Switch on to fix it.</string>
+    <string name="payment_details_title">Payment details</string>
+    <string name="payment_details_empty">Let housemates pay you back with MB Way, Revolut or PayPal</string>
+    <plurals name="payment_details_count">
+        <item quantity="one">%1$d way to pay you, shared with your households</item>
+        <item quantity="other">%1$d ways to pay you, shared with your households</item>
+    </plurals>
+    <string name="payment_details_help">Only people in your households see these, and only while you share a household. Leave any of them empty.</string>
+    <string name="payment_details_mbway">MB Way phone number</string>
+    <string name="payment_details_mbway_hint">For example 912 345 678</string>
+    <string name="payment_details_revolut">Revolut username</string>
+    <string name="payment_details_revolut_hint">Your @username or revolut.me link</string>
+    <string name="payment_details_paypal">PayPal.me username</string>
+    <string name="payment_details_paypal_hint">From your paypal.me link</string>
+    <string name="invalid_payment_handle">Check these details: a phone number with its country code, and usernames without spaces.</string>
 </resources>

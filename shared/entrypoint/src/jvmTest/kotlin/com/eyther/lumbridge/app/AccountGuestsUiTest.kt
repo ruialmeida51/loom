@@ -48,7 +48,8 @@ class AccountGuestsUiTest {
             onNodeWithTag("add_expense").performClick()
             onNodeWithTag("expense_title").performTextInput("Port tasting")
             onNodeWithTag("expense_amount").performTextInput("30.00")
-            onNodeWithText("3 people", substring = true).assertExists()
+            onNodeWithTag("split_person_Marta").assertExists()
+            onNodeWithText("€10.00 each").assertExists()
             onNodeWithTag("save_expense").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithText("Port tasting").fetchSemanticsNodes().isNotEmpty() &&

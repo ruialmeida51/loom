@@ -12,9 +12,11 @@ import com.eyther.lumbridge.features.expenses.data.network.mapper.toRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.request.DeleteExpenseAccountRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.request.RemoveAccountGuestRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.request.SaveAccountGuestRequest
+import com.eyther.lumbridge.features.expenses.data.network.model.request.SetExpenseAccountIconRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.response.ExpenseAccountResponse
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import io.github.jan.supabase.SupabaseClient
@@ -162,6 +164,23 @@ class CommonExpenseAccountDataSource(
                         accountId = accountId,
                         id = guest.id,
                         version = guest.version,
+                    ),
+                )
+        }
+
+    override suspend fun setIcon(
+        accountId: String,
+        icon: ExpenseAccountIconDomain?,
+    ): AppResult<ExpenseAccountDomain> =
+        writeGuest(accountId = accountId) { client ->
+            client
+                .postgrest
+                .rpc(
+                    "set_expense_account_icon",
+                    SetExpenseAccountIconRequest(
+                        householdId = context.id,
+                        id = accountId,
+                        icon = icon?.key,
                     ),
                 )
         }

@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
@@ -54,27 +55,35 @@ fun EditablePicture(
     content: @Composable () -> Unit,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
+    val open: () -> Unit = {
+        if (onRemove == null) onChoose() else menuOpen = true
+    }
     Box(modifier = modifier) {
         Box(
             contentAlignment = Alignment.Center,
             modifier =
                 Modifier.size(size)
                     .clip(shape)
-                    .clickable(enabled = enabled && !saving, role = Role.Button) {
-                        if (onRemove == null) onChoose() else menuOpen = true
-                    }
+                    .clickable(enabled = enabled && !saving, role = Role.Button, onClick = open)
                     .semantics { contentDescription = description },
         ) {
             content()
             if (saving)
                 CircularProgressIndicator(Modifier.size(size * 0.45f), strokeWidth = 3.dp)
         }
+        // A Surface takes the touches over it, so the badge itself must open the picker too.
         Surface(
+            onClick = open,
+            enabled = enabled && !saving,
             shape = CircleShape,
             color = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
             border = BorderStroke(2.dp, MaterialTheme.colorScheme.surface),
-            modifier = Modifier.align(Alignment.BottomEnd).size(PencilBadgeSize),
+            modifier =
+                Modifier.align(Alignment.BottomEnd)
+                    .size(PencilBadgeSize)
+                    .testTag("picture_edit_badge")
+                    .clearAndSetSemantics {},
         ) {
             LoomIcon(
                 glyph = Glyph.EDIT,

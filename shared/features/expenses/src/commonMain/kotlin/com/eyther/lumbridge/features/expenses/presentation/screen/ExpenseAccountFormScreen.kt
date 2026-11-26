@@ -27,14 +27,17 @@ import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_currency
+import com.eyther.lumbridge.features.expenses.generated.resources.account_icon
 import com.eyther.lumbridge.features.expenses.generated.resources.account_name
 import com.eyther.lumbridge.features.expenses.generated.resources.account_participants
 import com.eyther.lumbridge.features.expenses.generated.resources.account_save
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_retry
 import com.eyther.lumbridge.features.expenses.presentation.components.AccountGuestsSection
+import com.eyther.lumbridge.features.expenses.presentation.components.AccountIconPicker
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseAccountFormScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdCurrencyDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
@@ -50,6 +53,8 @@ fun ExpenseAccountFormScreen(
     InnerExpenseAccountFormScreen(
         name = state.name,
         currency = state.currency,
+        icon = state.icon,
+        onIcon = viewModel::onIconChanged,
         members = state.members,
         selected = state.selected,
         guests = state.guests,
@@ -78,6 +83,8 @@ fun ExpenseAccountFormScreen(
 private fun InnerExpenseAccountFormScreen(
     name: String,
     currency: String,
+    icon: ExpenseAccountIconDomain,
+    onIcon: (ExpenseAccountIconDomain) -> Unit,
     members: List<MemberDomain>,
     selected: Set<String>,
     guests: List<ExpenseGuestDomain>,
@@ -123,6 +130,11 @@ private fun InnerExpenseAccountFormScreen(
                     label = { Text(stringResource(Res.string.account_name)) },
                     modifier = Modifier.fillMaxWidth(),
                 )
+                Text(
+                    stringResource(Res.string.account_icon),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                AccountIconPicker(selected = icon, enabled = !busy, onSelected = onIcon)
                 Text(
                     stringResource(Res.string.account_currency),
                     style = MaterialTheme.typography.titleSmall,

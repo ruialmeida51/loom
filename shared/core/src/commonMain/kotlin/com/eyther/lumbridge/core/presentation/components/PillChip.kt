@@ -3,6 +3,8 @@ package com.eyther.lumbridge.core.presentation.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -102,27 +104,90 @@ fun PillChip(
     }
 }
 
-/** The dashed "+" at the end of a pill row that creates another peer (a list, an account). */
+/**
+ * The "+ New list" at the end of a pill row that creates another peer (a list, an account). It is
+ * outlined and labelled so it reads as an action, not as another pill to pick.
+ */
 @Composable
-fun AddPill(description: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun AddPill(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         onClick = onClick,
         shape = CircleShape,
         color = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        contentColor = MaterialTheme.colorScheme.primary,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)),
-        modifier =
-            modifier.size(PillHeight).semantics {
-                contentDescription = description
-                role = Role.Button
-            },
+        modifier = modifier.heightIn(min = PillHeight).semantics { role = Role.Button },
     ) {
-        LoomIcon(
-            glyph = Glyph.PLUS,
-            tint = LocalContentColor.current,
-            decorative = true,
-            modifier = Modifier.padding(11.dp),
+        Row(
+            modifier = Modifier.padding(start = 12.dp, end = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            LoomIcon(
+                glyph = Glyph.PLUS,
+                tint = LocalContentColor.current,
+                decorative = true,
+                modifier = Modifier.size(PillGlyphSize),
+            )
+            Text(text = label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+        }
+    }
+}
+
+/**
+ * The line above a pill row: what the pills are on the left and the row's own actions on the
+ * right, so the pills can scroll edge to edge with nothing pinned beside them.
+ */
+@Composable
+fun PillRowHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().heightIn(min = 40.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
         )
+        actions()
+    }
+}
+
+/** A small labelled action for a [PillRowHeader], such as Favourites. */
+@Composable
+fun PillRowAction(
+    label: String,
+    glyph: Glyph,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        modifier = modifier.heightIn(min = 36.dp),
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 10.dp, end = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            LoomIcon(
+                glyph = glyph,
+                tint = LocalContentColor.current,
+                decorative = true,
+                modifier = Modifier.size(16.dp),
+            )
+            Text(text = label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+        }
     }
 }
 

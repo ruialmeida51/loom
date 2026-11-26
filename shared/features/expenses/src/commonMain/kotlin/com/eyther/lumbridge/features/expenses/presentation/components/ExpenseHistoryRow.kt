@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.IconTile
+import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.components.cardSegment
 import com.eyther.lumbridge.core.presentation.components.cardSegmentShape
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -68,6 +69,12 @@ internal fun ExpenseHistoryRow(
                     ),
                 amount = item.amount,
                 glyph = if (item.expense.recurring) Glyph.REPEAT else Glyph.MONEY,
+                person =
+                    HistoryPerson(
+                        id = item.expense.paidBy,
+                        name = item.payerName.orEmpty(),
+                        avatarPath = item.payerAvatarPath,
+                    ),
                 emphasis = MaterialTheme.colorScheme.primary,
                 amountColor = MaterialTheme.colorScheme.onSurface,
                 canManage = item.canManage,
@@ -109,6 +116,9 @@ internal fun ExpenseHistoryRow(
     }
 }
 
+/** Who a record is about, shown as a small photo before its subtitle. */
+private data class HistoryPerson(val id: String, val name: String, val avatarPath: String?)
+
 /** One compact geometry and anchored overflow for both kinds of ledger record. */
 @Composable
 private fun HistoryCard(
@@ -127,6 +137,7 @@ private fun HistoryCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     amountColor: Color = emphasis,
+    person: HistoryPerson? = null,
 ) {
     Surface(
         onClick = onOpen,
@@ -158,11 +169,24 @@ private fun HistoryCard(
                     )
                     Text(amount, style = MaterialTheme.typography.titleMedium, color = amountColor)
                 }
-                Text(
-                    subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    person?.let {
+                        MemberAvatar(
+                            memberId = it.id,
+                            initials = it.name.trim().take(1).uppercase(),
+                            picturePath = it.avatarPath,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+                    Text(
+                        subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             if (canManage)
                 ActionMenu(

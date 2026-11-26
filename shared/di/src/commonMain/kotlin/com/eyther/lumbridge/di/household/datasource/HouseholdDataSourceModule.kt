@@ -2,6 +2,8 @@ package com.eyther.lumbridge.di.household.datasource
 
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.domain.features.FeatureGate
+import com.eyther.lumbridge.features.account.data.network.datasource.CommonPaymentHandlesDataSource
+import com.eyther.lumbridge.features.account.domain.datasource.PaymentHandlesDataSource
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseDataSource
@@ -91,6 +93,12 @@ class HouseholdDataSourceModule(
             access = access,
             context = context,
         )
+
+    @Single
+    fun providePaymentHandlesDataSource(
+        access: SupabaseAccess,
+        context: HouseholdContextDomain,
+    ): PaymentHandlesDataSource = CommonPaymentHandlesDataSource(access = access, userId = context.userId)
 
     @Single
     fun provideFeatureGate(access: SupabaseAccess, context: HouseholdContextDomain): FeatureGate =

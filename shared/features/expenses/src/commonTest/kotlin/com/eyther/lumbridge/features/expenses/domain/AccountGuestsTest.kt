@@ -4,6 +4,7 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseAccountError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.expenses.domain.model.isGuest
@@ -141,6 +142,11 @@ class AccountGuestsTest {
 
         override suspend fun saveGuest(accountId: String, guest: ExpenseGuestDomain) =
             AppResult.Success(account).also { saved += guest }
+
+        override suspend fun setIcon(accountId: String, icon: ExpenseAccountIconDomain?): AppResult<ExpenseAccountDomain> =
+
+            error("Not used")
+
 
         override suspend fun removeGuest(accountId: String, guest: ExpenseGuestDomain) =
             AppResult.Success(account)

@@ -2,6 +2,7 @@ package com.eyther.lumbridge.app
 
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.asSkiaBitmap
+import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
@@ -14,7 +15,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.DemoPortalHost
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
@@ -63,9 +66,7 @@ class HouseholdPolishUiTest {
             awaitLoadedDestination("home_content")
             onNodeWithTag("navigation_money").performClick()
             awaitLoadedDestination("expenses_content")
-            onNodeWithTag("expenses_content")
-                .performScrollToNode(hasTestTag("payment_actions_payment"))
-            onNodeWithTag("payment_actions_payment").performClick()
+            openPaymentMenu()
             capture("payment-card-menu-light")
             onNodeWithText("Edit").performClick()
             onNodeWithText("Edit payment").assertIsDisplayed()
@@ -82,12 +83,12 @@ class HouseholdPolishUiTest {
             waitUntil(timeoutMillis = 5_000) {
                 onAllNodesWithTag("record_repayment_submit").fetchSemanticsNodes().isEmpty()
             }
-            onNodeWithTag("payment_actions_payment").performClick()
+            openPaymentMenu()
             onNodeWithText("Delete").performClick()
             onNodeWithTag("confirm_delete_payment").assertIsDisplayed()
             onNodeWithText("Cancel").performClick()
             assertEquals(1, store.settlements.value.size)
-            onNodeWithTag("payment_actions_payment").performClick()
+            openPaymentMenu()
             onNodeWithText("Delete").performClick()
             onNodeWithTag("confirm_delete_payment").performClick()
             waitUntil(timeoutMillis = 5_000) { store.settlements.value.isEmpty() }
@@ -157,5 +158,12 @@ class HouseholdPolishUiTest {
                     )
                     .bytes,
             )
+    }
+
+    /** The payment is the last row: lift it above the Add expense button, then open its menu. */
+    private fun ComposeUiTest.openPaymentMenu() {
+        onNodeWithTag("expenses_content").performScrollToNode(hasTestTag("payment_actions_payment"))
+        onNodeWithTag("expenses_content").performTouchInput { swipeUp() }
+        onNodeWithTag("payment_actions_payment").performClick()
     }
 }

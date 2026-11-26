@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- Share your MB Way, Revolut or PayPal so housemates can pay you back: MB Way copies your number and opens the app.
+- Split an expense right on the form: tap people in or out and see each share.
+- Money accounts can have icons, and payers show their photo in the ledger.
+- Tidier list and account headers, a readable disabled Save in dark mode, and the photo pencil now works.
+
 ## [4.0.18] - 2026-11-26
 
 - Guests on trips and events: people outside the household can pay, share costs and settle up there.

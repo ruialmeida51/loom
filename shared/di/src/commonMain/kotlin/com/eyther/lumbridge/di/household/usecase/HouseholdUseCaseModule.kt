@@ -1,6 +1,8 @@
 package com.eyther.lumbridge.di.household.usecase
 
 import com.eyther.lumbridge.core.domain.features.FeatureGate
+import com.eyther.lumbridge.features.account.domain.datasource.PaymentHandlesDataSource
+import com.eyther.lumbridge.features.account.domain.usecase.GetPaymentHandlesUseCase
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
@@ -655,11 +657,14 @@ class HouseholdUseCaseModule {
         getSettlementUseCase: GetSettlementUseCase,
         householdDataSource: HouseholdDataSource,
         context: HouseholdContextDomain,
+        paymentHandlesDataSource: PaymentHandlesDataSource,
     ): GetSettlementFormUseCase =
         GetSettlementFormUseCase(
             expenseAccountDataSource = expenseAccountDataSource,
             getSettlementUseCase = getSettlementUseCase,
             householdDataSource = householdDataSource,
             context = context,
+            getPaymentHandlesUseCase =
+                GetPaymentHandlesUseCase(paymentHandlesDataSource = paymentHandlesDataSource),
         )
 }

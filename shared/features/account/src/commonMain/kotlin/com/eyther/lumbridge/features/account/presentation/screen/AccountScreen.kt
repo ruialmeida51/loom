@@ -33,6 +33,9 @@ import com.eyther.lumbridge.features.account.generated.resources.nickname_descri
 import com.eyther.lumbridge.features.account.generated.resources.notifications_blocked_description
 import com.eyther.lumbridge.features.account.generated.resources.notifications_description
 import com.eyther.lumbridge.features.account.generated.resources.notifications_title
+import com.eyther.lumbridge.features.account.generated.resources.payment_details_count
+import com.eyther.lumbridge.features.account.generated.resources.payment_details_empty
+import com.eyther.lumbridge.features.account.generated.resources.payment_details_title
 import com.eyther.lumbridge.features.account.generated.resources.preferences_title
 import com.eyther.lumbridge.features.account.generated.resources.profile_title
 import com.eyther.lumbridge.features.account.generated.resources.retry
@@ -47,6 +50,7 @@ import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.Ac
 import com.eyther.lumbridge.features.legal.domain.model.LegalDocumentDomain
 import com.eyther.lumbridge.features.legal.presentation.components.LegalLinks
 import com.eyther.lumbridge.features.settings.domain.model.SettingsDomain
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -85,6 +89,8 @@ fun AccountScreen(
             busy = state.busy || signingOut,
             error = state.displayError,
             onEditNickname = viewModel::onEditNickname,
+            paymentMethodCount = state.paymentMethodCount,
+            onEditPaymentDetails = viewModel::onEditPaymentDetails,
             onTheme = viewModel::onThemeSelected,
             onNotifications = { enabled ->
                 if (enabled) onAllowNotifications() else viewModel.onNotificationsChanged(false)
@@ -131,6 +137,8 @@ private fun InnerAccountScreen(
     busy: Boolean,
     error: TextResource?,
     onEditNickname: () -> Unit,
+    paymentMethodCount: Int,
+    onEditPaymentDetails: () -> Unit,
     onTheme: (String) -> Unit,
     onNotifications: (Boolean) -> Unit,
     onRetry: () -> Unit,
@@ -181,6 +189,23 @@ private fun InnerAccountScreen(
                             glyph = Glyph.PERSON,
                             enabled = canEditNickname,
                             modifier = Modifier.testTag("edit_nickname"),
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        NavigationRow(
+                            title = stringResource(Res.string.payment_details_title),
+                            description =
+                                if (paymentMethodCount == 0)
+                                    stringResource(Res.string.payment_details_empty)
+                                else
+                                    pluralStringResource(
+                                        Res.plurals.payment_details_count,
+                                        paymentMethodCount,
+                                        paymentMethodCount,
+                                    ),
+                            onClick = onEditPaymentDetails,
+                            glyph = Glyph.MONEY,
+                            enabled = canEditNickname,
+                            modifier = Modifier.testTag("edit_payment_details"),
                         )
                     }
             }

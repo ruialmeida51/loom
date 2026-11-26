@@ -4,9 +4,12 @@ import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
-import com.eyther.lumbridge.core.domain.wrapper.AppResult
-import com.eyther.lumbridge.features.account.domain.usecase.GetProfileStreamUseCase
 import com.eyther.lumbridge.core.domain.errors.PictureError
+import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.account.domain.model.PaymentHandlesDomain
+import com.eyther.lumbridge.features.account.domain.usecase.GetPaymentHandlesUseCase
+import com.eyther.lumbridge.features.account.domain.usecase.GetProfileStreamUseCase
+import com.eyther.lumbridge.features.account.domain.usecase.SavePaymentHandlesUseCase
 import com.eyther.lumbridge.features.account.domain.usecase.SetProfilePictureUseCase
 import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCase
 import com.eyther.lumbridge.features.account.presentation.mapper.toAccountTextResource
@@ -31,15 +34,29 @@ class AccountScreenViewModel(
     private val setThemeUseCase: SetThemeUseCase,
     private val setNotificationsUseCase: SetNotificationsUseCase,
     private val setProfilePictureUseCase: SetProfilePictureUseCase,
+    private val getPaymentHandlesUseCase: GetPaymentHandlesUseCase,
+    private val savePaymentHandlesUseCase: SavePaymentHandlesUseCase,
 ) : AccountScreenViewModelContract() {
-    private data class InnerInputState(val nickname: String = "")
+    private data class InnerInputState(
+        val nickname: String = "",
+        val mbwayPhone: String = "",
+        val revolutUsername: String = "",
+        val paypalUsername: String = "",
+    )
 
     private val inputState = MutableStateFlow(InnerInputState())
     private val refreshRequests = MutableStateFlow(0)
     private val mutableState =
         MutableStateFlow(AccountState())
             .observeWith(viewModelScope) { state ->
-                inputState.updateState(state) { input -> copy(nickname = input.nickname) }
+                inputState.updateState(state) { input ->
+                    copy(
+                        nickname = input.nickname,
+                        mbwayPhone = input.mbwayPhone,
+                        revolutUsername = input.revolutUsername,
+                        paypalUsername = input.paypalUsername,
+                    )
+                }
             }
             .observeWith(viewModelScope) { state ->
                 refreshRequests
@@ -101,6 +118,86 @@ class AccountScreenViewModel(
         if (state.value.busy) return
         mutableState.update { oldState ->
             oldState.copy(showNickname = false, nicknameError = null)
+        }
+    }
+
+    init {
+        launch { loadPaymentHandles() }
+    }
+
+    private suspend fun loadPaymentHandles() {
+        // Payment details are optional; failing to load them only hides what is shared.
+        val result = getPaymentHandlesUseCase(userIds = listOf(params.userId))
+        if (result is AppResult.Success)
+            mutableState.update { oldState ->
+                oldState.copy(
+                    paymentHandles =
+                        result.value.firstOrNull() ?: PaymentHandlesDomain(userId = params.userId),
+                )
+            }
+    }
+
+    override fun onEditPaymentDetails() {
+        val handles = state.value.paymentHandles
+        inputState.update { oldState ->
+            oldState.copy(
+                mbwayPhone = handles?.mbwayPhone.orEmpty(),
+                revolutUsername = handles?.revolutUsername.orEmpty(),
+                paypalUsername = handles?.paypalUsername.orEmpty(),
+            )
+        }
+        mutableState.update { oldState ->
+            oldState.copy(showPaymentDetails = true, paymentError = null)
+        }
+    }
+
+    override fun onMbwayPhoneChanged(value: String) {
+        inputState.update { oldState -> oldState.copy(mbwayPhone = value) }
+    }
+
+    override fun onRevolutUsernameChanged(value: String) {
+        inputState.update { oldState -> oldState.copy(revolutUsername = value) }
+    }
+
+    override fun onPaypalUsernameChanged(value: String) {
+        inputState.update { oldState -> oldState.copy(paypalUsername = value) }
+    }
+
+    override fun onClosePaymentDetails() {
+        if (state.value.busy) return
+        mutableState.update { oldState -> oldState.copy(showPaymentDetails = false) }
+    }
+
+    override fun onSavePaymentDetails() {
+        if (state.value.busy) return
+        val input = inputState.value
+        mutableState.update { oldState -> oldState.copy(busy = true, paymentError = null) }
+        launch {
+            val result =
+                savePaymentHandlesUseCase(
+                    handles =
+                        PaymentHandlesDomain(
+                            userId = params.userId,
+                            mbwayPhone = input.mbwayPhone,
+                            revolutUsername = input.revolutUsername,
+                            paypalUsername = input.paypalUsername,
+                        ),
+                )
+            mutableState.update { oldState ->
+                when (result) {
+                    is AppResult.Success ->
+                        oldState.copy(
+                            busy = false,
+                            paymentHandles = result.value,
+                            showPaymentDetails = false,
+                        )
+                    is AppResult.Failure ->
+                        oldState.copy(
+                            busy = false,
+                            paymentError = result.error.toAccountTextResource(),
+                        )
+                }
+            }
         }
     }
 

@@ -34,7 +34,7 @@ class GroupManagementUiTest {
             onNodeWithTag("navigation_shopping").performClick()
             awaitLoadedDestination(tag = "shopping_content")
             onNodeWithTag("manage_lists").performClick()
-            onNodeWithText("New list").assertIsDisplayed()
+            onNode(hasText("New list") and hasAnyAncestor(hasTestTag("modal_sheet"))).assertIsDisplayed()
             onNodeWithText("Cancel").assertDoesNotExist()
             onNodeWithText("Done").assertDoesNotExist()
             onNodeWithTag("list_Groceries").assertIsSelected()

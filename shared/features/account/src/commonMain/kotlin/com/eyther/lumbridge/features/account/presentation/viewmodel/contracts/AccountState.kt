@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.account.presentation.viewmodel.contracts
 import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
+import com.eyther.lumbridge.features.account.domain.model.PaymentHandlesDomain
 import com.eyther.lumbridge.features.account.domain.model.ProfileDomain
 import com.eyther.lumbridge.features.account.generated.resources.Res
 import com.eyther.lumbridge.features.account.generated.resources.sign_out
@@ -15,6 +16,13 @@ data class AccountState(
     val profile: ProfileDomain? = null,
     val nickname: String = "",
     val showNickname: Boolean = false,
+    /** What this person shares for being paid back, and the sheet's draft of it. */
+    val paymentHandles: PaymentHandlesDomain? = null,
+    val showPaymentDetails: Boolean = false,
+    val mbwayPhone: String = "",
+    val revolutUsername: String = "",
+    val paypalUsername: String = "",
+    val paymentError: TextResource? = null,
     val showSignOutConfirmation: Boolean = false,
     val nicknameError: TextResource? = null,
     val preferences: SettingsDomain = SettingsDomain(),
@@ -37,6 +45,15 @@ data class AccountState(
     val theme: ThemeMode =
         ThemeMode.entries.firstOrNull { it.name == preferences.theme } ?: ThemeMode.SYSTEM
     val displayError: TextResource? = error ?: loadError
+    /** How many ways to be paid are shared, for the profile row. */
+    val paymentMethodCount: Int =
+        listOfNotNull(
+                paymentHandles?.mbwayPhone,
+                paymentHandles?.revolutUsername,
+                paymentHandles?.paypalUsername,
+            )
+            .size
+
     val canEditNickname: Boolean = profile != null && !busy
     val hasPicture: Boolean = profile?.avatarPath != null
     val canChangePicture: Boolean = profile != null && !busy && !savingPicture

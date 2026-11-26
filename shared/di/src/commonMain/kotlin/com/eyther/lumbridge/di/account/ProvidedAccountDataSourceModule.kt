@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.di.account
 
+import com.eyther.lumbridge.features.account.domain.datasource.PaymentHandlesDataSource
 import com.eyther.lumbridge.features.account.domain.datasource.ProfileDataSource
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.diagnostics.domain.datasource.DiagnosticsDataSource
@@ -15,7 +16,10 @@ class ProvidedAccountDataSourceModule(
     private val analyticsDataSource: AnalyticsDataSource,
     private val diagnosticsDataSource: DiagnosticsDataSource,
     private val settingsDataSource: SettingsDataSource,
+    private val paymentHandlesDataSource: PaymentHandlesDataSource,
 ) {
+    @Single fun providePaymentHandlesDataSource(): PaymentHandlesDataSource = paymentHandlesDataSource
+
     @Single fun provideHouseholdDataSource(): HouseholdDataSource = householdDataSource
 
     @Single fun provideProfileDataSource(): ProfileDataSource = profileDataSource

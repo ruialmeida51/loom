@@ -9,6 +9,7 @@ import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEven
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
@@ -97,6 +98,11 @@ class ExpenseFormFixture {
                 accountId: String,
                 guest: ExpenseGuestDomain,
             ): AppResult<ExpenseAccountDomain> = error("Not used")
+
+            override suspend fun setIcon(accountId: String, icon: ExpenseAccountIconDomain?): AppResult<ExpenseAccountDomain> =
+
+                error("Not used")
+
 
             override suspend fun removeGuest(
                 accountId: String,

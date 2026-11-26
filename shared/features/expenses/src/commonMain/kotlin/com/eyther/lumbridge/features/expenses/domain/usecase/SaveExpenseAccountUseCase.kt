@@ -46,7 +46,13 @@ class SaveExpenseAccountUseCase(
                 expenseAccountDataSource
                     .saveAccount(account = account.copy(name = account.name.trim()))
                     .getOrThrow()
-            newGuests.fold(saved) { current, guest ->
+            val withIcon =
+                if (saved.icon == account.icon) saved
+                else
+                    expenseAccountDataSource
+                        .setIcon(accountId = saved.id, icon = account.icon)
+                        .getOrThrow()
+            newGuests.fold(withIcon) { current, guest ->
                 saveAccountGuestUseCase(account = current, guest = guest).getOrThrow()
             }
         }

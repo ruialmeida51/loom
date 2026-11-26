@@ -23,6 +23,7 @@ import com.eyther.lumbridge.app.demo.data.DemoHouseholdDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdManagementDataSource
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
 import com.eyther.lumbridge.app.demo.data.DemoMemberAccountPositionDataSource
+import com.eyther.lumbridge.app.demo.data.DemoPaymentHandlesDataSource
 import com.eyther.lumbridge.app.demo.data.DemoProfileDataSource
 import com.eyther.lumbridge.app.demo.data.DemoRecurringExpenseDataSource
 import com.eyther.lumbridge.app.demo.data.DemoSettingsDataSource
@@ -71,6 +72,7 @@ internal fun DemoPortalHost(
     val analytics = remember { DemoAnalyticsDataSource() }
     val diagnostics = remember { DemoDiagnosticsDataSource() }
     val profile = remember(stores) { DemoProfileDataSource(stores = stores.values) }
+    val paymentHandles = remember { DemoPaymentHandlesDataSource() }
     val accountGraph = remember {
         koinApplication {
             modules(
@@ -80,6 +82,7 @@ internal fun DemoPortalHost(
                     analyticsDataSource = analytics,
                     diagnosticsDataSource = diagnostics,
                     settingsDataSource = settings,
+                    paymentHandlesDataSource = paymentHandles,
                 ),
             )
         }
@@ -111,6 +114,7 @@ internal fun DemoPortalHost(
                         statementDataSource = DemoStatementDataSource(),
                         statementExportDataSource = CommonStatementExportDataSource(),
                         settingsDataSource = settings,
+                        paymentHandlesDataSource = paymentHandles,
                     ),
                 )
             }

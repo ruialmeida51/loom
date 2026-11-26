@@ -247,6 +247,19 @@ class ExpenseFormScreenViewModel(
         }
     }
 
+    override fun onSplitParticipantToggled(id: String) {
+        if (state.value.receiptPending || state.value.busy) return
+        inputState.update { oldState ->
+            val split = oldState.split
+            if (split.method != ExpenseSplitMethodDomain.EQUAL) return@update oldState
+            val participants =
+                if (id in split.participants) split.participants - id else split.participants + id
+            // Someone always carries the cost.
+            if (participants.isEmpty()) oldState
+            else oldState.copy(split = split.copy(participants = participants))
+        }
+    }
+
     override fun onEditSplit() {
         if (state.value.busy || state.value.loading) return
         val result = safeCall {

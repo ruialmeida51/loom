@@ -2,21 +2,17 @@ package com.eyther.lumbridge.features.expenses.presentation.components.bottomshe
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import com.eyther.lumbridge.core.presentation.components.SelectorButton
+import com.eyther.lumbridge.core.presentation.components.SegmentedTab
+import com.eyther.lumbridge.core.presentation.components.SegmentedTabs
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
@@ -29,7 +25,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.form_split
 import com.eyther.lumbridge.features.expenses.generated.resources.split_total
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseSplitParticipantRow
-import com.eyther.lumbridge.features.expenses.presentation.mapper.splitMethodLabel
+import com.eyther.lumbridge.features.expenses.presentation.mapper.splitMethodTabLabel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseSplitViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import kotlinx.collections.immutable.ImmutableSet
@@ -104,34 +100,18 @@ private fun InnerExpenseSplitBottomSheet(
             )
             Text(total, style = MaterialTheme.typography.titleLarge)
         }
-        var expanded by remember { mutableStateOf(false) }
-        SelectorButton(
-            text = splitMethodLabel(method),
-            expanded = expanded,
-            textStyle = MaterialTheme.typography.titleSmall,
-            onClick = { expanded = true },
-            modifier = Modifier.fillMaxWidth().testTag("split_method"),
-            menu = {
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.testTag("split_method_menu"),
-                ) {
-                    ExpenseSplitMethodDomain.entries.forEach { choice ->
-                        DropdownMenuItem(
-                            text = { Text(splitMethodLabel(choice)) },
-                            trailingIcon = {
-                                if (choice == method)
-                                    LoomIcon(glyph = Glyph.CHECK, decorative = true)
-                            },
-                            onClick = {
-                                expanded = false
-                                onMethod(choice)
-                            },
-                        )
-                    }
-                }
-            },
+        // The ways to split sit side by side, so the choice is visible rather than in a menu.
+        SegmentedTabs(
+            tabs =
+                ExpenseSplitMethodDomain.entries.map { choice ->
+                    SegmentedTab(
+                        label = splitMethodTabLabel(choice),
+                        tag = "split_method_${choice.name.lowercase()}",
+                    )
+                },
+            selectedIndex = method.ordinal,
+            onSelect = { index -> onMethod(ExpenseSplitMethodDomain.entries[index]) },
+            modifier = Modifier.testTag("split_method"),
         )
         members.forEach { member ->
             ExpenseSplitParticipantRow(

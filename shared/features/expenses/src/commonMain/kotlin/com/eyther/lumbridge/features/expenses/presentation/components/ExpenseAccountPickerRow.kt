@@ -21,6 +21,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.form_account
 import com.eyther.lumbridge.features.expenses.generated.resources.form_account_fixed
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
+import com.eyther.lumbridge.features.expenses.presentation.mapper.glyph
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -41,7 +42,7 @@ internal fun ExpenseAccountPickerRow(
         title = accountLabel(account),
         description =
             stringResource(if (editing) Res.string.form_account_fixed else Res.string.form_account),
-        glyph = if (account.isDefault) Glyph.HOME else Glyph.PLANE,
+        glyph = account.glyph(),
         onClick = { expanded = true },
         enabled = canChoose,
         modifier = modifier.testTag("expense_account_picker"),
@@ -62,8 +63,7 @@ internal fun ExpenseAccountPickerRow(
                                             .semantics { selected = choice.id == account.id },
                                     leadingIcon = {
                                         LoomIcon(
-                                            glyph =
-                                                if (choice.isDefault) Glyph.HOME else Glyph.PLANE,
+                                            glyph = choice.glyph(),
                                             decorative = true,
                                         )
                                     },

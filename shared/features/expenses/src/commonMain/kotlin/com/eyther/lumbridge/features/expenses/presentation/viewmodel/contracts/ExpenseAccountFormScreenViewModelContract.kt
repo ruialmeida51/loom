@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
 import com.eyther.lumbridge.core.viewmodel.LoomViewModel
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class ExpenseAccountFormScreenViewModelContract : LoomViewModel() {
@@ -11,6 +12,8 @@ abstract class ExpenseAccountFormScreenViewModelContract : LoomViewModel() {
     abstract fun onNameChanged(value: String)
 
     abstract fun onCurrencyChanged(value: String)
+
+    abstract fun onIconChanged(value: ExpenseAccountIconDomain)
 
     abstract fun onParticipantToggled(id: String)
 

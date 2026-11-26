@@ -1,7 +1,9 @@
 package com.eyther.lumbridge.di.account
 
-import com.eyther.lumbridge.features.account.domain.usecase.SetProfilePictureUseCase
+import com.eyther.lumbridge.features.account.domain.usecase.GetPaymentHandlesUseCase
 import com.eyther.lumbridge.features.account.domain.usecase.GetProfileStreamUseCase
+import com.eyther.lumbridge.features.account.domain.usecase.SavePaymentHandlesUseCase
+import com.eyther.lumbridge.features.account.domain.usecase.SetProfilePictureUseCase
 import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCase
 import com.eyther.lumbridge.features.account.presentation.viewmodel.AccountScreenViewModel
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
@@ -23,6 +25,8 @@ class AccountViewModelModule {
         setThemeUseCase: SetThemeUseCase,
         setNotificationsUseCase: SetNotificationsUseCase,
         setProfilePictureUseCase: SetProfilePictureUseCase,
+        getPaymentHandlesUseCase: GetPaymentHandlesUseCase,
+        savePaymentHandlesUseCase: SavePaymentHandlesUseCase,
     ): AccountScreenViewModelContract =
         AccountScreenViewModel(
             params = params,
@@ -32,5 +36,7 @@ class AccountViewModelModule {
             setThemeUseCase = setThemeUseCase,
             setNotificationsUseCase = setNotificationsUseCase,
             setProfilePictureUseCase = setProfilePictureUseCase,
+            getPaymentHandlesUseCase = getPaymentHandlesUseCase,
+            savePaymentHandlesUseCase = savePaymentHandlesUseCase,
         )
 }

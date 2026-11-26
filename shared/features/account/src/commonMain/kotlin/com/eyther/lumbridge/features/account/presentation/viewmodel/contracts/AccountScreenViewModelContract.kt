@@ -21,6 +21,18 @@ abstract class AccountScreenViewModelContract : LoomViewModel() {
 
     abstract fun onCloseNickname()
 
+    abstract fun onEditPaymentDetails()
+
+    abstract fun onMbwayPhoneChanged(value: String)
+
+    abstract fun onRevolutUsernameChanged(value: String)
+
+    abstract fun onPaypalUsernameChanged(value: String)
+
+    abstract fun onSavePaymentDetails()
+
+    abstract fun onClosePaymentDetails()
+
     abstract fun onThemeSelected(value: String)
 
     abstract fun onNotificationsChanged(enabled: Boolean)
