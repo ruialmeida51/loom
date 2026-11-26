@@ -401,6 +401,10 @@ class UsabilityDeviceTest {
             compose.onAllNodesWithText("$taskTitle completed").fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithText("$taskTitle completed").assertIsDisplayed()
+        // The completion snackbar sits over the Completed header; a tap there would land on it.
+        compose.waitUntil(timeoutMillis = 6_000) {
+            compose.onAllNodesWithTag("success_snackbar").fetchSemanticsNodes().isEmpty()
+        }
         // The Completed header is a lazy row below the open tasks; on a small screen it is not
         // composed until the list scrolls to it, so scroll the list rather than the node.
         compose.onNodeWithTag("tasks_content").performScrollToNode(hasTestTag("tasks_completed"))
