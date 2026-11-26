@@ -5,6 +5,8 @@ import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.LedgerCursorDomain
+import com.eyther.lumbridge.features.expenses.domain.model.LedgerPageDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +26,20 @@ class SettlementFixtureDataSource : ExpenseDataSource {
 
     override fun streamSettlements(accountId: String): Flow<AppResult<List<SettlementDomain>>> =
         error("Not used")
+
+    override fun streamBalances(accountId: String): Flow<AppResult<Map<String, Long>>> =
+        error("Not used")
+
+    override fun streamLedgerPage(
+        accountId: String,
+        limit: Int,
+    ): Flow<AppResult<LedgerPageDomain>> = error("Not used")
+
+    override suspend fun getLedgerPage(
+        accountId: String,
+        after: LedgerCursorDomain,
+        limit: Int,
+    ): AppResult<LedgerPageDomain> = error("Not used")
 
     override suspend fun getSettlement(id: String, accountId: String): AppResult<SettlementDomain> =
         payment

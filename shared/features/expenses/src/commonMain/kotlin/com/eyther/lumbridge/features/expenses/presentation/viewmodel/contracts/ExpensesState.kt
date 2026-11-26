@@ -5,6 +5,7 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.HouseholdLedgerDomain
+import com.eyther.lumbridge.features.expenses.domain.model.LedgerRecordDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
@@ -40,7 +41,11 @@ data class ExpensesState(
     val expenses: List<ExpenseDomain> = emptyList(),
     val settlements: List<SettlementDomain> = emptyList(),
     val members: List<MemberDomain> = emptyList(),
+    /** Everyone's balance over the account's whole history, as the server adds it up. */
     val balances: Map<String, Long> = emptyMap(),
+    /** Older ledger records exist beyond the loaded pages. */
+    val hasMoreHistory: Boolean = false,
+    val loadingMoreHistory: Boolean = false,
     val recurring: List<RecurringExpenseDomain> = emptyList(),
     val selectedView: ExpensesViewUi = ExpensesViewUi.EXPENSES,
     val showAccounts: Boolean = false,
@@ -192,40 +197,45 @@ data class ExpensesState(
                 )
             }
             .toImmutableList()
+    /** The loaded records, newest entry first in the order people added them. */
     val history: ImmutableList<ExpenseHistoryItemUi> =
-        (expenses.map {
-                ExpenseHistoryItemUi.Purchase(
-                    expense = it,
-                    payerName = memberNames[it.paidBy],
-                    canManage =
-                        account?.canAddExpense(userId = userId) == true &&
-                            it.canManage(userId = userId, isOwner = isOwner),
-                    amount = MoneyDomain(it.amountMinor, currency).formatted(),
-                    payerAvatarPath = participants.firstOrNull { member -> member.id == it.paidBy }?.avatarPath,
-                    originalAmount =
-                        it.original?.let { original ->
-                            MoneyDomain(original.amountMinor, original.currency).formatted()
-                        },
-                )
-            } +
-                settlements.map {
-                    ExpenseHistoryItemUi.Repayment(
-                        settlement = it,
-                        fromName = memberNames[it.from],
-                        toName = memberNames[it.to],
-                        canManage =
-                            account?.archived == false &&
-                                it.canManage(userId = userId, isOwner = isOwner),
-                        isUserSender = it.from == userId,
-                        isUserRecipient = it.to == userId,
-                        amount = MoneyDomain(it.amountMinor, currency).formatted(),
-                    )
-                })
-            // Newest entry first, in the order people added them, whatever date they carry.
-            .sortedWith(
-                compareByDescending<ExpenseHistoryItemUi> { it.addedAt }
-                    .thenByDescending { it.date }
-                    .thenBy { it.key },
-            )
+        (expenses.map { LedgerRecordDomain.Purchase(expense = it) } +
+                settlements.map { LedgerRecordDomain.Repayment(settlement = it) })
+            // The same order the server pages in, so a new page only ever adds rows below.
+            .sortedWith(LedgerRecordDomain.NEWEST_FIRST)
+            .map { record ->
+                when (record) {
+                    is LedgerRecordDomain.Purchase ->
+                        ExpenseHistoryItemUi.Purchase(
+                            expense = record.expense,
+                            payerName = memberNames[record.expense.paidBy],
+                            canManage =
+                                account?.canAddExpense(userId = userId) == true &&
+                                    record.expense.canManage(userId = userId, isOwner = isOwner),
+                            amount = MoneyDomain(record.expense.amountMinor, currency).formatted(),
+                            payerAvatarPath =
+                                participants
+                                    .firstOrNull { member -> member.id == record.expense.paidBy }
+                                    ?.avatarPath,
+                            originalAmount =
+                                record.expense.original?.let { original ->
+                                    MoneyDomain(original.amountMinor, original.currency).formatted()
+                                },
+                        )
+                    is LedgerRecordDomain.Repayment ->
+                        ExpenseHistoryItemUi.Repayment(
+                            settlement = record.settlement,
+                            fromName = memberNames[record.settlement.from],
+                            toName = memberNames[record.settlement.to],
+                            canManage =
+                                account?.archived == false &&
+                                    record.settlement.canManage(userId = userId, isOwner = isOwner),
+                            isUserSender = record.settlement.from == userId,
+                            isUserRecipient = record.settlement.to == userId,
+                            amount =
+                                MoneyDomain(record.settlement.amountMinor, currency).formatted(),
+                        )
+                }
+            }
             .toImmutableList()
 }

@@ -13,6 +13,8 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
+import com.eyther.lumbridge.features.expenses.domain.model.LedgerCursorDomain
+import com.eyther.lumbridge.features.expenses.domain.model.LedgerPageDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
@@ -171,6 +173,20 @@ class ExpenseFormFixture {
             override fun streamSettlements(
                 accountId: String,
             ): Flow<AppResult<List<SettlementDomain>>> = error("Not used")
+
+            override fun streamBalances(accountId: String): Flow<AppResult<Map<String, Long>>> =
+                error("Not used")
+
+            override fun streamLedgerPage(
+                accountId: String,
+                limit: Int,
+            ): Flow<AppResult<LedgerPageDomain>> = error("Not used")
+
+            override suspend fun getLedgerPage(
+                accountId: String,
+                after: LedgerCursorDomain,
+                limit: Int,
+            ): AppResult<LedgerPageDomain> = error("Not used")
 
             override suspend fun deleteExpense(expense: ExpenseDomain): AppResult<Unit> {
                 deletedExpenses += expense

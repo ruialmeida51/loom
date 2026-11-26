@@ -8,6 +8,8 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
+import com.eyther.lumbridge.features.expenses.domain.model.LedgerCursorDomain
+import com.eyther.lumbridge.features.expenses.domain.model.LedgerPageDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpensesStreamUseCase
@@ -29,6 +31,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
@@ -62,6 +65,20 @@ class InsightsScreenViewModelTest {
 
                 override fun streamSettlements(accountId: String) =
                     flowOf(AppResult.Success(emptyList<SettlementDomain>()))
+
+                override fun streamBalances(accountId: String): Flow<AppResult<Map<String, Long>>> =
+                    error("Not used")
+
+                override fun streamLedgerPage(
+                    accountId: String,
+                    limit: Int,
+                ): Flow<AppResult<LedgerPageDomain>> = error("Not used")
+
+                override suspend fun getLedgerPage(
+                    accountId: String,
+                    after: LedgerCursorDomain,
+                    limit: Int,
+                ): AppResult<LedgerPageDomain> = error("Not used")
 
                 override suspend fun saveExpense(expense: ExpenseDomain): AppResult<Unit> =
                     AppResult.Success(Unit)

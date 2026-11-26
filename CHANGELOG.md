@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - On trips abroad, enter an expense in the currency you paid in: Loom converts it at today's rate, which you can change.
+- Long Money histories load faster, and balances stay right however many expenses you add.
 
 ## [4.0.19] - 2026-11-26
 
