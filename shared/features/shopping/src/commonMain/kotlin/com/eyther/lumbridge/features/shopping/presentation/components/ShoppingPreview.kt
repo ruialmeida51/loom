@@ -118,7 +118,7 @@ private fun PreviewLine(item: ShoppingItemDomain) {
             modifier = Modifier.size(BulletSize),
         ) {}
         Text(
-            item.name,
+            item.displayName(),
             style = MaterialTheme.typography.bodyLarge,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

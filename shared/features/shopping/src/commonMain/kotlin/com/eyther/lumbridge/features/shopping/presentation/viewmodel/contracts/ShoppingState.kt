@@ -72,7 +72,7 @@ data class ShoppingState(
         DestructiveConfirmationUi(
             title = TextResource.Resource(Res.string.item_delete_title),
             message =
-                TextResource.Resource(Res.string.item_delete_message, args = listOf(item.name)),
+                TextResource.Resource(Res.string.item_delete_message, args = listOf(item.displayName())),
             confirmText = TextResource.Resource(Res.string.item_delete_confirm),
             cancelText = TextResource.Resource(Res.string.ui_cancel),
         )
