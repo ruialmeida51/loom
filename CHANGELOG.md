@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Paste a link into a shopping item: it shows as the shop’s name and opens with a tap.
+
 ## [4.0.20] - 2026-11-26
 
 - Trips abroad: enter an expense in the currency you paid in, converted at today's rate (or yours).
