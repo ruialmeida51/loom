@@ -2,12 +2,13 @@
 
 ## [Unreleased]
 
+- Share your MB Way, Revolut or PayPal in your profile, so housemates can pay you back in a tap.
+
 ## [4.0.18] - 2026-11-26
 
 - Guests on trips and events: people outside the household can pay, share costs and settle up there.
 - Recurring bills are easier to find and set up, and new expenses show which account they go to.
 - Assign chores, and let repeating ones take turns: Mine shows just yours.
-- Share your MB Way, Revolut or PayPal in your profile, so housemates can pay you back in a tap.
 
 ## [4.0.17] - 2026-11-25
 
