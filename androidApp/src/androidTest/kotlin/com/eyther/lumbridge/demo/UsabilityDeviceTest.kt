@@ -401,7 +401,10 @@ class UsabilityDeviceTest {
             compose.onAllNodesWithText("$taskTitle completed").fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithText("$taskTitle completed").assertIsDisplayed()
-        compose.onNodeWithTag("tasks_completed").performScrollTo().performClick()
+        // The Completed header is a lazy row below the open tasks; on a small screen it is not
+        // composed until the list scrolls to it, so scroll the list rather than the node.
+        compose.onNodeWithTag("tasks_content").performScrollToNode(hasTestTag("tasks_completed"))
+        compose.onNodeWithTag("tasks_completed").performClick()
         compose.onNodeWithTag("tasks_content").performScrollToNode(hasContentDescription(taskTitle))
         compose.onNodeWithContentDescription(taskTitle).assertIsDisplayed()
         capture(name = "tasks-completed")
