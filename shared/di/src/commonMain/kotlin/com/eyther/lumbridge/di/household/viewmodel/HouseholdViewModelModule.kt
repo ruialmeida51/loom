@@ -6,10 +6,10 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccoun
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountLedgerStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
-import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetMemberAccountPositionsUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpenseFormUseCase
@@ -125,7 +125,7 @@ class HouseholdViewModelModule {
 
     @KoinViewModel(binds = [ExpensesScreenViewModelContract::class])
     fun provideExpensesScreenViewModel(
-        getExpenseLedgerStreamUseCase: GetExpenseLedgerStreamUseCase,
+        getAccountLedgerStreamUseCase: GetAccountLedgerStreamUseCase,
         getExpenseAccountsStreamUseCase: GetExpenseAccountsStreamUseCase,
         selectExpenseAccountUseCase: SelectExpenseAccountUseCase,
         saveExpenseAccountUseCase: SaveExpenseAccountUseCase,
@@ -138,7 +138,7 @@ class HouseholdViewModelModule {
     ): ExpensesScreenViewModelContract =
         ExpensesScreenViewModel(
             getRecurringExpensesStreamUseCase = getRecurringExpensesStreamUseCase,
-            getExpenseLedgerStreamUseCase = getExpenseLedgerStreamUseCase,
+            getAccountLedgerStreamUseCase = getAccountLedgerStreamUseCase,
             getExpenseAccountsStreamUseCase = getExpenseAccountsStreamUseCase,
             selectExpenseAccountUseCase = selectExpenseAccountUseCase,
             saveExpenseAccountUseCase = saveExpenseAccountUseCase,

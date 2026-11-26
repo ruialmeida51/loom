@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Long Money histories load faster, and balances stay right however many expenses you add.
+
 ## [4.0.19] - 2026-11-26
 
 - Share your MB Way, Revolut or PayPal so housemates can pay you back: MB Way copies your number and opens the app.

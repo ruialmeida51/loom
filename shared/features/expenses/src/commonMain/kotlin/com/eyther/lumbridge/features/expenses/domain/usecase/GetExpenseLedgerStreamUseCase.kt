@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 
+/**
+ * The selected account's complete history, for monthly statements. The Money overview pages
+ * instead, through [GetAccountLedgerStreamUseCase].
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class GetExpenseLedgerStreamUseCase(
     private val getExpensesStreamUseCase: GetExpensesStreamUseCase,

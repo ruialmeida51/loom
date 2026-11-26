@@ -34,6 +34,9 @@ abstract class ExpensesScreenViewModelContract : LoomViewModel() {
 
     abstract fun onEntryDeleteConfirmed()
 
+    /** The reader scrolled near the end of the loaded ledger. */
+    abstract fun onLoadMoreHistory()
+
     abstract fun onContentChanged()
 
     abstract fun onRefresh()

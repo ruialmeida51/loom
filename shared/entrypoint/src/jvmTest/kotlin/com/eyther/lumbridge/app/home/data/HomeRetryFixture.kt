@@ -9,8 +9,7 @@ import com.eyther.lumbridge.app.demo.data.DemoShoppingSelectionDataSource
 import com.eyther.lumbridge.app.demo.data.DemoTaskDataSource
 import com.eyther.lumbridge.core.domain.errors.CommonError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
-import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpensesStreamUseCase
-import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementsStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountBalancesStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
@@ -92,9 +91,8 @@ internal class HomeRetryFixture(
             markArticleReadUseCase = MarkArticleReadUseCase(feedDataSource = feed),
             getHomeBalanceStreamUseCase =
                 GetHomeBalanceStreamUseCase(
-                    getExpensesStreamUseCase = GetExpensesStreamUseCase(expenseDataSource = expenses),
-                    getSettlementsStreamUseCase =
-                        GetSettlementsStreamUseCase(expenseDataSource = expenses),
+                    getAccountBalancesStreamUseCase =
+                        GetAccountBalancesStreamUseCase(expenseDataSource = expenses),
                     context = context,
                 ),
             getMembersStreamUseCase =

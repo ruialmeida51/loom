@@ -9,11 +9,12 @@ import com.eyther.lumbridge.core.presentation.components.snackbar.DEFAULT_ALERT_
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.LedgerPageDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountLedgerStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
-import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpensesStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
@@ -30,7 +31,9 @@ import com.eyther.lumbridge.features.household.domain.usecase.GetMembersStreamUs
 import com.eyther.lumbridge.features.household.presentation.mapper.toHouseholdTextResource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -38,7 +41,7 @@ import kotlinx.coroutines.flow.update
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpensesScreenViewModel(
-    private val getExpenseLedgerStreamUseCase: GetExpenseLedgerStreamUseCase,
+    private val getAccountLedgerStreamUseCase: GetAccountLedgerStreamUseCase,
     private val getExpenseAccountsStreamUseCase: GetExpenseAccountsStreamUseCase,
     private val selectExpenseAccountUseCase: SelectExpenseAccountUseCase,
     private val saveExpenseAccountUseCase: SaveExpenseAccountUseCase,
@@ -50,13 +53,23 @@ class ExpensesScreenViewModel(
     private val context: HouseholdContextDomain,
 ) : ExpensesScreenViewModelContract() {
     private val refreshRequests = MutableStateFlow(0)
+    private val loadMoreRequests =
+        MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private var successJob: Job? = null
     private val mutableState =
         MutableStateFlow(ExpensesState(userId = context.userId))
             .observeWith(viewModelScope) { state ->
                 refreshRequests
                     .flatMapLatest {
-                        getExpenseLedgerStreamUseCase()
+                        getAccountLedgerStreamUseCase(
+                                loadMoreRequests = loadMoreRequests,
+                                // Reloading keeps the pages already scrolled through.
+                                initialSize =
+                                    maxOf(
+                                        LedgerPageDomain.PAGE_SIZE,
+                                        state.value.expenses.size + state.value.settlements.size,
+                                    ),
+                            )
                             .delayFirstAtLeast(
                                 enabled = state.value.loading || state.value.refreshing,
                             )
@@ -66,9 +79,11 @@ class ExpensesScreenViewModel(
                             is AppResult.Success ->
                                 copy(
                                     account = result.value.account,
-                                    expenses = result.value.expenses,
-                                    settlements = result.value.settlements,
+                                    expenses = result.value.history.expenses,
+                                    settlements = result.value.history.settlements,
                                     balances = result.value.balances,
+                                    hasMoreHistory = result.value.history.nextCursor != null,
+                                    loadingMoreHistory = result.value.loadingMore,
                                     loading = false,
                                     refreshing = false,
                                     loadError = null,
@@ -77,6 +92,7 @@ class ExpensesScreenViewModel(
                                 copy(
                                     loading = false,
                                     refreshing = false,
+                                    loadingMoreHistory = false,
                                     loadError = result.error.toExpensesTextResource(),
                                 )
                         }
@@ -146,6 +162,8 @@ class ExpensesScreenViewModel(
                 expenses = emptyList(),
                 settlements = emptyList(),
                 balances = emptyMap(),
+                hasMoreHistory = false,
+                loadingMoreHistory = false,
                 loading = true,
                 showAccounts = false,
                 error = null,
@@ -316,6 +334,20 @@ class ExpensesScreenViewModel(
             delay(DEFAULT_ALERT_DURATION)
             mutableState.update { oldState -> oldState.copy(successMessage = null) }
         }
+    }
+
+    override fun onLoadMoreHistory() {
+        val current = state.value
+        // After a failure the reader retries explicitly, rather than every scroll asking again.
+        if (
+            !current.hasMoreHistory ||
+                current.loadingMoreHistory ||
+                current.loading ||
+                current.loadError != null
+        )
+            return
+        mutableState.update { oldState -> oldState.copy(loadingMoreHistory = true) }
+        loadMoreRequests.tryEmit(Unit)
     }
 
     override fun onContentChanged() {
