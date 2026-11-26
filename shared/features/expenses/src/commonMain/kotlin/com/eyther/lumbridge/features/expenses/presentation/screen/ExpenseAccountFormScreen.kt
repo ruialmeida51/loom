@@ -21,10 +21,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingForm
 import com.eyther.lumbridge.core.presentation.components.LoomButton
-import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
+import com.eyther.lumbridge.core.presentation.components.RetryNotice
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
@@ -122,11 +121,11 @@ private fun InnerExpenseAccountFormScreen(
         ) {
             if (loading) LoadingForm()
             error?.let {
-                ErrorNotice(message = it, onDismiss = onDismiss)
-                LoomSecondaryButton(
-                    text = stringResource(Res.string.balance_retry),
-                    onClick = onRetry,
-                    modifier = Modifier,
+                RetryNotice(
+                    message = it,
+                    onRetry = onRetry,
+                    onDismiss = onDismiss,
+                    retryText = stringResource(Res.string.balance_retry),
                 )
             }
             if (members.isNotEmpty()) {

@@ -2,13 +2,13 @@ package com.eyther.lumbridge.features.legal.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.DestructiveButton
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -42,7 +42,7 @@ fun LegalLinks(
                 glyph = Glyph.SHIELD,
                 onClick = { onOpenDocument(LegalDocumentDomain.PRIVACY_POLICY) },
             )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            LoomDivider()
             NavigationRow(
                 title = stringResource(Res.string.terms_of_use),
                 glyph = Glyph.FEED,

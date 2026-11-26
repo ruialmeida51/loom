@@ -4,18 +4,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
-import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.InfoRow
-import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
+import com.eyther.lumbridge.core.presentation.components.RetryNotice
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
@@ -87,10 +85,11 @@ private fun InnerPaymentDetailsScreen(
     ) {
         error?.let { message ->
             item(key = "error") {
-                ErrorNotice(message = message, onDismiss = onDismiss)
-                LoomSecondaryButton(
-                    text = stringResource(Res.string.balance_retry),
-                    onClick = onRetry,
+                RetryNotice(
+                    message = message,
+                    onRetry = onRetry,
+                    onDismiss = onDismiss,
+                    retryText = stringResource(Res.string.balance_retry),
                 )
             }
         }
@@ -104,17 +103,17 @@ private fun InnerPaymentDetailsScreen(
                             label = stringResource(Res.string.ui_money_sent_by),
                             value = payment.fromName ?: stringResource(Res.string.former_member),
                         )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        LoomDivider()
                         InfoRow(
                             label = stringResource(Res.string.ui_received_by),
                             value = payment.toName ?: stringResource(Res.string.former_member),
                         )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        LoomDivider()
                         InfoRow(
                             label = stringResource(Res.string.detail_date),
                             value = calendarDateText(payment.occurredOn),
                         )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        LoomDivider()
                         InfoRow(
                             label = stringResource(Res.string.detail_account),
                             value =

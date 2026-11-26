@@ -8,9 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
-import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
+import com.eyther.lumbridge.core.presentation.components.RetryNotice
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
@@ -47,8 +46,11 @@ private fun InnerReceiptViewerScreen(
     ) {
         if (loading) LoadingRows()
         error?.let {
-            ErrorNotice(message = it)
-            LoomSecondaryButton(text = stringResource(Res.string.balance_retry), onClick = onRetry)
+            RetryNotice(
+                message = it,
+                onRetry = onRetry,
+                retryText = stringResource(Res.string.balance_retry),
+            )
         }
         photo?.let {
             ReceiptPhotoViewer(photo = it, onInvalidPhoto = onInvalidPhoto)

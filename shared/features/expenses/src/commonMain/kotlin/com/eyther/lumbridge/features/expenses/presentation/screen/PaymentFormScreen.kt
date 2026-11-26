@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -23,6 +22,7 @@ import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingForm
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -145,7 +145,7 @@ private fun InnerPaymentFormScreen(
                         emphasisColor = MaterialTheme.colorScheme.error,
                         modifier = Modifier.testTag("payment_sender"),
                     )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LoomDivider()
                     MemberPickerRow(
                         label = stringResource(Res.string.ui_received_by),
                         members = members,
@@ -157,7 +157,7 @@ private fun InnerPaymentFormScreen(
                         emphasisColor = LoomColors.positive,
                         modifier = Modifier.testTag("payment_recipient"),
                     )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LoomDivider()
                     NavigationRow(
                         title = stringResource(Res.string.form_date),
                         description = date?.let { calendarDateText(it) },

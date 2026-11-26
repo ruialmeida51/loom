@@ -6,12 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.layout.RootHeading
@@ -44,7 +43,7 @@ internal fun MoreOverviewContent(
                 glyph = Glyph.FEED,
                 onClick = onFeed,
             )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            LoomDivider()
             NavigationRow(
                 title = stringResource(Res.string.household_details),
                 glyph = Glyph.HOME,

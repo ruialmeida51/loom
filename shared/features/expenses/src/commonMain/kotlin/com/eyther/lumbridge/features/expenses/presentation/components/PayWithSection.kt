@@ -2,7 +2,6 @@ package com.eyther.lumbridge.features.expenses.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,15 +15,16 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.AnnotatedString
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_copied
-import com.eyther.lumbridge.features.expenses.generated.resources.pay_mbway_copied
-import com.eyther.lumbridge.features.expenses.generated.resources.pay_open
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_hint
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_mbway
+import com.eyther.lumbridge.features.expenses.generated.resources.pay_mbway_copied
+import com.eyther.lumbridge.features.expenses.generated.resources.pay_open
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_paypal
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_paypal_amount
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_revolut
@@ -123,7 +123,7 @@ internal fun PayWithSection(options: PayOptionsUi, modifier: Modifier = Modifier
                     },
                 )
             rows.forEachIndexed { index, row ->
-                if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                if (index > 0) LoomDivider()
                 row()
             }
         }

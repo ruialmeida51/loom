@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.shopping.presentation.components.bottomsheet
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -45,7 +45,7 @@ fun ShoppingFavoritesBottomSheet(
                 favorites.forEachIndexed { index, favorite ->
                     key(favorite.item.id) {
                         if (index > 0)
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            LoomDivider()
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             NavigationRow(
                                 title = favorite.item.name,

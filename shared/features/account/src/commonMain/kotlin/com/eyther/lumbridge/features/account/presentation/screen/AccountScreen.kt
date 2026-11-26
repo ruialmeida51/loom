@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,11 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
-import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
-import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
+import com.eyther.lumbridge.core.presentation.components.RetryNotice
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -154,11 +153,11 @@ private fun InnerAccountScreen(
     ) {
         error?.let { message ->
             item {
-                ErrorNotice(message = message, onDismiss = onDismiss)
-                LoomSecondaryButton(
-                    text = stringResource(Res.string.retry),
-                    onClick = onRetry,
-                    modifier = Modifier,
+                RetryNotice(
+                    message = message,
+                    onRetry = onRetry,
+                    onDismiss = onDismiss,
+                    retryText = stringResource(Res.string.retry),
                 )
             }
         }
@@ -190,7 +189,7 @@ private fun InnerAccountScreen(
                             enabled = canEditNickname,
                             modifier = Modifier.testTag("edit_nickname"),
                         )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        LoomDivider()
                         NavigationRow(
                             title = stringResource(Res.string.payment_details_title),
                             description =
@@ -215,7 +214,7 @@ private fun InnerAccountScreen(
                 SectionTitle(title = stringResource(Res.string.preferences_title))
                 GroupedSurface {
                     AppearancePreferenceRow(theme = theme, enabled = !busy, onSelected = onTheme)
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LoomDivider()
                     AccountPreferenceRow(
                         title = stringResource(Res.string.notifications_title),
                         glyph = Glyph.BELL,
@@ -231,7 +230,7 @@ private fun InnerAccountScreen(
                         onCheckedChange = onNotifications,
                         enabled = !busy,
                     )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LoomDivider()
                     NavigationRow(
                         title = stringResource(Res.string.usage_data_title),
                         description = stringResource(Res.string.usage_data_description),

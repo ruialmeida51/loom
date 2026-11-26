@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.IconTile
 import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
@@ -84,7 +84,7 @@ fun ShoppingPreview(
                 modifier = Modifier.size(18.dp),
             )
         }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        LoomDivider()
         Column(
             modifier = Modifier.padding(horizontal = LoomSpacing.content, vertical = 8.dp),
         ) {

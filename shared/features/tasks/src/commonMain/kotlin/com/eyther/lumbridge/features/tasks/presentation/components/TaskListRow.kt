@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +21,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.ActionProgress
 import com.eyther.lumbridge.core.presentation.components.CheckCircle
 import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.components.cardSegment
@@ -89,7 +89,7 @@ internal fun TaskListRow(
         ) {
             Box(modifier = Modifier.size(TaskCheckSlot), contentAlignment = Alignment.Center) {
                 if (completing)
-                    CircularProgressIndicator(Modifier.size(TaskProgressSize), strokeWidth = 2.dp)
+                    ActionProgress(size = TaskProgressSize)
                 else CheckCircle(checked = task.completed, onCheckedChange = null, muted = false)
             }
             Column(
@@ -119,7 +119,7 @@ internal fun TaskListRow(
         }
         if (removing)
             Box(Modifier.size(TaskCheckSlot), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(Modifier.size(TaskProgressSize), strokeWidth = 2.dp)
+                ActionProgress(size = TaskProgressSize)
             }
         else
             ActionMenu(
