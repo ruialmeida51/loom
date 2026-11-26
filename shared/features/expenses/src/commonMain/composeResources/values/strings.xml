@@ -148,7 +148,8 @@
     <string name="pay_revolut">Revolut</string>
     <string name="pay_revolut_hint">Opens their profile; the amount is copied</string>
     <string name="pay_mbway">MB Way</string>
-    <string name="pay_copy">Copy</string>
+    <string name="pay_open">Open</string>
+    <string name="pay_mbway_copied">Number copied. In MB Way, Send money and paste it, then send %1$s</string>
     <string name="pay_copied">Copied</string>
     <string name="pay_hint">After sending the money, come back and save to record the payment.</string>
     <string name="recurring_new_bill">New recurring bill</string>
