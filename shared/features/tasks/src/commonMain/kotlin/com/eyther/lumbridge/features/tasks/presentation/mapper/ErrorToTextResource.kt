@@ -9,6 +9,7 @@ import com.eyther.lumbridge.features.tasks.generated.resources.error_access_deni
 import com.eyther.lumbridge.features.tasks.generated.resources.error_invalid_date_time
 import com.eyther.lumbridge.features.tasks.generated.resources.error_invalid_title
 import com.eyther.lumbridge.features.tasks.generated.resources.task_date_required
+import com.eyther.lumbridge.features.tasks.generated.resources.task_error_assignee
 
 fun AppError.toTasksTextResource(): TextResource =
     when (this) {
@@ -16,5 +17,6 @@ fun AppError.toTasksTextResource(): TextResource =
         is TaskError.InvalidDateTime -> TextResource.Resource(Res.string.error_invalid_date_time)
         is TaskError.DateRequired -> TextResource.Resource(Res.string.task_date_required)
         is TaskError.AccessDenied -> TextResource.Resource(Res.string.error_access_denied)
+        is TaskError.InvalidAssignee -> TextResource.Resource(Res.string.task_error_assignee)
         else -> toTextResource()
     }

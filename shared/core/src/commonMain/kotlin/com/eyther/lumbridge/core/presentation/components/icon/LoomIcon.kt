@@ -17,31 +17,32 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.generated.resources.Res
 import com.eyther.lumbridge.core.generated.resources.icon_add
-import com.eyther.lumbridge.core.generated.resources.icon_edit
-import com.eyther.lumbridge.core.generated.resources.icon_health
-import com.eyther.lumbridge.core.generated.resources.icon_pets
-import com.eyther.lumbridge.core.generated.resources.icon_travel
-import com.eyther.lumbridge.core.generated.resources.icon_gift
-import com.eyther.lumbridge.core.generated.resources.icon_produce
-import com.eyther.lumbridge.core.generated.resources.icon_cart
 import com.eyther.lumbridge.core.generated.resources.icon_bell
 import com.eyther.lumbridge.core.generated.resources.icon_calendar
+import com.eyther.lumbridge.core.generated.resources.icon_cart
 import com.eyther.lumbridge.core.generated.resources.icon_delete
 import com.eyther.lumbridge.core.generated.resources.icon_done
+import com.eyther.lumbridge.core.generated.resources.icon_edit
 import com.eyther.lumbridge.core.generated.resources.icon_expand
 import com.eyther.lumbridge.core.generated.resources.icon_feed
+import com.eyther.lumbridge.core.generated.resources.icon_gift
+import com.eyther.lumbridge.core.generated.resources.icon_health
 import com.eyther.lumbridge.core.generated.resources.icon_home
 import com.eyther.lumbridge.core.generated.resources.icon_log_out
 import com.eyther.lumbridge.core.generated.resources.icon_money
 import com.eyther.lumbridge.core.generated.resources.icon_more
 import com.eyther.lumbridge.core.generated.resources.icon_next
 import com.eyther.lumbridge.core.generated.resources.icon_person
+import com.eyther.lumbridge.core.generated.resources.icon_pets
 import com.eyther.lumbridge.core.generated.resources.icon_photo
 import com.eyther.lumbridge.core.generated.resources.icon_privacy
+import com.eyther.lumbridge.core.generated.resources.icon_produce
+import com.eyther.lumbridge.core.generated.resources.icon_repeat
 import com.eyther.lumbridge.core.generated.resources.icon_settings
 import com.eyther.lumbridge.core.generated.resources.icon_shopping
 import com.eyther.lumbridge.core.generated.resources.icon_star
 import com.eyther.lumbridge.core.generated.resources.icon_tasks
+import com.eyther.lumbridge.core.generated.resources.icon_travel
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -81,6 +82,7 @@ fun LoomIcon(
                 Glyph.PAW -> Res.string.icon_pets
                 Glyph.HEART -> Res.string.icon_health
                 Glyph.EDIT -> Res.string.icon_edit
+                Glyph.REPEAT -> Res.string.icon_repeat
             },
         )
     Canvas(
@@ -154,6 +156,20 @@ fun LoomIcon(
             Glyph.CHEVRON_DOWN -> {
                 line(7f, 10f, 12f, 15f)
                 line(12f, 15f, 17f, 10f)
+            }
+            Glyph.REPEAT -> {
+                // A circular arrow: most of a ring, with its head where the ring opens.
+                drawArc(
+                    tint,
+                    startAngle = -60f,
+                    sweepAngle = 300f,
+                    useCenter = false,
+                    topLeft = Offset(5f * s, 5f * s),
+                    size = Size(14f * s, 14f * s),
+                    style = Stroke(1.7f * s, cap = StrokeCap.Round),
+                )
+                line(8.5f, 5.94f, 5.6f, 5.16f)
+                line(8.5f, 5.94f, 7.72f, 8.84f)
             }
             Glyph.EDIT -> {
                 // A pencil: barrel, tip and the eraser band.

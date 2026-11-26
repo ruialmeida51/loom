@@ -56,12 +56,14 @@ import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseAcc
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseHistoryRow
 import com.eyther.lumbridge.features.expenses.presentation.components.MemberBalanceRow
 import com.eyther.lumbridge.features.expenses.presentation.components.PersonalBalanceCard
+import com.eyther.lumbridge.features.expenses.presentation.components.RecurringBillsRow
 import com.eyther.lumbridge.features.expenses.presentation.components.SettlementSuggestionCard
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
 import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import com.eyther.lumbridge.features.expenses.presentation.model.MemberBalanceUi
+import com.eyther.lumbridge.features.expenses.presentation.model.RecurringSummaryUi
 import com.eyther.lumbridge.features.expenses.presentation.model.SuggestedRepaymentUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 import kotlinx.collections.immutable.ImmutableList
@@ -98,6 +100,7 @@ fun ExpensesScreen(
             onSelectAccount = viewModel::onAccountSelected,
             onCreateAccount = onCreateAccount,
             history = state.history,
+            recurringSummary = state.recurringSummary,
             selectedView = state.selectedView,
             memberBalances = state.memberBalances,
             suggestions = state.suggestedRepayments,
@@ -167,6 +170,7 @@ private fun InnerExpensesScreen(
     onRecurringExpenses: () -> Unit,
     onDismiss: () -> Unit,
     onRetry: () -> Unit,
+    recurringSummary: RecurringSummaryUi? = null,
 ) {
     Box(Modifier.fillMaxSize()) {
         LazyColumn(
@@ -231,6 +235,13 @@ private fun InnerExpensesScreen(
             }
             if (loading) item { LoadingRows() }
             else if (account != null && selectedView == ExpensesViewUi.EXPENSES) {
+                recurringSummary
+                    ?.takeIf { !account.archived || it.activeCount + it.pausedCount > 0 }
+                    ?.let { summary ->
+                        item(key = "recurring_summary") {
+                            RecurringBillsRow(summary = summary, onClick = onRecurringExpenses)
+                        }
+                    }
                 if (history.isEmpty())
                     item {
                         Text(

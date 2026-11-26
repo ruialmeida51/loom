@@ -2,8 +2,9 @@
 
 ## [Unreleased]
 
-- Add guests to trips and events: people outside the household who can pay, share costs and settle up in that account only.
-- Guests show a Guest tag in splits, payers, expense details and balances.
+- Guests on trips and events: people outside the household can pay, share costs and settle up there.
+- Recurring bills are easier to find and set up, and new expenses show which account they go to.
+- Assign chores, and let repeating ones take turns: Mine shows just yours.
 
 ## [4.0.17] - 2026-11-25
 

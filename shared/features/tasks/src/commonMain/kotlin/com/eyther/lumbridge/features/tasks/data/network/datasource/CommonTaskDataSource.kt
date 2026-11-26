@@ -9,6 +9,7 @@ import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDoma
 import com.eyther.lumbridge.features.tasks.data.network.mapper.toDomain
 import com.eyther.lumbridge.features.tasks.data.network.mapper.toRequest
 import com.eyther.lumbridge.features.tasks.data.network.mapper.toTaskError
+import com.eyther.lumbridge.features.tasks.data.network.model.request.AssignTaskRequest
 import com.eyther.lumbridge.features.tasks.data.network.model.request.CompleteTaskRequest
 import com.eyther.lumbridge.features.tasks.data.network.model.response.TaskResponse
 import com.eyther.lumbridge.features.tasks.domain.datasource.TaskDataSource
@@ -72,6 +73,24 @@ class CommonTaskDataSource(
                 client.from("tasks").delete {
                     filter {
                         eq("id", id)
+                        eq("household_id", context.id)
+                    }
+                }
+            }
+            Unit
+        }
+    }
+
+    override suspend fun assignTask(task: TaskDomain): AppResult<Unit> {
+        return safeApiCall(
+            mapError = Exception::toTaskError,
+        ) {
+            access.write { client ->
+                client.from("tasks").update(
+                    AssignTaskRequest(assigneeId = task.assigneeId, rotation = task.rotation),
+                ) {
+                    filter {
+                        eq("id", task.id)
                         eq("household_id", context.id)
                     }
                 }

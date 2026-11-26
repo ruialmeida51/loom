@@ -7,7 +7,12 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelection
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class ExpenseFormScreenViewModelContract : LoomViewModel() {
-    data class Params(val accountId: String, val expenseId: String? = null)
+    data class Params(
+        val accountId: String,
+        val expenseId: String? = null,
+        /** Opens a new expense with "Repeat every month" already on. */
+        val recurring: Boolean = false,
+    )
 
     @Stable
     sealed interface RedirectTo {
@@ -39,6 +44,9 @@ abstract class ExpenseFormScreenViewModelContract : LoomViewModel() {
     abstract fun onCategoryChanged(value: String)
 
     abstract fun onRecurringChanged(value: Boolean)
+
+    /** Moves a new expense to another account; its split resets to that account's people. */
+    abstract fun onAccountChanged(id: String)
 
     abstract fun onEditSplit()
 

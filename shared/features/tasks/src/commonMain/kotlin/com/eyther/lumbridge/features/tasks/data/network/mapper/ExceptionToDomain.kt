@@ -12,6 +12,7 @@ internal fun Exception.toTaskError(): AppError {
 
     return when (error) {
         "Task access denied." -> TaskError.AccessDenied(cause = this)
+        "tasks.invalid_assignee" -> TaskError.InvalidAssignee(cause = this)
         else -> toAppError()
     }
 }

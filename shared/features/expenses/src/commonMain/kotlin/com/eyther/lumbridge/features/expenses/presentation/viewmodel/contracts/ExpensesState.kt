@@ -6,6 +6,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.HouseholdLedgerDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
+import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
@@ -22,6 +23,7 @@ import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryU
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import com.eyther.lumbridge.features.expenses.presentation.model.MemberBalanceUi
+import com.eyther.lumbridge.features.expenses.presentation.model.RecurringSummaryUi
 import com.eyther.lumbridge.features.expenses.presentation.model.SuggestedRepaymentUi
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import kotlinx.collections.immutable.ImmutableList
@@ -39,6 +41,7 @@ data class ExpensesState(
     val settlements: List<SettlementDomain> = emptyList(),
     val members: List<MemberDomain> = emptyList(),
     val balances: Map<String, Long> = emptyMap(),
+    val recurring: List<RecurringExpenseDomain> = emptyList(),
     val selectedView: ExpensesViewUi = ExpensesViewUi.EXPENSES,
     val showAccounts: Boolean = false,
     val showMemberBalances: Boolean = false,
@@ -169,6 +172,11 @@ data class ExpensesState(
         )
     val showPersonalSummary: Boolean =
         suggestedRepayments.count { it.isCurrentUserSender || it.isCurrentUserRecipient } != 1
+    /** The shortcut above the ledger: how many bills repeat here and which comes next. */
+    val recurringSummary: RecurringSummaryUi? = account?.let {
+        RecurringSummaryUi.from(rules = recurring, currency = currency)
+    }
+
     val memberBalances: ImmutableList<MemberBalanceUi> =
         (account?.memberIds.orEmpty() + account?.guests.orEmpty().filterNot { it.removed }.map { it.id } + balances.keys)
             .map { id ->

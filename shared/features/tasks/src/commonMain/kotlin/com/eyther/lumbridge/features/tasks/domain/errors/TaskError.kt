@@ -11,4 +11,6 @@ sealed class TaskError(cause: Throwable? = null) : AppError(cause) {
     class DateRequired(cause: Throwable? = null) : TaskError(cause)
 
     class AccessDenied(cause: Throwable? = null) : TaskError(cause)
+
+    class InvalidAssignee(cause: Throwable? = null) : TaskError(cause)
 }

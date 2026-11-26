@@ -21,4 +21,6 @@ internal class TaskCreationFixtureDataSource : TaskDataSource {
     override suspend fun completeTask(task: TaskDomain): AppResult<Unit> = AppResult.Success(Unit)
 
     override suspend fun removeTask(id: String): AppResult<Unit> = AppResult.Success(Unit)
+
+    override suspend fun assignTask(task: TaskDomain): AppResult<Unit> = AppResult.Success(Unit)
 }

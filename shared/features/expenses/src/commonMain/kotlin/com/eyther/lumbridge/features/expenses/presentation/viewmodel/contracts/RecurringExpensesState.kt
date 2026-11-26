@@ -27,6 +27,9 @@ data class RecurringExpensesState(
     val loadError: TextResource? = null,
 ) {
 
+    /** Where "New recurring bill" adds one: the account shown, when this person can add to it. */
+    val newBillAccountId: String? = account?.takeIf { it.canAddExpense(userId = userId) }?.id
+
     val deletionConfirmation: DestructiveConfirmationUi? = deletion?.let {
         DestructiveConfirmationUi(
             title = TextResource.Resource(Res.string.bill_delete_title),

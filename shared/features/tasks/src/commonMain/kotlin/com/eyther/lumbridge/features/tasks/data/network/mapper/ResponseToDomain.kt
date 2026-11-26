@@ -19,4 +19,6 @@ internal fun TaskResponse.toDomain(): TaskDomain =
             },
         completed = completed,
         notificationEnabled = notificationEnabled,
+        assigneeId = assigneeId,
+        rotation = rotation,
     )
