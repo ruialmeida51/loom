@@ -45,8 +45,8 @@ import com.eyther.lumbridge.features.feed.presentation.model.ArticlePreviewUi
 import org.jetbrains.compose.resources.stringResource
 
 private val UnreadDotSize = 8.dp
-internal val ArticlePictureHeight = 132.dp
-private const val ArticlePictureRatio = 16f / 9f
+internal val ArticlePictureHeight = 108.dp
+private const val ArticlePictureRatio = 2.4f
 
 /**
  * One article as a single tap target: tapping anywhere opens it, and the ⋮ menu holds the other
