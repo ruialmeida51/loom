@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.20] - 2026-11-26
+
 - Trips abroad: enter an expense in the currency you paid in, converted at today's rate (or yours).
 - Long Money histories load faster, and balances stay right however many expenses you add.
 - News stories show their pictures, and Today’s reads now sit right under your balance on Home.
