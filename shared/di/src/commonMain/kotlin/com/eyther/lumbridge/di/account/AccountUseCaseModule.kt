@@ -1,7 +1,10 @@
 package com.eyther.lumbridge.di.account
 
+import com.eyther.lumbridge.features.account.domain.datasource.PaymentHandlesDataSource
 import com.eyther.lumbridge.features.account.domain.datasource.ProfileDataSource
+import com.eyther.lumbridge.features.account.domain.usecase.GetPaymentHandlesUseCase
 import com.eyther.lumbridge.features.account.domain.usecase.GetProfileStreamUseCase
+import com.eyther.lumbridge.features.account.domain.usecase.SavePaymentHandlesUseCase
 import com.eyther.lumbridge.features.account.domain.usecase.SetProfilePictureUseCase
 import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCase
 import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
@@ -22,6 +25,18 @@ class AccountUseCaseModule {
     fun provideSetProfilePictureUseCase(
         profileDataSource: ProfileDataSource,
     ): SetProfilePictureUseCase = SetProfilePictureUseCase(profileDataSource = profileDataSource)
+
+    @Single
+    fun provideGetPaymentHandlesUseCase(
+        paymentHandlesDataSource: PaymentHandlesDataSource,
+    ): GetPaymentHandlesUseCase =
+        GetPaymentHandlesUseCase(paymentHandlesDataSource = paymentHandlesDataSource)
+
+    @Single
+    fun provideSavePaymentHandlesUseCase(
+        paymentHandlesDataSource: PaymentHandlesDataSource,
+    ): SavePaymentHandlesUseCase =
+        SavePaymentHandlesUseCase(paymentHandlesDataSource = paymentHandlesDataSource)
 
     @Single
     fun provideUpdateNicknameUseCase(profileDataSource: ProfileDataSource): UpdateNicknameUseCase =

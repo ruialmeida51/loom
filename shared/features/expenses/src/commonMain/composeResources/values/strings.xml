@@ -133,6 +133,15 @@
     <string name="form_repeat_on">Added again on day %1$d of every month</string>
     <string name="form_repeat_off">For rent, bills and subscriptions</string>
     <string name="form_account">Adding to</string>
+    <string name="pay_title">Pay %1$s</string>
+    <string name="pay_paypal">PayPal</string>
+    <string name="pay_paypal_amount">Opens with %1$s filled in</string>
+    <string name="pay_revolut">Revolut</string>
+    <string name="pay_revolut_hint">Opens their profile; the amount is copied</string>
+    <string name="pay_mbway">MB Way</string>
+    <string name="pay_copy">Copy</string>
+    <string name="pay_copied">Copied</string>
+    <string name="pay_hint">After sending the money, come back and save to record the payment.</string>
     <string name="recurring_new_bill">New recurring bill</string>
     <string name="recurring_card_schedule">%1$s every month · day %2$d</string>
     <string name="recurring_card_next">Next on %1$s · %2$s pays</string>

@@ -23,6 +23,7 @@ kotlin {
             implementation(projects.shared.features.analytics)
             api(projects.shared.core)
             api(projects.shared.features.household)
+            implementation(projects.shared.features.account)
             api(libs.compose.runtime)
             api(libs.compose.foundation)
             api(libs.compose.ui)

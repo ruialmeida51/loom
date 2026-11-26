@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.expenses.data.fixtures
 
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.account.domain.usecase.GetPaymentHandlesUseCase
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementFormUseCase
@@ -33,12 +34,14 @@ class PaymentWorkflowFixture {
         )
     val source =
         SettlementFixtureDataSource().apply { payment = this@PaymentWorkflowFixture.payment }
+    internal var paymentHandles = PaymentHandlesFixtureDataSource()
     private val getSettlementFormUseCase =
         GetSettlementFormUseCase(
             expenseAccountDataSource = references.accounts,
             getSettlementUseCase = GetSettlementUseCase(expenseDataSource = source),
             householdDataSource = references.household,
             context = references.context,
+            getPaymentHandlesUseCase = GetPaymentHandlesUseCase(paymentHandles),
         )
 
     fun form(

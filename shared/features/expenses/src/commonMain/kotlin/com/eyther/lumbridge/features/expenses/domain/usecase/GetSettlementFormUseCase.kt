@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.expenses.domain.usecase
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
 import com.eyther.lumbridge.core.domain.wrapper.safeCall
+import com.eyther.lumbridge.features.account.domain.usecase.GetPaymentHandlesUseCase
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementFormDomain
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
@@ -16,6 +17,7 @@ class GetSettlementFormUseCase(
     private val getSettlementUseCase: GetSettlementUseCase,
     private val householdDataSource: HouseholdDataSource,
     private val context: HouseholdContextDomain,
+    private val getPaymentHandlesUseCase: GetPaymentHandlesUseCase,
 ) {
     suspend operator fun invoke(
         accountId: String,
@@ -37,13 +39,20 @@ class GetSettlementFormUseCase(
                 }
             }
             val account = accountRequest.await()
+            val members =
+                account.withGuests(membersRequest.await()).filter {
+                    it.id in account.participantIds
+                }
+            // Payment details only make paying easier; the form works without them.
+            val handles =
+                (getPaymentHandlesUseCase(userIds = account.memberIds) as? AppResult.Success)
+                    ?.value
+                    .orEmpty()
             SettlementFormDomain(
                 account = account,
-                members =
-                    account.withGuests(membersRequest.await()).filter {
-                        it.id in account.participantIds
-                    },
+                members = members,
                 settlement = settlementRequest.await(),
+                paymentHandles = handles.associateBy { it.userId },
             )
         }
     }

@@ -16,6 +16,7 @@ import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateO
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.viewmodel.rememberHostViewModelStoreOwner
 import com.eyther.lumbridge.features.account.presentation.components.bottomsheet.NicknameBottomSheet
+import com.eyther.lumbridge.features.account.presentation.components.bottomsheet.PaymentDetailsBottomSheet
 import com.eyther.lumbridge.features.account.presentation.screen.AccountScreen
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
@@ -55,6 +56,7 @@ internal fun AccountHost(
     val uriHandler = LocalUriHandler.current
     LaunchedEffect(
         state.showNickname,
+        state.showPaymentDetails,
         consentState.visible,
         consentState.busy,
         consentState.error,
@@ -65,6 +67,7 @@ internal fun AccountHost(
         if (consentState.visible) controller.showBottomSheet(AccountSheets.UsageData)
         else if (notificationState.visible) controller.showBottomSheet(AccountSheets.Notifications)
         else if (state.showNickname) controller.showBottomSheet(AccountSheets.Nickname)
+        else if (state.showPaymentDetails) controller.showBottomSheet(AccountSheets.PaymentDetails)
         else controller.hideBottomSheet()
     }
     controller.registerBottomSheet<AccountSheets.Nickname> {
@@ -76,6 +79,20 @@ internal fun AccountHost(
             onChanged = viewModel::onNicknameChanged,
             onSave = viewModel::onSaveNickname,
             onClose = viewModel::onCloseNickname,
+        )
+    }
+    controller.registerBottomSheet<AccountSheets.PaymentDetails> {
+        PaymentDetailsBottomSheet(
+            mbwayPhone = state.mbwayPhone,
+            revolutUsername = state.revolutUsername,
+            paypalUsername = state.paypalUsername,
+            error = state.paymentError,
+            busy = state.busy,
+            onMbwayPhone = viewModel::onMbwayPhoneChanged,
+            onRevolutUsername = viewModel::onRevolutUsernameChanged,
+            onPaypalUsername = viewModel::onPaypalUsernameChanged,
+            onSave = viewModel::onSavePaymentDetails,
+            onClose = viewModel::onClosePaymentDetails,
         )
     }
     controller.registerBottomSheet<AccountSheets.UsageData> {
@@ -91,6 +108,7 @@ internal fun AccountHost(
         onDismissed = {
             if (consentState.visible) consentViewModel.onDismiss()
             else if (notificationState.visible) notificationViewModel.onNotNow()
+            else if (state.showPaymentDetails) viewModel.onClosePaymentDetails()
             else viewModel.onCloseNickname()
         },
     ) {

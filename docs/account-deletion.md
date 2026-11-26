@@ -30,3 +30,9 @@ Use the current [Supabase Auth administration documentation](https://supabase.co
 Confirm completion, explain the categories/reason/duration of any retained data, and provide a contact for follow-up. Keep only the minimum support record needed to show fulfilment or meet a lawful obligation. Do not retain an unnecessary full export of the deleted account.
 
 Analytics is deliberately not linked to an account UUID. Tell the requester how to withdraw consent on each installation, and use the provider's supported rights-request tools where historical analytics can be identified. Do not promise that deleting a Supabase account automatically erases Firebase history.
+
+## Payment details
+
+`public.payment_handles` holds a person's optional MB Way phone number and Revolut and PayPal
+usernames. Delete the person's row as part of account deletion (it is personal data and is not
+needed for financial history). Leaving a household already stops sharing it.

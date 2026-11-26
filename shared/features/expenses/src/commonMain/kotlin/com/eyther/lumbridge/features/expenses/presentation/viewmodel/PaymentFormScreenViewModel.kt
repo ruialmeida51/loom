@@ -173,6 +173,7 @@ class PaymentFormScreenViewModel(
                         account = data.account,
                         payment = oldState.payment ?: data.settlement,
                         members = data.members.toImmutableList(),
+                        paymentHandles = data.paymentHandles,
                         loading = false,
                         error = null,
                     )

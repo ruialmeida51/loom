@@ -4,4 +4,6 @@ import com.eyther.lumbridge.core.domain.errors.AppError
 
 sealed class AccountError(cause: Throwable? = null) : AppError(cause) {
     class InvalidNickname(cause: Throwable? = null) : AccountError(cause)
+
+    class InvalidPaymentHandle(cause: Throwable? = null) : AccountError(cause)
 }

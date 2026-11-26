@@ -12,6 +12,7 @@ import com.eyther.lumbridge.di.household.datasource.HouseholdDataSourceModule
 import com.eyther.lumbridge.di.household.datasource.ProvidedHouseholdDataSourceModule
 import com.eyther.lumbridge.di.household.datasource.module
 import com.eyther.lumbridge.di.household.module
+import com.eyther.lumbridge.features.account.domain.datasource.PaymentHandlesDataSource
 import com.eyther.lumbridge.features.account.domain.datasource.ProfileDataSource
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.diagnostics.domain.datasource.DiagnosticsDataSource
@@ -72,6 +73,7 @@ fun providedHouseholdModules(
     statementDataSource: StatementDataSource,
     statementExportDataSource: StatementExportDataSource,
     settingsDataSource: SettingsDataSource,
+    paymentHandlesDataSource: PaymentHandlesDataSource,
 ): List<Module> =
     listOf(
         HouseholdModule().module(),
@@ -93,6 +95,7 @@ fun providedHouseholdModules(
                 statementDataSource = statementDataSource,
                 statementExportDataSource = statementExportDataSource,
                 settingsDataSource = settingsDataSource,
+                paymentHandlesDataSource = paymentHandlesDataSource,
             )
             .module(),
     )
@@ -124,6 +127,7 @@ fun providedAccountModules(
     analyticsDataSource: AnalyticsDataSource,
     diagnosticsDataSource: DiagnosticsDataSource,
     settingsDataSource: SettingsDataSource,
+    paymentHandlesDataSource: PaymentHandlesDataSource,
 ): List<Module> =
     listOf(
         AccountModule().module(),
@@ -133,6 +137,7 @@ fun providedAccountModules(
                 analyticsDataSource = analyticsDataSource,
                 diagnosticsDataSource = diagnosticsDataSource,
                 settingsDataSource = settingsDataSource,
+                paymentHandlesDataSource = paymentHandlesDataSource,
             )
             .module(),
     )

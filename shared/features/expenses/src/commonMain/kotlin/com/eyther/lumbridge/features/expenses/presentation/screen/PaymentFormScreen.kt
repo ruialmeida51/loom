@@ -39,7 +39,9 @@ import com.eyther.lumbridge.features.expenses.generated.resources.ui_amount_1_s
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_money_sent_by
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_received_by
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_this_records_a_payment_you_ve_already_made_or
+import com.eyther.lumbridge.features.expenses.presentation.components.PayWithSection
 import com.eyther.lumbridge.features.expenses.presentation.components.guestQualifier
+import com.eyther.lumbridge.features.expenses.presentation.model.PayOptionsUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentFormScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.household.presentation.components.MemberPickerRow
@@ -64,6 +66,7 @@ fun PaymentFormScreen(
     }
     InnerPaymentFormScreen(
         members = state.members,
+        payOptions = state.payOptions,
         userId = state.userId,
         currency = state.currency,
         from = state.from,
@@ -87,6 +90,7 @@ fun PaymentFormScreen(
 @Composable
 private fun InnerPaymentFormScreen(
     members: ImmutableList<MemberDomain>,
+    payOptions: PayOptionsUi?,
     userId: String,
     currency: String,
     from: String,
@@ -159,6 +163,7 @@ private fun InnerPaymentFormScreen(
                         modifier = Modifier.testTag("repayment_date"),
                     )
                 }
+                payOptions?.let { PayWithSection(options = it) }
                 Text(
                     stringResource(Res.string.ui_this_records_a_payment_you_ve_already_made_or),
                     style = MaterialTheme.typography.bodySmall,
