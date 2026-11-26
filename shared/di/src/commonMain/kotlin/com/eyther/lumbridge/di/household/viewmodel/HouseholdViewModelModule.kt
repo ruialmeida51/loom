@@ -17,9 +17,11 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpense
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveAccountGuestUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplitUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveAccountGuestUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
@@ -94,6 +96,7 @@ import com.eyther.lumbridge.features.shopping.domain.usecase.SelectShoppingListU
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.ShoppingScreenViewModel
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import com.eyther.lumbridge.features.tasks.domain.usecase.AddTaskUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.AssignTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.CompleteTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.GetTasksStreamUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.RemoveTaskUseCase
@@ -130,9 +133,11 @@ class HouseholdViewModelModule {
         removeSettlementUseCase: RemoveSettlementUseCase,
         deleteExpenseUseCase: DeleteExpenseUseCase,
         getMembersStreamUseCase: GetMembersStreamUseCase,
+        getRecurringExpensesStreamUseCase: GetRecurringExpensesStreamUseCase,
         context: HouseholdContextDomain,
     ): ExpensesScreenViewModelContract =
         ExpensesScreenViewModel(
+            getRecurringExpensesStreamUseCase = getRecurringExpensesStreamUseCase,
             getExpenseLedgerStreamUseCase = getExpenseLedgerStreamUseCase,
             getExpenseAccountsStreamUseCase = getExpenseAccountsStreamUseCase,
             selectExpenseAccountUseCase = selectExpenseAccountUseCase,
@@ -222,6 +227,8 @@ class HouseholdViewModelModule {
         addTaskUseCase: AddTaskUseCase,
         completeTaskUseCase: CompleteTaskUseCase,
         removeTaskUseCase: RemoveTaskUseCase,
+        assignTaskUseCase: AssignTaskUseCase,
+        getMembersStreamUseCase: GetMembersStreamUseCase,
         context: HouseholdContextDomain,
     ): TasksScreenViewModelContract =
         TasksScreenViewModel(
@@ -230,6 +237,8 @@ class HouseholdViewModelModule {
             addTaskUseCase = addTaskUseCase,
             completeTaskUseCase = completeTaskUseCase,
             removeTaskUseCase = removeTaskUseCase,
+            assignTaskUseCase = assignTaskUseCase,
+            getMembersStreamUseCase = getMembersStreamUseCase,
         )
 
     @KoinViewModel(binds = [HouseholdDetailsScreenViewModelContract::class])
@@ -340,6 +349,8 @@ class HouseholdViewModelModule {
         getExpenseAccountFormUseCase: GetExpenseAccountFormUseCase,
         saveExpenseAccountUseCase: SaveExpenseAccountUseCase,
         selectExpenseAccountUseCase: SelectExpenseAccountUseCase,
+        saveAccountGuestUseCase: SaveAccountGuestUseCase,
+        removeAccountGuestUseCase: RemoveAccountGuestUseCase,
         context: HouseholdContextDomain,
     ): ExpenseAccountFormScreenViewModelContract =
         ExpenseAccountFormScreenViewModel(
@@ -347,6 +358,8 @@ class HouseholdViewModelModule {
             getExpenseAccountFormUseCase = getExpenseAccountFormUseCase,
             saveExpenseAccountUseCase = saveExpenseAccountUseCase,
             selectExpenseAccountUseCase = selectExpenseAccountUseCase,
+            saveAccountGuestUseCase = saveAccountGuestUseCase,
+            removeAccountGuestUseCase = removeAccountGuestUseCase,
             context = context,
         )
 

@@ -9,10 +9,12 @@ import androidx.compose.ui.platform.testTag
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import com.eyther.lumbridge.features.tasks.domain.model.TaskRecurrenceDomain
 import com.eyther.lumbridge.features.tasks.generated.resources.Res
 import com.eyther.lumbridge.features.tasks.generated.resources.ui_a_little_task
 import com.eyther.lumbridge.features.tasks.generated.resources.ui_what_needs_doing
+import com.eyther.lumbridge.features.tasks.presentation.components.TaskPeopleFields
 import com.eyther.lumbridge.features.tasks.presentation.components.TaskScheduleFields
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -39,6 +41,13 @@ fun TaskBottomSheet(
     onRecurrence: (TaskRecurrenceDomain) -> Unit,
     onDismiss: () -> Unit,
     onAdd: () -> Unit,
+    members: List<MemberDomain> = emptyList(),
+    userId: String = "",
+    assigneeId: String? = null,
+    takesTurns: Boolean = false,
+    canTakeTurns: Boolean = false,
+    onAssignee: (String?) -> Unit = {},
+    onTakesTurns: (Boolean) -> Unit = {},
 ) {
     FormBottomSheet(
         title = stringResource(Res.string.ui_a_little_task),
@@ -69,6 +78,18 @@ fun TaskBottomSheet(
             onNotificationEnabled = onNotificationEnabled,
             onRecurrence = onRecurrence,
         )
+        if (members.size > 1)
+            TaskPeopleFields(
+                members = members,
+                userId = userId,
+                assigneeId = assigneeId,
+                takesTurns = takesTurns,
+                canTakeTurns = canTakeTurns,
+                repeats = recurrence != TaskRecurrenceDomain.NONE,
+                enabled = !busy,
+                onAssignee = onAssignee,
+                onTakesTurns = onTakesTurns,
+            )
         formError?.let { message -> ErrorNotice(message = message, onDismiss = onDismiss) }
     }
 }

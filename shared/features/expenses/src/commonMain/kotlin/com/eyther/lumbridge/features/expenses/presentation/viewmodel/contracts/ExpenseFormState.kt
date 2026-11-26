@@ -13,6 +13,8 @@ import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 data class ExpenseFormState(
     val userId: String,
     val account: ExpenseAccountDomain? = null,
+    val accounts: List<ExpenseAccountDomain> = emptyList(),
+    val switchingAccount: Boolean = false,
     val editing: Boolean = false,
     val expense: ExpenseDomain? = null,
     val members: List<MemberDomain> = emptyList(),
@@ -41,10 +43,18 @@ data class ExpenseFormState(
     }
 
     val currency: String = account?.currency ?: "EUR"
+
+    /** A new expense can move between accounts until it is saved. */
+    val canChooseAccount: Boolean =
+        !editing && !busy && !receiptPending && !switchingAccount && accounts.size > 1
+
+    /** The day of the month a repeating expense recurs on, from its date. */
+    val repeatDay: Int? = occurredOn.split("-").getOrNull(2)?.toIntOrNull()
     val canSave: Boolean =
         !receiptPreparing &&
             !loading &&
             !busy &&
+            !switchingAccount &&
             title.isNotBlank() &&
             amount.isNotBlank() &&
             account?.canAddExpense(userId = userId) == true

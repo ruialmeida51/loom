@@ -28,20 +28,30 @@ class RecordSettlementUseCase(
         ) {
             ExpenseError.InvalidSettlement()
         }
-        requireDomain(context.userId == settlement.from || context.userId == settlement.to) {
-            ExpenseError.SettlementNotPermitted()
-        }
         try {
             LocalDate.parse(settlement.occurredOn)
         } catch (cause: IllegalArgumentException) {
             throw ExpenseError.InvalidPaymentDate(cause = cause)
         }
-        val memberIds = members(id = context.id, includeInactive = true).getOrThrow().map { it.id }
-        requireDomain(settlement.from in memberIds && settlement.to in memberIds) {
+        val account = expenseAccountDataSource.getAccount(id = settlement.accountId).getOrThrow()
+        val guestIds = account.guests.map { it.id }.toSet()
+        requireDomain(
+            account.canRecordPayment(
+                userId = context.userId,
+                from = settlement.from,
+                to = settlement.to,
+            ),
+        ) {
+            ExpenseError.SettlementNotPermitted()
+        }
+        val people =
+            members(id = context.id, includeInactive = true).getOrThrow().map { it.id } + guestIds
+        requireDomain(settlement.from in people && settlement.to in people) {
             ExpenseError.InvalidSettlementMembers()
         }
-        val account = expenseAccountDataSource.getAccount(id = settlement.accountId).getOrThrow()
-        requireDomain(settlement.from in account.memberIds && settlement.to in account.memberIds) {
+        requireDomain(
+            settlement.from in account.participantIds && settlement.to in account.participantIds,
+        ) {
             ExpenseAccountError.InvalidMembers()
         }
         expenseDataSource.recordSettlement(settlement).getOrThrow()

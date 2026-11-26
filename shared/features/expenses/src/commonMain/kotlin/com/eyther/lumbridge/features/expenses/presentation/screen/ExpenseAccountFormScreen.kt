@@ -27,12 +27,14 @@ import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_currency
 import com.eyther.lumbridge.features.expenses.generated.resources.account_name
 import com.eyther.lumbridge.features.expenses.generated.resources.account_participants
 import com.eyther.lumbridge.features.expenses.generated.resources.account_save
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_retry
+import com.eyther.lumbridge.features.expenses.presentation.components.AccountGuestsSection
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseAccountFormScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdCurrencyDomain
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
@@ -50,6 +52,10 @@ fun ExpenseAccountFormScreen(
         currency = state.currency,
         members = state.members,
         selected = state.selected,
+        guests = state.guests,
+        showsGuests = state.showsGuests,
+        canAddGuest = state.canAddGuest,
+        guestBusyId = state.guestBusyId,
         userId = state.userId,
         editing = state.account != null,
         loading = state.loading,
@@ -59,6 +65,9 @@ fun ExpenseAccountFormScreen(
         onName = viewModel::onNameChanged,
         onCurrency = viewModel::onCurrencyChanged,
         onParticipant = viewModel::onParticipantToggled,
+        onGuestAdded = viewModel::onGuestAdded,
+        onGuestRenamed = viewModel::onGuestRenamed,
+        onGuestRemoved = viewModel::onGuestRemoved,
         onSave = viewModel::onSave,
         onRetry = viewModel::onRetry,
         onDismiss = viewModel::onDismissError,
@@ -71,6 +80,10 @@ private fun InnerExpenseAccountFormScreen(
     currency: String,
     members: List<MemberDomain>,
     selected: Set<String>,
+    guests: List<ExpenseGuestDomain>,
+    showsGuests: Boolean,
+    canAddGuest: Boolean,
+    guestBusyId: String?,
     userId: String,
     editing: Boolean,
     loading: Boolean,
@@ -80,6 +93,9 @@ private fun InnerExpenseAccountFormScreen(
     onName: (String) -> Unit,
     onCurrency: (String) -> Unit,
     onParticipant: (String) -> Unit,
+    onGuestAdded: (String) -> Unit,
+    onGuestRenamed: (String, String) -> Unit,
+    onGuestRemoved: (String) -> Unit,
     onSave: () -> Unit,
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
@@ -135,6 +151,17 @@ private fun InnerExpenseAccountFormScreen(
                         Text(member.name, modifier = Modifier.padding(top = 12.dp))
                     }
                 }
+                if (showsGuests)
+                    AccountGuestsSection(
+                        guests = guests,
+                        canAdd = canAddGuest,
+                        busyId = guestBusyId,
+                        enabled = !busy,
+                        onAdd = onGuestAdded,
+                        onRename = onGuestRenamed,
+                        onRemove = onGuestRemoved,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
             }
         }
         LoomButton(

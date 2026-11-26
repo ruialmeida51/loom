@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.expenses.presentation.model
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseActionDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
+import kotlinx.datetime.LocalDate
 
 /** Rebuilt from schedule and membership facts so a role update also updates available actions. */
 data class RecurringExpenseUi(
@@ -23,4 +24,5 @@ data class RecurringExpenseUi(
             RecurringExpenseActionDomain.RESUME
         }
     val isPaused: Boolean = !rule.active && !rule.cancelled
+    val nextOn: LocalDate? = runCatching { LocalDate.parse(rule.nextOn) }.getOrNull()
 }

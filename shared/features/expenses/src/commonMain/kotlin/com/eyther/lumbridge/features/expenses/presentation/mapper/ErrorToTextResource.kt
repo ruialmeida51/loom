@@ -12,6 +12,11 @@ import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_error_archived
 import com.eyther.lumbridge.features.expenses.generated.resources.account_error_changed
 import com.eyther.lumbridge.features.expenses.generated.resources.account_error_denied
+import com.eyther.lumbridge.features.expenses.generated.resources.account_error_guest_balance
+import com.eyther.lumbridge.features.expenses.generated.resources.account_error_guest_limit
+import com.eyther.lumbridge.features.expenses.generated.resources.account_error_guest_name
+import com.eyther.lumbridge.features.expenses.generated.resources.account_error_guests_everyday
+import com.eyther.lumbridge.features.expenses.generated.resources.account_error_guests_unavailable
 import com.eyther.lumbridge.features.expenses.generated.resources.account_error_members
 import com.eyther.lumbridge.features.expenses.generated.resources.account_error_missing
 import com.eyther.lumbridge.features.expenses.generated.resources.account_error_name
@@ -71,6 +76,16 @@ fun AppError.toExpensesTextResource(): TextResource =
             TextResource.Resource(Res.string.account_error_denied)
         is ExpenseAccountError.Changed -> TextResource.Resource(Res.string.account_error_changed)
         is ExpenseAccountError.NotFound -> TextResource.Resource(Res.string.account_error_missing)
+        is ExpenseAccountError.InvalidGuestName ->
+            TextResource.Resource(Res.string.account_error_guest_name)
+        is ExpenseAccountError.GuestLimit ->
+            TextResource.Resource(Res.string.account_error_guest_limit)
+        is ExpenseAccountError.GuestsNotOnEveryday ->
+            TextResource.Resource(Res.string.account_error_guests_everyday)
+        is ExpenseAccountError.GuestHasBalance ->
+            TextResource.Resource(Res.string.account_error_guest_balance)
+        is ExpenseAccountError.GuestsUnavailable ->
+            TextResource.Resource(Res.string.account_error_guests_unavailable)
 
         is ExpenseError.InvalidPaymentDate ->
             TextResource.Resource(Res.string.error_invalid_payment_date)

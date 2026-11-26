@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.di.household.usecase
 
+import com.eyther.lumbridge.core.domain.features.FeatureGate
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
@@ -27,9 +28,11 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementUseCas
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveAccountGuestUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.ResolveExpenseSplitUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.SaveAccountGuestUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseUseCase
@@ -85,6 +88,7 @@ import com.eyther.lumbridge.features.shopping.domain.usecase.SaveShoppingListUse
 import com.eyther.lumbridge.features.shopping.domain.usecase.SelectShoppingListUseCase
 import com.eyther.lumbridge.features.tasks.domain.datasource.TaskDataSource
 import com.eyther.lumbridge.features.tasks.domain.usecase.AddTaskUseCase
+import com.eyther.lumbridge.features.tasks.domain.usecase.AssignTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.CompleteTaskUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.GetTasksStreamUseCase
 import com.eyther.lumbridge.features.tasks.domain.usecase.RemoveTaskUseCase
@@ -380,6 +384,10 @@ class HouseholdUseCaseModule {
         )
 
     @Single
+    fun provideAssignTaskUseCase(taskDataSource: TaskDataSource): AssignTaskUseCase =
+        AssignTaskUseCase(taskDataSource = taskDataSource)
+
+    @Single
     fun provideRemoveTaskUseCase(
         taskDataSource: TaskDataSource,
     ): RemoveTaskUseCase =
@@ -466,12 +474,26 @@ class HouseholdUseCaseModule {
         expenseAccountDataSource: ExpenseAccountDataSource,
         getMembersUseCase: GetMembersUseCase,
         context: HouseholdContextDomain,
+        saveAccountGuestUseCase: SaveAccountGuestUseCase,
     ): SaveExpenseAccountUseCase =
         SaveExpenseAccountUseCase(
             expenseAccountDataSource = expenseAccountDataSource,
             getMembersUseCase = getMembersUseCase,
             context = context,
+            saveAccountGuestUseCase = saveAccountGuestUseCase,
         )
+
+    @Single
+    fun provideSaveAccountGuestUseCase(
+        expenseAccountDataSource: ExpenseAccountDataSource,
+    ): SaveAccountGuestUseCase =
+        SaveAccountGuestUseCase(expenseAccountDataSource = expenseAccountDataSource)
+
+    @Single
+    fun provideRemoveAccountGuestUseCase(
+        expenseAccountDataSource: ExpenseAccountDataSource,
+    ): RemoveAccountGuestUseCase =
+        RemoveAccountGuestUseCase(expenseAccountDataSource = expenseAccountDataSource)
 
     @Single
     fun provideGetExpenseAccountUseCase(
@@ -506,11 +528,13 @@ class HouseholdUseCaseModule {
         getExpenseAccountUseCase: GetExpenseAccountUseCase,
         getMembersUseCase: GetMembersUseCase,
         context: HouseholdContextDomain,
+        featureGate: FeatureGate,
     ): GetExpenseAccountFormUseCase =
         GetExpenseAccountFormUseCase(
             getExpenseAccountUseCase = getExpenseAccountUseCase,
             getMembersUseCase = getMembersUseCase,
             context = context,
+            featureGate = featureGate,
         )
 
     @Single

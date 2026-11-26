@@ -27,7 +27,11 @@ internal sealed interface BalancesDestination : NavDestination {
 
     @Stable
     @Serializable
-    data class Form(val accountId: String, val expenseId: String? = null) : BalancesDestination
+    data class Form(
+        val accountId: String,
+        val expenseId: String? = null,
+        val recurring: Boolean = false,
+    ) : BalancesDestination
 
     @Stable
     @Serializable

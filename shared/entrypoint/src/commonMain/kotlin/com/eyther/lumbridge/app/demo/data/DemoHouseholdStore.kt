@@ -6,6 +6,7 @@ import com.eyther.lumbridge.core.domain.nowIso
 import com.eyther.lumbridge.core.domain.todayIso
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseReceiptDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
@@ -25,6 +26,7 @@ import com.eyther.lumbridge.features.tasks.domain.model.TaskDomain
 import com.eyther.lumbridge.features.tasks.domain.model.TaskRecurrenceDomain
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.LocalDate
 
@@ -35,6 +37,8 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
         const val USER = "00000000-0000-4000-8000-000000000001"
         const val ALEX = "00000000-0000-4000-8000-000000000002"
         const val SAM = "00000000-0000-4000-8000-000000000003"
+        const val TRIP = "00000000-0000-4000-8000-000000000101"
+        const val MARTA = "00000000-0000-4000-8000-000000000201"
         val households =
             listOf(
                 HouseholdContextDomain(
@@ -77,6 +81,16 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     isDefault = true,
                     version = 1,
                     createdBy = context.userId,
+                ),
+                // A trip shared with Marta, a guest outside the household.
+                ExpenseAccountDomain(
+                    id = TRIP,
+                    name = "Porto weekend",
+                    currency = context.currency,
+                    memberIds = setOf(USER, ALEX),
+                    version = 1,
+                    createdBy = context.userId,
+                    guests = listOf(ExpenseGuestDomain(id = MARTA, name = "Marta", version = 1)),
                 ),
             ),
         )
@@ -185,6 +199,19 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     ExpenseSplitDomain.equal(5400, memberIds),
                     createdAt = (Clock.System.now() - 1.hours).toString(),
                 ),
+                ExpenseDomain(
+                    newId(),
+                    "Guesthouse",
+                    18000,
+                    USER,
+                    "Other",
+                    todayIso(context.timeZone),
+                    ExpenseSplitDomain.equal(18000, listOf(USER, ALEX, MARTA)),
+                    accountId = TRIP,
+                    splitMethod = ExpenseSplitMethodDomain.EQUAL,
+                    splitValues = emptyMap(),
+                    createdAt = (Clock.System.now() - 30.minutes).toString(),
+                ),
             ),
         )
     val receiptPhotos = mutableMapOf<String, ReceiptPhotoDomain>()
@@ -242,6 +269,9 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     recurrence = TaskRecurrenceDomain.WEEKLY,
                     completed = false,
                     notificationEnabled = true,
+                    // Everyone takes turns; it is Alex's week.
+                    assigneeId = ALEX,
+                    rotation = listOf(USER, ALEX, SAM),
                 ),
                 TaskDomain(
                     id = newId(),

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
+import com.eyther.lumbridge.features.expenses.domain.model.isGuest
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_gets_back
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_owes
@@ -38,8 +39,9 @@ internal fun MemberBalanceRow(member: MemberBalanceUi) {
             picturePath = member.member.avatarPath,
         )
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                member.member.name.ifBlank { stringResource(Res.string.former_member) },
+            NameWithGuestTag(
+                name = member.member.name.ifBlank { stringResource(Res.string.former_member) },
+                isGuest = member.member.isGuest,
                 style = MaterialTheme.typography.bodyLarge,
             )
             if (!member.balance.isSettled)

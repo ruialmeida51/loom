@@ -9,6 +9,7 @@ import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSo
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.first
 
 class GetExpenseFormUseCase(
     private val expenseAccountDataSource: ExpenseAccountDataSource,
@@ -37,18 +38,32 @@ class GetExpenseFormUseCase(
             val expenseRequest = async {
                 expenseId?.let { getExpenseUseCase(id = it, accountId = accountId).getOrThrow() }
             }
+            val accountsRequest = async {
+                if (expenseId != null) emptyList()
+                else
+                    // A missing list only hides the choice; the expense still goes to its account.
+                    (runCatching { expenseAccountDataSource.stream().first() }.getOrNull()
+                            as? AppResult.Success)
+                        ?.value
+                        ?.filter { it.canAddExpense(userId = context.userId) }
+                        .orEmpty()
+            }
             val account = accountRequest.await()
             val expense = expenseRequest.await()
             ExpenseFormDomain(
                 account = account,
                 members =
-                    membersRequest.await().filter {
-                        it.id in account.memberIds &&
+                    account.withGuests(membersRequest.await()).filter {
+                        it.id in account.participantIds &&
                             (it.active ||
                                 it.id == expense?.paidBy ||
                                 it.id in expense?.shares.orEmpty())
                     },
                 expense = expense,
+                accounts =
+                    accountsRequest.await().ifEmpty {
+                        if (expenseId == null) listOf(account) else emptyList()
+                    },
             )
         }
     }

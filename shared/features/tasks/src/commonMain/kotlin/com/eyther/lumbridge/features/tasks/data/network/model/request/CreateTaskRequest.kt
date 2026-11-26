@@ -13,4 +13,6 @@ internal data class CreateTaskRequest(
     @SerialName("completed") val completed: Boolean,
     @SerialName("created_by") val createdBy: String,
     @SerialName("notification_enabled") val notificationEnabled: Boolean,
+    @SerialName("assignee_id") val assigneeId: String?,
+    @SerialName("rotation") val rotation: List<String>,
 )

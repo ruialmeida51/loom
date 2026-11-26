@@ -36,6 +36,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.form_save
 import com.eyther.lumbridge.features.expenses.generated.resources.form_split
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_who_paid
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseCaptureFields
+import com.eyther.lumbridge.features.expenses.presentation.components.guestQualifier
 import com.eyther.lumbridge.features.expenses.presentation.mapper.splitMethodLabel
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpenseFormScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
@@ -124,6 +125,7 @@ private fun InnerRecurringExpenseFormScreen(
                     MemberPickerRow(
                         label = stringResource(Res.string.ui_who_paid),
                         members = members,
+                        qualifier = guestQualifier(),
                         selectedId = paidBy,
                         onSelected = onPayer,
                         enabled = !busy,

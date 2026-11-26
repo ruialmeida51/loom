@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.di.household.datasource
 
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
+import com.eyther.lumbridge.core.domain.features.FeatureGate
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseDataSource
@@ -16,6 +17,7 @@ import com.eyther.lumbridge.features.feed.data.network.datasource.CommonFeedData
 import com.eyther.lumbridge.features.feed.data.network.datasource.CommonFeedSubscriptionDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedSubscriptionDataSource
+import com.eyther.lumbridge.features.household.data.network.datasource.CommonFeatureGate
 import com.eyther.lumbridge.features.household.data.network.datasource.CommonHouseholdManagementDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdManagementDataSource
@@ -89,6 +91,10 @@ class HouseholdDataSourceModule(
             access = access,
             context = context,
         )
+
+    @Single
+    fun provideFeatureGate(access: SupabaseAccess, context: HouseholdContextDomain): FeatureGate =
+        CommonFeatureGate(access = access, context = context)
 
     @Single
     fun provideExpenseAccountDataSource(

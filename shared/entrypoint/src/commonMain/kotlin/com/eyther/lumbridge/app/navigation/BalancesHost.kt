@@ -183,6 +183,7 @@ internal fun BalancesHost(
                 ExpenseFormHost(
                     accountId = key.accountId,
                     expenseId = key.expenseId,
+                    recurring = key.recurring,
                     onBack = navigator::goBack,
                     onViewReceipt = {
                         key.expenseId?.let {
@@ -341,6 +342,11 @@ internal fun BalancesHost(
                                     accountId = rule.accountId,
                                     ruleId = rule.id,
                                 ),
+                            )
+                        },
+                        onCreate = { accountId ->
+                            navigator.navigateTo(
+                                BalancesDestination.Form(accountId = accountId, recurring = true),
                             )
                         },
                     )

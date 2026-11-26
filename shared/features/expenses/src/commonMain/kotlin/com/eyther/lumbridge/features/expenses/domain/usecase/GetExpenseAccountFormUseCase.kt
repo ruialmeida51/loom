@@ -1,5 +1,7 @@
 package com.eyther.lumbridge.features.expenses.domain.usecase
 
+import com.eyther.lumbridge.core.domain.features.Feature
+import com.eyther.lumbridge.core.domain.features.FeatureGate
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
 import com.eyther.lumbridge.core.domain.wrapper.safeCall
@@ -11,6 +13,7 @@ class GetExpenseAccountFormUseCase(
     private val getExpenseAccountUseCase: GetExpenseAccountUseCase,
     private val getMembersUseCase: GetMembersUseCase,
     private val context: HouseholdContextDomain,
+    private val featureGate: FeatureGate,
 ) {
     suspend operator fun invoke(id: String?): AppResult<ExpenseAccountFormDomain> = safeCall {
         val account = id?.let { getExpenseAccountUseCase(id = it).getOrThrow() }
@@ -20,6 +23,7 @@ class GetExpenseAccountFormUseCase(
                 getMembersUseCase(id = context.id, includeInactive = id != null)
                     .getOrThrow()
                     .filter { it.active || it.id in account?.memberIds.orEmpty() },
+            guestsEnabled = featureGate.isEnabled(Feature.ACCOUNT_GUESTS),
         )
     }
 }

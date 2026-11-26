@@ -70,13 +70,14 @@ data class ExpenseDetailsState(
             )
         } else null
 
-    val memberNames: Map<String, String> = members.associate { it.id to it.name }
+    private val participants: List<MemberDomain> = account?.withGuests(members) ?: members
+    val memberNames: Map<String, String> = participants.associate { it.id to it.name }
     val details: ExpenseDetailsUi? = account?.let {
         expense?.toDetailsUi(
             account = it,
             userId = userId,
             memberNames = memberNames,
-            memberPictures = members.associate { member -> member.id to member.avatarPath },
+            memberPictures = participants.associate { member -> member.id to member.avatarPath },
         )
     }
 

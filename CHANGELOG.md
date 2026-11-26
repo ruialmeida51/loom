@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Guests on trips and events: people outside the household can pay, share costs and settle up there.
+- Recurring bills are easier to find and set up, and new expenses show which account they go to.
+- Assign chores, and let repeating ones take turns: Mine shows just yours.
+
 ## [4.0.17] - 2026-11-25
 
 - Member photos on expense details, balances, the split sheet and Home.

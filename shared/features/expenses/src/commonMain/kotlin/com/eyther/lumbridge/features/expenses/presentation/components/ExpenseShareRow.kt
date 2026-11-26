@@ -36,8 +36,9 @@ internal fun ExpenseShareRow(share: ExpenseShareUi) {
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
         ) {
-            Text(
-                text = share.name ?: stringResource(Res.string.former_member),
+            NameWithGuestTag(
+                name = share.name ?: stringResource(Res.string.former_member),
+                isGuest = share.isGuest,
                 style = MaterialTheme.typography.titleSmall,
             )
             if (share.isCurrentUser || share.isPayer)

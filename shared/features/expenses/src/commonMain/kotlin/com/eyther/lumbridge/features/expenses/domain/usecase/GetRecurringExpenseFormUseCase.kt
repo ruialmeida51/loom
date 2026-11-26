@@ -39,8 +39,8 @@ class GetRecurringExpenseFormUseCase(
                 account = account,
                 actorIsOwner = members.any { it.id == context.userId && it.isOwner },
                 members =
-                    members.filter {
-                        (it.active && it.id in account.memberIds) ||
+                    account.withGuests(members).filter {
+                        (it.active && it.id in account.participantIds) ||
                             it.id == rule.paidBy ||
                             it.id in rule.shares
                     },

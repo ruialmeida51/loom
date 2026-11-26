@@ -67,7 +67,7 @@ internal fun ExpenseHistoryRow(
                         calendarDateText(item.calendarDate),
                     ),
                 amount = item.amount,
-                glyph = Glyph.MONEY,
+                glyph = if (item.expense.recurring) Glyph.REPEAT else Glyph.MONEY,
                 emphasis = MaterialTheme.colorScheme.primary,
                 amountColor = MaterialTheme.colorScheme.onSurface,
                 canManage = item.canManage,

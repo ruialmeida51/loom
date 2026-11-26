@@ -39,4 +39,6 @@ internal class TaskCompletionFixtureDataSource : TaskDataSource {
         if (result is AppResult.Success) items.value = AppResult.Success(emptyList())
         return result
     }
+
+    override suspend fun assignTask(task: TaskDomain): AppResult<Unit> = AppResult.Success(Unit)
 }

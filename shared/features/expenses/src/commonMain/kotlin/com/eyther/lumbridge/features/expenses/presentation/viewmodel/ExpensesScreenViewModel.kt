@@ -14,6 +14,7 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccoun
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseLedgerStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpensesStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccountUseCase
@@ -45,6 +46,7 @@ class ExpensesScreenViewModel(
     private val removeSettlementUseCase: RemoveSettlementUseCase,
     private val deleteExpenseUseCase: DeleteExpenseUseCase,
     private val getMembersStreamUseCase: GetMembersStreamUseCase,
+    private val getRecurringExpensesStreamUseCase: GetRecurringExpensesStreamUseCase,
     private val context: HouseholdContextDomain,
 ) : ExpensesScreenViewModelContract() {
     private val refreshRequests = MutableStateFlow(0)
@@ -101,6 +103,17 @@ class ExpensesScreenViewModel(
                             is AppResult.Success -> copy(members = result.value)
                             is AppResult.Failure ->
                                 copy(error = result.error.toHouseholdTextResource())
+                        }
+                    }
+            }
+            .observeWith(viewModelScope) { state ->
+                // The recurring bills summary is a shortcut; failing to load it hides it quietly.
+                refreshRequests
+                    .flatMapLatest { getRecurringExpensesStreamUseCase() }
+                    .updateState(state) { result ->
+                        when (result) {
+                            is AppResult.Success -> copy(recurring = result.value.rules)
+                            is AppResult.Failure -> this
                         }
                     }
             }

@@ -6,6 +6,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.HouseholdLedgerDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
+import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
 import com.eyther.lumbridge.features.expenses.generated.resources.Res
@@ -22,6 +23,7 @@ import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryU
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import com.eyther.lumbridge.features.expenses.presentation.model.MemberBalanceUi
+import com.eyther.lumbridge.features.expenses.presentation.model.RecurringSummaryUi
 import com.eyther.lumbridge.features.expenses.presentation.model.SuggestedRepaymentUi
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
 import kotlinx.collections.immutable.ImmutableList
@@ -39,6 +41,7 @@ data class ExpensesState(
     val settlements: List<SettlementDomain> = emptyList(),
     val members: List<MemberDomain> = emptyList(),
     val balances: Map<String, Long> = emptyMap(),
+    val recurring: List<RecurringExpenseDomain> = emptyList(),
     val selectedView: ExpensesViewUi = ExpensesViewUi.EXPENSES,
     val showAccounts: Boolean = false,
     val showMemberBalances: Boolean = false,
@@ -56,8 +59,10 @@ data class ExpensesState(
     val currency: String = account?.currency ?: "EUR"
     val role: String? = members.firstOrNull { it.id == userId }?.role
     val isOwner: Boolean = members.any { it.id == userId && it.isOwner }
-    val accountMembers: List<MemberDomain> = members.filter {
-        it.id in account?.memberIds.orEmpty()
+    /** Household members plus this account's guests: everyone balances and names cover. */
+    private val participants: List<MemberDomain> = account?.withGuests(members) ?: members
+    val accountMembers: List<MemberDomain> = participants.filter {
+        it.id in account?.participantIds.orEmpty()
     }
     val canCreateExpense: Boolean =
         account?.canAddExpense(userId = userId) == true &&
@@ -130,7 +135,7 @@ data class ExpensesState(
             .map { it.id }
             .toImmutableSet()
     val memberNames: ImmutableMap<String, String> =
-        members.associate { it.id to it.name }.toImmutableMap()
+        participants.associate { it.id to it.name }.toImmutableMap()
     val suggestions: ImmutableList<SuggestedSettlementDomain> =
         HouseholdLedgerDomain.suggestions(balances).toImmutableList()
     val suggestedRepayments: ImmutableList<SuggestedRepaymentUi> =
@@ -145,12 +150,14 @@ data class ExpensesState(
                     isCurrentUserRecipient = userId == settlement.to,
                     canRecord =
                         settlementAvailable &&
-                            (userId == settlement.from || userId == settlement.to),
+                            account?.canRecordPayment(userId, settlement.from, settlement.to) ==
+                                true,
                     recordEnabled =
                         canRecordSettlement &&
-                            (userId == settlement.from || userId == settlement.to),
+                            account?.canRecordPayment(userId, settlement.from, settlement.to) ==
+                                true,
                     counterpartyAvatarPath =
-                        members
+                        participants
                             .firstOrNull {
                                 it.id ==
                                     if (userId == settlement.from) settlement.to else settlement.from
@@ -165,12 +172,17 @@ data class ExpensesState(
         )
     val showPersonalSummary: Boolean =
         suggestedRepayments.count { it.isCurrentUserSender || it.isCurrentUserRecipient } != 1
+    /** The shortcut above the ledger: how many bills repeat here and which comes next. */
+    val recurringSummary: RecurringSummaryUi? = account?.let {
+        RecurringSummaryUi.from(rules = recurring, currency = currency)
+    }
+
     val memberBalances: ImmutableList<MemberBalanceUi> =
-        (account?.memberIds.orEmpty() + balances.keys)
+        (account?.memberIds.orEmpty() + account?.guests.orEmpty().filterNot { it.removed }.map { it.id } + balances.keys)
             .map { id ->
                 MemberBalanceUi(
                     member =
-                        members.firstOrNull { it.id == id }
+                        participants.firstOrNull { it.id == id }
                             ?: MemberDomain(id = id, name = "", role = ""),
                     balance =
                         BalanceSummaryUi(

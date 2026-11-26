@@ -129,3 +129,17 @@ Storage API. Replaced/deleted photos are queued immediately; unattached uploads 
 24 hours. Cleanup leases and link commits coordinate in short database transactions; the lock does
 not cover network I/O. Failed deletions remain retryable. Preserve the existing worker authentication
 and schedule when deploying this update. Storage metadata deletion alone does not remove a blob.
+
+## Account guests and household features
+
+Trip and event accounts can hold guests (`expense_account_guests`): named people without a Loom
+account who can pay, share and settle inside that one account. Participants on expenses, shares,
+settlements and recurring rules are checked against `loom_private.account_participants` (account
+members plus that account's guests) by the save functions and by deferred constraint triggers,
+which replaced the household-member foreign keys. `save_account_guest` and `remove_account_guest`
+are the only writes; removal is refused while the guest's balance is not zero and pauses recurring
+rules that include them. See [docs/plans/account-guests.md](plans/account-guests.md).
+
+`household_features(household_id, feature, enabled)` switches features off per household; no row
+means on. The server reads it with `loom_private.feature_enabled`, the client through
+`FeatureGate`. `account_guests` is the first feature: off blocks new guests only.

@@ -22,7 +22,12 @@ class DemoTaskDataSource(private val store: DemoHouseholdStore) : TaskDataSource
             it.map { row ->
                 if (row.id != task.id || row.dueAt != task.dueAt) row
                 else if (row.recurrence != TaskRecurrenceDomain.NONE && !row.completed)
-                    row.copy(dueAt = row.nextDue(store.context.timeZone))
+                    row.copy(
+                        dueAt = row.nextDue(store.context.timeZone),
+                        assigneeId =
+                            row.nextAssignee(store.members.map { it.id }.toSet())
+                                ?: row.assigneeId,
+                    )
                 else row.copy(completed = !row.completed)
             }
         }
@@ -31,6 +36,11 @@ class DemoTaskDataSource(private val store: DemoHouseholdStore) : TaskDataSource
 
     override suspend fun removeTask(id: String) = safeCall {
         store.tasks.update { it.filterNot { row -> row.id == id } }
+        Unit
+    }
+
+    override suspend fun assignTask(task: TaskDomain) = safeCall {
+        store.tasks.update { rows -> rows.map { if (it.id == task.id) task else it } }
         Unit
     }
 }

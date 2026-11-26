@@ -173,8 +173,7 @@ class UsabilityDeviceTest {
     fun pausedRecurringBillEditRetainsDraftAboveKeyboardAndAcrossResume() {
         compose.onNodeWithTag("navigation_money").performClick()
         awaitDestination(tag = "expenses_content")
-        compose.onNodeWithTag("balances_actions").performClick()
-        compose.onNodeWithText("Recurring expenses").performClick()
+        compose.onNodeWithTag("recurring_bills_row").performClick()
         awaitDestination(tag = "recurring_content")
         compose.onNodeWithTag("recurring_actions_Internet").performScrollTo().performClick()
         compose.onNodeWithText("Pause").performClick()
