@@ -5,11 +5,13 @@ import com.eyther.lumbridge.core.domain.features.FeatureGate
 import com.eyther.lumbridge.features.account.data.network.datasource.CommonPaymentHandlesDataSource
 import com.eyther.lumbridge.features.account.domain.datasource.PaymentHandlesDataSource
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
+import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExchangeRateDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseReceiptDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonMemberAccountPositionDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonRecurringExpenseDataSource
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
@@ -99,6 +101,9 @@ class HouseholdDataSourceModule(
         access: SupabaseAccess,
         context: HouseholdContextDomain,
     ): PaymentHandlesDataSource = CommonPaymentHandlesDataSource(access = access, userId = context.userId)
+
+    @Single
+    fun provideExchangeRateDataSource(): ExchangeRateDataSource = CommonExchangeRateDataSource()
 
     @Single
     fun provideFeatureGate(access: SupabaseAccess, context: HouseholdContextDomain): FeatureGate =

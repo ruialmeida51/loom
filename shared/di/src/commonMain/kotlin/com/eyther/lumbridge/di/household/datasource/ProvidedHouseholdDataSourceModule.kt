@@ -3,6 +3,7 @@ package com.eyther.lumbridge.di.household.datasource
 import com.eyther.lumbridge.core.domain.features.FeatureGate
 import com.eyther.lumbridge.features.account.domain.datasource.PaymentHandlesDataSource
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
@@ -42,8 +43,11 @@ class ProvidedHouseholdDataSourceModule(
     private val statementExportDataSource: StatementExportDataSource,
     private val settingsDataSource: SettingsDataSource,
     private val paymentHandlesDataSource: PaymentHandlesDataSource,
+    private val exchangeRateDataSource: ExchangeRateDataSource,
     private val featureGate: FeatureGate = FeatureGate.AllOn,
 ) {
+    @Single fun provideExchangeRateDataSource(): ExchangeRateDataSource = exchangeRateDataSource
+
     @Single fun providePaymentHandlesDataSource(): PaymentHandlesDataSource = paymentHandlesDataSource
 
 

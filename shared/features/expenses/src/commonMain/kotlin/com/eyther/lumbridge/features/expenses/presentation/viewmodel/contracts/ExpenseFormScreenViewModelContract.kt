@@ -45,6 +45,12 @@ abstract class ExpenseFormScreenViewModelContract : LoomViewModel() {
 
     abstract fun onRecurringChanged(value: Boolean)
 
+    /** The currency the amount was paid in; today's rate is fetched when it is not the account's. */
+    abstract fun onEntryCurrencyChanged(code: String)
+
+    /** A rate the person typed, which then sticks over the fetched one. */
+    abstract fun onRateChanged(value: String)
+
     /** Moves a new expense to another account; its split resets to that account's people. */
     abstract fun onAccountChanged(id: String)
 

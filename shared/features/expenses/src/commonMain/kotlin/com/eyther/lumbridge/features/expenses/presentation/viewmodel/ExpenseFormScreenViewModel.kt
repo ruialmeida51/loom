@@ -13,12 +13,15 @@ import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsActionDomai
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
 import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
 import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
+import com.eyther.lumbridge.features.expenses.domain.model.EnteredAmountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseReceiptDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelectionDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
+import com.eyther.lumbridge.features.expenses.domain.model.OriginalAmountDomain
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExchangeRateUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.PrepareReceiptPhotoUseCase
@@ -41,6 +44,7 @@ class ExpenseFormScreenViewModel(
     private val saveExpenseUseCase: SaveExpenseUseCase,
     private val context: HouseholdContextDomain,
     private val trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
+    private val getExchangeRateUseCase: GetExchangeRateUseCase,
 ) : ExpenseFormScreenViewModelContract() {
     private data class InnerInputState(
         val title: String = "",
@@ -49,6 +53,10 @@ class ExpenseFormScreenViewModel(
         val occurredOn: String = "",
         val category: String = "Other",
         val recurring: Boolean = false,
+        /** The currency the amount is typed in; null means the account's own. */
+        val entryCurrency: String? = null,
+        val rate: String? = null,
+        val rateIsCustom: Boolean = false,
         val split: ExpenseSplitSelectionDomain =
             ExpenseSplitSelectionDomain(ExpenseSplitMethodDomain.EQUAL, emptySet()),
     )
@@ -85,6 +93,9 @@ class ExpenseFormScreenViewModel(
                         occurredOn = input.occurredOn,
                         category = input.category,
                         recurring = input.recurring,
+                        entryCurrency = input.entryCurrency,
+                        rate = input.rate,
+                        rateIsCustom = input.rateIsCustom,
                         split = input.split,
                     )
                 }
@@ -204,7 +215,55 @@ class ExpenseFormScreenViewModel(
     override fun onRecurringChanged(value: Boolean) {
         if (state.value.receiptPending || state.value.busy) return
         if (state.value.expense != null) return
-        inputState.update { oldState -> oldState.copy(recurring = value) }
+        // Recurring bills repeat in the account's currency, where a rate cannot go stale.
+        inputState.update { oldState ->
+            oldState.copy(
+                recurring = value,
+                entryCurrency = if (value) null else oldState.entryCurrency,
+                rate = if (value) null else oldState.rate,
+            )
+        }
+    }
+
+    override fun onEntryCurrencyChanged(code: String) {
+        if (state.value.receiptPending || state.value.busy) return
+        val accountCurrency = state.value.currency
+        if (code == accountCurrency) {
+            inputState.update { oldState ->
+                oldState.copy(entryCurrency = null, rate = null, rateIsCustom = false)
+            }
+            return
+        }
+        inputState.update { oldState ->
+            oldState.copy(entryCurrency = code, rate = null, rateIsCustom = false, recurring = false)
+        }
+        loadRate(from = code, to = accountCurrency)
+    }
+
+    override fun onRateChanged(value: String) {
+        val rate = OriginalAmountDomain.normalizeRate(value) ?: return
+        inputState.update { oldState -> oldState.copy(rate = rate, rateIsCustom = true) }
+        mutableState.update { oldState -> oldState.copy(rateError = null) }
+    }
+
+    private fun loadRate(from: String, to: String) {
+        mutableState.update { oldState -> oldState.copy(rateLoading = true, rateError = null) }
+        launch {
+            val result = getExchangeRateUseCase(from = from, to = to)
+            if (result is AppResult.Success)
+                inputState.update { oldState ->
+                    // A rate the person typed, or a newer currency choice, wins over a late reply.
+                    if (oldState.entryCurrency != from || oldState.rateIsCustom) oldState
+                    else oldState.copy(rate = result.value)
+                }
+            mutableState.update { oldState ->
+                oldState.copy(
+                    rateLoading = false,
+                    rateError =
+                        (result as? AppResult.Failure)?.error?.toExpensesTextResource(),
+                )
+            }
+        }
     }
 
     override fun onAccountChanged(id: String) {
@@ -215,6 +274,14 @@ class ExpenseFormScreenViewModel(
             if (result is AppResult.Success) {
                 val data = result.value
                 accountId = data.account.id
+                // A foreign amount converts into the new account's currency instead.
+                val entryCurrency = inputState.value.entryCurrency
+                if (entryCurrency == data.account.currency)
+                    inputState.update { oldState -> oldState.copy(entryCurrency = null, rate = null) }
+                else if (entryCurrency != null) {
+                    inputState.update { oldState -> oldState.copy(rate = null, rateIsCustom = false) }
+                    loadRate(from = entryCurrency, to = data.account.currency)
+                }
                 inputState.update { oldState ->
                     oldState.copy(
                         paidBy =
@@ -262,15 +329,11 @@ class ExpenseFormScreenViewModel(
 
     override fun onEditSplit() {
         if (state.value.busy || state.value.loading) return
-        val result = safeCall {
-            MoneyDomain.parse(text = inputState.value.amount, currency = state.value.currency)
-        }
+        val result = safeCall { state.value.enteredAmount.accountMinor() }
         mutableState.update { oldState ->
             when (result) {
                 is AppResult.Success ->
-                    oldState.copy(
-                        redirectTo = RedirectTo.EditSplit(amountMinor = result.value.minorUnits),
-                    )
+                    oldState.copy(redirectTo = RedirectTo.EditSplit(amountMinor = result.value))
                 is AppResult.Failure -> oldState.copy(error = result.error.toExpensesTextResource())
             }
         }
@@ -294,21 +357,29 @@ class ExpenseFormScreenViewModel(
             var savedReceipt: ExpenseReceiptDomain? = null
             val result = safeCall {
                 if (!financialAlreadySaved) {
-                    val amount = MoneyDomain.parse(text = input.amount, currency = account.currency)
+                    val entered =
+                        EnteredAmountDomain(
+                            text = input.amount,
+                            currency = input.entryCurrency ?: account.currency,
+                            accountCurrency = account.currency,
+                            rate = input.rate,
+                        )
+                    val amountMinor = entered.accountMinor()
                     val expense =
                         ExpenseDomain(
                             id = expenseId,
                             title = input.title,
-                            amountMinor = amount.minorUnits,
+                            amountMinor = amountMinor,
                             paidBy = input.paidBy,
                             category = input.category,
                             occurredOn = input.occurredOn,
                             shares =
                                 ExpenseSplitDomain.resolve(
-                                    amountMinor = amount.minorUnits,
+                                    amountMinor = amountMinor,
                                     selection = input.split,
                                 ),
                             recurring = input.recurring,
+                            original = entered.original(),
                             accountId = account.id,
                             version = before?.version ?: 0,
                             createdBy = before?.createdBy ?: context.userId,
@@ -412,8 +483,14 @@ class ExpenseFormScreenViewModel(
                             InnerInputState(
                                 title = expense.title,
                                 amount =
-                                    MoneyDomain(expense.amountMinor, data.account.currency)
-                                        .inputText(),
+                                    expense.original?.let {
+                                        MoneyDomain(it.amountMinor, it.currency).inputText()
+                                    }
+                                        ?: MoneyDomain(expense.amountMinor, data.account.currency)
+                                            .inputText(),
+                                entryCurrency = expense.original?.currency,
+                                rate = expense.original?.rate,
+                                rateIsCustom = expense.original != null,
                                 paidBy = expense.paidBy,
                                 occurredOn = expense.occurredOn,
                                 category = expense.category,

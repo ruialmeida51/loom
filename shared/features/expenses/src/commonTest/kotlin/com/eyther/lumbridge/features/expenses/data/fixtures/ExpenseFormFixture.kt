@@ -6,6 +6,7 @@ import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSo
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsPreferencesDomain
 import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
@@ -15,6 +16,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExchangeRateUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseReceiptUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseUseCase
@@ -199,6 +201,13 @@ class ExpenseFormFixture {
                 AppResult.Success(Unit)
         }
 
+    /** One pound buys €1.1546 unless a test says otherwise. */
+    var rateResult: AppResult<String> = AppResult.Success("1.1546")
+    val rates: ExchangeRateDataSource =
+        object : ExchangeRateDataSource {
+            override suspend fun latestRate(from: String, to: String): AppResult<String> = rateResult
+        }
+
     fun viewModel(): ExpenseFormScreenViewModel =
         ExpenseFormScreenViewModel(
             getExpenseReceiptUseCase =
@@ -223,6 +232,7 @@ class ExpenseFormFixture {
                     context = context,
                 ),
             context = context,
+            getExchangeRateUseCase = GetExchangeRateUseCase(exchangeRateDataSource = rates),
             trackAnalyticsEventUseCase =
                 TrackAnalyticsEventUseCase(analyticsDataSource = analytics),
         )

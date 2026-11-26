@@ -4,6 +4,7 @@ import com.eyther.lumbridge.features.expenses.data.network.model.response.Expens
 import com.eyther.lumbridge.features.expenses.data.network.model.response.RecurringExpenseResponse
 import com.eyther.lumbridge.features.expenses.data.network.model.response.SettlementResponse
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
+import com.eyther.lumbridge.features.expenses.domain.model.OriginalAmountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 
@@ -23,6 +24,14 @@ internal fun ExpenseResponse.toDomain(): ExpenseDomain =
         splitMethod = splitMethod.toSplitMethod(),
         splitValues = splitValues,
         createdAt = createdAt,
+        original =
+            if (originalCurrency != null && originalAmountMinor != null && exchangeRate != null)
+                OriginalAmountDomain(
+                    currency = originalCurrency,
+                    amountMinor = originalAmountMinor,
+                    rate = OriginalAmountDomain.normalizeRate(exchangeRate.content) ?: "1",
+                )
+            else null,
     )
 
 internal fun SettlementResponse.toDomain(): SettlementDomain =

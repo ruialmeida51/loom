@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- On trips abroad, enter an expense in the currency you paid in: Loom converts it at today's rate, which you can change.
+
 ## [4.0.19] - 2026-11-26
 
 - Share your MB Way, Revolut or PayPal so housemates can pay you back: MB Way copies your number and opens the app.

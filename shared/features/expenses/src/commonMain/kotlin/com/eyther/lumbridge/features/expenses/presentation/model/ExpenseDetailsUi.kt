@@ -18,4 +18,7 @@ data class ExpenseDetailsUi(
     val splitMethod: ExpenseSplitMethodDomain,
     val ownShare: String?,
     val shares: ImmutableList<ExpenseShareUi>,
+    /** "Paid £48.00 · 1 GBP = 1.1546 EUR" for an expense paid in another currency. */
+    val originalAmount: String? = null,
+    val originalRate: String? = null,
 )

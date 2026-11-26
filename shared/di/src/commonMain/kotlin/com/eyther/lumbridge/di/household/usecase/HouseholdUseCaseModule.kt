@@ -3,6 +3,7 @@ package com.eyther.lumbridge.di.household.usecase
 import com.eyther.lumbridge.core.domain.features.FeatureGate
 import com.eyther.lumbridge.features.account.domain.datasource.PaymentHandlesDataSource
 import com.eyther.lumbridge.features.account.domain.usecase.GetPaymentHandlesUseCase
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseReceiptDataSource
@@ -13,6 +14,7 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccoun
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExchangeRateUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
@@ -496,6 +498,11 @@ class HouseholdUseCaseModule {
         expenseAccountDataSource: ExpenseAccountDataSource,
     ): RemoveAccountGuestUseCase =
         RemoveAccountGuestUseCase(expenseAccountDataSource = expenseAccountDataSource)
+
+    @Single
+    fun provideGetExchangeRateUseCase(
+        exchangeRateDataSource: ExchangeRateDataSource,
+    ): GetExchangeRateUseCase = GetExchangeRateUseCase(exchangeRateDataSource = exchangeRateDataSource)
 
     @Single
     fun provideGetExpenseAccountUseCase(

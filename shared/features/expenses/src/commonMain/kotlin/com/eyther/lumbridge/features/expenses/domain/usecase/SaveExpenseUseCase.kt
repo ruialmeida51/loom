@@ -11,6 +11,8 @@ import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseAccountError
 import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
+import com.eyther.lumbridge.features.expenses.domain.model.OriginalAmountDomain
+import com.eyther.lumbridge.features.expenses.domain.model.TravelCurrencyDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
 import kotlinx.coroutines.async
@@ -51,6 +53,17 @@ class SaveExpenseUseCase(
             val account = accountRequest.await()
             requireDomain(account.canAddExpense(userId = context.userId)) {
                 ExpenseAccountError.Archived()
+            }
+            expense.original?.let { original ->
+                requireDomain(!expense.recurring) { ExpenseError.RecurringSingleCurrency() }
+                requireDomain(
+                    original.currency != account.currency &&
+                        TravelCurrencyDomain.isSupported(original.currency) &&
+                        OriginalAmountDomain.normalizeRate(original.rate) == original.rate &&
+                        original.convertedMinor() == expense.amountMinor,
+                ) {
+                    ExpenseError.InvalidConversion()
+                }
             }
             // Guests take part like members, inside their own account only.
             val people =

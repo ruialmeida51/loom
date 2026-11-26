@@ -137,6 +137,21 @@
     <string name="form_repeat_on">Added again on day %1$d of every month</string>
     <string name="form_repeat_off">For rent, bills and subscriptions</string>
     <string name="form_account">Adding to</string>
+    <string name="error_invalid_conversion">Check the rate: use a number like 1.15.</string>
+    <string name="error_recurring_single_currency">Recurring bills repeat in the account's currency. Turn off Repeat to use another currency.</string>
+    <string name="error_rate_unavailable">Couldn't get today's rate. Type the rate yourself.</string>
+    <string name="currency_converted">= %1$s in this account</string>
+    <string name="currency_rate">1 %1$s = %2$s %3$s · %4$s</string>
+    <string name="currency_rate_today">today's rate</string>
+    <string name="currency_rate_yours">your rate</string>
+    <string name="currency_rate_loading">Getting today's rate…</string>
+    <string name="currency_change_rate">Change rate</string>
+    <string name="currency_rate_title">Exchange rate</string>
+    <string name="currency_rate_label">1 %1$s in %2$s</string>
+    <string name="currency_choose">Paid in</string>
+    <string name="currency_choose_description">Currency the expense was paid in, %1$s</string>
+    <string name="history_original">%1$s · %2$s</string>
+    <string name="detail_original">Paid %1$s · %2$s</string>
     <string name="split_equally_between">Split equally between</string>
     <string name="split_each">%1$s each</string>
     <string name="split_unevenly">Split unevenly…</string>

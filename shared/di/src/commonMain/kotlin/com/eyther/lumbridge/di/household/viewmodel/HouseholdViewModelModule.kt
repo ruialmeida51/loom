@@ -6,6 +6,7 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccoun
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetExchangeRateUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseFormUseCase
@@ -307,6 +308,7 @@ class HouseholdViewModelModule {
         saveExpenseUseCase: SaveExpenseUseCase,
         context: HouseholdContextDomain,
         trackAnalyticsEventUseCase: TrackAnalyticsEventUseCase,
+        getExchangeRateUseCase: GetExchangeRateUseCase,
     ): ExpenseFormScreenViewModelContract =
         ExpenseFormScreenViewModel(
             getExpenseReceiptUseCase = getExpenseReceiptUseCase,
@@ -317,6 +319,7 @@ class HouseholdViewModelModule {
             saveExpenseUseCase = saveExpenseUseCase,
             context = context,
             trackAnalyticsEventUseCase = trackAnalyticsEventUseCase,
+            getExchangeRateUseCase = getExchangeRateUseCase,
         )
 
     @KoinViewModel(binds = [ExpenseDetailsScreenViewModelContract::class])

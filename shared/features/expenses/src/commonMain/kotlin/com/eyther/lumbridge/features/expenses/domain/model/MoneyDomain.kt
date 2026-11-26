@@ -2,13 +2,12 @@ package com.eyther.lumbridge.features.expenses.domain.model
 
 import com.eyther.lumbridge.core.domain.errors.requireDomain
 import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseError
-import com.eyther.lumbridge.features.household.domain.model.HouseholdCurrencyDomain
 
-/** Money is stored in minor units. V1 households choose a supported two-decimal currency. */
+/** Money is stored in minor units, in a household currency or a two-decimal travel currency. */
 data class MoneyDomain(val minorUnits: Long, val currency: String) {
 
     init {
-        requireDomain(currency in HouseholdCurrencyDomain.supportedCodes) {
+        requireDomain(TravelCurrencyDomain.isSupported(currency)) {
             ExpenseError.UnsupportedCurrency()
         }
     }

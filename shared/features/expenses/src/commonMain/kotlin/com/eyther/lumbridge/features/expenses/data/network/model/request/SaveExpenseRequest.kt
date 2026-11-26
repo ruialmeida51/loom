@@ -18,4 +18,7 @@ internal data class SaveExpenseRequest(
     @SerialName("p_occurred_on") val occurredOn: String,
     @SerialName("p_shares") val shares: Map<String, Long>,
     @SerialName("p_recurring") val recurring: Boolean,
+    @SerialName("p_original_currency") val originalCurrency: String? = null,
+    @SerialName("p_original_amount_minor") val originalAmountMinor: Long? = null,
+    @SerialName("p_exchange_rate") val exchangeRate: String? = null,
 )

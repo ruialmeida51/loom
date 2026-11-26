@@ -202,6 +202,10 @@ data class ExpensesState(
                             it.canManage(userId = userId, isOwner = isOwner),
                     amount = MoneyDomain(it.amountMinor, currency).formatted(),
                     payerAvatarPath = participants.firstOrNull { member -> member.id == it.paidBy }?.avatarPath,
+                    originalAmount =
+                        it.original?.let { original ->
+                            MoneyDomain(original.amountMinor, original.currency).formatted()
+                        },
                 )
             } +
                 settlements.map {

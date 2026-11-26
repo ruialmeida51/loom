@@ -2,6 +2,7 @@ package com.eyther.lumbridge.features.expenses.data.network.model.response
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable
 internal data class ExpenseResponse(
@@ -19,4 +20,8 @@ internal data class ExpenseResponse(
     @SerialName("shares") val shares: Map<String, Long>,
     @SerialName("recurring") val recurring: Boolean,
     @SerialName("created_at") val createdAt: String = "",
+    @SerialName("original_currency") val originalCurrency: String? = null,
+    @SerialName("original_amount_minor") val originalAmountMinor: Long? = null,
+    // A numeric column: kept as its literal text so a rate like 0.0004 never becomes "4.0E-4".
+    @SerialName("exchange_rate") val exchangeRate: JsonPrimitive? = null,
 )

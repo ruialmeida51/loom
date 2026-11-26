@@ -43,4 +43,13 @@ sealed class ExpenseError(cause: Throwable? = null) : AppError(cause) {
     class AccessDenied(cause: Throwable? = null) : ExpenseError(cause)
 
     class AlreadyRecorded(cause: Throwable? = null) : ExpenseError(cause)
+
+    /** The amount in another currency, its rate or its conversion is not usable. */
+    class InvalidConversion(cause: Throwable? = null) : ExpenseError(cause)
+
+    /** Recurring bills repeat in the account's own currency. */
+    class RecurringSingleCurrency(cause: Throwable? = null) : ExpenseError(cause)
+
+    /** Today's rate could not be fetched; the person can type one. */
+    class RateUnavailable(cause: Throwable? = null) : ExpenseError(cause)
 }

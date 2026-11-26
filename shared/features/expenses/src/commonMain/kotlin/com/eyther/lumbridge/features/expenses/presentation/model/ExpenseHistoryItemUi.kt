@@ -23,6 +23,8 @@ sealed interface ExpenseHistoryItemUi {
         override val amount: String,
         /** The payer's photo, beside their name in the row. */
         val payerAvatarPath: String? = null,
+        /** What was paid in another currency, such as "£48.00"; null when paid in the account's. */
+        val originalAmount: String? = null,
     ) : ExpenseHistoryItemUi {
         override val key: String = "expense-${expense.id}"
         override val date: String = expense.occurredOn
