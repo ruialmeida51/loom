@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -92,19 +91,14 @@ internal fun PayWithSection(options: PayOptionsUi, modifier: Modifier = Modifier
                                 },
                                 modifier = Modifier.testTag("pay_mbway"),
                                 trailingContent = {
-                                    TextButton(
-                                        onClick = {
-                                            clipboard.setText(AnnotatedString(phone))
-                                            copied = "mbway"
-                                        },
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                if (copied == "mbway") Res.string.pay_copied
-                                                else Res.string.pay_copy,
-                                            ),
-                                        )
-                                    }
+                                    Text(
+                                        stringResource(
+                                            if (copied == "mbway") Res.string.pay_copied
+                                            else Res.string.pay_copy,
+                                        ),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
                                 },
                             )
                         }
