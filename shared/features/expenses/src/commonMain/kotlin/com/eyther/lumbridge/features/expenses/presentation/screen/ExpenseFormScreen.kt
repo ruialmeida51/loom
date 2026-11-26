@@ -49,9 +49,11 @@ import com.eyther.lumbridge.features.expenses.generated.resources.receipt_keep_e
 import com.eyther.lumbridge.features.expenses.generated.resources.receipt_pending
 import com.eyther.lumbridge.features.expenses.generated.resources.split_participant_count
 import com.eyther.lumbridge.features.expenses.generated.resources.split_summary
+import com.eyther.lumbridge.features.expenses.generated.resources.split_unevenly
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_who_paid
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseAccountPickerRow
 import com.eyther.lumbridge.features.expenses.presentation.components.ExpenseCaptureFields
+import com.eyther.lumbridge.features.expenses.presentation.components.SplitBetweenSection
 import com.eyther.lumbridge.features.expenses.presentation.components.guestQualifier
 import com.eyther.lumbridge.features.expenses.presentation.components.receipt.ExpenseReceiptSection
 import com.eyther.lumbridge.features.expenses.presentation.components.receipt.rememberReceiptPickers
@@ -112,6 +114,9 @@ fun ExpenseFormScreen(
         onAccount = viewModel::onAccountChanged,
         splitMethod = state.split.method,
         participantCount = state.split.participants.size,
+        splitParticipants = state.split.participants,
+        equalShare = state.equalShare,
+        onSplitParticipant = viewModel::onSplitParticipantToggled,
         editing = state.editing,
         readyForInput = !state.editing || state.expense != null,
         loading = state.loading,
@@ -162,6 +167,9 @@ private fun InnerExpenseFormScreen(
     onAccount: (String) -> Unit,
     splitMethod: ExpenseSplitMethodDomain,
     participantCount: Int,
+    splitParticipants: Set<String>,
+    equalShare: String?,
+    onSplitParticipant: (String) -> Unit,
     editing: Boolean,
     readyForInput: Boolean,
     loading: Boolean,
@@ -239,21 +247,36 @@ private fun InnerExpenseFormScreen(
                         enabled = !busy && !receiptPending,
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    NavigationRow(
-                        title = stringResource(Res.string.form_split),
-                        value =
-                            stringResource(
-                                Res.string.split_summary,
-                                splitMethodLabel(splitMethod),
-                                pluralStringResource(
-                                    Res.plurals.split_participant_count,
-                                    participantCount,
-                                    participantCount,
+                    if (splitMethod == ExpenseSplitMethodDomain.EQUAL) {
+                        SplitBetweenSection(
+                            members = members,
+                            selected = splitParticipants,
+                            share = equalShare,
+                            enabled = !busy && !receiptPending,
+                            onToggle = onSplitParticipant,
+                        )
+                        NavigationRow(
+                            title = stringResource(Res.string.split_unevenly),
+                            onClick = onSplit,
+                            enabled = !busy && !receiptPending,
+                            modifier = Modifier.testTag("split_unevenly"),
+                        )
+                    } else
+                        NavigationRow(
+                            title = stringResource(Res.string.form_split),
+                            value =
+                                stringResource(
+                                    Res.string.split_summary,
+                                    splitMethodLabel(splitMethod),
+                                    pluralStringResource(
+                                        Res.plurals.split_participant_count,
+                                        participantCount,
+                                        participantCount,
+                                    ),
                                 ),
-                            ),
-                        onClick = onSplit,
-                        enabled = !busy && !receiptPending,
-                    )
+                            onClick = onSplit,
+                            enabled = !busy && !receiptPending,
+                        )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     NavigationRow(
                         title = stringResource(Res.string.form_date),

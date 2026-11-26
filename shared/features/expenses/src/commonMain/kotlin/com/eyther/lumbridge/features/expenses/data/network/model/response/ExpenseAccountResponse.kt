@@ -14,4 +14,5 @@ internal data class ExpenseAccountResponse(
     @SerialName("version") val version: Long,
     @SerialName("created_by") val createdBy: String,
     @SerialName("guests") val guests: List<ExpenseGuestResponse> = emptyList(),
+    @SerialName("icon") val icon: String? = null,
 )

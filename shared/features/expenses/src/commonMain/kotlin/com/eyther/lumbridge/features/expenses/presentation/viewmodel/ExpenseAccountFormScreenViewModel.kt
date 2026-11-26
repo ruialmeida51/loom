@@ -9,6 +9,7 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
 import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveAccountGuestUseCase
@@ -35,6 +36,7 @@ class ExpenseAccountFormScreenViewModel(
     private data class InnerInputState(
         val name: String = "",
         val currency: String,
+        val icon: ExpenseAccountIconDomain = ExpenseAccountIconDomain.TRAVEL,
         val selected: Set<String> = emptySet(),
         val draftGuests: List<ExpenseGuestDomain> = emptyList(),
     )
@@ -51,6 +53,7 @@ class ExpenseAccountFormScreenViewModel(
                     copy(
                         name = input.name,
                         currency = input.currency,
+                        icon = input.icon,
                         selected = input.selected,
                         guests = account?.activeGuests ?: input.draftGuests,
                     )
@@ -66,6 +69,10 @@ class ExpenseAccountFormScreenViewModel(
     override fun onCurrencyChanged(value: String) {
         if (params.accountId == null)
             inputState.update { oldState -> oldState.copy(currency = value) }
+    }
+
+    override fun onIconChanged(value: ExpenseAccountIconDomain) {
+        inputState.update { oldState -> oldState.copy(icon = value) }
     }
 
     override fun onParticipantToggled(id: String) {
@@ -157,13 +164,14 @@ class ExpenseAccountFormScreenViewModel(
         launch {
             val result = safeCall {
                 val account =
-                    before?.copy(name = input.name)
+                    before?.copy(name = input.name, icon = input.icon)
                         ?: ExpenseAccountDomain(
                             id = accountId,
                             name = input.name,
                             currency = input.currency,
                             memberIds = input.selected,
                             createdBy = context.userId,
+                            icon = input.icon,
                         )
                 val saved =
                     saveExpenseAccountUseCase(
@@ -201,6 +209,7 @@ class ExpenseAccountFormScreenViewModel(
                         InnerInputState(
                             name = data.account?.name.orEmpty(),
                             currency = data.account?.currency ?: context.currency,
+                            icon = data.account?.displayIcon ?: ExpenseAccountIconDomain.TRAVEL,
                             selected =
                                 data.account?.memberIds ?: data.members.map { it.id }.toSet(),
                         )

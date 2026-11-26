@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.shopping.presentation.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.AddPill
 import com.eyther.lumbridge.core.presentation.components.PillChip
+import com.eyther.lumbridge.core.presentation.components.PillRowAction
+import com.eyther.lumbridge.core.presentation.components.PillRowHeader
 import com.eyther.lumbridge.core.presentation.components.bleedHorizontally
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
@@ -33,6 +36,7 @@ import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.favorites_title
+import com.eyther.lumbridge.features.shopping.generated.resources.lists_header
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_new_list
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_shopping_lists
 import com.eyther.lumbridge.features.shopping.presentation.mapper.toGlyph
@@ -42,9 +46,9 @@ import org.jetbrains.compose.resources.stringResource
 private val ChipHeight = 40.dp
 
 /**
- * One pill per active list, scrolling edge to edge under the screen padding. Tapping another list
- * switches to it; tapping the current one opens the lists manager (rename, icon, archive), which
- * its caret signals. The star stays put at the end and opens favourites.
+ * One pill per active list, scrolling edge to edge under a header that holds Favourites. Tapping
+ * another list switches to it; tapping the current one opens the lists manager (rename, icon,
+ * archive), which its caret signals. "+ New list" ends the row.
  */
 @Composable
 fun ShoppingListChips(
@@ -58,15 +62,26 @@ fun ShoppingListChips(
     modifier: Modifier = Modifier,
 ) {
     val manage = stringResource(Res.string.ui_shopping_lists)
-    Row(
-        modifier = modifier.bleedHorizontally(LoomSpacing.content),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    Column(modifier = modifier) {
+        PillRowHeader(title = stringResource(Res.string.lists_header)) {
+            PillRowAction(
+                label = stringResource(Res.string.favorites_title),
+                glyph = Glyph.STAR,
+                onClick = onFavorites,
+                enabled = favoritesEnabled,
+                modifier = Modifier.testTag("shopping_favorites"),
+            )
+        }
         Row(
             modifier =
-                Modifier.weight(1f)
+                Modifier.bleedHorizontally(LoomSpacing.content)
                     .horizontalScroll(rememberScrollState())
-                    .padding(start = LoomSpacing.content, end = 8.dp, top = 2.dp, bottom = 4.dp)
+                    .padding(
+                        start = LoomSpacing.content,
+                        end = LoomSpacing.content,
+                        top = 6.dp,
+                        bottom = 4.dp,
+                    )
                     .selectableGroup(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -88,32 +103,10 @@ fun ShoppingListChips(
                 )
             }
             AddPill(
-                description = stringResource(Res.string.ui_new_list),
+                label = stringResource(Res.string.ui_new_list),
                 onClick = onCreate,
                 modifier = Modifier.testTag("shopping_new_list"),
             )
         }
-        val favourites = stringResource(Res.string.favorites_title)
-        Surface(
-            onClick = onFavorites,
-            enabled = favoritesEnabled,
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
-            contentColor = MaterialTheme.colorScheme.primary,
-            shadowElevation = if (LoomColors.cardShadow) 1.dp else 0.dp,
-            border = BorderStroke(1.dp, LoomColors.cardBorder),
-            modifier =
-                Modifier.size(44.dp).testTag("shopping_favorites").semantics {
-                    contentDescription = favourites
-                },
-        ) {
-            LoomIcon(
-                glyph = Glyph.STAR,
-                tint = LocalContentColor.current,
-                decorative = true,
-                modifier = Modifier.padding(12.dp),
-            )
-        }
-        Spacer(Modifier.width(LoomSpacing.content))
     }
 }

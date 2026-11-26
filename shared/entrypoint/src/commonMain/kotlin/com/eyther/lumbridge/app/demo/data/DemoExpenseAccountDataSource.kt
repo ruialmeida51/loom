@@ -6,6 +6,7 @@ import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseAccountError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
@@ -83,6 +84,10 @@ class DemoExpenseAccountDataSource(private val store: DemoHouseholdStore) :
                     },
             ),
         )
+    }
+
+    override suspend fun setIcon(accountId: String, icon: ExpenseAccountIconDomain?) = safeCall {
+        replace(accounts.value.first { it.id == accountId }.copy(icon = icon))
     }
 
     private fun replace(account: ExpenseAccountDomain): ExpenseAccountDomain {

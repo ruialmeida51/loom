@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 - Share your MB Way, Revolut or PayPal in your profile, so housemates can pay you back in a tap.
+- Split an expense right on the form: tap people in or out and see each share.
+- Money accounts can have icons, and payers show their photo in the ledger.
+- Tidier list and account headers, a readable disabled Save in dark mode, and the photo pencil now works.
 
 ## [4.0.18] - 2026-11-26
 

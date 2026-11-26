@@ -127,7 +127,7 @@ class SafetyAndDetailsUiTest {
             onNodeWithTag("home_add_expense").performClick()
             onNodeWithTag("expense_title").performTextInput("Dinner together")
             onNodeWithTag("expense_amount").performTextInput("30.00")
-            onNodeWithText("Split").performClick()
+            onNodeWithTag("split_unevenly").performScrollTo().performClick()
             val save =
                 onNodeWithTag("confirm_expense_split")
                     .assertIsDisplayed()
@@ -144,14 +144,10 @@ class SafetyAndDetailsUiTest {
                 "Both stacked actions should use the same full width",
             )
             assertTrue(save.width > 300f, "Stacked actions should fill the narrow sheet")
-            onNodeWithTag("split_method").performClick()
-            val menu = onNodeWithTag("split_method_menu").fetchSemanticsNode().boundsInWindow
-            assertTrue(
-                menu.left > 32f,
-                "The method menu should follow the caret rather than the sheet gutter",
-            )
-            capture("split-method-menu-anchored-narrow")
-            onNodeWithText("By shares").performClick()
+            // The four methods fit side by side on a narrow phone.
+            onNodeWithTag("split_method_percentages").assertIsDisplayed()
+            capture("split-method-tabs-narrow")
+            onNodeWithTag("split_method_shares").performClick()
             capture("split-actions-modern-narrow")
             onNodeWithTag("confirm_expense_split").performClick()
             onNodeWithTag("expense_title").assertIsDisplayed()
