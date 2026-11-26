@@ -4,8 +4,10 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseReceiptDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelectionDomain
+import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ReceiptPhotoDomain
 import com.eyther.lumbridge.features.expenses.presentation.model.ReceiptPhotoUi
 import com.eyther.lumbridge.features.household.domain.model.MemberDomain
@@ -43,6 +45,19 @@ data class ExpenseFormState(
     }
 
     val currency: String = account?.currency ?: "EUR"
+
+    /** Each person's share while splitting equally, once an amount is typed. */
+    val equalShare: String? =
+        if (split.method != ExpenseSplitMethodDomain.EQUAL || split.participants.isEmpty()) null
+        else
+            runCatching {
+                    val total = MoneyDomain.parse(text = amount, currency = currency)
+                    ExpenseSplitDomain.equal(total.minorUnits, split.participants.toList())
+                        .values
+                        .minOrNull()
+                        ?.let { MoneyDomain(minorUnits = it, currency = currency).formatted() }
+                }
+                .getOrNull()
 
     /** A new expense can move between accounts until it is saved. */
     val canChooseAccount: Boolean =

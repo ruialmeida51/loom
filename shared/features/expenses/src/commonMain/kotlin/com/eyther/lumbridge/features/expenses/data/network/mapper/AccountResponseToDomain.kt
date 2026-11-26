@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.expenses.data.network.mapper
 import com.eyther.lumbridge.features.expenses.data.network.model.response.ExpenseAccountResponse
 import com.eyther.lumbridge.features.expenses.data.network.model.response.ExpenseGuestResponse
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 
 internal fun ExpenseAccountResponse.toDomain(): ExpenseAccountDomain =
@@ -16,6 +17,7 @@ internal fun ExpenseAccountResponse.toDomain(): ExpenseAccountDomain =
         version = version,
         createdBy = createdBy,
         guests = guests.map { it.toDomain() },
+        icon = ExpenseAccountIconDomain.fromKey(icon),
     )
 
 internal fun ExpenseGuestResponse.toDomain(): ExpenseGuestDomain =

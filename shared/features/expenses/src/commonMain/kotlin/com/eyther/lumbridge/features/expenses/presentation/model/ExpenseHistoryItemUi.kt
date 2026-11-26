@@ -21,6 +21,8 @@ sealed interface ExpenseHistoryItemUi {
         val payerName: String?,
         val canManage: Boolean = false,
         override val amount: String,
+        /** The payer's photo, beside their name in the row. */
+        val payerAvatarPath: String? = null,
     ) : ExpenseHistoryItemUi {
         override val key: String = "expense-${expense.id}"
         override val date: String = expense.occurredOn

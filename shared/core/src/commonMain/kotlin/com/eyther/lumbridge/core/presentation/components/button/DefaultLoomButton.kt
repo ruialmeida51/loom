@@ -55,7 +55,11 @@ internal fun DefaultLoomButton(
                 contentColor = contentColor,
                 disabledContainerColor =
                     if (loading) containerColor else MaterialTheme.colorScheme.surfaceVariant,
-                disabledContentColor = contentColor.copy(alpha = DisabledContentAlpha),
+                // A disabled button sits on surfaceVariant, so its label takes that surface's
+                // readable colour; the button's own label colour can vanish on it in dark mode.
+                disabledContentColor =
+                    if (loading) contentColor.copy(alpha = DisabledContentAlpha)
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
             ),
     ) {
         Box(contentAlignment = Alignment.Center) {

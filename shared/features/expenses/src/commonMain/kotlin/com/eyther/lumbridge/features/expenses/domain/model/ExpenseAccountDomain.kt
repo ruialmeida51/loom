@@ -12,7 +12,12 @@ data class ExpenseAccountDomain(
     val version: Long = 0,
     val createdBy: String = "",
     val guests: List<ExpenseGuestDomain> = emptyList(),
+    /** Chosen icon; null keeps the default, a house for Everyday and a plane for trips. */
+    val icon: ExpenseAccountIconDomain? = null,
 ) {
+    val displayIcon: ExpenseAccountIconDomain =
+        icon ?: if (isDefault) ExpenseAccountIconDomain.HOME else ExpenseAccountIconDomain.TRAVEL
+
     /** Everyone who can appear on this account's records: members and guests. */
     val participantIds: Set<String> = memberIds + guests.map { it.id }
 

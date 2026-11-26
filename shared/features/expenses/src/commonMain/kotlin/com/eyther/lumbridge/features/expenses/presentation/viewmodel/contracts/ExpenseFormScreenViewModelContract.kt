@@ -50,6 +50,9 @@ abstract class ExpenseFormScreenViewModelContract : LoomViewModel() {
 
     abstract fun onEditSplit()
 
+    /** Adds or removes someone from an equal split, straight from the form. */
+    abstract fun onSplitParticipantToggled(id: String)
+
     abstract fun onSplitConfirmed(selection: ExpenseSplitSelectionDomain)
 
     abstract fun onSave()

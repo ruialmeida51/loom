@@ -2,6 +2,7 @@ package com.eyther.lumbridge.features.expenses.domain.datasource
 
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
+import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseGuestDomain
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +28,12 @@ interface ExpenseAccountDataSource {
     suspend fun saveGuest(
         accountId: String,
         guest: ExpenseGuestDomain,
+    ): AppResult<ExpenseAccountDomain>
+
+    /** Sets the account's icon, or restores the default when [icon] is null. */
+    suspend fun setIcon(
+        accountId: String,
+        icon: ExpenseAccountIconDomain?,
     ): AppResult<ExpenseAccountDomain>
 
     /** Removes a guest whose account balance is zero; returns the saved account. */

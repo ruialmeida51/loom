@@ -41,6 +41,7 @@
   <string name="ui_restore">Restore</string>
   <string name="ui_archive">Archive</string>
   <string name="ui_new_list">New list</string>
+  <string name="lists_header">Lists</string>
   <string name="ui_done">Done</string>
   <string name="ui_name_your_list">Name your list</string>
   <string name="ui_list_name">List name</string>

@@ -29,6 +29,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.account_new
 import com.eyther.lumbridge.features.expenses.generated.resources.account_rename
 import com.eyther.lumbridge.features.expenses.generated.resources.account_restore
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
+import com.eyther.lumbridge.features.expenses.presentation.mapper.glyph
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import org.jetbrains.compose.resources.stringResource
@@ -104,7 +105,7 @@ private fun AccountSelectionGroup(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     NavigationRow(
                         title = accountLabel(account),
-                        glyph = Glyph.MONEY,
+                        glyph = account.glyph(),
                         description = account.currency,
                         trailingGlyph = if (account.id == selectedId) Glyph.CHECK else Glyph.CHEVRON_RIGHT,
                         onClick = { onSelect(account.id) },
