@@ -6,7 +6,7 @@ import com.eyther.lumbridge.core.coroutines.stateflow.launchWith
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.newId
-import com.eyther.lumbridge.core.domain.todayIso
+import com.eyther.lumbridge.core.domain.today
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
 import com.eyther.lumbridge.core.domain.wrapper.safeCall
@@ -17,8 +17,10 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.RecordSettlementUse
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesTextResource
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentFormScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentFormScreenViewModelContract.RedirectTo
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentFormState
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import kotlinx.datetime.LocalDate
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,14 +38,14 @@ class PaymentFormScreenViewModel(
         val from: String,
         val to: String = "",
         val amount: String = "",
-        val occurredOn: String,
+        val occurredOn: LocalDate,
     )
 
     private val paymentId: String = params.paymentId ?: newId()
     private var initialized: Boolean = false
     private val inputState =
         MutableStateFlow(
-            InnerInputState(from = context.userId, occurredOn = todayIso(context.timeZone)),
+            InnerInputState(from = context.userId, occurredOn = today(context.timeZone)),
         )
     private val mutableState =
         MutableStateFlow(
@@ -77,7 +79,7 @@ class PaymentFormScreenViewModel(
         inputState.update { oldState -> oldState.copy(amount = value) }
     }
 
-    override fun onDateChanged(value: String) {
+    override fun onDateChanged(value: LocalDate) {
         if (state.value.busy) return
         inputState.update { oldState -> oldState.copy(occurredOn = value) }
     }
@@ -108,7 +110,7 @@ class PaymentFormScreenViewModel(
             }
             mutableState.update { oldState ->
                 when (result) {
-                    is AppResult.Success -> oldState.copy(busy = false, saved = true)
+                    is AppResult.Success -> oldState.copy(busy = false, redirectTo = RedirectTo.Saved)
                     is AppResult.Failure ->
                         oldState.copy(busy = false, error = result.error.toExpensesTextResource())
                 }
@@ -184,5 +186,9 @@ class PaymentFormScreenViewModel(
                     oldState.copy(loading = false, error = result.error.toExpensesTextResource())
                 }
         }
+    }
+
+    override fun onNavigationHandled() {
+        mutableState.update { oldState -> oldState.copy(redirectTo = null) }
     }
 }

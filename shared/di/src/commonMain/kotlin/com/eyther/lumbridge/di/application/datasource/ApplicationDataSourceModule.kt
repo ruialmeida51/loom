@@ -3,6 +3,10 @@ package com.eyther.lumbridge.di.application.datasource
 import com.eyther.lumbridge.core.data.network.PictureStorage
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.WebPictures
+import com.eyther.lumbridge.core.data.network.createLoomHttpClient
+import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExchangeRateDataSource
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
+import io.ktor.client.HttpClient
 import com.eyther.lumbridge.core.data.network.isWebPicture
 import com.eyther.lumbridge.core.data.network.createLoomSupabaseClient
 import com.eyther.lumbridge.core.domain.media.PictureLoader
@@ -35,7 +39,14 @@ class ApplicationDataSourceModule {
     @Single
     fun providePictureStorage(access: SupabaseAccess): PictureStorage = PictureStorage(access = access)
 
-    @Single fun provideWebPictures(): WebPictures = WebPictures()
+    @Single fun provideHttpClient(): HttpClient = createLoomHttpClient()
+
+    @Single fun provideWebPictures(client: HttpClient): WebPictures = WebPictures(client = client)
+
+    /** Application-wide, so a rate fetched once stays cached across household switches. */
+    @Single
+    fun provideExchangeRateDataSource(client: HttpClient): ExchangeRateDataSource =
+        CommonExchangeRateDataSource(client = client)
 
     /** Story pictures are public web addresses; every other picture lives in the bucket. */
     @Single

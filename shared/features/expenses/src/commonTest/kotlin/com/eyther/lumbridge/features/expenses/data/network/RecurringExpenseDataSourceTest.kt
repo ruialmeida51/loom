@@ -19,6 +19,7 @@ import io.ktor.http.headersOf
 import kotlin.test.Test
 import kotlin.test.assertIs
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -57,7 +58,7 @@ class RecurringExpenseDataSourceTest {
                     amountMinor = 100_00,
                     paidBy = "alice",
                     category = "Bills",
-                    nextOn = "2026-12-01",
+                    nextOn = LocalDate.parse("2026-12-01"),
                     anchorDay = 1,
                     active = true,
                     cancelled = false,

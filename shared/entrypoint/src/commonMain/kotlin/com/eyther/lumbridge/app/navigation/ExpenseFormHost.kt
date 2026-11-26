@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.app.navigation
 
+import com.eyther.lumbridge.core.domain.today
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.eyther.lumbridge.app.navigation.components.BusyNavigationGuard
@@ -47,7 +48,7 @@ internal fun ExpenseFormHost(
     val sheets = rememberBottomSheetController()
     sheets.registerBottomSheet<ExpenseFormSheets.Date> {
         ExpenseDateBottomSheet(
-            date = formState.occurredOn,
+            date = formState.occurredOn ?: today(),
             onSelected = { date ->
                 viewModel.onDateChanged(date)
                 sheets.hideBottomSheet()

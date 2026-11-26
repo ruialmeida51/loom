@@ -28,11 +28,6 @@ class RecordSettlementUseCase(
         ) {
             ExpenseError.InvalidSettlement()
         }
-        try {
-            LocalDate.parse(settlement.occurredOn)
-        } catch (cause: IllegalArgumentException) {
-            throw ExpenseError.InvalidPaymentDate(cause = cause)
-        }
         val account = expenseAccountDataSource.getAccount(id = settlement.accountId).getOrThrow()
         val guestIds = account.guests.map { it.id }.toSet()
         requireDomain(

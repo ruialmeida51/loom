@@ -57,7 +57,7 @@ class MonthlyRecurrenceTest {
                 100,
                 "payer",
                 "Bills",
-                "2026-12-01",
+                LocalDate.parse("2026-12-01"),
                 1,
                 true,
                 false,

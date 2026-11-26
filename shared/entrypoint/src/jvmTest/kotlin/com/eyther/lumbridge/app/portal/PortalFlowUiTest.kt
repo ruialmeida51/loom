@@ -20,6 +20,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import com.eyther.lumbridge.app.demo.data.DemoAnalyticsDataSource
 import com.eyther.lumbridge.app.demo.data.DemoDiagnosticsDataSource
+import com.eyther.lumbridge.app.demo.data.DemoExchangeRateDataSource
 import com.eyther.lumbridge.app.household.data.HouseholdSetupFixtureDataSource
 import com.eyther.lumbridge.app.navigation.PortalHost
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
@@ -64,6 +65,7 @@ class PortalFlowUiTest {
                         profileDataSource = profiles,
                         analyticsDataSource = DemoAnalyticsDataSource(),
                         diagnosticsDataSource = DemoDiagnosticsDataSource(),
+                        exchangeRateDataSource = DemoExchangeRateDataSource(),
                         onSelect = { household ->
                             selected =
                                 HouseholdContextDomain(
@@ -117,6 +119,7 @@ class PortalFlowUiTest {
                         profileDataSource = profiles,
                         analyticsDataSource = DemoAnalyticsDataSource(),
                         diagnosticsDataSource = DemoDiagnosticsDataSource(),
+                        exchangeRateDataSource = DemoExchangeRateDataSource(),
                         onSelect = {},
                         onSignOut = {},
                     )

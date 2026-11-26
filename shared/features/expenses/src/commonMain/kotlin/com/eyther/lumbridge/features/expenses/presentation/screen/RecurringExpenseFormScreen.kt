@@ -53,7 +53,15 @@ fun RecurringExpenseFormScreen(
     onSplit: (Long) -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    LaunchedEffect(state.saved) { if (state.saved) onSaved() }
+    LaunchedEffect(state.redirectTo) {
+        when (state.redirectTo) {
+            RecurringExpenseFormScreenViewModelContract.RedirectTo.Saved -> {
+                viewModel.onNavigationHandled()
+                onSaved()
+            }
+            null -> Unit
+        }
+    }
     InnerRecurringExpenseFormScreen(
         title = state.title,
         amount = state.amount,
@@ -87,7 +95,7 @@ private fun InnerRecurringExpenseFormScreen(
     paidBy: String,
     members: ImmutableList<MemberDomain>,
     split: ExpenseSplitSelectionDomain,
-    nextOn: String,
+    nextOn: LocalDate?,
     loading: Boolean,
     ready: Boolean,
     busy: Boolean,
@@ -142,7 +150,7 @@ private fun InnerRecurringExpenseFormScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     NavigationRow(
                         title = stringResource(Res.string.bill_next_date),
-                        description = calendarDateText(LocalDate.parse(nextOn)),
+                        description = nextOn?.let { calendarDateText(it) }.orEmpty(),
                         glyph = Glyph.CALENDAR,
                         onClick = onDate,
                         enabled = !busy,

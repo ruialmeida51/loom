@@ -6,6 +6,8 @@ import com.eyther.lumbridge.features.expenses.data.fixtures.PaymentWorkflowFixtu
 import com.eyther.lumbridge.features.expenses.domain.errors.SettlementError
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesState
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentDetailsScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentFormScreenViewModelContract
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -23,6 +25,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PaymentWorkflowTest {
@@ -57,18 +60,18 @@ class PaymentWorkflowTest {
             runCurrent()
             assertEquals("12.50", viewModel.state.value.amount)
             viewModel.onAmountChanged("20.00")
-            viewModel.onDateChanged("2026-11-17")
+            viewModel.onDateChanged(LocalDate.parse("2026-11-17"))
             runCurrent()
             fixture.source.mutationError = CommonError.NoConnection()
             viewModel.onSave()
             runCurrent()
             assertNotNull(viewModel.state.value.error)
             assertEquals("20.00", viewModel.state.value.amount)
-            assertEquals("2026-11-17", viewModel.state.value.occurredOn)
+            assertEquals(LocalDate.parse("2026-11-17"), viewModel.state.value.occurredOn)
             fixture.source.mutationError = null
             viewModel.onSave()
             runCurrent()
-            assertTrue(viewModel.state.value.saved)
+            assertEquals(PaymentFormScreenViewModelContract.RedirectTo.Saved, viewModel.state.value.redirectTo)
             assertEquals(listOf(3L, 3L), fixture.source.savedPayments.map { it.version })
             assertEquals(listOf("payment", "payment"), fixture.source.savedPayments.map { it.id })
             assertEquals(2000, fixture.source.payment?.amountMinor)
@@ -105,7 +108,7 @@ class PaymentWorkflowTest {
             gate.complete(Unit)
             runCurrent()
             assertEquals(3499, fixture.source.payment?.amountMinor)
-            assertTrue(viewModel.state.value.saved)
+            assertEquals(PaymentFormScreenViewModelContract.RedirectTo.Saved, viewModel.state.value.redirectTo)
             viewModel.onSave()
             runCurrent()
             assertEquals(1, fixture.source.records)
@@ -172,7 +175,7 @@ class PaymentWorkflowTest {
             fixture.source.mutationError = null
             viewModel.onDeleteConfirmed()
             runCurrent()
-            assertTrue(viewModel.state.value.deleted)
+            assertEquals(PaymentDetailsScreenViewModelContract.RedirectTo.Deleted, viewModel.state.value.redirectTo)
             assertEquals(listOf(3L, 3L), fixture.source.removedPayments.map { it.version })
         } finally {
             gate.complete(Unit)

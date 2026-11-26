@@ -39,7 +39,15 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun PaymentDetailsScreen(viewModel: PaymentDetailsScreenViewModelContract, onDeleted: () -> Unit) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    LaunchedEffect(state.deleted) { if (state.deleted) onDeleted() }
+    LaunchedEffect(state.redirectTo) {
+        when (state.redirectTo) {
+            PaymentDetailsScreenViewModelContract.RedirectTo.Deleted -> {
+                viewModel.onNavigationHandled()
+                onDeleted()
+            }
+            null -> Unit
+        }
+    }
     PullToRefreshContentContainer(
         isRefreshing = state.refreshing,
         onRefresh = viewModel::onRefresh,

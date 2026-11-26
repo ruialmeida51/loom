@@ -101,12 +101,7 @@ fun ExpenseFormScreen(
         title = state.title,
         amount = state.amount,
         paidBy = state.paidBy,
-        date =
-            state.occurredOn
-                .takeIf { it.isNotEmpty() }
-                ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-                ?.let { calendarDateText(it) }
-                ?: state.occurredOn,
+        date = state.occurredOn?.let { calendarDateText(it) }.orEmpty(),
         category = state.category,
         recurring = state.recurring,
         amountCurrency = state.amountCurrency.takeIf { state.account != null },

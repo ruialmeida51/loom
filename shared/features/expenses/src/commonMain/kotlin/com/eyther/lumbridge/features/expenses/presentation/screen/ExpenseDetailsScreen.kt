@@ -58,7 +58,15 @@ fun ExpenseDetailsScreen(
             onPicked = viewModel::onReceiptPicked,
             onError = viewModel::onReceiptPickFailed,
         )
-    LaunchedEffect(state.deleted) { if (state.deleted) onDeleted() }
+    LaunchedEffect(state.redirectTo) {
+        when (state.redirectTo) {
+            ExpenseDetailsScreenViewModelContract.RedirectTo.Deleted -> {
+                viewModel.onNavigationHandled()
+                onDeleted()
+            }
+            null -> Unit
+        }
+    }
     PullToRefreshContentContainer(
         isRefreshing = state.refreshing,
         onRefresh = viewModel::onRefresh,

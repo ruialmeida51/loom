@@ -14,6 +14,7 @@ import com.eyther.lumbridge.features.expenses.presentation.viewmodel.PaymentForm
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentDetailsScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentFormScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.usecase.GetMembersUseCase
+import kotlinx.datetime.LocalDate
 
 class PaymentWorkflowFixture {
     val references =
@@ -27,7 +28,7 @@ class PaymentWorkflowFixture {
             from = "you",
             to = "alex",
             amountMinor = 1250,
-            occurredOn = "2026-11-18",
+            occurredOn = LocalDate.parse("2026-11-18"),
             accountId = references.account.id,
             createdBy = "you",
             version = 3,

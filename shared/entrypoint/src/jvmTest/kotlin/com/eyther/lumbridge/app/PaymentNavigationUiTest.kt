@@ -3,13 +3,10 @@ package com.eyther.lumbridge.app
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertTextContains
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -31,15 +28,13 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.eyther.lumbridge.app.demo.DemoPortalHost
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
-import com.eyther.lumbridge.core.domain.todayIso
+import com.eyther.lumbridge.app.testutil.capture
+import com.eyther.lumbridge.core.domain.today
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
-import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Image
 
 @OptIn(ExperimentalTestApi::class)
 class PaymentNavigationUiTest {
@@ -160,7 +155,7 @@ class PaymentNavigationUiTest {
                         from = DemoHouseholdStore.ALEX,
                         to = DemoHouseholdStore.USER,
                         amountMinor = 1250,
-                        occurredOn = todayIso(context.timeZone),
+                        occurredOn = today(context.timeZone),
                         accountId = context.id,
                         createdBy = DemoHouseholdStore.ALEX,
                         version = 1,
@@ -174,15 +169,4 @@ class PaymentNavigationUiTest {
         }
     }
 
-    private fun SkikoComposeUiTest.capture(name: String) {
-        waitForIdle()
-        val directory =
-            File(System.getProperty("loom.screenshots.dir", "build/screenshots")).apply { mkdirs() }
-        File(directory, "$name.png")
-            .writeBytes(
-                Image.makeFromBitmap(captureToImage().asSkiaBitmap())
-                    .encodeToData(EncodedImageFormat.PNG)!!
-                    .bytes,
-            )
-    }
 }

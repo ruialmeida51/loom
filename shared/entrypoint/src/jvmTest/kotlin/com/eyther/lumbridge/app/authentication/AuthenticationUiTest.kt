@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -13,7 +12,6 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -28,17 +26,15 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.app.authentication.data.AuthenticationFixtureDataSource
 import com.eyther.lumbridge.app.navigation.AuthenticationHost
+import com.eyther.lumbridge.app.testutil.capture
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.di.applicationModules
 import com.eyther.lumbridge.features.authentication.domain.datasource.AuthenticationDataSource
 import com.eyther.lumbridge.features.authentication.domain.model.AuthenticationStateDomain
-import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Image
 import org.koin.compose.KoinIsolatedContext
 import org.koin.core.KoinApplication
 import org.koin.dsl.koinApplication
@@ -191,16 +187,4 @@ class AuthenticationUiTest {
         }
     }
 
-    private fun ComposeUiTest.capture(name: String) {
-        waitForIdle()
-        val bitmap = onNodeWithTag("auth_app").captureToImage()
-        val directory =
-            File(System.getProperty("loom.screenshots.dir", "build/screenshots")).apply { mkdirs() }
-        File(directory, "$name.png")
-            .writeBytes(
-                Image.makeFromBitmap(bitmap.asSkiaBitmap())
-                    .encodeToData(EncodedImageFormat.PNG)!!
-                    .bytes,
-            )
-    }
 }

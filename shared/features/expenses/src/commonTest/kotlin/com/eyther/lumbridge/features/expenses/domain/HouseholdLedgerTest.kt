@@ -10,6 +10,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import kotlinx.datetime.LocalDate
 
 class HouseholdLedgerTest {
 
@@ -22,7 +23,7 @@ class HouseholdLedgerTest {
             total,
             "a",
             "Groceries",
-            "2026-11-01",
+            LocalDate.parse("2026-11-01"),
             ExpenseSplitDomain.equal(total, members),
         )
 
@@ -73,7 +74,7 @@ class HouseholdLedgerTest {
         val balances =
             HouseholdLedgerDomain.balances(
                 listOf(expense()),
-                listOf(SettlementDomain("payment", "b", "a", 1000, "2026-11-02")),
+                listOf(SettlementDomain("payment", "b", "a", 1000, LocalDate.parse("2026-11-02"))),
             )
         assertEquals(mapOf("a" to 3000L, "b" to -1000L, "c" to -2000L), balances)
         assertEquals(0, balances.values.sum())
@@ -104,7 +105,7 @@ class HouseholdLedgerTest {
             val balances = HouseholdLedgerDomain.balances(expenses, emptyList())
             val repayments =
                 HouseholdLedgerDomain.suggestions(balances).mapIndexed { index, s ->
-                    SettlementDomain(index.toString(), s.from, s.to, s.amountMinor, "2026-11-02")
+                    SettlementDomain(index.toString(), s.from, s.to, s.amountMinor, LocalDate.parse("2026-11-02"))
                 }
             assertTrue(HouseholdLedgerDomain.balances(expenses, repayments).values.all { it == 0L })
         }

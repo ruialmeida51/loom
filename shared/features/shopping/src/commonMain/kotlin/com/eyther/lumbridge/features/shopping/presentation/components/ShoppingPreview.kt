@@ -3,6 +3,7 @@ package com.eyther.lumbridge.features.shopping.presentation.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -21,9 +22,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.IconTile
+import com.eyther.lumbridge.core.presentation.components.LoomCard
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
-import com.eyther.lumbridge.core.presentation.theme.LoomColors
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
@@ -48,57 +49,53 @@ fun ShoppingPreview(
     moreCount: Int,
     onOpen: () -> Unit,
 ) {
-    Surface(
+    LoomCard(
         onClick = onOpen,
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        shadowElevation = if (LoomColors.cardShadow) 1.dp else 0.dp,
-        border = BorderStroke(1.dp, LoomColors.cardBorder),
-        modifier = Modifier.fillMaxWidth().testTag("home_shopping_card"),
+        modifier = Modifier.testTag("home_shopping_card"),
+        contentPadding = PaddingValues(),
+        verticalArrangement = Arrangement.Top,
     ) {
-        Column {
-            Row(
-                modifier = Modifier.padding(horizontal = LoomSpacing.content, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                IconTile(glyph = list?.icon?.toGlyph() ?: Glyph.SHOPPING)
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    list?.let {
-                        Text(
-                            it.name,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
+        Row(
+            modifier = Modifier.padding(horizontal = LoomSpacing.content, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            IconTile(glyph = list?.icon?.toGlyph() ?: Glyph.SHOPPING)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                list?.let {
                     Text(
-                        pluralStringResource(Res.plurals.preview_to_pick_up, totalCount, totalCount),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        it.name,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
-                LoomIcon(
-                    glyph = Glyph.CHEVRON_RIGHT,
-                    tint = MaterialTheme.colorScheme.outline,
-                    decorative = true,
-                    modifier = Modifier.size(18.dp),
+                Text(
+                    pluralStringResource(Res.plurals.preview_to_pick_up, totalCount, totalCount),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Column(
-                modifier = Modifier.padding(horizontal = LoomSpacing.content, vertical = 8.dp),
-            ) {
-                items.forEach { item -> PreviewLine(item = item) }
-                if (moreCount > 0)
-                    Text(
-                        pluralStringResource(Res.plurals.preview_more, moreCount, moreCount),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(start = BulletSize + 12.dp, top = 4.dp, bottom = 6.dp),
-                    )
-            }
+            LoomIcon(
+                glyph = Glyph.CHEVRON_RIGHT,
+                tint = MaterialTheme.colorScheme.outline,
+                decorative = true,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        Column(
+            modifier = Modifier.padding(horizontal = LoomSpacing.content, vertical = 8.dp),
+        ) {
+            items.forEach { item -> PreviewLine(item = item) }
+            if (moreCount > 0)
+                Text(
+                    pluralStringResource(Res.plurals.preview_more, moreCount, moreCount),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = BulletSize + 12.dp, top = 4.dp, bottom = 6.dp),
+                )
         }
     }
 }

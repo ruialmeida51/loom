@@ -1,12 +1,9 @@
 package com.eyther.lumbridge.app
 
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -22,17 +19,15 @@ import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.DemoPortalHost
 import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
+import com.eyther.lumbridge.app.testutil.capture
 import com.eyther.lumbridge.core.data.local.PlatformStorage
-import com.eyther.lumbridge.core.domain.todayIso
+import com.eyther.lumbridge.core.domain.today
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
-import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Image
 
 @OptIn(ExperimentalTestApi::class)
 class HouseholdPolishUiTest {
@@ -47,7 +42,7 @@ class HouseholdPolishUiTest {
                         from = DemoHouseholdStore.ALEX,
                         to = DemoHouseholdStore.USER,
                         amountMinor = 1250,
-                        occurredOn = todayIso(store.context.timeZone),
+                        occurredOn = today(store.context.timeZone),
                         accountId = store.context.id,
                         createdBy = DemoHouseholdStore.ALEX,
                         version = 1,
@@ -146,19 +141,6 @@ class HouseholdPolishUiTest {
             }
         }
 
-    private fun SkikoComposeUiTest.capture(name: String) {
-        waitForIdle()
-        val folder =
-            File(System.getProperty("loom.screenshots.dir", "build/screenshots")).apply { mkdirs() }
-        File(folder, "$name.png")
-            .writeBytes(
-                requireNotNull(
-                        Image.makeFromBitmap(captureToImage().asSkiaBitmap())
-                            .encodeToData(EncodedImageFormat.PNG),
-                    )
-                    .bytes,
-            )
-    }
 
     /** The payment is the last row: lift it above the Add expense button, then open its menu. */
     private fun ComposeUiTest.openPaymentMenu() {

@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.di
 
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
 import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
@@ -198,6 +199,11 @@ class LoomGraphTest {
                 override suspend fun setNotifications(enabled: Boolean): AppResult<Unit> =
                     AppResult.Success(Unit)
             }
+        val rates =
+            object : ExchangeRateDataSource {
+                override suspend fun latestRate(from: String, to: String): AppResult<String> =
+                    AppResult.Success("1")
+            }
         val first = koinApplication {
             modules(
                 householdModules(
@@ -206,6 +212,7 @@ class LoomGraphTest {
                     householdDataSource = households,
                     analyticsDataSource = analytics,
                     settingsDataSource = settings,
+                    exchangeRateDataSource = rates,
                 ),
             )
         }
@@ -217,6 +224,7 @@ class LoomGraphTest {
                     householdDataSource = households,
                     analyticsDataSource = analytics,
                     settingsDataSource = settings,
+                    exchangeRateDataSource = rates,
                 ),
             )
         }

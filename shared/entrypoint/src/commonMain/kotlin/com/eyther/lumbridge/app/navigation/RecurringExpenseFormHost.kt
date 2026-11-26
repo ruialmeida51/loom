@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.app.navigation
 
+import com.eyther.lumbridge.core.domain.today
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.eyther.lumbridge.app.navigation.components.BusyNavigationGuard
@@ -43,7 +44,7 @@ internal fun RecurringExpenseFormHost(
     val sheets = rememberBottomSheetController()
     sheets.registerBottomSheet<RecurringExpenseFormSheets.Date> {
         ExpenseDateBottomSheet(
-            date = formState.nextOn,
+            date = formState.nextOn ?: today(),
             onSelected = { date ->
                 viewModel.onDateChanged(date)
                 sheets.hideBottomSheet()

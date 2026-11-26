@@ -8,6 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.datetime.LocalDate
 
 class BalancePresentationTest {
     @Test
@@ -20,7 +21,7 @@ class BalancePresentationTest {
                 amountMinor = 100,
                 paidBy = "you",
                 category = "Other",
-                occurredOn = occurredOn,
+                occurredOn = LocalDate.parse(occurredOn),
                 shares = mapOf("you" to 100L),
                 createdAt = createdAt,
             )
@@ -42,7 +43,7 @@ class BalancePresentationTest {
                             from = "alex",
                             to = "you",
                             amountMinor = 100,
-                            occurredOn = "2026-11-19",
+                            occurredOn = LocalDate.parse("2026-11-19"),
                             createdAt = "2026-11-20T12:00:00Z",
                         ),
                     ),

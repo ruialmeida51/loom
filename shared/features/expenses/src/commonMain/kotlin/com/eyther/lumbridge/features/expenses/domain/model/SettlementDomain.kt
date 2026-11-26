@@ -1,11 +1,13 @@
 package com.eyther.lumbridge.features.expenses.domain.model
 
+import kotlinx.datetime.LocalDate
+
 data class SettlementDomain(
     val id: String,
     val from: String,
     val to: String,
     val amountMinor: Long,
-    val occurredOn: String,
+    val occurredOn: LocalDate,
     val accountId: String = "",
     val createdBy: String = "",
     val version: Long = 0,

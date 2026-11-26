@@ -109,7 +109,7 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
         }
         if (!exists) {
             if (expense.recurring) {
-                val date = LocalDate.parse(expense.occurredOn)
+                val date = expense.occurredOn
                 store.recurring.update {
                     it +
                         RecurringExpenseDomain(
@@ -118,7 +118,7 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
                             expense.amountMinor,
                             expense.paidBy,
                             expense.category,
-                            MonthlyRecurrenceDomain.nextAfter(date, date.day).toString(),
+                            MonthlyRecurrenceDomain.nextAfter(date, date.day),
                             date.day,
                             true,
                             false,

@@ -1,12 +1,10 @@
 package com.eyther.lumbridge.app
 
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -22,13 +20,11 @@ import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
+import com.eyther.lumbridge.app.testutil.capture
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
-import java.io.File
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Image
 
 @OptIn(ExperimentalTestApi::class)
 class TasksUiTest {
@@ -131,15 +127,4 @@ class TasksUiTest {
         }
     }
 
-    private fun SkikoComposeUiTest.capture(name: String) {
-        waitForIdle()
-        val directory =
-            File(System.getProperty("loom.screenshots.dir", "build/screenshots")).apply { mkdirs() }
-        File(directory, "$name.png")
-            .writeBytes(
-                Image.makeFromBitmap(captureToImage().asSkiaBitmap())
-                    .encodeToData(EncodedImageFormat.PNG)!!
-                    .bytes,
-            )
-    }
 }

@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.LocalDate
 import kotlinx.io.bytestring.ByteString
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -119,7 +120,7 @@ class ExpenseReceiptPreviewTest {
                     amountMinor = 2000,
                     paidBy = "you",
                     category = "Other",
-                    occurredOn = "2026-11-19",
+                    occurredOn = LocalDate.parse("2026-11-19"),
                     shares = mapOf("you" to 1000, "alex" to 1000),
                     accountId = fixture.account.id,
                     version = 3,

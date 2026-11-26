@@ -19,6 +19,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -38,7 +39,7 @@ class SettlementDataSourceTest {
             from = "you",
             to = "alex",
             amountMinor = 1250,
-            occurredOn = "2026-11-18",
+            occurredOn = LocalDate.parse("2026-11-18"),
             accountId = "trip",
             createdBy = "you",
             version = 3,

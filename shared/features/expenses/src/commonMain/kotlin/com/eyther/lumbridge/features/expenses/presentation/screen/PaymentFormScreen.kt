@@ -59,9 +59,13 @@ fun PaymentFormScreen(
     onChooseDate: () -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    LaunchedEffect(state.saved) {
-        if (state.saved) {
-            onSaved()
+    LaunchedEffect(state.redirectTo) {
+        when (state.redirectTo) {
+            PaymentFormScreenViewModelContract.RedirectTo.Saved -> {
+                viewModel.onNavigationHandled()
+                onSaved()
+            }
+            null -> Unit
         }
     }
     InnerPaymentFormScreen(

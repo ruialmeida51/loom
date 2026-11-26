@@ -1,12 +1,14 @@
 package com.eyther.lumbridge.features.expenses.domain.model
 
+import kotlinx.datetime.LocalDate
+
 data class ExpenseDomain(
     val id: String,
     val title: String,
     val amountMinor: Long,
     val paidBy: String,
     val category: String,
-    val occurredOn: String,
+    val occurredOn: LocalDate,
     val shares: Map<String, Long>,
     val recurring: Boolean = false,
     val accountId: String = "",

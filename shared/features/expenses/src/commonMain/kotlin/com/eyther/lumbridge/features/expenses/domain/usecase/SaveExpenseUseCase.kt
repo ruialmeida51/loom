@@ -30,13 +30,7 @@ class SaveExpenseUseCase(
         requireDomain(expense.title.trim().length in 1..160) {
             ExpenseError.InvalidTitle()
         }
-        val date =
-            try {
-                LocalDate.parse(expense.occurredOn)
-            } catch (_: IllegalArgumentException) {
-                throw ExpenseError.InvalidPaymentDate()
-            }
-        requireDomain(date <= LocalDate.parse(todayIso(context.timeZone))) {
+        requireDomain(expense.occurredOn <= LocalDate.parse(todayIso(context.timeZone))) {
             ExpenseError.FuturePaymentDate()
         }
         ExpenseSplitDomain.validate(expense.amountMinor, expense.shares)

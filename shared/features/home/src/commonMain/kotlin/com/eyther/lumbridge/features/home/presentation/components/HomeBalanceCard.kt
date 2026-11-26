@@ -1,18 +1,15 @@
 package com.eyther.lumbridge.features.home.presentation.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,11 +18,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomCard
 import com.eyther.lumbridge.core.presentation.components.LoomTonalButton
 import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.extensions.shimmer
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
-import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.home.generated.resources.Res
 import com.eyther.lumbridge.features.home.generated.resources.home_add_expense
 import com.eyther.lumbridge.features.home.generated.resources.home_balance_owed
@@ -54,30 +51,24 @@ internal fun HomeBalanceCard(
     onBalances: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth().testTag("home_balance_card"),
+    LoomCard(
+        modifier = modifier.testTag("home_balance_card"),
         shape = MaterialTheme.shapes.extraLarge,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        shadowElevation = if (LoomColors.cardShadow) 1.dp else 0.dp,
-        border = BorderStroke(1.dp, LoomColors.cardBorder),
+        contentPadding = PaddingValues(CardPadding),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Column(
-            Modifier.padding(CardPadding),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            if (balance == null) BalanceSkeleton() else BalanceSummary(balance)
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                LoomButton(
-                    text = stringResource(Res.string.home_add_expense),
-                    onClick = onAddExpense,
-                    modifier = Modifier.weight(1f).testTag("home_add_expense"),
-                )
-                LoomTonalButton(
-                    text = stringResource(Res.string.home_balances),
-                    onClick = onBalances,
-                    modifier = Modifier.weight(1f).testTag("home_balances"),
-                )
-            }
+        if (balance == null) BalanceSkeleton() else BalanceSummary(balance)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            LoomButton(
+                text = stringResource(Res.string.home_add_expense),
+                onClick = onAddExpense,
+                modifier = Modifier.weight(1f).testTag("home_add_expense"),
+            )
+            LoomTonalButton(
+                text = stringResource(Res.string.home_balances),
+                onClick = onBalances,
+                modifier = Modifier.weight(1f).testTag("home_balances"),
+            )
         }
     }
 }

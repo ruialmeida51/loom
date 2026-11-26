@@ -49,7 +49,15 @@ fun ExpenseAccountFormScreen(
     onSaved: (String) -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    LaunchedEffect(state.savedId) { state.savedId?.let(onSaved) }
+    LaunchedEffect(state.redirectTo) {
+        when (val redirect = state.redirectTo) {
+            is ExpenseAccountFormScreenViewModelContract.RedirectTo.Saved -> {
+                viewModel.onNavigationHandled()
+                onSaved(redirect.accountId)
+            }
+            null -> Unit
+        }
+    }
     InnerExpenseAccountFormScreen(
         name = state.name,
         currency = state.currency,

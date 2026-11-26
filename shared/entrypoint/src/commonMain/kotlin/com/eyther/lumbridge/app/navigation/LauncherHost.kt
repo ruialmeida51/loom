@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.app.navigation
 
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.platform.LocalUriHandler
@@ -28,6 +29,7 @@ fun LauncherHost() {
     val profileDataSource: ProfileDataSource = koinInject()
     val analyticsDataSource: AnalyticsDataSource = koinInject()
     val diagnosticsDataSource: DiagnosticsDataSource = koinInject()
+    val exchangeRateDataSource = koinInject<ExchangeRateDataSource>()
     val uriHandler = LocalUriHandler.current
     SessionScreen(
         viewModel = viewModel,
@@ -49,6 +51,7 @@ fun LauncherHost() {
                     profileDataSource = profileDataSource,
                     analyticsDataSource = analyticsDataSource,
                     diagnosticsDataSource = diagnosticsDataSource,
+                    exchangeRateDataSource = exchangeRateDataSource,
                     signingOut = signingOut,
                     signOutError = signOutError,
                     onSelect = viewModel::onHouseholdSelected,

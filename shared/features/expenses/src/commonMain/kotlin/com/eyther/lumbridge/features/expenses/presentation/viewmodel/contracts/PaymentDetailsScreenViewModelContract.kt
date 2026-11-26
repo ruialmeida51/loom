@@ -1,9 +1,15 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
+import androidx.compose.runtime.Stable
+
 import com.eyther.lumbridge.core.viewmodel.LoomViewModel
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class PaymentDetailsScreenViewModelContract : LoomViewModel() {
+    sealed interface RedirectTo {
+        @Stable data object Deleted : RedirectTo
+    }
+
     data class Params(val accountId: String, val paymentId: String)
 
     abstract val state: StateFlow<PaymentDetailsState>
@@ -19,4 +25,6 @@ abstract class PaymentDetailsScreenViewModelContract : LoomViewModel() {
     abstract fun onDeleteConfirmed()
 
     abstract fun onDismissError()
+
+    abstract fun onNavigationHandled()
 }

@@ -5,18 +5,15 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextContains
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -37,18 +34,16 @@ import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.home.data.EmptyHomeViewModel
 import com.eyther.lumbridge.app.home.data.HomeRetryFixture
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
+import com.eyther.lumbridge.app.testutil.capture
 import com.eyther.lumbridge.core.presentation.components.toolbar.Toolbar
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.home.presentation.screen.HomeScreen
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
-import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.cancel
-import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Image
 
 @OptIn(ExperimentalTestApi::class)
 class DesignFlowsUiTest {
@@ -76,7 +71,7 @@ class DesignFlowsUiTest {
                 onAllNodesWithTag("edit_Limes").fetchSemanticsNodes().isNotEmpty()
             }
             onNodeWithTag("shopping_draft_input").assertIsFocused()
-            captureNode(tag = "loom_app", name = "shopping-keep-entry-narrow")
+            capture(name = "shopping-keep-entry-narrow", tag = "loom_app")
             val rows =
                 onAllNodes(hasTestTagPrefix("edit_")).fetchSemanticsNodes().map {
                     it.config[SemanticsProperties.TestTag]
@@ -110,7 +105,7 @@ class DesignFlowsUiTest {
             onNodeWithText("Use 1–80 characters for your nickname.").assertExists()
             onNodeWithTag("nickname_input").assertTextContains("x".repeat(81))
             onNodeWithTag("nickname_input").performTextReplacement("Rui")
-            captureNode(tag = "modal_sheet", name = "nickname-sheet-light")
+            capture(name = "nickname-sheet-light", tag = "modal_sheet")
             onNodeWithTag("save_nickname").performClick()
             waitUntil(timeoutMillis = 5000) {
                 onAllNodesWithTag("save_nickname").fetchSemanticsNodes().isEmpty()
@@ -130,7 +125,7 @@ class DesignFlowsUiTest {
             onNodeWithTag("appearance_preference").performScrollTo().performClick()
             onNodeWithText("Dark", useUnmergedTree = true).performClick()
             onNodeWithTag("edit_nickname").performScrollTo().performClick()
-            captureNode(tag = "modal_sheet", name = "nickname-sheet-dark")
+            capture(name = "nickname-sheet-dark", tag = "modal_sheet")
         }
 
     @Test
@@ -157,7 +152,7 @@ class DesignFlowsUiTest {
             onNodeWithTag("home_content").performScrollToNode(hasTestTag("home_shopping_preview"))
             onNodeWithTag("home_shopping_preview").assertExists()
             onNodeWithText("Nothing to pick up. You’re all stocked up.").assertExists()
-            captureNode(tag = "empty_home", name = "home-empty-light")
+            capture(name = "home-empty-light", tag = "empty_home")
             onNodeWithTag("home_content").performScrollToNode(hasTestTag("home_add_expense"))
             onNodeWithTag("home_add_expense").performClick()
             assertTrue(openedExpense)
@@ -229,19 +224,6 @@ class DesignFlowsUiTest {
         }
     }
 
-    private fun SkikoComposeUiTest.captureNode(tag: String, name: String) {
-        waitForIdle()
-        onNodeWithTag(tag).assertIsDisplayed()
-        val bitmap = captureToImage()
-        val directory =
-            File(System.getProperty("loom.screenshots.dir", "build/screenshots")).apply { mkdirs() }
-        File(directory, "$name.png")
-            .writeBytes(
-                Image.makeFromBitmap(bitmap.asSkiaBitmap())
-                    .encodeToData(EncodedImageFormat.PNG)!!
-                    .bytes,
-            )
-    }
 
     private fun hasTestTagPrefix(prefix: String): SemanticsMatcher =
         SemanticsMatcher("TestTag starts with $prefix") { node ->

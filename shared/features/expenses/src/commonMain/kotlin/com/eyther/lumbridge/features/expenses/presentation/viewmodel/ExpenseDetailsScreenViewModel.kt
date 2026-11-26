@@ -21,6 +21,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.receipt_delete
 import com.eyther.lumbridge.features.expenses.generated.resources.receipt_saved
 import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesTextResource
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseDetailsScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseDetailsScreenViewModelContract.RedirectTo
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseDetailsState
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import kotlinx.coroutines.Job
@@ -281,7 +282,7 @@ class ExpenseDetailsScreenViewModel(
         if (
             state.value.loading ||
                 state.value.busy ||
-                state.value.deleted ||
+                state.value.redirectTo != null ||
                 state.value.receiptPhoto != null ||
                 state.value.showDeleteConfirmation ||
                 state.value.showReceiptDeletion
@@ -319,7 +320,11 @@ class ExpenseDetailsScreenViewModel(
             mutableState.update { oldState ->
                 when (result) {
                     is AppResult.Success ->
-                        oldState.copy(busy = false, deleted = true, showDeleteConfirmation = false)
+                        oldState.copy(
+                            busy = false,
+                            redirectTo = RedirectTo.Deleted,
+                            showDeleteConfirmation = false,
+                        )
                     is AppResult.Failure ->
                         oldState.copy(
                             busy = false,
@@ -379,5 +384,9 @@ class ExpenseDetailsScreenViewModel(
                 onContentChanged()
             }
         }
+    }
+
+    override fun onNavigationHandled() {
+        mutableState.update { oldState -> oldState.copy(redirectTo = null) }
     }
 }

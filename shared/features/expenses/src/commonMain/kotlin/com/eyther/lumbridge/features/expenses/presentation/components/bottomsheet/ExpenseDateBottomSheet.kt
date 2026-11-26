@@ -18,18 +18,18 @@ import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExpenseDateBottomSheet(date: String, onSelected: (String) -> Unit, onClose: () -> Unit) {
+fun ExpenseDateBottomSheet(date: LocalDate, onSelected: (LocalDate) -> Unit, onClose: () -> Unit) {
     val picker =
         rememberDatePickerState(
             initialSelectedDateMillis =
-                LocalDate.parse(date).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
+                date.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
         )
     FormBottomSheet(
         title = stringResource(Res.string.form_date),
         onAction = {
             picker.selectedDateMillis?.let {
                 onSelected(
-                    Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date.toString(),
+                    Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date,
                 )
             }
         },

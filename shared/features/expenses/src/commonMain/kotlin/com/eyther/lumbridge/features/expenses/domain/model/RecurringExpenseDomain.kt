@@ -1,12 +1,14 @@
 package com.eyther.lumbridge.features.expenses.domain.model
 
+import kotlinx.datetime.LocalDate
+
 data class RecurringExpenseDomain(
     val id: String,
     val title: String,
     val amountMinor: Long,
     val paidBy: String,
     val category: String,
-    val nextOn: String,
+    val nextOn: LocalDate,
     val anchorDay: Int,
     val active: Boolean,
     val cancelled: Boolean,

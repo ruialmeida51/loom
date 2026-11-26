@@ -13,7 +13,7 @@ internal fun RecurringExpenseDomain.toSaveRequest(
         title = title,
         amountMinor = amountMinor,
         paidBy = paidBy,
-        nextOn = nextOn,
+        nextOn = nextOn.toString(),
         shares = shares,
         splitMethod = splitMethod.name.lowercase(),
         splitValues = splitValues,

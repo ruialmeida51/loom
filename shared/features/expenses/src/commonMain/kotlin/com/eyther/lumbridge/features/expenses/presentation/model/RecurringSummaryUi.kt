@@ -26,7 +26,7 @@ data class RecurringSummaryUi(
                 nextAmount =
                     next?.let { MoneyDomain(minorUnits = it.amountMinor, currency = currency) }
                         ?.formatted(),
-                nextOn = next?.nextOn?.let { runCatching { LocalDate.parse(it) }.getOrNull() },
+                nextOn = next?.nextOn,
             )
         }
     }

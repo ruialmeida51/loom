@@ -14,6 +14,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -88,7 +89,7 @@ class RecurringExpenseFormTest {
             assertEquals("40.00", model.state.value.amount)
             assertEquals("Monthly rent", model.state.value.title)
             assertNotNull(model.state.value.error)
-            assertFalse(model.state.value.saved)
+            assertNull(model.state.value.redirectTo)
             source.saveGate = null
             model.onSave()
             runCurrent()
@@ -97,7 +98,7 @@ class RecurringExpenseFormTest {
                 source.saves.last(),
                 "Retry retains original version and draft",
             )
-            assertTrue(model.state.value.saved)
+            assertEquals(RecurringExpenseFormScreenViewModelContract.RedirectTo.Saved, model.state.value.redirectTo)
             assertFalse(source.saves.last().active)
         } finally {
             store.clear()

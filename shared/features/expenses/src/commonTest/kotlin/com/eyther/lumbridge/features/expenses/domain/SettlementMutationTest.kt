@@ -13,6 +13,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDate
 
 class SettlementMutationTest {
     private val payment =
@@ -21,7 +22,7 @@ class SettlementMutationTest {
             from = "you",
             to = "alex",
             amountMinor = 1250,
-            occurredOn = "2026-11-18",
+            occurredOn = LocalDate.parse("2026-11-18"),
             accountId = "trip",
             createdBy = "you",
             version = 3,
@@ -31,9 +32,7 @@ class SettlementMutationTest {
     fun malformedDatesAndMissingVersionsAreTypedAndNeverReachTheWritePort() = runTest {
         val source = SettlementFixtureDataSource()
         val save = SaveSettlementUseCase(source)
-        assertIs<ExpenseError.InvalidPaymentDate>(
-            assertIs<AppResult.Failure>(save(payment.copy(occurredOn = "not-a-date"))).error,
-        )
+        // An unreadable date can no longer reach the use case: dates are LocalDate end to end.
         assertIs<SettlementError.Changed>(
             assertIs<AppResult.Failure>(save(payment.copy(version = 0))).error,
         )

@@ -22,11 +22,6 @@ class SaveRecurringExpenseUseCase(
             requireDomain(rule.title.trim().length in 1..MAX_TITLE_LENGTH) {
                 ExpenseError.InvalidTitle()
             }
-            try {
-                LocalDate.parse(rule.nextOn)
-            } catch (cause: IllegalArgumentException) {
-                throw RecurringExpenseError.InvalidDate(cause = cause)
-            }
             ExpenseSplitDomain.validate(amountMinor = rule.amountMinor, shares = rule.shares)
             recurringExpenseDataSource
                 .save(rule = rule.copy(title = rule.title.trim()))

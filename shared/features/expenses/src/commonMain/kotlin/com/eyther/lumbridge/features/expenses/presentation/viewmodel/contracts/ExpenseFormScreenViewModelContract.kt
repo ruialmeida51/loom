@@ -5,6 +5,7 @@ import com.eyther.lumbridge.core.viewmodel.LoomViewModel
 import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelectionDomain
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.datetime.LocalDate
 
 abstract class ExpenseFormScreenViewModelContract : LoomViewModel() {
     data class Params(
@@ -39,7 +40,7 @@ abstract class ExpenseFormScreenViewModelContract : LoomViewModel() {
 
     abstract fun onPayerChanged(value: String)
 
-    abstract fun onDateChanged(value: String)
+    abstract fun onDateChanged(value: LocalDate)
 
     abstract fun onCategoryChanged(value: String)
 
