@@ -1,22 +1,17 @@
 package com.eyther.lumbridge.app
 
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.SkikoComposeUiTest
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import com.eyther.lumbridge.app.demo.LoomDemoApp
+import com.eyther.lumbridge.app.testutil.capture
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
-import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Image
 
 @OptIn(ExperimentalTestApi::class)
 class NewsPicturesUiTest {
@@ -51,15 +46,4 @@ class NewsPicturesUiTest {
             capture("news-list-pictures")
         }
 
-    private fun SkikoComposeUiTest.capture(name: String) {
-        waitForIdle()
-        val directory =
-            File(System.getProperty("loom.screenshots.dir", "build/screenshots")).apply { mkdirs() }
-        File(directory, "$name.png")
-            .writeBytes(
-                Image.makeFromBitmap(captureToImage().asSkiaBitmap())
-                    .encodeToData(EncodedImageFormat.PNG)!!
-                    .bytes,
-            )
-    }
 }

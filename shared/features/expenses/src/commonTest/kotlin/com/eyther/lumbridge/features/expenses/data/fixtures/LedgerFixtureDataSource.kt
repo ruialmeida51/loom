@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.datetime.LocalDate
 
 /** An account's ledger held in memory, paged the way the server pages it. */
 class LedgerFixtureDataSource : ExpenseDataSource {
@@ -121,7 +122,7 @@ class LedgerFixtureDataSource : ExpenseDataSource {
                 amountMinor = amountMinor,
                 paidBy = "you",
                 category = "Other",
-                occurredOn = "2026-11-20",
+                occurredOn = LocalDate.parse("2026-11-20"),
                 shares = mapOf("alex" to amountMinor),
                 accountId = account.id,
                 createdAt = (start - secondsAgo.seconds).toString(),
@@ -133,7 +134,7 @@ class LedgerFixtureDataSource : ExpenseDataSource {
                 from = "alex",
                 to = "you",
                 amountMinor = 100,
-                occurredOn = "2026-11-20",
+                occurredOn = LocalDate.parse("2026-11-20"),
                 accountId = account.id,
                 createdAt = (start - secondsAgo.seconds).toString(),
             )

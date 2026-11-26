@@ -1,10 +1,16 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
+import androidx.compose.runtime.Stable
+
 import com.eyther.lumbridge.core.viewmodel.LoomViewModel
 import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class ExpenseDetailsScreenViewModelContract : LoomViewModel() {
+    sealed interface RedirectTo {
+        @Stable data object Deleted : RedirectTo
+    }
+
     data class Params(val accountId: String, val expenseId: String)
 
     abstract val state: StateFlow<ExpenseDetailsState>
@@ -36,4 +42,6 @@ abstract class ExpenseDetailsScreenViewModelContract : LoomViewModel() {
     abstract fun onDeleteConfirmed()
 
     abstract fun onDismissError()
+
+    abstract fun onNavigationHandled()
 }

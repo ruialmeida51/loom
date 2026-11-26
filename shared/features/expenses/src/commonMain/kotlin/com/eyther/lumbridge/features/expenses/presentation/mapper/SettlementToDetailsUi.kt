@@ -18,7 +18,7 @@ fun SettlementDomain.toDetailsUi(
         toName = members.firstOrNull { it.id == to }?.name,
         isUserSender = from == userId,
         isUserRecipient = to == userId,
-        occurredOn = LocalDate.parse(occurredOn),
+        occurredOn = occurredOn,
         accountName = account.name,
         isEveryday = account.isDefault,
     )

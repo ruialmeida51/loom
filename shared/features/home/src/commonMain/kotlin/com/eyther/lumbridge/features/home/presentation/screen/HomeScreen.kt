@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,12 +12,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.IllustratedEmptyState
-import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.RefreshSkeletonContent
+import com.eyther.lumbridge.core.presentation.components.RetryNotice
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -267,7 +266,7 @@ private fun InnerHomeScreen(
                         GroupedSurface {
                             tasks.forEach { task ->
                                 HomeTaskRow(task = task, onClick = onTasks)
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                LoomDivider()
                             }
                             if (tasks.isEmpty() && hasTasks) {
                                 Text(
@@ -278,7 +277,7 @@ private fun InnerHomeScreen(
                                         Modifier.padding(LoomSpacing.content)
                                             .testTag("home_tasks_empty"),
                                 )
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                LoomDivider()
                             }
                             HomeAddTaskRow(
                                 label = stringResource(Res.string.home_add_task),
@@ -341,10 +340,10 @@ private fun InnerHomeScreen(
 
 @Composable
 private fun HomeSectionError(message: TextResource, onDismiss: (() -> Unit)?, onRetry: () -> Unit) {
-    ErrorNotice(message = message, onDismiss = onDismiss)
-    LoomSecondaryButton(
-        text = stringResource(Res.string.ui_try_again),
-        onClick = onRetry,
-        modifier = Modifier,
+    RetryNotice(
+        message = message,
+        onRetry = onRetry,
+        onDismiss = onDismiss,
+        retryText = stringResource(Res.string.ui_try_again),
     )
 }

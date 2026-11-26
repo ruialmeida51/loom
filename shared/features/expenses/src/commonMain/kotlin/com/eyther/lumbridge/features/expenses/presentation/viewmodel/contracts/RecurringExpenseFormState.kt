@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
+import kotlinx.datetime.LocalDate
 import com.eyther.lumbridge.core.domain.errors.AppError
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
@@ -21,12 +22,12 @@ data class RecurringExpenseFormState(
     val title: String = "",
     val amount: String = "",
     val paidBy: String = "",
-    val nextOn: String = "",
+    val nextOn: LocalDate? = null,
     val split: ExpenseSplitSelectionDomain =
         ExpenseSplitSelectionDomain(ExpenseSplitMethodDomain.AMOUNTS, emptySet()),
     val loading: Boolean = true,
     val busy: Boolean = false,
-    val saved: Boolean = false,
+    val redirectTo: RecurringExpenseFormScreenViewModelContract.RedirectTo? = null,
     val error: TextResource? = null,
 ) {
     val payerMembers: ImmutableList<MemberDomain> =
@@ -41,7 +42,7 @@ data class RecurringExpenseFormState(
     val canSave: Boolean =
         !loading &&
             !busy &&
-            !saved &&
+            redirectTo == null &&
             title.isNotBlank() &&
             amount.isNotBlank() &&
             account?.archived == false &&

@@ -1,6 +1,6 @@
 package com.eyther.lumbridge.app.demo.data
 
-import com.eyther.lumbridge.core.domain.todayIso
+import com.eyther.lumbridge.core.domain.today
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.expenses.domain.datasource.RecurringExpenseDataSource
@@ -64,11 +64,10 @@ class DemoRecurringExpenseDataSource(private val store: DemoHouseholdStore) :
                 nextOn =
                     if (action == RecurringExpenseActionDomain.RESUME)
                         MonthlyRecurrenceDomain.resumeOn(
-                                LocalDate.parse(current.nextOn),
-                                LocalDate.parse(todayIso(store.context.timeZone)),
+                                current.nextOn,
+                                today(store.context.timeZone),
                                 current.anchorDay,
                             )
-                            .toString()
                     else current.nextOn,
             )
         store.recurring.update { it.map { old -> if (old.id == saved.id) saved else old } }

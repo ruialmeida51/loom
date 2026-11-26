@@ -18,7 +18,7 @@ internal fun ExpenseDomain.toDetailsUi(
         title = title,
         amount = MoneyDomain(minorUnits = amountMinor, currency = account.currency).formatted(),
         category = category,
-        occurredOn = LocalDate.parse(occurredOn),
+        occurredOn = occurredOn,
         payerName = memberNames[paidBy],
         accountName = account.name,
         isEveryday = account.isDefault,

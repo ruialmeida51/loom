@@ -21,3 +21,21 @@ Use full-screen details and create/edit forms for expenses and payments. Keep fo
 pickers and small settings forms in sheets, and dialogs for brief destructive confirmations. Delete is a filled or
 outlined button, including confirmations, with progress and sibling disabling. List selectors dismiss on
 selection; no redundant Done when there is no draft to commit.
+
+## Pagination
+
+Adapted from Plannot's pagination pattern, with keyset cursors instead of page numbers.
+
+- Domain: a page is `CursorPageDomain<T, C>` (core `domain/pagination`); `nextCursor == null` is the
+  end, including an exactly-full last page. A feature may keep its own page type only when it
+  builds pages itself (the Money ledger merges expenses and repayments).
+- State: the VM exposes `PaginationUi(hasMore, loadingMore, loadMoreError, enabled)`. `enabled` is
+  false while the list as a whole loads, fails or shows another view.
+- Screen: `PaginatedLazyColumn` with the `LazyListState` created in the Screen. The destination
+  lays out its own rows; the component appends the loading row or the failed page's message with
+  Try again, and calls `onLoadMore` near the end through `HandleOnLoadMore`, which keys its dedupe
+  on the row count so a fling that stays at the end keeps paging.
+- ViewModel: guard duplicate reads with the in-flight `Job` (or a flag set synchronously before
+  the request). A failed page sets `loadMoreError` and paging stops until `onRetryLoadMore`; it
+  never replaces the loaded rows with a full-screen error. Every first-page read cancels the
+  in-flight page so an old page never lands on a new list.

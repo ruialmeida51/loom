@@ -3,6 +3,7 @@ package com.eyther.lumbridge.app.demo.data
 import androidx.compose.runtime.getValue
 import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.nowIso
+import com.eyther.lumbridge.core.domain.today
 import com.eyther.lumbridge.core.domain.todayIso
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
@@ -171,7 +172,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     8645,
                     USER,
                     "Groceries",
-                    todayIso(context.timeZone),
+                    today(context.timeZone),
                     ExpenseSplitDomain.equal(8645, memberIds),
                     createdAt = (Clock.System.now() - 3.hours).toString(),
                 ),
@@ -181,7 +182,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     3990,
                     ALEX,
                     "Bills",
-                    todayIso(context.timeZone),
+                    today(context.timeZone),
                     ExpenseSplitDomain.equal(3990, memberIds),
                     accountId = context.id,
                     splitMethod = ExpenseSplitMethodDomain.EQUAL,
@@ -195,7 +196,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     5400,
                     SAM,
                     "Food & drink",
-                    todayIso(context.timeZone),
+                    today(context.timeZone),
                     ExpenseSplitDomain.equal(5400, memberIds),
                     createdAt = (Clock.System.now() - 1.hours).toString(),
                 ),
@@ -205,7 +206,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     18000,
                     USER,
                     "Other",
-                    todayIso(context.timeZone),
+                    today(context.timeZone),
                     ExpenseSplitDomain.equal(18000, listOf(USER, ALEX, MARTA)),
                     accountId = TRIP,
                     splitMethod = ExpenseSplitMethodDomain.EQUAL,
@@ -238,7 +239,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     3990,
                     ALEX,
                     "Bills",
-                    MonthlyRecurrenceDomain.nextAfter(today, today.day).toString(),
+                    MonthlyRecurrenceDomain.nextAfter(today, today.day),
                     today.day,
                     true,
                     false,

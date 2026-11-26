@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -33,6 +32,7 @@ import com.eyther.lumbridge.app.navigation.push.PendingPush
 import com.eyther.lumbridge.core.navigation.composables.navigation3.DefaultNavDisplay
 import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
@@ -92,7 +92,7 @@ fun HouseholdHost(
             if (showTabs)
                 BoxWithConstraints {
                     val tabWidth = maxWidth / roots.size
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LoomDivider()
                     NavigationBar(
                         modifier = Modifier.padding(top = 1.dp),
                         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,

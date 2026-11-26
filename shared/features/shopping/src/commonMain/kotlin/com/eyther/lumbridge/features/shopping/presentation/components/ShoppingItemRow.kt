@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -29,6 +30,7 @@ import com.eyther.lumbridge.features.shopping.generated.resources.ui_favorite_re
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_item_options
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_move_to_list
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_remove
+import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -80,7 +82,7 @@ fun ShoppingItemRow(
                 square = selectionMode,
                 modifier =
                     Modifier.size(48.dp).testTag("check_${item.name}").semantics {
-                        contentDescription = item.name
+                        contentDescription = item.displayName()
                     },
             )
             if (editing)
@@ -106,11 +108,9 @@ fun ShoppingItemRow(
                             )
                             .testTag("edit_${item.name}"),
                 ) {
-                    Text(
-                        text = item.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        textDecoration =
-                            if (item.checked) TextDecoration.LineThrough else TextDecoration.None,
+                    ShoppingItemName(
+                        parts = remember(item.name) { item.nameParts().toImmutableList() },
+                        checked = item.checked,
                     )
                     if (item.quantity.isNotBlank())
                         Text(
@@ -128,7 +128,7 @@ fun ShoppingItemRow(
                 )
             if (!selectionMode)
                 ActionMenu(
-                    contentDescription = stringResource(Res.string.ui_item_options, item.name),
+                    contentDescription = stringResource(Res.string.ui_item_options, item.displayName()),
                     modifier = Modifier.testTag("actions_${item.name}"),
                     items =
                         buildList {

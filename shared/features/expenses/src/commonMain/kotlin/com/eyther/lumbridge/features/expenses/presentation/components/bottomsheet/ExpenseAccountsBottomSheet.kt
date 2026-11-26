@@ -1,7 +1,6 @@
 package com.eyther.lumbridge.features.expenses.presentation.components.bottomsheet
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,6 +12,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.bottomsheet.FormBottomSheet
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -101,7 +101,7 @@ private fun AccountSelectionGroup(
     GroupedSurface {
         accounts.forEachIndexed { index, account ->
             key(account.id) {
-                if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                if (index > 0) LoomDivider()
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     NavigationRow(
                         title = accountLabel(account),

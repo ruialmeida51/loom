@@ -5,23 +5,24 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.EmptyNotice
-import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
-import com.eyther.lumbridge.core.presentation.components.LoomButton
-import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
+import com.eyther.lumbridge.core.presentation.components.RetryNotice
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
+import com.eyther.lumbridge.core.presentation.components.pagination.PaginatedLazyColumn
+import com.eyther.lumbridge.core.presentation.components.pagination.PaginationUi
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.feed.domain.model.StarterFeedDomain
@@ -29,7 +30,6 @@ import com.eyther.lumbridge.features.feed.generated.resources.Res
 import com.eyther.lumbridge.features.feed.generated.resources.feed_caught_up
 import com.eyther.lumbridge.features.feed.generated.resources.feed_caught_up_description
 import com.eyther.lumbridge.features.feed.generated.resources.feed_empty_description
-import com.eyther.lumbridge.features.feed.generated.resources.feed_load_more
 import com.eyther.lumbridge.features.feed.generated.resources.feed_manage
 import com.eyther.lumbridge.features.feed.generated.resources.feed_no_articles
 import com.eyther.lumbridge.features.feed.generated.resources.feed_retry
@@ -50,8 +50,10 @@ fun FeedScreen(
     onManageFeeds: () -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
+    val listState = rememberLazyListState()
     PullToRefreshContentContainer(isRefreshing = state.refreshing, onRefresh = viewModel::onRetry) {
         InnerFeedScreen(
+            listState = listState,
             items = state.articleCards,
             suggestions = state.suggestions,
             onStarterFeed = viewModel::onStarterFeedSelected,
@@ -59,10 +61,9 @@ fun FeedScreen(
             selectedSourceIds = state.selectedSourceIds,
             onSource = viewModel::onSourceSelected,
             onAllSources = viewModel::onAllSourcesSelected,
-            hasMore = state.nextCursor != null,
-            loadingMore = state.loadingMore,
-            pageError = state.pageError,
+            pagination = state.pagination,
             onLoadMore = viewModel::onLoadMore,
+            onRetryLoadMore = viewModel::onRetryLoadMore,
             unreadOnly = state.unreadOnly,
             loading = state.loading,
             hasLoaded = state.hasLoaded,
@@ -79,6 +80,7 @@ fun FeedScreen(
 
 @Composable
 private fun InnerFeedScreen(
+    listState: LazyListState,
     items: ImmutableList<ArticlePreviewUi>,
     suggestions: ImmutableList<StarterFeedDomain>,
     onStarterFeed: (StarterFeedDomain) -> Unit,
@@ -86,10 +88,9 @@ private fun InnerFeedScreen(
     selectedSourceIds: ImmutableSet<String>,
     onSource: (String) -> Unit,
     onAllSources: () -> Unit,
-    hasMore: Boolean,
-    loadingMore: Boolean,
-    pageError: TextResource?,
+    pagination: PaginationUi,
     onLoadMore: () -> Unit,
+    onRetryLoadMore: () -> Unit,
     unreadOnly: Boolean,
     loading: Boolean,
     hasLoaded: Boolean,
@@ -101,8 +102,12 @@ private fun InnerFeedScreen(
     onMarkRead: (String, Boolean) -> Unit,
     onManageFeeds: () -> Unit,
 ) {
-    LazyColumn(
-        Modifier.fillMaxSize().padding(horizontal = 16.dp).testTag("feed_content"),
+    PaginatedLazyColumn(
+        listState = listState,
+        pagination = pagination,
+        onLoadMore = onLoadMore,
+        onRetryLoadMore = onRetryLoadMore,
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).testTag("feed_content"),
         contentPadding = PaddingValues(vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -119,11 +124,11 @@ private fun InnerFeedScreen(
 
         error?.let { message ->
             item(key = "error") {
-                ErrorNotice(message = message, onDismiss = onDismiss)
-                LoomSecondaryButton(
-                    text = stringResource(Res.string.feed_retry),
-                    onClick = onRetry,
-                    modifier = Modifier,
+                RetryNotice(
+                    message = message,
+                    onRetry = onRetry,
+                    onDismiss = onDismiss,
+                    retryText = stringResource(Res.string.feed_retry),
                 )
             }
         }
@@ -176,20 +181,6 @@ private fun InnerFeedScreen(
                     },
                     onReadChanged = { onMarkRead(article.id, !article.read) },
                     modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        if (!loading && hasMore)
-            item(key = "pagination") {
-                pageError?.let { message -> ErrorNotice(message = message, onDismiss = onDismiss) }
-                LoomButton(
-                    text =
-                        stringResource(
-                            if (pageError == null) Res.string.feed_load_more
-                            else Res.string.feed_retry,
-                        ),
-                    onClick = onLoadMore,
-                    loading = loadingMore,
-                    modifier = Modifier.fillMaxWidth().testTag("feed_load_more"),
                 )
             }
     }

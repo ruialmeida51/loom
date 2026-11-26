@@ -24,5 +24,5 @@ data class RecurringExpenseUi(
             RecurringExpenseActionDomain.RESUME
         }
     val isPaused: Boolean = !rule.active && !rule.cancelled
-    val nextOn: LocalDate? = runCatching { LocalDate.parse(rule.nextOn) }.getOrNull()
+    val nextOn: LocalDate = rule.nextOn
 }

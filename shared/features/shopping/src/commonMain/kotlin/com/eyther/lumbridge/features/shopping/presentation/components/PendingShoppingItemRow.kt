@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.presentation.components.ActionProgress
 import com.eyther.lumbridge.core.presentation.components.CheckCircle
 import com.eyther.lumbridge.core.presentation.components.DestructiveIconButton
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
@@ -39,7 +39,7 @@ fun PendingShoppingItemRow(
             )
             Text(name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
             if (error == null)
-                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                ActionProgress(size = 18.dp)
         }
         error?.let { message ->
             Column(

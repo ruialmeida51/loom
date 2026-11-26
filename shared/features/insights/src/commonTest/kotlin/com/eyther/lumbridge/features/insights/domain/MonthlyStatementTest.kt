@@ -7,6 +7,7 @@ import com.eyther.lumbridge.features.insights.domain.model.MonthlyStatementDomai
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.datetime.LocalDate
 
 class MonthlyStatementTest {
 
@@ -21,7 +22,7 @@ class MonthlyStatementTest {
                     6000,
                     "a",
                     "Groceries",
-                    "2026-01-31",
+                    LocalDate.parse("2026-01-31"),
                     ExpenseSplitDomain.equal(6000, members),
                 ),
                 ExpenseDomain(
@@ -30,11 +31,11 @@ class MonthlyStatementTest {
                     3000,
                     "b",
                     "Bills",
-                    "2026-02-01",
+                    LocalDate.parse("2026-02-01"),
                     ExpenseSplitDomain.equal(3000, members),
                 ),
             )
-        val payments = listOf(SettlementDomain("payment", "b", "a", 2000, "2026-02-02"))
+        val payments = listOf(SettlementDomain("payment", "b", "a", 2000, LocalDate.parse("2026-02-02")))
         val statement = MonthlyStatementDomain.build("2026-02", "a", expenses, payments)
         assertEquals(3000, statement.totalMinor)
         assertEquals(0, statement.paidMinor)
@@ -47,7 +48,7 @@ class MonthlyStatementTest {
     @Test
     fun csvQuotesCellsAndGuardsSpreadsheetFormulas() {
         val expense =
-            ExpenseDomain("id", "=SUM(1,2)", 100, "a", "Other", "2026-02-01", mapOf("a" to 100L))
+            ExpenseDomain("id", "=SUM(1,2)", 100, "a", "Other", LocalDate.parse("2026-02-01"), mapOf("a" to 100L))
         val csv =
             MonthlyStatementDomain.build("2026-02", "a", listOf(expense), emptyList())
                 .csv("EUR", "a")

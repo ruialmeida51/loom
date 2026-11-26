@@ -7,6 +7,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseActio
 import com.eyther.lumbridge.features.expenses.domain.model.RecurringExpenseDomain
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
+import kotlinx.datetime.LocalDate
 
 class RecurringExpenseFixtureDataSource : RecurringExpenseDataSource {
     var rule =
@@ -16,7 +17,7 @@ class RecurringExpenseFixtureDataSource : RecurringExpenseDataSource {
             amountMinor = 3000,
             paidBy = "you",
             category = "Other",
-            nextOn = "2030-01-31",
+            nextOn = LocalDate.parse("2030-01-31"),
             anchorDay = 31,
             active = false,
             cancelled = false,

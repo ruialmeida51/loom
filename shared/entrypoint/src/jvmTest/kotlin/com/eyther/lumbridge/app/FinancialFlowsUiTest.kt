@@ -4,14 +4,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
-import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -30,11 +27,9 @@ import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
+import com.eyther.lumbridge.app.testutil.capture
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
-import java.io.File
 import kotlin.test.Test
-import org.jetbrains.skia.EncodedImageFormat
-import org.jetbrains.skia.Image
 
 @OptIn(ExperimentalTestApi::class)
 class FinancialFlowsUiTest {
@@ -252,15 +247,4 @@ class FinancialFlowsUiTest {
         awaitLoadedDestination(tag = "expenses_content")
     }
 
-    private fun SkikoComposeUiTest.capture(name: String) {
-        waitForIdle()
-        val directory =
-            File(System.getProperty("loom.screenshots.dir", "build/screenshots")).apply { mkdirs() }
-        File(directory, "$name.png")
-            .writeBytes(
-                Image.makeFromBitmap(captureToImage().asSkiaBitmap())
-                    .encodeToData(EncodedImageFormat.PNG)!!
-                    .bytes,
-            )
-    }
 }

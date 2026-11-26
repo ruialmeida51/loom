@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -17,6 +16,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingLine
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.feed.presentation.components.FeedPreviewLoading
 
@@ -35,7 +35,7 @@ internal fun HomeTasksLoading() {
                 LoadingLine(widthFraction = .65f, style = MaterialTheme.typography.titleMedium)
                 LoadingLine(widthFraction = .45f, style = MaterialTheme.typography.bodySmall)
             }
-            if (index < 2) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            if (index < 2) LoomDivider()
         }
     }
 }

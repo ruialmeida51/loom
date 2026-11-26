@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -25,6 +24,7 @@ import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingForm
 import com.eyther.lumbridge.core.presentation.components.LoadingRow
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -101,12 +101,7 @@ fun ExpenseFormScreen(
         title = state.title,
         amount = state.amount,
         paidBy = state.paidBy,
-        date =
-            state.occurredOn
-                .takeIf { it.isNotEmpty() }
-                ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-                ?.let { calendarDateText(it) }
-                ?: state.occurredOn,
+        date = state.occurredOn?.let { calendarDateText(it) }.orEmpty(),
         category = state.category,
         recurring = state.recurring,
         amountCurrency = state.amountCurrency.takeIf { state.account != null },
@@ -271,7 +266,7 @@ private fun InnerExpenseFormScreen(
                         onSelected = onPayer,
                         enabled = !busy && !receiptPending,
                     )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LoomDivider()
                     if (splitMethod == ExpenseSplitMethodDomain.EQUAL) {
                         SplitBetweenSection(
                             members = members,
@@ -302,7 +297,7 @@ private fun InnerExpenseFormScreen(
                             onClick = onSplit,
                             enabled = !busy && !receiptPending,
                         )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LoomDivider()
                     NavigationRow(
                         title = stringResource(Res.string.form_date),
                         description = date,
@@ -310,7 +305,7 @@ private fun InnerExpenseFormScreen(
                         enabled = !busy && !receiptPending,
                     )
                     if (!editing) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        LoomDivider()
                         NavigationRow(
                             title = stringResource(Res.string.form_monthly),
                             description =

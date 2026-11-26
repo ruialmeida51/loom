@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.expenses.data.network.mapper
 
+import kotlinx.datetime.LocalDate
 import com.eyther.lumbridge.features.expenses.data.network.model.response.ExpenseResponse
 import com.eyther.lumbridge.features.expenses.data.network.model.response.RecurringExpenseResponse
 import com.eyther.lumbridge.features.expenses.data.network.model.response.SettlementResponse
@@ -16,7 +17,7 @@ internal fun ExpenseResponse.toDomain(): ExpenseDomain =
         amountMinor = amountMinor,
         paidBy = paidBy,
         category = category,
-        occurredOn = occurredOn,
+        occurredOn = LocalDate.parse(occurredOn),
         shares = shares,
         recurring = recurring,
         version = version,
@@ -41,7 +42,7 @@ internal fun SettlementResponse.toDomain(): SettlementDomain =
         from = from,
         to = to,
         amountMinor = amountMinor,
-        occurredOn = occurredOn,
+        occurredOn = LocalDate.parse(occurredOn),
         createdBy = createdBy,
         version = version,
         createdAt = createdAt,
@@ -55,7 +56,7 @@ internal fun RecurringExpenseResponse.toDomain(): RecurringExpenseDomain =
         amountMinor = amountMinor,
         paidBy = paidBy,
         category = category,
-        nextOn = nextOn,
+        nextOn = LocalDate.parse(nextOn),
         anchorDay = anchorDay,
         active = active,
         cancelled = cancelledAt != null,

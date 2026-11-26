@@ -22,7 +22,7 @@ data class ExpenseAccountFormState(
     val loading: Boolean = true,
     val busy: Boolean = false,
     val error: TextResource? = null,
-    val savedId: String? = null,
+    val redirectTo: ExpenseAccountFormScreenViewModelContract.RedirectTo? = null,
 ) {
     val canSave: Boolean = !loading && !busy && name.isNotBlank() && userId in selected
 

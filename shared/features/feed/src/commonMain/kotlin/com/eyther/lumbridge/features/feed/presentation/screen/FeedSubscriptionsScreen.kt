@@ -9,12 +9,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.IllustratedEmptyState
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
-import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
+import com.eyther.lumbridge.core.presentation.components.RetryNotice
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackbar
@@ -88,11 +87,11 @@ private fun InnerFeedSubscriptionsScreen(
         }
         error?.let { message ->
             item(key = "error") {
-                ErrorNotice(message = message, onDismiss = onDismiss)
-                LoomSecondaryButton(
-                    text = stringResource(Res.string.feed_retry),
-                    onClick = onRetry,
-                    modifier = Modifier,
+                RetryNotice(
+                    message = message,
+                    onRetry = onRetry,
+                    onDismiss = onDismiss,
+                    retryText = stringResource(Res.string.feed_retry),
                 )
             }
         }

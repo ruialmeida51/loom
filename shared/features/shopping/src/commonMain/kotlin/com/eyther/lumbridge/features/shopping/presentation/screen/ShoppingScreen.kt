@@ -31,10 +31,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
-import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomButton
-import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
+import com.eyther.lumbridge.core.presentation.components.RetryNotice
 import com.eyther.lumbridge.core.presentation.components.cardSegment
 import com.eyther.lumbridge.core.presentation.components.container.PullToRefreshContentContainer
 import com.eyther.lumbridge.core.presentation.components.layout.rootContentPadding
@@ -271,11 +270,11 @@ private fun InnerShoppingScreen(
         }
         error?.let { message ->
             item {
-                ErrorNotice(message = message, onDismiss = onDismiss)
-                LoomSecondaryButton(
-                    text = stringResource(Res.string.ui_refresh_and_retry),
-                    onClick = onRetry,
-                    modifier = Modifier,
+                RetryNotice(
+                    message = message,
+                    onRetry = onRetry,
+                    onDismiss = onDismiss,
+                    retryText = stringResource(Res.string.ui_refresh_and_retry),
                 )
             }
         }

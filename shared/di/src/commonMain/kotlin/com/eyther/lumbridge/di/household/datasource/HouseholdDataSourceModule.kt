@@ -5,7 +5,6 @@ import com.eyther.lumbridge.core.domain.features.FeatureGate
 import com.eyther.lumbridge.features.account.data.network.datasource.CommonPaymentHandlesDataSource
 import com.eyther.lumbridge.features.account.domain.datasource.PaymentHandlesDataSource
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
-import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExchangeRateDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseDataSource
 import com.eyther.lumbridge.features.expenses.data.network.datasource.CommonExpenseReceiptDataSource
@@ -47,6 +46,7 @@ class HouseholdDataSourceModule(
     private val householdDataSource: HouseholdDataSource,
     private val analyticsDataSource: AnalyticsDataSource,
     private val settingsDataSource: SettingsDataSource,
+    private val exchangeRateDataSource: ExchangeRateDataSource,
 ) {
 
     @Single
@@ -103,7 +103,7 @@ class HouseholdDataSourceModule(
     ): PaymentHandlesDataSource = CommonPaymentHandlesDataSource(access = access, userId = context.userId)
 
     @Single
-    fun provideExchangeRateDataSource(): ExchangeRateDataSource = CommonExchangeRateDataSource()
+    fun provideExchangeRateDataSource(): ExchangeRateDataSource = exchangeRateDataSource
 
     @Single
     fun provideFeatureGate(access: SupabaseAccess, context: HouseholdContextDomain): FeatureGate =

@@ -8,6 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.datetime.LocalDate
 
 class ExpensePresentationTest {
 
@@ -30,7 +31,7 @@ class ExpensePresentationTest {
             amountMinor = 4000,
             paidBy = "payer",
             category = "Bills",
-            nextOn = "2026-12-01",
+            nextOn = LocalDate.parse("2026-12-01"),
             anchorDay = 1,
             active = true,
             cancelled = false,

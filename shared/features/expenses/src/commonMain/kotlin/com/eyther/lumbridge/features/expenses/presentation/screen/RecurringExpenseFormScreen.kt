@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +19,7 @@ import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingForm
 import com.eyther.lumbridge.core.presentation.components.LoomButton
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -53,7 +53,15 @@ fun RecurringExpenseFormScreen(
     onSplit: (Long) -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
-    LaunchedEffect(state.saved) { if (state.saved) onSaved() }
+    LaunchedEffect(state.redirectTo) {
+        when (state.redirectTo) {
+            RecurringExpenseFormScreenViewModelContract.RedirectTo.Saved -> {
+                viewModel.onNavigationHandled()
+                onSaved()
+            }
+            null -> Unit
+        }
+    }
     InnerRecurringExpenseFormScreen(
         title = state.title,
         amount = state.amount,
@@ -87,7 +95,7 @@ private fun InnerRecurringExpenseFormScreen(
     paidBy: String,
     members: ImmutableList<MemberDomain>,
     split: ExpenseSplitSelectionDomain,
-    nextOn: String,
+    nextOn: LocalDate?,
     loading: Boolean,
     ready: Boolean,
     busy: Boolean,
@@ -130,7 +138,7 @@ private fun InnerRecurringExpenseFormScreen(
                         onSelected = onPayer,
                         enabled = !busy,
                     )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LoomDivider()
                     NavigationRow(
                         title = stringResource(Res.string.form_split),
                         value = splitMethodLabel(split.method),
@@ -139,10 +147,10 @@ private fun InnerRecurringExpenseFormScreen(
                         enabled = !busy && splitEnabled,
                         modifier = Modifier.testTag("recurring_split"),
                     )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    LoomDivider()
                     NavigationRow(
                         title = stringResource(Res.string.bill_next_date),
-                        description = calendarDateText(LocalDate.parse(nextOn)),
+                        description = nextOn?.let { calendarDateText(it) }.orEmpty(),
                         glyph = Glyph.CALENDAR,
                         onClick = onDate,
                         enabled = !busy,

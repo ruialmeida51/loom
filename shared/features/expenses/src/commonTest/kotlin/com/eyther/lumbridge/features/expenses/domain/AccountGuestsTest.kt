@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDate
 
 class AccountGuestsTest {
     private val members =
@@ -108,7 +109,7 @@ class AccountGuestsTest {
                             amountMinor = 9000,
                             paidBy = "you",
                             category = "Other",
-                            occurredOn = "2026-11-20",
+                            occurredOn = LocalDate.parse("2026-11-20"),
                             shares = mapOf("you" to 3000L, "alex" to 3000L, "marta" to 3000L),
                             accountId = "trip",
                         ),

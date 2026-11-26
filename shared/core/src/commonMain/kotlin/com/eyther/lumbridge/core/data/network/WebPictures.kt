@@ -3,7 +3,6 @@ package com.eyther.lumbridge.core.data.network
 import com.eyther.lumbridge.core.data.media.encodeJpeg
 import com.eyther.lumbridge.core.domain.media.PictureLoader
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.contentLength
@@ -20,7 +19,6 @@ private val WebPictureJpegQualities = listOf(80, 70)
 private const val WEB_PICTURE_MAXIMUM_BYTES = 200_000
 private const val WEB_PICTURE_SOURCE_BYTES = 5_000_000L
 private const val MAX_CACHED_WEB_PICTURES = 40
-private const val WEB_PICTURE_TIMEOUT_MILLIS = 15_000L
 
 /** Whether [path] names a public picture on the web rather than one in the pictures bucket. */
 fun isWebPicture(path: String): Boolean = path.startsWith("https://")
@@ -29,10 +27,7 @@ fun isWebPicture(path: String): Boolean = path.startsWith("https://")
  * Downloads publishers' story pictures over https, shrinks each to a small JPEG and keeps the most
  * recent in memory, so scrolling back through the news does not fetch them again.
  */
-class WebPictures(
-    private val client: HttpClient =
-        HttpClient { install(HttpTimeout) { requestTimeoutMillis = WEB_PICTURE_TIMEOUT_MILLIS } },
-) : PictureLoader {
+class WebPictures(private val client: HttpClient) : PictureLoader {
     private val mutex = Mutex()
     private val cache = linkedMapOf<String, ByteArray>()
 

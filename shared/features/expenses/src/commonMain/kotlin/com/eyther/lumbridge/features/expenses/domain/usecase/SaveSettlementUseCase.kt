@@ -21,11 +21,6 @@ class SaveSettlementUseCase(private val expenseDataSource: ExpenseDataSource) {
             ) {
                 ExpenseError.InvalidSettlement()
             }
-            try {
-                LocalDate.parse(settlement.occurredOn)
-            } catch (cause: IllegalArgumentException) {
-                throw ExpenseError.InvalidPaymentDate(cause = cause)
-            }
             expenseDataSource.saveSettlement(settlement = settlement).getOrThrow()
         }
 }

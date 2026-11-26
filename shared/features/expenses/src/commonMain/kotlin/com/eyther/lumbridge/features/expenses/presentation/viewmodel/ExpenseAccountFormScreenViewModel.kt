@@ -18,6 +18,7 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.SaveExpenseAccountU
 import com.eyther.lumbridge.features.expenses.domain.usecase.SelectExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesTextResource
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseAccountFormScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseAccountFormScreenViewModelContract.RedirectTo
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseAccountFormState
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -184,7 +185,11 @@ class ExpenseAccountFormScreenViewModel(
             }
             mutableState.update { oldState ->
                 when (result) {
-                    is AppResult.Success -> oldState.copy(busy = false, savedId = result.value)
+                    is AppResult.Success ->
+                        oldState.copy(
+                            busy = false,
+                            redirectTo = RedirectTo.Saved(accountId = result.value),
+                        )
                     is AppResult.Failure ->
                         oldState.copy(busy = false, error = result.error.toExpensesTextResource())
                 }
@@ -231,5 +236,9 @@ class ExpenseAccountFormScreenViewModel(
                     oldState.copy(loading = false, error = result.error.toExpensesTextResource())
                 }
         }
+    }
+
+    override fun onNavigationHandled() {
+        mutableState.update { oldState -> oldState.copy(redirectTo = null) }
     }
 }

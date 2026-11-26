@@ -19,11 +19,11 @@ data class PaymentFormState(
     val from: String = "",
     val to: String = "",
     val amount: String = "",
-    val occurredOn: String = "",
+    val occurredOn: LocalDate? = null,
     val loading: Boolean = true,
     val busy: Boolean = false,
     val error: TextResource? = null,
-    val saved: Boolean = false,
+    val redirectTo: PaymentFormScreenViewModelContract.RedirectTo? = null,
     val paymentHandles: Map<String, PaymentHandlesDomain> = emptyMap(),
 ) {
     val currency: String = account?.currency ?: "EUR"
@@ -47,11 +47,11 @@ data class PaymentFormState(
                     currency = currency,
                 )
             }
-    val date: LocalDate? = occurredOn.takeIf { it.isNotEmpty() }?.let(LocalDate::parse)
+    val date: LocalDate? = occurredOn
     val canSave: Boolean =
         !loading &&
             !busy &&
-            !saved &&
+            redirectTo == null &&
             account?.canAddExpense(userId = userId) == true &&
             from.isNotBlank() &&
             to.isNotBlank() &&

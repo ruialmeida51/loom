@@ -45,5 +45,4 @@
   <string name="feed_caught_up">You’re all caught up</string>
   <string name="feed_caught_up_description">Turn off Unread only to see the stories you’ve already read.</string>
     <string name="feed_all_sources">All feeds</string>
-    <string name="feed_load_more">Load more stories</string>
 </resources>

@@ -41,7 +41,7 @@ data class ExpenseDetailsState(
     val showReceiptDeletion: Boolean = false,
     val successMessage: TextResource? = null,
     val showDeleteConfirmation: Boolean = false,
-    val deleted: Boolean = false,
+    val redirectTo: ExpenseDetailsScreenViewModelContract.RedirectTo? = null,
 ) {
     val receiptPhotoUi: ReceiptPhotoUi? = receiptPhoto?.let {
         ReceiptPhotoUi(id = it.id, data = it.data)

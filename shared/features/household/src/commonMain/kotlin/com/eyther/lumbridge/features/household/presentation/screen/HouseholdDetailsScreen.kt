@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +20,7 @@ import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.InfoRow
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
 import com.eyther.lumbridge.core.presentation.components.LoomCard
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
 import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.SectionTitle
@@ -159,7 +159,7 @@ private fun InnerHouseholdDetailsScreen(
         item(key = "context") {
             GroupedSurface {
                 InfoRow(label = stringResource(Res.string.details_currency), value = currency)
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                LoomDivider()
                 InfoRow(label = stringResource(Res.string.details_time_zone), value = timeZone)
             }
         }
@@ -173,7 +173,7 @@ private fun InnerHouseholdDetailsScreen(
                     members.forEachIndexed { index, member ->
                         key(member.id) {
                             if (index > 0)
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                LoomDivider()
                             HouseholdMemberRow(member = member) {
                                 if (member.canManage)
                                     ActionMenu(
@@ -258,7 +258,7 @@ private fun InnerHouseholdDetailsScreen(
                         modifier = Modifier.testTag("leave_household"),
                     )
                     if (isOwner) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        LoomDivider()
                         NavigationRow(
                             title = stringResource(Res.string.management_delete_row),
                             glyph = Glyph.DELETE,

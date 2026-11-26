@@ -5,13 +5,14 @@ import com.eyther.lumbridge.core.coroutines.stateflow.launchWith
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.newId
-import com.eyther.lumbridge.core.domain.todayIso
+import com.eyther.lumbridge.core.domain.today
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
 import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsActionDomain
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsEventDomain
 import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
+import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseError
 import com.eyther.lumbridge.features.expenses.domain.errors.ReceiptError
 import com.eyther.lumbridge.features.expenses.domain.model.EnteredAmountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
@@ -31,6 +32,7 @@ import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesText
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseFormState
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import kotlinx.datetime.LocalDate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -50,7 +52,7 @@ class ExpenseFormScreenViewModel(
         val title: String = "",
         val amount: String = "",
         val paidBy: String = "",
-        val occurredOn: String = "",
+        val occurredOn: LocalDate? = null,
         val category: String = "Other",
         val recurring: Boolean = false,
         /** The currency the amount is typed in; null means the account's own. */
@@ -65,7 +67,7 @@ class ExpenseFormScreenViewModel(
         MutableStateFlow(
             InnerInputState(
                 paidBy = context.userId,
-                occurredOn = todayIso(context.timeZone),
+                occurredOn = today(context.timeZone),
                 recurring = params.recurring && params.expenseId == null,
             ),
         )
@@ -202,7 +204,7 @@ class ExpenseFormScreenViewModel(
         inputState.update { oldState -> oldState.copy(paidBy = value) }
     }
 
-    override fun onDateChanged(value: String) {
+    override fun onDateChanged(value: LocalDate) {
         if (state.value.receiptPending || state.value.busy) return
         inputState.update { oldState -> oldState.copy(occurredOn = value) }
     }
@@ -372,7 +374,7 @@ class ExpenseFormScreenViewModel(
                             amountMinor = amountMinor,
                             paidBy = input.paidBy,
                             category = input.category,
-                            occurredOn = input.occurredOn,
+                            occurredOn = input.occurredOn ?: throw ExpenseError.InvalidPaymentDate(),
                             shares =
                                 ExpenseSplitDomain.resolve(
                                     amountMinor = amountMinor,

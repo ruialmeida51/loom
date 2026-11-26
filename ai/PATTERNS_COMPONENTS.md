@@ -10,6 +10,11 @@ Adapted from Plannot `ai/PATTERNS_COMPONENTS.md`; [design language](../docs/desi
 | Data refresh container | core container/PullToRefreshContentContainer |
 | Transient success | core snackbar/SuccessSnackbar; lifetime in VM |
 | Actionable Undo | core snackbar/SuccessSnackbar optional action; bounded lifetime and target in the feature VM |
+| Paged list | core pagination/PaginatedLazyColumn + PaginationUi; never a hand-rolled LazyColumn end check or "Load more" button |
+| Row divider | core LoomDivider (outlineVariant); never a hand-coloured HorizontalDivider |
+| Failed read with retry | core RetryNotice (ErrorNotice + secondary retry, default "Try again") |
+| Saving indicator in a row | core ActionProgress in place of the row's control; never for content loading |
+| Card surface | core LoomCard (shape, contentPadding, spacing); pass PaddingValues() for edge-to-edge pictures |
 | Content skeleton | core LoadingLine/LoadingRow/LoadingRows/LoadingForm; feed owns its preview skeleton |
 | Refresh preserving focus/geometry | core RefreshSkeletonContent; Home scopes it per section |
 | Illustrated empty state | core IllustratedEmptyState, feature-owned copy/glyph |

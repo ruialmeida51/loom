@@ -2,7 +2,10 @@ package com.eyther.lumbridge.features.shopping.domain.model
 
 data class ShoppingSnapshotDomain(
     val lists: List<ShoppingListDomain> = emptyList(),
+    /** Live items (not removed) of every list. */
     val items: List<ShoppingItemDomain> = emptyList(),
+    /** The most recently removed items, read only to suggest what to add again. */
+    val history: List<ShoppingItemDomain> = emptyList(),
 ) {
 
     val activeLists: List<ShoppingListDomain> =
@@ -127,7 +130,7 @@ data class ShoppingSnapshotDomain(
     }
 
     fun suggestions(listId: String): List<ShoppingItemDomain> =
-        items
+        (items + history)
             .filter { it.favorite || it.checked || it.removed }
             .filter { candidate ->
                 activeItems.none {
@@ -140,4 +143,9 @@ data class ShoppingSnapshotDomain(
             )
             .distinctBy { it.name.trim().lowercase() }
             .take(8)
+
+    companion object {
+        /** Removed items kept for suggestions; older history stays on the server only. */
+        const val HISTORY_SIZE = 100
+    }
 }

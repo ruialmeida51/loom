@@ -4,17 +4,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import com.eyther.lumbridge.core.presentation.components.ErrorNotice
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
-import com.eyther.lumbridge.core.presentation.components.LoomSecondaryButton
+import com.eyther.lumbridge.core.presentation.components.LoomDivider
+import com.eyther.lumbridge.core.presentation.components.RetryNotice
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
@@ -60,13 +59,16 @@ private fun InnerMemberAccountPositionsScreen(
         )
         if (loading) LoadingRows(rows = 2)
         else if (error != null) {
-            ErrorNotice(message = error)
-            LoomSecondaryButton(text = stringResource(Res.string.balance_retry), onClick = onRetry)
+            RetryNotice(
+                message = error,
+                onRetry = onRetry,
+                retryText = stringResource(Res.string.balance_retry),
+            )
         } else
             GroupedSurface {
                 positions.forEachIndexed { index, row ->
                     if (index > 0)
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        LoomDivider()
                     val color =
                         when {
                             row.balance.isSettled -> MaterialTheme.colorScheme.onSurfaceVariant

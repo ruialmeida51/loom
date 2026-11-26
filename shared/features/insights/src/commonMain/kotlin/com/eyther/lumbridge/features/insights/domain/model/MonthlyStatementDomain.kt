@@ -4,7 +4,9 @@ import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.HouseholdLedgerDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.insights.domain.errors.InsightsError
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 
 data class MonthlyStatementDomain(
     val month: String,
@@ -58,17 +60,19 @@ data class MonthlyStatementDomain(
             expenses: List<ExpenseDomain>,
             settlements: List<SettlementDomain>,
         ): MonthlyStatementDomain {
-            try {
-                if (!Regex("[0-9]{4}-[0-9]{2}").matches(month)) throw InsightsError.InvalidMonth()
-                LocalDate.parse("$month-01")
-            } catch (error: IllegalArgumentException) {
-                throw InsightsError.InvalidMonth(cause = error)
-            }
-            val selected = expenses.filter { it.occurredOn.startsWith(month) }
-            val beforeExpenses = expenses.filter { it.occurredOn.take(7) < month }
-            val throughExpenses = expenses.filter { it.occurredOn.take(7) <= month }
-            val beforeSettlements = settlements.filter { it.occurredOn.take(7) < month }
-            val throughSettlements = settlements.filter { it.occurredOn.take(7) <= month }
+            val start =
+                try {
+                    if (!Regex("[0-9]{4}-[0-9]{2}").matches(month)) throw InsightsError.InvalidMonth()
+                    LocalDate.parse("$month-01")
+                } catch (error: IllegalArgumentException) {
+                    throw InsightsError.InvalidMonth(cause = error)
+                }
+            val next = start.plus(1, DateTimeUnit.MONTH)
+            val selected = expenses.filter { it.occurredOn >= start && it.occurredOn < next }
+            val beforeExpenses = expenses.filter { it.occurredOn < start }
+            val throughExpenses = expenses.filter { it.occurredOn < next }
+            val beforeSettlements = settlements.filter { it.occurredOn < start }
+            val throughSettlements = settlements.filter { it.occurredOn < next }
             return MonthlyStatementDomain(
                 month = month,
                 totalMinor = selected.sumOf { it.amountMinor },

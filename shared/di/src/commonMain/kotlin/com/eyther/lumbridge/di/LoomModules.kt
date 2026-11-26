@@ -43,6 +43,7 @@ fun householdModules(
     householdDataSource: HouseholdDataSource,
     analyticsDataSource: AnalyticsDataSource,
     settingsDataSource: SettingsDataSource,
+    exchangeRateDataSource: ExchangeRateDataSource,
 ): List<Module> =
     listOf(
         HouseholdModule().module(),
@@ -52,6 +53,7 @@ fun householdModules(
                 householdDataSource = householdDataSource,
                 analyticsDataSource = analyticsDataSource,
                 settingsDataSource = settingsDataSource,
+                exchangeRateDataSource = exchangeRateDataSource,
             )
             .module(),
     )

@@ -27,7 +27,7 @@ data class PaymentDetailsState(
     val error: TextResource? = null,
     val deletingPayment: SettlementDomain? = null,
     val deleteError: TextResource? = null,
-    val deleted: Boolean = false,
+    val redirectTo: PaymentDetailsScreenViewModelContract.RedirectTo? = null,
 ) {
     val details: PaymentDetailsUi? = account?.let {
         payment?.toDetailsUi(account = it, members = it.withGuests(members), userId = userId)

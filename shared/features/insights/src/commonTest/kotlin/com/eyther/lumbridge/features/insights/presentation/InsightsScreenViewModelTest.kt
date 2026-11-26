@@ -42,6 +42,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class InsightsScreenViewModelTest {
@@ -207,7 +208,7 @@ class InsightsScreenViewModelTest {
                             amountMinor = 10000,
                             paidBy = context.userId,
                             category = "housing",
-                            occurredOn = "$displayedMonth-01",
+                            occurredOn = LocalDate.parse("$displayedMonth-01"),
                             shares = mapOf(context.userId to 10000L),
                         ),
                     ),

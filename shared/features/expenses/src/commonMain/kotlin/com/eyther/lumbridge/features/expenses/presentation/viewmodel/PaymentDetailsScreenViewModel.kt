@@ -8,6 +8,7 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetSettlementFormUs
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveSettlementUseCase
 import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesTextResource
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentDetailsScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentDetailsScreenViewModelContract.RedirectTo
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.PaymentDetailsState
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import kotlinx.collections.immutable.toImmutableList
@@ -76,7 +77,7 @@ class PaymentDetailsScreenViewModel(
             mutableState.update { oldState ->
                 when (result) {
                     is AppResult.Success ->
-                        oldState.copy(busy = false, deleted = true, deletingPayment = null)
+                        oldState.copy(busy = false, redirectTo = RedirectTo.Deleted, deletingPayment = null)
                     is AppResult.Failure ->
                         oldState.copy(
                             busy = false,
@@ -127,5 +128,9 @@ class PaymentDetailsScreenViewModel(
         } finally {
             reading = false
         }
+    }
+
+    override fun onNavigationHandled() {
+        mutableState.update { oldState -> oldState.copy(redirectTo = null) }
     }
 }

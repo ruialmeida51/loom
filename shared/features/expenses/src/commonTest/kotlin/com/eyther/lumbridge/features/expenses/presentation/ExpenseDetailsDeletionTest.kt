@@ -6,6 +6,7 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.data.fixtures.ExpenseFormFixture
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseReceiptDomain
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpenseDetailsScreenViewModelContract
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -23,6 +24,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpenseDetailsDeletionTest {
@@ -39,7 +41,7 @@ class ExpenseDetailsDeletionTest {
                 amountMinor = 2000,
                 paidBy = "you",
                 category = "Other",
-                occurredOn = "2026-11-18",
+                occurredOn = LocalDate.parse("2026-11-18"),
                 shares = mapOf("you" to 1000, "alex" to 1000),
                 accountId = fixture.account.id,
                 version = 3,
@@ -90,7 +92,7 @@ class ExpenseDetailsDeletionTest {
                 amountMinor = 2000,
                 paidBy = "you",
                 category = "Other",
-                occurredOn = "2026-11-18",
+                occurredOn = LocalDate.parse("2026-11-18"),
                 shares = mapOf("you" to 1000, "alex" to 1000),
                 accountId = fixture.account.id,
                 version = 3,
@@ -143,7 +145,7 @@ class ExpenseDetailsDeletionTest {
                 amountMinor = 2000,
                 paidBy = "you",
                 category = "Other",
-                occurredOn = "2026-11-18",
+                occurredOn = LocalDate.parse("2026-11-18"),
                 shares = mapOf("you" to 1000, "alex" to 1000),
                 accountId = fixture.account.id,
                 version = 3,
@@ -170,7 +172,7 @@ class ExpenseDetailsDeletionTest {
             fixture.deleteResult = AppResult.Success(Unit)
             viewModel.onDeleteConfirmed()
             runCurrent()
-            assertTrue(viewModel.state.value.deleted)
+            assertEquals(ExpenseDetailsScreenViewModelContract.RedirectTo.Deleted, viewModel.state.value.redirectTo)
             assertEquals(listOf(3L, 3L), fixture.deletedExpenses.map { it.version })
         } finally {
             viewModel.viewModelScope.cancel()

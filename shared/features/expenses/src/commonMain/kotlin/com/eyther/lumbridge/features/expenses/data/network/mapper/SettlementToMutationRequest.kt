@@ -12,7 +12,7 @@ internal fun SettlementDomain.toSaveRequest(householdId: String): SaveSettlement
         from = from,
         to = to,
         amountMinor = amountMinor,
-        occurredOn = occurredOn,
+        occurredOn = occurredOn.toString(),
         version = version,
     )
 

@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.app.navigation
 
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +44,7 @@ internal fun PortalHost(
     profileDataSource: ProfileDataSource,
     analyticsDataSource: AnalyticsDataSource,
     diagnosticsDataSource: DiagnosticsDataSource,
+    exchangeRateDataSource: ExchangeRateDataSource,
     onSelect: (HouseholdDomain) -> Unit,
     onSignOut: () -> Unit,
     onHouseholdExited: (String, Boolean) -> Unit,
@@ -77,6 +79,7 @@ internal fun PortalHost(
                             householdDataSource = householdDataSource,
                             analyticsDataSource = analyticsDataSource,
                             settingsDataSource = accountGraph.koin.get<SettingsDataSource>(),
+                            exchangeRateDataSource = exchangeRateDataSource,
                         ),
                     )
                 }

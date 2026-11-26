@@ -8,6 +8,7 @@ import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.getOrThrow
 import com.eyther.lumbridge.core.domain.wrapper.safeCall
+import com.eyther.lumbridge.features.expenses.domain.errors.RecurringExpenseError
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitMethodDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseSplitSelectionDomain
@@ -16,8 +17,10 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpense
 import com.eyther.lumbridge.features.expenses.domain.usecase.SaveRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesTextResource
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpenseFormScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpenseFormScreenViewModelContract.RedirectTo
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.RecurringExpenseFormState
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
+import kotlinx.datetime.LocalDate
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,7 +37,7 @@ class RecurringExpenseFormScreenViewModel(
         val title: String = "",
         val amount: String = "",
         val paidBy: String = "",
-        val nextOn: String = "",
+        val nextOn: LocalDate? = null,
         val split: ExpenseSplitSelectionDomain =
             ExpenseSplitSelectionDomain(ExpenseSplitMethodDomain.AMOUNTS, emptySet()),
     )
@@ -72,7 +75,7 @@ class RecurringExpenseFormScreenViewModel(
         inputState.update { oldState -> oldState.copy(paidBy = value) }
     }
 
-    override fun onDateChanged(value: String) {
+    override fun onDateChanged(value: LocalDate) {
         if (state.value.busy) return
         inputState.update { oldState -> oldState.copy(nextOn = value) }
     }
@@ -97,7 +100,7 @@ class RecurringExpenseFormScreenViewModel(
                                 title = input.title,
                                 amountMinor = amount,
                                 paidBy = input.paidBy,
-                                nextOn = input.nextOn,
+                                nextOn = input.nextOn ?: throw RecurringExpenseError.InvalidDate(),
                                 shares =
                                     ExpenseSplitDomain.resolve(
                                         amountMinor = amount,
@@ -111,7 +114,7 @@ class RecurringExpenseFormScreenViewModel(
             }
             mutableState.update { oldState ->
                 when (result) {
-                    is AppResult.Success -> oldState.copy(busy = false, saved = true)
+                    is AppResult.Success -> oldState.copy(busy = false, redirectTo = RedirectTo.Saved)
                     is AppResult.Failure ->
                         oldState.copy(busy = false, error = result.error.toExpensesTextResource())
                 }
@@ -169,5 +172,9 @@ class RecurringExpenseFormScreenViewModel(
                     oldState.copy(loading = false, error = result.error.toExpensesTextResource())
                 }
         }
+    }
+
+    override fun onNavigationHandled() {
+        mutableState.update { oldState -> oldState.copy(redirectTo = null) }
     }
 }

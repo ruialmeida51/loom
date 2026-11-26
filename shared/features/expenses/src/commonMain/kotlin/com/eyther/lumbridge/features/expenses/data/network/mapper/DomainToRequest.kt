@@ -17,7 +17,7 @@ internal fun ExpenseDomain.toRequest(householdId: String): SaveExpenseRequest =
         amountMinor = amountMinor,
         paidBy = paidBy,
         category = category,
-        occurredOn = occurredOn,
+        occurredOn = occurredOn.toString(),
         shares = shares,
         recurring = recurring,
         originalCurrency = original?.currency,
@@ -33,5 +33,5 @@ internal fun SettlementDomain.toRequest(householdId: String): RecordSettlementRe
         from = from,
         to = to,
         amountMinor = amountMinor,
-        occurredOn = occurredOn,
+        occurredOn = occurredOn.toString(),
     )

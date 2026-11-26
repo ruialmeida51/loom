@@ -20,9 +20,7 @@ import kotlinx.serialization.json.Json
  * with no key. Only the two currency codes leave the phone. A rate is kept for the session, since
  * the bank publishes once a day.
  */
-class CommonExchangeRateDataSource(
-    private val client: HttpClient = HttpClient(),
-) : ExchangeRateDataSource {
+class CommonExchangeRateDataSource(private val client: HttpClient) : ExchangeRateDataSource {
     private val json = Json { ignoreUnknownKeys = true }
     private val lock = Mutex()
     private val cache = mutableMapOf<Pair<String, String>, String>()

@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
+import kotlinx.datetime.LocalDate
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.expenses.domain.model.EnteredAmountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
@@ -23,7 +24,7 @@ data class ExpenseFormState(
     val members: List<MemberDomain> = emptyList(),
     val title: String = "",
     val amount: String = "",
-    val occurredOn: String = "",
+    val occurredOn: LocalDate? = null,
     val paidBy: String = "",
     val category: String = "Other",
     val recurring: Boolean = false,
@@ -94,7 +95,7 @@ data class ExpenseFormState(
         !editing && !busy && !receiptPending && !switchingAccount && accounts.size > 1
 
     /** The day of the month a repeating expense recurs on, from its date. */
-    val repeatDay: Int? = occurredOn.split("-").getOrNull(2)?.toIntOrNull()
+    val repeatDay: Int? = occurredOn?.day
     val canSave: Boolean =
         !receiptPreparing &&
             !loading &&
