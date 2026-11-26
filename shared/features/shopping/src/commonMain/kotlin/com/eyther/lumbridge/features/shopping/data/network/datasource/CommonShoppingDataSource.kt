@@ -22,7 +22,9 @@ import com.eyther.lumbridge.features.shopping.domain.datasource.ShoppingDataSour
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingSnapshotDomain
+import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -40,15 +42,39 @@ class CommonShoppingDataSource(
                         .map { it.toDomain() }
                 },
                 access.watch {
+                    // Removed items stay on the server for history and suggestions, but a
+                    // household removes items every week: only live rows are downloaded.
                     access
-                        .selectHouseholdRows<ShoppingItemResponse>("shopping_items", context.id)
+                        .selectHouseholdRows<ShoppingItemResponse>(
+                            table = "shopping_items",
+                            householdId = context.id,
+                        ) {
+                            eq("removed", false)
+                        }
                         .map { it.toDomain() }
                 },
-            ) { lists, items ->
-                ShoppingSnapshotDomain(lists = lists, items = items)
+                access.watch { selectRecentlyRemoved() },
+            ) { lists, items, history ->
+                ShoppingSnapshotDomain(lists = lists, items = items, history = history)
             }
             .asApiResult(mapError = Exception::toShoppingError, retryTransientFailures = true)
     }
+
+    /** The newest removed items, enough to suggest what the household buys again. */
+    private suspend fun selectRecentlyRemoved(): List<ShoppingItemDomain> =
+        access
+            .requireClient()
+            .from("shopping_items")
+            .select {
+                filter {
+                    eq("household_id", context.id)
+                    eq("removed", true)
+                }
+                order(column = "created_at", order = Order.DESCENDING)
+                limit(count = ShoppingSnapshotDomain.HISTORY_SIZE.toLong())
+            }
+            .decodeList<ShoppingItemResponse>()
+            .map { it.toDomain() }
 
     override suspend fun addItems(
         items: List<ShoppingItemDomain>,

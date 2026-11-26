@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Shopping lists open faster in long-running households: items you removed are no longer downloaded every time.
+
 - The news list loads more stories as you scroll, and a page that fails to load offers Try again without hiding what you were reading.
 - Paste a link into a shopping item: it shows as the shop’s name and opens with a tap.
 

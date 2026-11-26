@@ -30,4 +30,10 @@ begin
 end;
 $$;
 
+-- The app downloads only live items, and reads the newest removed ones for suggestions; these
+-- indexes serve both without scanning a household's whole history.
+create index shopping_items_live_idx on public.shopping_items(household_id, id) where not removed;
+create index shopping_items_history_idx
+    on public.shopping_items(household_id, created_at desc) where removed;
+
 commit;
