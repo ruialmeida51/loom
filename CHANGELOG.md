@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.24] - 2026-11-27
+
 - Pick the app’s language in My account: Português or English, or follow your phone. It switches straight away.
 
 ## [4.0.23] - 2026-11-27
