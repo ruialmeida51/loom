@@ -27,9 +27,12 @@ import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_loom_previe
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_open_preview
 import org.jetbrains.compose.resources.stringResource
 
-/** Production LoomApp never selects these fixtures or port implementations. */
+/**
+ * Production LoomApp never selects these fixtures or port implementations. [showPreviewLabel] is
+ * off only for store listing captures, which show the app as people see it.
+ */
 @Composable
-fun LoomDemoApp() {
+fun LoomDemoApp(showPreviewLabel: Boolean = true) {
     val stores = remember {
         DemoHouseholdStore.households.associate { it.id to DemoHouseholdStore(it) }
     }
@@ -40,12 +43,13 @@ fun LoomDemoApp() {
         LoomTheme(ThemeMode.valueOf(theme)) {
             Surface {
                 Column {
-                    Text(
-                        stringResource(Res.string.ui_loom_preview_sample_data),
-                        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
+                    if (showPreviewLabel)
+                        Text(
+                            stringResource(Res.string.ui_loom_preview_sample_data),
+                            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
                     if (started)
                         DemoPortalHost(
                             stores = stores,

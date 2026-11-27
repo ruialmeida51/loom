@@ -1,0 +1,7 @@
+<resources>
+    <string name="privacy_policy">Política de privacidade</string>
+    <string name="terms_of_use">Termos de utilização</string>
+    <string name="delete_account">Eliminar conta e dados</string>
+    <string name="privacy_and_legal">Privacidade e informação legal</string>
+    <string name="privacy_introduction">Lê como o Loom trata os dados da tua casa, as tuas escolhas e os termos de utilização da app.</string>
+</resources>

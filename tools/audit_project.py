@@ -148,8 +148,35 @@ for xml in (ROOT / 'shared').glob('**/src/commonMain/composeResources/values*/st
     keys = [entry.get('name') for entry in tree]
     if len(keys) != len(set(keys)):
         issues.append(f'Duplicate resource keys: {xml.relative_to(ROOT)}')
-    catalogs += 1
-    resource_count += len(keys)
+    if xml.parent.name == 'values':
+        catalogs += 1
+        resource_count += len(keys)
+
+# Every translation mirrors its English catalog: the same keys, and the same placeholders in each.
+placeholder = re.compile(r'%(?:\d+\$)?[sd]')
+def catalog(path):
+    entries = {}
+    for entry in ET.parse(path).getroot():
+        if entry.get('translatable') == 'false':
+            continue
+        texts = [entry.text or ''] if entry.tag == 'string' else [item.text or '' for item in entry]
+        entries[entry.get('name')] = sorted({found for text in texts for found in placeholder.findall(text)})
+    return entries
+locales = set()
+for english in (ROOT / 'shared').glob('**/src/commonMain/composeResources/values/strings.xml'):
+    if 'worktrees' in str(english):
+        continue
+    source = catalog(english)
+    for translated in english.parent.parent.glob('values-*/strings.xml'):
+        locales.add(translated.parent.name.removeprefix('values-'))
+        target = catalog(translated)
+        name = translated.relative_to(ROOT)
+        if set(source) != set(target):
+            missing, extra = sorted(set(source) - set(target)), sorted(set(target) - set(source))
+            issues.append(f'{name} does not mirror English: missing {missing[:5]}, extra {extra[:5]}')
+        for key in set(source) & set(target):
+            if source[key] != target[key]:
+                issues.append(f'{name}: placeholders differ for {key}')
 
 if issues:
     raise SystemExit('\n'.join(issues))
@@ -163,3 +190,4 @@ print('PASS: screens receive prepared collections; exports and permission decisi
 print(f'PASS: {screen_count} destination screens have matching ViewModel implementations and contracts.')
 print(f'PASS: {transport_count} transport models have separate files/packages and explicit wire field names.')
 print(f'PASS: UI copy resource checks; {catalogs} catalogs with {resource_count} string/plural resources.')
+print(f'PASS: translations ({", ".join(sorted(locales)) or "none"}) mirror every English key and placeholder.')
