@@ -19,8 +19,10 @@ import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
 import com.eyther.lumbridge.app.demo.data.DemoPictures
 import com.eyther.lumbridge.core.presentation.components.LoomButton
 import com.eyther.lumbridge.core.presentation.components.picture.LocalPictureLoader
+import com.eyther.lumbridge.core.presentation.language.ProvideAppLanguage
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
+import com.eyther.lumbridge.features.settings.data.local.LanguagePreferences
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.ui_loom_preview_sample_data
@@ -39,25 +41,28 @@ fun LoomDemoApp(showPreviewLabel: Boolean = true) {
     var selectedId by remember { mutableStateOf(DemoHouseholdStore.households.first().id) }
     var started by remember { mutableStateOf(true) }
     val theme by ThemePreferences.mode.collectAsState()
-    CompositionLocalProvider(LocalPictureLoader provides DemoPictures) {
-        LoomTheme(ThemeMode.valueOf(theme)) {
-            Surface {
-                Column {
-                    if (showPreviewLabel)
-                        Text(
-                            stringResource(Res.string.ui_loom_preview_sample_data),
-                            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
-                    if (started)
-                        DemoPortalHost(
-                            stores = stores,
-                            selectedId = selectedId,
-                            onSelect = { selectedId = it },
-                            onSignOut = { started = false },
-                        )
-                    else LoomButton(stringResource(Res.string.ui_open_preview), { started = true })
+    val language by LanguagePreferences.language.collectAsState()
+    ProvideAppLanguage(language) {
+        CompositionLocalProvider(LocalPictureLoader provides DemoPictures) {
+            LoomTheme(ThemeMode.valueOf(theme)) {
+                Surface {
+                    Column {
+                        if (showPreviewLabel)
+                            Text(
+                                stringResource(Res.string.ui_loom_preview_sample_data),
+                                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.secondary,
+                            )
+                        if (started)
+                            DemoPortalHost(
+                                stores = stores,
+                                selectedId = selectedId,
+                                onSelect = { selectedId = it },
+                                onSignOut = { started = false },
+                            )
+                        else LoomButton(stringResource(Res.string.ui_open_preview), { started = true })
+                    }
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.account.presentation.viewmodel.contracts
 
+import com.eyther.lumbridge.core.domain.AppLanguage
 import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
@@ -26,6 +27,7 @@ data class AccountState(
     val showSignOutConfirmation: Boolean = false,
     val nicknameError: TextResource? = null,
     val preferences: SettingsDomain = SettingsDomain(),
+    val language: AppLanguage = AppLanguage.SYSTEM,
     val loading: Boolean = true,
     val refreshing: Boolean = false,
     val busy: Boolean = false,

@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
@@ -16,6 +17,7 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -45,8 +47,11 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import com.eyther.lumbridge.app.demo.data.loadDemoReceiptBytes
+import com.eyther.lumbridge.core.domain.AppLanguage
+import com.eyther.lumbridge.features.settings.data.local.LanguagePreferences
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.Locale
 import java.util.regex.Pattern
 import kotlin.math.abs
 import kotlinx.coroutines.runBlocking
@@ -449,6 +454,73 @@ class UsabilityDeviceTest {
         compose.onNodeWithTag("add_task").assertIsDisplayed()
         pressSystemBack()
         awaitDestination(tag = "home_content")
+    }
+
+    @Test
+    fun languageSwitchesThroughAppCompatWithoutLeavingTheScreen() {
+        try {
+            startingActivity = System.identityHashCode(compose.activity)
+            compose.onNodeWithTag("open_my_account").performClick()
+            awaitDestination(tag = "account_content")
+            pickLanguage(label = "Português")
+            // AppCompat recreates the activity in the new language; the screen comes back.
+            awaitText(text = "Preferências")
+            compose.onNodeWithTag("account_content").assertIsDisplayed()
+            capture(name = "language-portuguese")
+            pickLanguage(label = "Sistema")
+            awaitText(text = "Preferences")
+            compose.onNodeWithTag("account_content").assertIsDisplayed()
+        } finally {
+            runBlocking { LanguagePreferences.set(AppLanguage.SYSTEM) }
+        }
+    }
+
+    // The Appearance row can show the same word ("Sistema"), so pick inside the language menu.
+    private fun pickLanguage(label: String) {
+        val choice = hasText(label) and hasAnyAncestor(hasTestTag("language_menu"))
+        // Right after a language change the activity is still being recreated and can drop a
+        // tap, so tap the row until its menu opens.
+        compose.waitUntil(
+            conditionDescription =
+                "\"$label\" in the language menu; menu nodes " +
+                    "${compose.onAllNodesWithTag("language_menu", useUnmergedTree = true)
+                        .fetchSemanticsNodes().size}, shows ${languageMenuTexts()}; " +
+                    localeState(),
+            timeoutMillis = 10_000,
+        ) {
+            val open =
+                compose.onAllNodes(choice, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+            if (!open) runCatching {
+                compose.onNodeWithTag("language_preference").performScrollTo().performClick()
+            }
+            open
+        }
+        compose.onNode(choice, useUnmergedTree = true).performClick()
+    }
+
+    private fun languageMenuTexts(): List<String> =
+        compose
+            .onAllNodes(hasAnyAncestor(hasTestTag("language_menu")), useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .flatMap { node ->
+                node.config.getOrNull(SemanticsProperties.Text).orEmpty().map { it.text }
+            }
+
+    private var startingActivity = 0
+
+    private fun localeState(): String =
+        "app locales ${AppCompatDelegate.getApplicationLocales().toLanguageTags()}, default " +
+            "${Locale.getDefault().toLanguageTag()}, picked ${LanguagePreferences.language.value}" +
+            ", activity ${if (System.identityHashCode(compose.activity) == startingActivity)
+                "the same" else "recreated"}"
+
+    private fun awaitText(text: String) {
+        compose.waitUntil(
+            conditionDescription = "\"$text\" shown; ${localeState()}",
+            timeoutMillis = 10_000,
+        ) {
+            compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     @Test

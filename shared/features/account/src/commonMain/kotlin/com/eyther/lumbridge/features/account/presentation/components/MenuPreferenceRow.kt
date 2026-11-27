@@ -16,46 +16,50 @@ import androidx.compose.ui.semantics.semantics
 import com.eyther.lumbridge.core.presentation.components.NavigationRow
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
-import com.eyther.lumbridge.core.presentation.theme.ThemeMode
-import com.eyther.lumbridge.features.account.generated.resources.Res
-import com.eyther.lumbridge.features.account.generated.resources.appearance_title
-import com.eyther.lumbridge.features.account.presentation.mapper.themeLabel
-import org.jetbrains.compose.resources.stringResource
 
-/** Only the menu's expansion is transient; the selected preference remains ViewModel-owned. */
+/**
+ * A preference picked from a short menu, showing the current choice. Only the menu's expansion is
+ * transient; the selected value remains ViewModel-owned. Tags are `<tag>_preference`,
+ * `<tag>_menu_anchor` and `<tag>_menu`.
+ */
 @Composable
-internal fun AppearancePreferenceRow(
-    theme: ThemeMode,
+internal fun <T> MenuPreferenceRow(
+    title: String,
+    glyph: Glyph,
+    choices: List<T>,
+    selected: T,
+    label: @Composable (T) -> String,
     enabled: Boolean,
-    onSelected: (String) -> Unit,
+    onSelected: (T) -> Unit,
+    tag: String,
 ) {
     var expanded by remember { mutableStateOf(false) }
     NavigationRow(
-        title = stringResource(Res.string.appearance_title),
-        value = themeLabel(theme),
-        glyph = Glyph.SETTINGS,
+        title = title,
+        value = label(selected),
+        glyph = glyph,
         onClick = { expanded = true },
         enabled = enabled,
-        modifier = Modifier.testTag("appearance_preference"),
+        modifier = Modifier.testTag("${tag}_preference"),
         trailingContent = {
-            Box(modifier = Modifier.testTag("appearance_menu_anchor")) {
+            Box(modifier = Modifier.testTag("${tag}_menu_anchor")) {
                 LoomIcon(glyph = Glyph.CHEVRON_DOWN, decorative = true)
                 DropdownMenu(
                     expanded = expanded && enabled,
                     onDismissRequest = { expanded = false },
-                    modifier = Modifier.testTag("appearance_menu"),
+                    modifier = Modifier.testTag("${tag}_menu"),
                 ) {
-                    ThemeMode.entries.forEach { choice ->
+                    choices.forEach { choice ->
                         DropdownMenuItem(
-                            modifier = Modifier.semantics { selected = theme == choice },
-                            text = { Text(themeLabel(choice)) },
+                            modifier = Modifier.semantics { this.selected = selected == choice },
+                            text = { Text(label(choice)) },
                             trailingIcon = {
-                                if (theme == choice)
+                                if (selected == choice)
                                     LoomIcon(glyph = Glyph.CHECK, decorative = true)
                             },
                             onClick = {
                                 expanded = false
-                                onSelected(choice.name)
+                                onSelected(choice)
                             },
                         )
                     }

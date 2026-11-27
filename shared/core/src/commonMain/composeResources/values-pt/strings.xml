@@ -55,6 +55,7 @@
     <string name="error_picture_rejected">Não foi possível guardar essa imagem. Tenta novamente.</string>
     <string name="icon_edit">Editar</string>
     <string name="icon_repeat">Repete</string>
+    <string name="icon_language">Idioma</string>
     <string name="picture_choose">Escolher fotografia</string>
     <string name="picture_remove">Remover fotografia</string>
 </resources>

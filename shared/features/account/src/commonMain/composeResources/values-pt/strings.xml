@@ -18,6 +18,10 @@
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Escuro</string>
+    <string name="language_title">Idioma</string>
+    <string name="language_system">Sistema</string>
+    <string name="language_english">English</string>
+    <string name="language_portuguese">Português</string>
     <string name="delete_account">Eliminar conta</string>
     <string name="account_deletion_description">Opções para eliminar a conta e os dados</string>
     <string name="sign_out_title">Terminar sessão no Loom?</string>

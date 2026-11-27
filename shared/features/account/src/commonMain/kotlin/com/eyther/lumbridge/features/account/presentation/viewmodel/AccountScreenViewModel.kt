@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.coroutines.extensions.delayFirstAtLeast
 import com.eyther.lumbridge.core.coroutines.stateflow.observeWith
 import com.eyther.lumbridge.core.coroutines.stateflow.updateState
+import com.eyther.lumbridge.core.domain.AppLanguage
 import com.eyther.lumbridge.core.domain.errors.PictureError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.account.domain.model.PaymentHandlesDomain
@@ -15,7 +16,9 @@ import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCas
 import com.eyther.lumbridge.features.account.presentation.mapper.toAccountTextResource
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountState
+import com.eyther.lumbridge.features.settings.domain.usecase.GetAppLanguageStreamUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
+import com.eyther.lumbridge.features.settings.domain.usecase.SetLanguageUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetNotificationsUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetThemeUseCase
 import com.eyther.lumbridge.features.settings.presentation.mapper.toSettingsTextResource
@@ -32,6 +35,8 @@ class AccountScreenViewModel(
     private val updateNicknameUseCase: UpdateNicknameUseCase,
     private val getSettingsStreamUseCase: GetSettingsStreamUseCase,
     private val setThemeUseCase: SetThemeUseCase,
+    private val getAppLanguageStreamUseCase: GetAppLanguageStreamUseCase,
+    private val setLanguageUseCase: SetLanguageUseCase,
     private val setNotificationsUseCase: SetNotificationsUseCase,
     private val setProfilePictureUseCase: SetProfilePictureUseCase,
     private val getPaymentHandlesUseCase: GetPaymentHandlesUseCase,
@@ -87,6 +92,11 @@ class AccountScreenViewModel(
             .observeWith(viewModelScope) { state ->
                 getSettingsStreamUseCase().updateState(state) { preferences ->
                     copy(preferences = preferences)
+                }
+            }
+            .observeWith(viewModelScope) { state ->
+                getAppLanguageStreamUseCase().updateState(state) { language ->
+                    copy(language = language)
                 }
             }
 
@@ -250,6 +260,17 @@ class AccountScreenViewModel(
     override fun onThemeSelected(value: String) {
         launch {
             val result = setThemeUseCase(value)
+            mutableState.update { oldState ->
+                oldState.copy(
+                    error = (result as? AppResult.Failure)?.error?.toSettingsTextResource(),
+                )
+            }
+        }
+    }
+
+    override fun onLanguageSelected(language: AppLanguage) {
+        launch {
+            val result = setLanguageUseCase(language = language)
             mutableState.update { oldState ->
                 oldState.copy(
                     error = (result as? AppResult.Failure)?.error?.toSettingsTextResource(),

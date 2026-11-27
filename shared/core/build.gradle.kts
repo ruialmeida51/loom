@@ -57,6 +57,8 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ktor.okhttp)
             implementation("androidx.core:core-ktx:1.19.1")
+            // Per-app language (AppLanguageSetting).
+            implementation(libs.androidx.appcompat)
         }
         jvmMain.dependencies {
             implementation(libs.ktor.okhttp)

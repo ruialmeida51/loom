@@ -77,6 +77,8 @@ dependencies {
     implementation(projects.shared.core)
     implementation(projects.shared.features.settings)
     implementation(libs.activity.compose)
+    // MainActivity is an AppCompatActivity so the per-app language applies before Android 13.
+    implementation(libs.androidx.appcompat)
     androidTestImplementation("org.jetbrains.compose.ui:ui-test-junit4:1.12.1")
     androidTestImplementation(projects.shared.features.expenses)
     androidTestImplementation(projects.shared.features.authentication)

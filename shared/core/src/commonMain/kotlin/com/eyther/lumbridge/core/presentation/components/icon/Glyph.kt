@@ -30,4 +30,5 @@ enum class Glyph {
     HEART,
     EDIT,
     REPEAT,
+    GLOBE,
 }
