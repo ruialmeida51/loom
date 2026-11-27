@@ -9,6 +9,7 @@ import com.eyther.lumbridge.features.account.domain.usecase.SetProfilePictureUse
 import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCase
 import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
 import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
+import com.eyther.lumbridge.features.settings.domain.usecase.SetLanguageUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetNotificationsUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetThemeUseCase
 import org.koin.core.annotation.Module
@@ -50,6 +51,10 @@ class AccountUseCaseModule {
     @Single
     fun provideSetThemeUseCase(settingsDataSource: SettingsDataSource): SetThemeUseCase =
         SetThemeUseCase(settingsDataSource = settingsDataSource)
+
+    @Single
+    fun provideSetLanguageUseCase(settingsDataSource: SettingsDataSource): SetLanguageUseCase =
+        SetLanguageUseCase(settingsDataSource = settingsDataSource)
 
     @Single
     fun provideSetNotificationsUseCase(

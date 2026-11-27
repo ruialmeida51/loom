@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.settings.data.fixtures
 
+import com.eyther.lumbridge.core.domain.AppLanguage
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
 import com.eyther.lumbridge.features.settings.domain.model.NotificationPermissionDomain
@@ -18,6 +19,9 @@ class NotificationFixtureDataSource : SettingsDataSource {
     override fun stream() = preferences
 
     override suspend fun setTheme(value: String): AppResult<Unit> = AppResult.Success(Unit)
+
+    override suspend fun setLanguage(language: AppLanguage): AppResult<Unit> =
+        AppResult.Success(Unit)
 
     override suspend fun getNotificationPermission() = AppResult.Success(permission)
 

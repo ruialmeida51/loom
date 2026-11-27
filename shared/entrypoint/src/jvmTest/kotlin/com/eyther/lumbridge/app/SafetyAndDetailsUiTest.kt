@@ -8,6 +8,7 @@ import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -20,6 +21,8 @@ import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import com.eyther.lumbridge.app.testutil.capture
+import com.eyther.lumbridge.core.domain.AppLanguage
+import com.eyther.lumbridge.features.settings.data.local.LanguagePreferences
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import kotlin.math.abs
 import kotlin.test.Test
@@ -147,6 +150,34 @@ class SafetyAndDetailsUiTest {
             capture("split-actions-modern-narrow")
             onNodeWithTag("confirm_expense_split").performClick()
             onNodeWithTag("expense_title").assertIsDisplayed()
+        }
+
+    @Test
+    fun languageSwitchesInPlaceAndBackToTheDevice() =
+        runSkikoComposeUiTest(size = Size(440f, 800f)) {
+            try {
+                startApp()
+                onNodeWithTag("open_my_account").performClick()
+                awaitLoadedDestination("account_content")
+                onNodeWithText("Preferences").assertExists()
+                onNodeWithTag("language_preference").performScrollTo().performClick()
+                onNodeWithText("Português", useUnmergedTree = true).performClick()
+                // The same screen, now in Portuguese: the switch keeps navigation where it was.
+                waitUntil(timeoutMillis = 5_000) {
+                    onAllNodesWithText("Preferências").fetchSemanticsNodes().isNotEmpty()
+                }
+                onNodeWithTag("account_content").assertIsDisplayed()
+                onNodeWithText("Preferences").assertDoesNotExist()
+                capture("language-portuguese")
+                onNodeWithTag("language_preference").performScrollTo().performClick()
+                onNodeWithText("Sistema", useUnmergedTree = true).performClick()
+                waitUntil(timeoutMillis = 5_000) {
+                    onAllNodesWithText("Preferences").fetchSemanticsNodes().isNotEmpty()
+                }
+                onNodeWithTag("account_content").assertIsDisplayed()
+            } finally {
+                LanguagePreferences.set(AppLanguage.SYSTEM)
+            }
         }
 
     private fun SkikoComposeUiTest.startApp(theme: String = "LIGHT") {

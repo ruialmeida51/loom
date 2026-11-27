@@ -3,8 +3,10 @@ package com.eyther.lumbridge.features.settings.data.network.datasource
 import com.eyther.lumbridge.core.data.local.PlatformStorage
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
 import com.eyther.lumbridge.core.data.network.safeApiCall
+import com.eyther.lumbridge.core.domain.AppLanguage
 import com.eyther.lumbridge.core.domain.newId
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.settings.data.local.LanguagePreferences
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import com.eyther.lumbridge.features.settings.data.network.model.request.PushDeviceRequest
 import com.eyther.lumbridge.features.settings.data.network.model.request.RegisterPushDeviceRequest
@@ -28,6 +30,7 @@ class CommonSettingsDataSource(
         MutableStateFlow(
             SettingsDomain(
                 theme = ThemePreferences.mode.value,
+                language = LanguagePreferences.language.value,
                 notifications = PlatformStorage.get("notifications-${userId}") == "true",
                 notificationPrimeAnswered =
                     PlatformStorage.get("notification-prime-${userId}") == "true",
@@ -41,6 +44,15 @@ class CommonSettingsDataSource(
             ThemePreferences.set(value)
             mutablePreferences.update { oldPreferences ->
                 oldPreferences.copy(theme = value)
+            }
+        }
+    }
+
+    override suspend fun setLanguage(language: AppLanguage): AppResult<Unit> {
+        return safeApiCall {
+            LanguagePreferences.set(language)
+            mutablePreferences.update { oldPreferences ->
+                oldPreferences.copy(language = language)
             }
         }
     }

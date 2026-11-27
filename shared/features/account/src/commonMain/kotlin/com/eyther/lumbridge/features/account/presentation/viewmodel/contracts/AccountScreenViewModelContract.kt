@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.account.presentation.viewmodel.contracts
 
+import com.eyther.lumbridge.core.domain.AppLanguage
 import com.eyther.lumbridge.core.domain.errors.PictureError
 import com.eyther.lumbridge.core.viewmodel.LoomViewModel
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +35,8 @@ abstract class AccountScreenViewModelContract : LoomViewModel() {
     abstract fun onClosePaymentDetails()
 
     abstract fun onThemeSelected(value: String)
+
+    abstract fun onLanguageSelected(language: AppLanguage)
 
     abstract fun onNotificationsChanged(enabled: Boolean)
 

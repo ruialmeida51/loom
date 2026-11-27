@@ -10,9 +10,11 @@ import com.eyther.lumbridge.app.navigation.LauncherHost
 import com.eyther.lumbridge.app.navigation.StartupConsentHost
 import com.eyther.lumbridge.core.domain.media.PictureLoader
 import com.eyther.lumbridge.core.presentation.components.picture.LocalPictureLoader
+import com.eyther.lumbridge.core.presentation.language.ProvideAppLanguage
 import com.eyther.lumbridge.core.presentation.theme.LoomTheme
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.di.applicationModules
+import com.eyther.lumbridge.features.settings.data.local.LanguagePreferences
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
@@ -23,10 +25,13 @@ fun LoomApp() {
     val configuration = remember { koinConfiguration { modules(applicationModules()) } }
     KoinApplication(configuration = configuration) {
         val themeName by ThemePreferences.mode.collectAsState()
+        val language by LanguagePreferences.language.collectAsState()
         val theme = ThemeMode.entries.firstOrNull { it.name == themeName } ?: ThemeMode.SYSTEM
         // Avatars and household badges anywhere load stored pictures through this one loader.
-        CompositionLocalProvider(LocalPictureLoader provides koinInject<PictureLoader>()) {
-            LoomTheme(theme) { Surface { StartupConsentHost { LauncherHost() } } }
+        ProvideAppLanguage(language) {
+            CompositionLocalProvider(LocalPictureLoader provides koinInject<PictureLoader>()) {
+                LoomTheme(theme) { Surface { StartupConsentHost { LauncherHost() } } }
+            }
         }
     }
 }

@@ -55,6 +55,7 @@
     <string name="error_picture_rejected">That picture couldn’t be saved. Try again.</string>
     <string name="icon_edit">Edit</string>
     <string name="icon_repeat">Repeats</string>
+    <string name="icon_language">Language</string>
     <string name="picture_choose">Choose photo</string>
     <string name="picture_remove">Remove photo</string>
 </resources>

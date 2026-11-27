@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Pick the app’s language in My account: Português or English, or follow your phone. It switches straight away.
+
 ## [4.0.23] - 2026-11-27
 
 - Loom now speaks European Portuguese: choose it as the app language, and amounts show as 26,33 €.

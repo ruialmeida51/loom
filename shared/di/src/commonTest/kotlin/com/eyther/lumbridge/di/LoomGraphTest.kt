@@ -1,8 +1,8 @@
 package com.eyther.lumbridge.di
 
-import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
 import androidx.lifecycle.viewModelScope
 import com.eyther.lumbridge.core.data.network.SupabaseAccess
+import com.eyther.lumbridge.core.domain.AppLanguage
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.analytics.data.local.datasource.CommonAnalyticsDataSource
 import com.eyther.lumbridge.features.analytics.domain.datasource.AnalyticsDataSource
@@ -14,6 +14,7 @@ import com.eyther.lumbridge.features.authentication.presentation.viewmodel.Regis
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.EmailVerificationScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.LoginScreenViewModelContract
 import com.eyther.lumbridge.features.authentication.presentation.viewmodel.contracts.RegisterScreenViewModelContract
+import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.model.HouseholdDomain
@@ -194,6 +195,9 @@ class LoomGraphTest {
                 override fun stream() = MutableStateFlow(SettingsDomain())
 
                 override suspend fun setTheme(value: String): AppResult<Unit> =
+                    AppResult.Success(Unit)
+
+                override suspend fun setLanguage(language: AppLanguage): AppResult<Unit> =
                     AppResult.Success(Unit)
 
                 override suspend fun setNotifications(enabled: Boolean): AppResult<Unit> =

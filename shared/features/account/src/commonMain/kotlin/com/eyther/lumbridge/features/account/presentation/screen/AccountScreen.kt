@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.eyther.lumbridge.core.domain.AppLanguage
 import com.eyther.lumbridge.core.presentation.components.DestructiveConfirmation
 import com.eyther.lumbridge.core.presentation.components.GroupedSurface
 import com.eyther.lumbridge.core.presentation.components.LoadingRows
@@ -27,7 +28,9 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.theme.ThemeMode
 import com.eyther.lumbridge.features.account.generated.resources.Res
 import com.eyther.lumbridge.features.account.generated.resources.account_deletion_description
+import com.eyther.lumbridge.features.account.generated.resources.appearance_title
 import com.eyther.lumbridge.features.account.generated.resources.delete_account
+import com.eyther.lumbridge.features.account.generated.resources.language_title
 import com.eyther.lumbridge.features.account.generated.resources.nickname_description
 import com.eyther.lumbridge.features.account.generated.resources.notifications_blocked_description
 import com.eyther.lumbridge.features.account.generated.resources.notifications_description
@@ -43,8 +46,10 @@ import com.eyther.lumbridge.features.account.generated.resources.ui_nickname_tit
 import com.eyther.lumbridge.features.account.generated.resources.usage_data_description
 import com.eyther.lumbridge.features.account.generated.resources.usage_data_title
 import com.eyther.lumbridge.features.account.presentation.components.AccountPreferenceRow
-import com.eyther.lumbridge.features.account.presentation.components.AppearancePreferenceRow
+import com.eyther.lumbridge.features.account.presentation.components.MenuPreferenceRow
 import com.eyther.lumbridge.features.account.presentation.components.ProfilePictureHeader
+import com.eyther.lumbridge.features.account.presentation.mapper.languageLabel
+import com.eyther.lumbridge.features.account.presentation.mapper.themeLabel
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
 import com.eyther.lumbridge.features.legal.domain.model.LegalDocumentDomain
 import com.eyther.lumbridge.features.legal.presentation.components.LegalLinks
@@ -85,12 +90,14 @@ fun AccountScreen(
             preferences = state.preferences,
             notificationsBlocked = notificationsBlocked,
             theme = state.theme,
+            language = state.preferences.language,
             busy = state.busy || signingOut,
             error = state.displayError,
             onEditNickname = viewModel::onEditNickname,
             paymentMethodCount = state.paymentMethodCount,
             onEditPaymentDetails = viewModel::onEditPaymentDetails,
             onTheme = viewModel::onThemeSelected,
+            onLanguage = viewModel::onLanguageSelected,
             onNotifications = { enabled ->
                 if (enabled) onAllowNotifications() else viewModel.onNotificationsChanged(false)
             },
@@ -133,12 +140,14 @@ private fun InnerAccountScreen(
     preferences: SettingsDomain,
     notificationsBlocked: Boolean,
     theme: ThemeMode,
+    language: AppLanguage,
     busy: Boolean,
     error: TextResource?,
     onEditNickname: () -> Unit,
     paymentMethodCount: Int,
     onEditPaymentDetails: () -> Unit,
     onTheme: (String) -> Unit,
+    onLanguage: (AppLanguage) -> Unit,
     onNotifications: (Boolean) -> Unit,
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
@@ -213,7 +222,27 @@ private fun InnerAccountScreen(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SectionTitle(title = stringResource(Res.string.preferences_title))
                 GroupedSurface {
-                    AppearancePreferenceRow(theme = theme, enabled = !busy, onSelected = onTheme)
+                    MenuPreferenceRow(
+                        title = stringResource(Res.string.appearance_title),
+                        glyph = Glyph.SETTINGS,
+                        choices = ThemeMode.entries,
+                        selected = theme,
+                        label = { choice -> themeLabel(choice) },
+                        enabled = !busy,
+                        onSelected = { choice -> onTheme(choice.name) },
+                        tag = "appearance",
+                    )
+                    LoomDivider()
+                    MenuPreferenceRow(
+                        title = stringResource(Res.string.language_title),
+                        glyph = Glyph.GLOBE,
+                        choices = AppLanguage.entries,
+                        selected = language,
+                        label = { choice -> languageLabel(choice) },
+                        enabled = !busy,
+                        onSelected = onLanguage,
+                        tag = "language",
+                    )
                     LoomDivider()
                     AccountPreferenceRow(
                         title = stringResource(Res.string.notifications_title),

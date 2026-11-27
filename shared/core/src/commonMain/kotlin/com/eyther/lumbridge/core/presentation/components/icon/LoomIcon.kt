@@ -27,6 +27,7 @@ import com.eyther.lumbridge.core.generated.resources.icon_expand
 import com.eyther.lumbridge.core.generated.resources.icon_feed
 import com.eyther.lumbridge.core.generated.resources.icon_gift
 import com.eyther.lumbridge.core.generated.resources.icon_health
+import com.eyther.lumbridge.core.generated.resources.icon_language
 import com.eyther.lumbridge.core.generated.resources.icon_home
 import com.eyther.lumbridge.core.generated.resources.icon_log_out
 import com.eyther.lumbridge.core.generated.resources.icon_money
@@ -83,6 +84,7 @@ fun LoomIcon(
                 Glyph.HEART -> Res.string.icon_health
                 Glyph.EDIT -> Res.string.icon_edit
                 Glyph.REPEAT -> Res.string.icon_repeat
+                Glyph.GLOBE -> Res.string.icon_language
             },
         )
     Canvas(
@@ -398,6 +400,11 @@ fun LoomIcon(
                 drawCircle(tint, 1.8f * s, Offset(14 * s, 6 * s), style = Stroke(1.7f * s))
                 drawCircle(tint, 1.8f * s, Offset(18 * s, 10 * s), style = Stroke(1.7f * s))
                 drawOval(tint, Offset(7.5f * s, 12 * s), Size(9 * s, 8 * s), style = Stroke(1.7f * s))
+            }
+            Glyph.GLOBE -> {
+                drawCircle(tint, 8.5f * s, Offset(12 * s, 12 * s), style = Stroke(1.7f * s))
+                drawOval(tint, Offset(8 * s, 3.5f * s), Size(8 * s, 17 * s), style = Stroke(1.7f * s))
+                line(3.5f, 12f, 20.5f, 12f)
             }
             Glyph.HEART -> {
                 val heart =

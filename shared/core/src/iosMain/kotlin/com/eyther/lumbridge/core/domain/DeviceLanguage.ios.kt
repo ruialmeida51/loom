@@ -6,6 +6,6 @@ import platform.Foundation.currentLocale
 import platform.Foundation.languageCode
 
 // The localisation iOS picked for this app from CFBundleLocalizations and the user's languages.
-actual fun deviceLanguageTag(): String =
+internal actual fun platformLanguageTag(): String =
     (NSBundle.mainBundle.preferredLocalizations.firstOrNull() as? String)
         ?: NSLocale.currentLocale.languageCode

@@ -8,6 +8,7 @@ import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCas
 import com.eyther.lumbridge.features.account.presentation.viewmodel.AccountScreenViewModel
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
 import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
+import com.eyther.lumbridge.features.settings.domain.usecase.SetLanguageUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetNotificationsUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetThemeUseCase
 import org.koin.core.annotation.InjectedParam
@@ -23,6 +24,7 @@ class AccountViewModelModule {
         updateNicknameUseCase: UpdateNicknameUseCase,
         getSettingsStreamUseCase: GetSettingsStreamUseCase,
         setThemeUseCase: SetThemeUseCase,
+        setLanguageUseCase: SetLanguageUseCase,
         setNotificationsUseCase: SetNotificationsUseCase,
         setProfilePictureUseCase: SetProfilePictureUseCase,
         getPaymentHandlesUseCase: GetPaymentHandlesUseCase,
@@ -34,6 +36,7 @@ class AccountViewModelModule {
             updateNicknameUseCase = updateNicknameUseCase,
             getSettingsStreamUseCase = getSettingsStreamUseCase,
             setThemeUseCase = setThemeUseCase,
+            setLanguageUseCase = setLanguageUseCase,
             setNotificationsUseCase = setNotificationsUseCase,
             setProfilePictureUseCase = setProfilePictureUseCase,
             getPaymentHandlesUseCase = getPaymentHandlesUseCase,
