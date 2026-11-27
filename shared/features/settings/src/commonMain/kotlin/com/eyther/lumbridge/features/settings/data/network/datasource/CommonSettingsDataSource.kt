@@ -30,7 +30,6 @@ class CommonSettingsDataSource(
         MutableStateFlow(
             SettingsDomain(
                 theme = ThemePreferences.mode.value,
-                language = LanguagePreferences.language.value,
                 notifications = PlatformStorage.get("notifications-${userId}") == "true",
                 notificationPrimeAnswered =
                     PlatformStorage.get("notification-prime-${userId}") == "true",
@@ -38,6 +37,8 @@ class CommonSettingsDataSource(
         )
 
     override fun stream(): StateFlow<SettingsDomain> = mutablePreferences.asStateFlow()
+
+    override fun streamLanguage(): StateFlow<AppLanguage> = LanguagePreferences.language
 
     override suspend fun setTheme(value: String): AppResult<Unit> {
         return safeApiCall {
@@ -49,12 +50,7 @@ class CommonSettingsDataSource(
     }
 
     override suspend fun setLanguage(language: AppLanguage): AppResult<Unit> {
-        return safeApiCall {
-            LanguagePreferences.set(language)
-            mutablePreferences.update { oldPreferences ->
-                oldPreferences.copy(language = language)
-            }
-        }
+        return safeApiCall { LanguagePreferences.set(language) }
     }
 
     override suspend fun setNotifications(enabled: Boolean): AppResult<Unit> {

@@ -45,6 +45,8 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import com.eyther.lumbridge.app.demo.data.loadDemoReceiptBytes
+import com.eyther.lumbridge.core.domain.AppLanguage
+import com.eyther.lumbridge.features.settings.data.local.LanguagePreferences
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.regex.Pattern
@@ -449,6 +451,30 @@ class UsabilityDeviceTest {
         compose.onNodeWithTag("add_task").assertIsDisplayed()
         pressSystemBack()
         awaitDestination(tag = "home_content")
+    }
+
+    @Test
+    fun languageSwitchesThroughAppCompatWithoutLeavingTheScreen() {
+        try {
+            compose.onNodeWithTag("open_my_account").performClick()
+            awaitDestination(tag = "account_content")
+            compose.onNodeWithTag("language_preference").performScrollTo().performClick()
+            compose.onNodeWithText("Português", useUnmergedTree = true).performClick()
+            // The per-app language arrives as a configuration change: same screen, new language.
+            compose.waitUntil(timeoutMillis = 10_000) {
+                compose.onAllNodesWithText("Preferências").fetchSemanticsNodes().isNotEmpty()
+            }
+            compose.onNodeWithTag("account_content").assertIsDisplayed()
+            capture(name = "language-portuguese")
+            compose.onNodeWithTag("language_preference").performScrollTo().performClick()
+            compose.onNodeWithText("Sistema", useUnmergedTree = true).performClick()
+            compose.waitUntil(timeoutMillis = 10_000) {
+                compose.onAllNodesWithText("Preferences").fetchSemanticsNodes().isNotEmpty()
+            }
+            compose.onNodeWithTag("account_content").assertIsDisplayed()
+        } finally {
+            runBlocking { LanguagePreferences.set(AppLanguage.SYSTEM) }
+        }
     }
 
     @Test

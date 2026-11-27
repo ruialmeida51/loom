@@ -15,10 +15,7 @@ class DemoSettingsDataSource : SettingsDataSource {
 
     private val mutable =
         MutableStateFlow(
-            SettingsDomain(
-                theme = ThemePreferences.mode.value,
-                language = LanguagePreferences.language.value,
-            ),
+            SettingsDomain(theme = ThemePreferences.mode.value, notifications = false),
         )
 
     override fun stream() = mutable.asStateFlow()
@@ -38,9 +35,10 @@ class DemoSettingsDataSource : SettingsDataSource {
         mutable.update { it.copy(theme = value) }
     }
 
+    override fun streamLanguage() = LanguagePreferences.language
+
     override suspend fun setLanguage(language: AppLanguage) = safeCall {
         LanguagePreferences.set(language)
-        mutable.update { it.copy(language = language) }
     }
 
     override suspend fun setNotifications(enabled: Boolean) = safeCall {

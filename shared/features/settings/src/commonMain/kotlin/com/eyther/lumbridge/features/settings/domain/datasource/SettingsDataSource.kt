@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.StateFlow
 interface SettingsDataSource {
     fun stream(): StateFlow<SettingsDomain>
 
+    /** The app's language, which the phone's own settings can also change. */
+    fun streamLanguage(): StateFlow<AppLanguage>
+
     suspend fun setTheme(value: String): AppResult<Unit>
 
     suspend fun setLanguage(language: AppLanguage): AppResult<Unit>

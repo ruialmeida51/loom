@@ -27,6 +27,7 @@ import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertTrue
+import kotlinx.coroutines.runBlocking
 
 @OptIn(ExperimentalTestApi::class)
 class SafetyAndDetailsUiTest {
@@ -176,7 +177,7 @@ class SafetyAndDetailsUiTest {
                 }
                 onNodeWithTag("account_content").assertIsDisplayed()
             } finally {
-                LanguagePreferences.set(AppLanguage.SYSTEM)
+                runBlocking { LanguagePreferences.set(AppLanguage.SYSTEM) }
             }
         }
 

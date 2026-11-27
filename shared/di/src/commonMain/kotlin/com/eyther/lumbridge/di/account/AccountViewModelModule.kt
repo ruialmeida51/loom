@@ -7,6 +7,7 @@ import com.eyther.lumbridge.features.account.domain.usecase.SetProfilePictureUse
 import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCase
 import com.eyther.lumbridge.features.account.presentation.viewmodel.AccountScreenViewModel
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
+import com.eyther.lumbridge.features.settings.domain.usecase.GetAppLanguageStreamUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetLanguageUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetNotificationsUseCase
@@ -24,6 +25,7 @@ class AccountViewModelModule {
         updateNicknameUseCase: UpdateNicknameUseCase,
         getSettingsStreamUseCase: GetSettingsStreamUseCase,
         setThemeUseCase: SetThemeUseCase,
+        getAppLanguageStreamUseCase: GetAppLanguageStreamUseCase,
         setLanguageUseCase: SetLanguageUseCase,
         setNotificationsUseCase: SetNotificationsUseCase,
         setProfilePictureUseCase: SetProfilePictureUseCase,
@@ -36,6 +38,7 @@ class AccountViewModelModule {
             updateNicknameUseCase = updateNicknameUseCase,
             getSettingsStreamUseCase = getSettingsStreamUseCase,
             setThemeUseCase = setThemeUseCase,
+            getAppLanguageStreamUseCase = getAppLanguageStreamUseCase,
             setLanguageUseCase = setLanguageUseCase,
             setNotificationsUseCase = setNotificationsUseCase,
             setProfilePictureUseCase = setProfilePictureUseCase,

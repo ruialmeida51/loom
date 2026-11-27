@@ -13,7 +13,9 @@
         <meta-data android:name="google_analytics_automatic_screen_reporting_enabled" android:value="false" />
         <meta-data android:name="google_analytics_default_allow_ad_personalization_signals" android:value="false" />
 
-        <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize" android:launchMode="singleTop">
+        <!-- The language picked in the app reaches the running activity as a configuration
+             change, so the screen switches in place instead of being recreated. -->
+        <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize" android:launchMode="singleTop" android:configChanges="locale|layoutDirection">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -25,6 +27,10 @@
                 <data android:scheme="com.eyther.lumbridge" android:host="auth" android:path="/callback" />
             </intent-filter>
         </activity>
+        <!-- Before Android 13, AppCompat keeps the app's language itself. -->
+        <service android:name="androidx.appcompat.app.AppLocalesMetadataHolderService" android:enabled="false" android:exported="false">
+            <meta-data android:name="autoStoreLocales" android:value="true" />
+        </service>
         <service android:name=".LoomMessagingService" android:exported="false"><intent-filter><action android:name="com.google.firebase.MESSAGING_EVENT" /></intent-filter></service>
         <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="loom_household" />
         <provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.files" android:exported="false" android:grantUriPermissions="true"><meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" /></provider>

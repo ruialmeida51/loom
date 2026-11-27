@@ -5,17 +5,18 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import com.eyther.lumbridge.app.LoomApp
 import com.eyther.lumbridge.app.navigation.push.PendingPush
 import com.eyther.lumbridge.app.openAuthenticationCallback
 import com.eyther.lumbridge.core.data.local.PlatformStorage
 import com.eyther.lumbridge.features.settings.data.notifications.PushPlatform
 
-class MainActivity : ComponentActivity() {
+// AppCompatActivity applies the per-app language picked in the app before Android 13.
+class MainActivity : AppCompatActivity() {
     private var permissionCallback: ((Boolean) -> Unit)? = null
     private val notificationsPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { allowed ->

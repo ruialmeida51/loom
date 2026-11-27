@@ -8,6 +8,7 @@ import com.eyther.lumbridge.features.account.domain.usecase.SavePaymentHandlesUs
 import com.eyther.lumbridge.features.account.domain.usecase.SetProfilePictureUseCase
 import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCase
 import com.eyther.lumbridge.features.settings.domain.datasource.SettingsDataSource
+import com.eyther.lumbridge.features.settings.domain.usecase.GetAppLanguageStreamUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetLanguageUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetNotificationsUseCase
@@ -51,6 +52,12 @@ class AccountUseCaseModule {
     @Single
     fun provideSetThemeUseCase(settingsDataSource: SettingsDataSource): SetThemeUseCase =
         SetThemeUseCase(settingsDataSource = settingsDataSource)
+
+    @Single
+    fun provideGetAppLanguageStreamUseCase(
+        settingsDataSource: SettingsDataSource,
+    ): GetAppLanguageStreamUseCase =
+        GetAppLanguageStreamUseCase(settingsDataSource = settingsDataSource)
 
     @Single
     fun provideSetLanguageUseCase(settingsDataSource: SettingsDataSource): SetLanguageUseCase =

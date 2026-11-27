@@ -9,20 +9,21 @@ import com.eyther.lumbridge.core.domain.AppLanguage
 import com.eyther.lumbridge.core.domain.appLanguageOverride
 
 /**
- * Shows [content] in [language], switching in place when it changes.
- *
- * Compose resources pick strings by the platform language but only look at it again when the
- * density changes, so each language gets its own density object: every string re-resolves while
- * navigation and screen state stay where they are.
+ * Shows [content] in [language], the choice `AppLanguageSetting` holds. Android hands the app a
+ * new configuration itself; elsewhere the running app is switched in place.
+ */
+@Composable expect fun ProvideAppLanguage(language: AppLanguage, content: @Composable () -> Unit)
+
+/**
+ * Switches the running app to [language] where the platform does not. Compose resources pick
+ * strings by the platform language but only look at it again when the density changes, so each
+ * language gets its own density object: every string re-resolves while navigation and screen
+ * state stay where they are.
  */
 @Composable
-fun ProvideAppLanguage(language: AppLanguage, content: @Composable () -> Unit) {
+internal fun SwitchLanguageInPlace(language: AppLanguage, content: @Composable () -> Unit) {
     appLanguageOverride = language.tag
-    ApplyPlatformLanguage(tag = language.tag)
     val density = LocalDensity.current
     val languageDensity = remember(density, language) { object : Density by density {} }
     CompositionLocalProvider(LocalDensity provides languageDensity, content = content)
 }
-
-/** Makes [tag] (null for the device's language) the language the platform reports. */
-@Composable internal expect fun ApplyPlatformLanguage(tag: String?)

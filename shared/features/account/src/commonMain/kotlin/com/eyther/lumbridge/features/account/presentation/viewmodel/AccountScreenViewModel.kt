@@ -16,6 +16,7 @@ import com.eyther.lumbridge.features.account.domain.usecase.UpdateNicknameUseCas
 import com.eyther.lumbridge.features.account.presentation.mapper.toAccountTextResource
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountScreenViewModelContract
 import com.eyther.lumbridge.features.account.presentation.viewmodel.contracts.AccountState
+import com.eyther.lumbridge.features.settings.domain.usecase.GetAppLanguageStreamUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.GetSettingsStreamUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetLanguageUseCase
 import com.eyther.lumbridge.features.settings.domain.usecase.SetNotificationsUseCase
@@ -34,6 +35,7 @@ class AccountScreenViewModel(
     private val updateNicknameUseCase: UpdateNicknameUseCase,
     private val getSettingsStreamUseCase: GetSettingsStreamUseCase,
     private val setThemeUseCase: SetThemeUseCase,
+    private val getAppLanguageStreamUseCase: GetAppLanguageStreamUseCase,
     private val setLanguageUseCase: SetLanguageUseCase,
     private val setNotificationsUseCase: SetNotificationsUseCase,
     private val setProfilePictureUseCase: SetProfilePictureUseCase,
@@ -90,6 +92,11 @@ class AccountScreenViewModel(
             .observeWith(viewModelScope) { state ->
                 getSettingsStreamUseCase().updateState(state) { preferences ->
                     copy(preferences = preferences)
+                }
+            }
+            .observeWith(viewModelScope) { state ->
+                getAppLanguageStreamUseCase().updateState(state) { language ->
+                    copy(language = language)
                 }
             }
 

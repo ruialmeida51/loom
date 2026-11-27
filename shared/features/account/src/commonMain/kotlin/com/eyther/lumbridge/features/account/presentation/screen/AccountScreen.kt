@@ -90,7 +90,7 @@ fun AccountScreen(
             preferences = state.preferences,
             notificationsBlocked = notificationsBlocked,
             theme = state.theme,
-            language = state.preferences.language,
+            language = state.language,
             busy = state.busy || signingOut,
             error = state.displayError,
             onEditNickname = viewModel::onEditNickname,

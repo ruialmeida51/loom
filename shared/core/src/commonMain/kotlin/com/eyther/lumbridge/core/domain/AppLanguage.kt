@@ -7,7 +7,16 @@ enum class AppLanguage(val tag: String?) {
     PORTUGUESE("pt-PT");
 
     companion object {
-        /** The stored choice, falling back to the device for an unknown or missing value. */
-        fun fromName(name: String?): AppLanguage = entries.firstOrNull { it.name == name } ?: SYSTEM
+        /**
+         * The choice a stored BCP 47 tag stands for, matched by language ("pt" and "pt-BR" are
+         * Portuguese) since the platform's own settings may store a different region; no tag, or a
+         * language the app does not have, follows the device.
+         */
+        fun fromTag(tag: String?): AppLanguage {
+            val language = tag?.substringBefore('-')?.substringBefore('_')?.lowercase()
+            return entries.firstOrNull { choice ->
+                choice.tag?.substringBefore('-') == language
+            } ?: SYSTEM
+        }
     }
 }

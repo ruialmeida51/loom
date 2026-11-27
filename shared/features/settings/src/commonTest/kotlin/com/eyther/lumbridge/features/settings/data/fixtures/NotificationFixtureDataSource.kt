@@ -20,6 +20,8 @@ class NotificationFixtureDataSource : SettingsDataSource {
 
     override suspend fun setTheme(value: String): AppResult<Unit> = AppResult.Success(Unit)
 
+    override fun streamLanguage() = MutableStateFlow(AppLanguage.SYSTEM)
+
     override suspend fun setLanguage(language: AppLanguage): AppResult<Unit> =
         AppResult.Success(Unit)
 
