@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.23] - 2026-11-27
+
 - Loom now speaks European Portuguese: choose it as the app language, and amounts show as 26,33 €.
 
 ## [4.0.22] - 2026-11-27
