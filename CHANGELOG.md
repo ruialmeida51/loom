@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Loom now speaks European Portuguese: choose it as the app language, and amounts show as 26,33 €.
+
 ## [4.0.22] - 2026-11-27
 
 - Shopping lists open faster in long-running households: items you removed are no longer downloaded every time.

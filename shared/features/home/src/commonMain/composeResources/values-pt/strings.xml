@@ -26,7 +26,7 @@
     <string name="ui_home_unavailable">A tua casa precisa de um momento.</string>
     <string name="ui_try_again">Tentar novamente</string>
     <string name="home_add_task">Adicionar tarefa</string>
-    <string name="home_add_expense">Adicionar despesa</string>
+    <string name="home_add_expense">Nova despesa</string>
     <string name="home_feed">Notícias</string>
     <string name="home_nothing_due">Nada para hoje. Aproveita para respirar.</string>
     <string name="home_shopping_empty">Nada para trazer. Está tudo abastecido.</string>

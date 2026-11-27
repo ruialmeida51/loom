@@ -20,6 +20,7 @@ import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import com.eyther.lumbridge.features.settings.data.local.ThemePreferences
 import java.io.File
+import java.util.Locale
 import kotlin.test.Test
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
@@ -35,13 +36,31 @@ import org.jetbrains.skia.Image
 @OptIn(ExperimentalTestApi::class)
 class StoreScreenshotsCapture {
     private val enabled = System.getProperty("loom.store.capture") == "true"
+    /** The listing language, such as en-GB or pt-PT (-PloomStoreLocale=pt-PT). */
+    private val locale = System.getProperty("loom.store.locale", "en-GB")
     private val directory by lazy {
-        File(System.getProperty("loom.store.dir", "build/store-screenshots/raw")).apply { mkdirs() }
+        File(System.getProperty("loom.store.dir", "build/store-screenshots/raw"), locale).apply { mkdirs() }
     }
+    private val portuguese = locale.startsWith("pt")
+    private val allNews = if (portuguese) "Todas as notícias" else "All news"
+    private val trip = if (portuguese) "Fim de semana no Porto" else "Porto weekend"
+    private val tripExpense = if (portuguese) "Alojamento" else "Guesthouse"
+    private val newExpense = if (portuguese) "Jantar no mercado do peixe" else "Fish market dinner"
 
     @Test
     fun captureListingScreens() {
         if (!enabled) return
+        // String resources and money formatting both follow the default locale.
+        val original = Locale.getDefault()
+        Locale.setDefault(Locale.forLanguageTag(locale))
+        try {
+            capture()
+        } finally {
+            Locale.setDefault(original)
+        }
+    }
+
+    private fun capture() {
         // 1080 x 2340 px at 2.625x: a common Android phone (411 x 891 dp).
         runSkikoComposeUiTest(size = Size(1080f, 2340f), density = Density(2.625f)) {
             ThemePreferences.set("LIGHT")
@@ -53,13 +72,13 @@ class StoreScreenshotsCapture {
             awaitPictures()
             save("home")
 
-            onNodeWithText("All news").tap()
+            onNodeWithText(allNews).tap()
             waitUntil(timeoutMillis = 5_000) {
                 onAllNodesWithTag("feed_content").fetchSemanticsNodes().isNotEmpty()
             }
             awaitPictures()
             save("news")
-            onNodeWithContentDescription("Back").tap()
+            onNodeWithContentDescription(if (portuguese) "Voltar" else "Back").tap()
 
             onNodeWithTag("navigation_shopping").tap()
             awaitLoadedDestination(tag = "shopping_content")
@@ -73,19 +92,17 @@ class StoreScreenshotsCapture {
             awaitLoadedDestination(tag = "expenses_content")
             save("money")
 
-            onNodeWithTag("account_chip_Porto weekend").tap()
+            onNodeWithTag("account_chip_$trip").tap()
             waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("Guesthouse").fetchSemanticsNodes().isNotEmpty()
+                onAllNodesWithText(tripExpense).fetchSemanticsNodes().isNotEmpty()
             }
             onNodeWithTag("add_expense").tap()
-            onNodeWithTag("expense_amount").performTextInput("48.00")
-            onNodeWithTag("expense_title").performTextInput("Fish market dinner")
+            onNodeWithTag("expense_amount").performTextInput(if (portuguese) "48,00" else "48.00")
+            onNodeWithTag("expense_title").performTextInput(newExpense)
             onNodeWithTag("expense_currency").tap()
             onNodeWithTag("currency_GBP").tap()
             waitUntil(timeoutMillis = 5_000) {
-                onAllNodesWithText("in this account", substring = true)
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
+                onAllNodesWithTag("change_rate").fetchSemanticsNodes().isNotEmpty()
             }
             save("trip")
         }

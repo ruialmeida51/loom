@@ -31,6 +31,7 @@ ICON_SIZE = 168
 # the app say the same thing.
 TAGLINES = {
     "en-GB": "A calmer home for the things you share.",
+    "pt-PT": "Uma casa mais tranquila para tudo o que partilham.",
 }
 
 WORDMARK = "Loom"

@@ -90,6 +90,7 @@ tasks.withType<Test>().configureEach {
     )
     // Store listing captures run only on request: ./gradlew ... -PloomStoreCapture=true
     systemProperty("loom.store.capture", providers.gradleProperty("loomStoreCapture").getOrElse("false"))
+    systemProperty("loom.store.locale", providers.gradleProperty("loomStoreLocale").getOrElse("en-GB"))
     systemProperty(
         "loom.store.dir",
         rootProject.layout.buildDirectory.dir("store-screenshots/raw").get().asFile.absolutePath,

@@ -3,7 +3,7 @@
     <string name="error_invalid_date_time">Escolhe uma data e hora válidas.</string>
     <string name="ui_add_a_task">Adicionar tarefa</string>
     <string name="ui_nothing_on_your_mind">Nada em mente.</string>
-    <string name="ui_repeats_1_s">Repete %1$s</string>
+    <string name="ui_repeats_1_s">%1$s</string>
     <string name="ui_a_little_task">Nova tarefa</string>
     <string name="ui_what_needs_doing">O que é preciso fazer?</string>
     <string name="ui_times_are_in_1_s">As horas estão em %1$s</string>

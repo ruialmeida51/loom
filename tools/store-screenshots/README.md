@@ -10,14 +10,18 @@ emulator or simulator, and every machine produces the same images.
 From the repo root:
 
 ```bash
-# 1. Raw 1080x2340 phone captures of the demo app (desktop Compose, light theme).
-./gradlew :shared:entrypoint:jvmTest --tests '*StoreScreenshotsCapture*' -PloomStoreCapture=true
+for locale in en-GB pt-PT; do
+    # 1. Raw 1080x2340 phone captures of the demo app (desktop Compose, light theme), with the
+    #    UI, the money format and the sample household all in that language.
+    ./gradlew :shared:entrypoint:jvmTest --tests '*StoreScreenshotsCapture*' \
+        -PloomStoreCapture=true -PloomStoreLocale=$locale --rerun
 
-# 2. Captioned frames for each store.
-python3 tools/store-screenshots/frame.py --input build/store-screenshots/raw \
-    --output build/store-screenshots/listing/en-GB --locale en-GB
-python3 tools/store-screenshots/frame_ios.py --input build/store-screenshots/raw \
-    --output build/store-screenshots/listing-ios/en-GB --locale en-GB
+    # 2. Captioned frames for each store.
+    python3 tools/store-screenshots/frame.py --input build/store-screenshots/raw/$locale \
+        --output build/store-screenshots/listing/$locale --locale $locale
+    python3 tools/store-screenshots/frame_ios.py --input build/store-screenshots/raw/$locale \
+        --output build/store-screenshots/listing-ios/$locale --locale $locale
+done
 
 # 3. Brand graphics.
 python3 tools/store-screenshots/feature_graphic.py --output build/store-screenshots/listing
@@ -28,11 +32,11 @@ Framing needs Pillow (`pip install Pillow`).
 
 | Output | Size | For |
 |---|---|---|
-| `listing/en-GB/NN-<screen>.png` | 1080x1920 | Play phone screenshots (2–8, 9:16) |
-| `listing/feature-graphic-en-GB.png` | 1024x500, no alpha | Play feature graphic |
-| `listing-ios/en-GB/NN-<screen>.png` | 1179x2556 | App Store iPhone (the required size) |
-| `listing-ios/header-en-GB.png` | 3840x1646 | App Store header (optional, iOS 27+) |
-| `listing-ios/search-results-en-GB.png` | 2880x1920 | App Store search results (optional) |
+| `listing/<locale>/NN-<screen>.png` | 1080x1920 | Play phone screenshots (2–8, 9:16) |
+| `listing/feature-graphic-<locale>.png` | 1024x500, no alpha | Play feature graphic |
+| `listing-ios/<locale>/NN-<screen>.png` | 1179x2556 | App Store iPhone (the required size) |
+| `listing-ios/header-<locale>.png` | 3840x1646 | App Store header (optional, iOS 27+) |
+| `listing-ios/search-results-<locale>.png` | 2880x1920 | App Store search results (optional) |
 
 ## How it differs from Plannot
 
@@ -43,7 +47,8 @@ Framing needs Pillow (`pip install Pillow`).
 - **Brand**: the primary teal (`#1E6B57`) deepening down the canvas, the icon's gold (`#D3AC44`) as
   the accent, Space Grotesk Bold for captions and the wordmark, Inter for the tagline, and
   `branding/android/loom-play-store.png` as the icon.
-- **One locale** (en-GB), since that's the only language the app ships.
+- **Two locales**, en-GB and pt-PT, the languages the app ships. The capture sets the JVM
+  locale, so string resources, money ("26,33 €") and the demo household (`demoText`) follow it.
 
 ## Changing the listing
 

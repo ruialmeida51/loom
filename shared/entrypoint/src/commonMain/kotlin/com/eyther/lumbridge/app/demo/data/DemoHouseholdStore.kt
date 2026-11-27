@@ -40,19 +40,19 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
         const val SAM = "00000000-0000-4000-8000-000000000003"
         const val TRIP = "00000000-0000-4000-8000-000000000101"
         const val MARTA = "00000000-0000-4000-8000-000000000201"
-        val households =
-            listOf(
+        val households
+            get() = listOf(
                 HouseholdContextDomain(
                     "00000000-0000-4000-8000-000000000010",
                     USER,
-                    "The little nest",
+                    demoText("The little nest", "O ninho"),
                     "EUR",
                     "Europe/Lisbon",
                 ),
                 HouseholdContextDomain(
                     "00000000-0000-4000-8000-000000000011",
                     USER,
-                    "The city flat",
+                    demoText("The city flat", "O apartamento da cidade"),
                     "GBP",
                     "Europe/London",
                 ),
@@ -64,7 +64,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
 
     var members =
         listOf(
-            MemberDomain(USER, "You", "owner"),
+            MemberDomain(USER, demoText("You", "Tu"), "owner"),
             MemberDomain(ALEX, "Alex", "member"),
             MemberDomain(SAM, "Sam", "member"),
         )
@@ -86,7 +86,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 // A trip shared with Marta, a guest outside the household.
                 ExpenseAccountDomain(
                     id = TRIP,
-                    name = "Porto weekend",
+                    name = demoText("Porto weekend", "Fim de semana no Porto"),
                     currency = context.currency,
                     memberIds = setOf(USER, ALEX),
                     version = 1,
@@ -100,12 +100,12 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
     val shopping =
         MutableStateFlow(
             ShoppingSnapshotDomain(
-                listOf(ShoppingListDomain(listId, "Groceries", version = 1)),
+                listOf(ShoppingListDomain(listId, demoText("Groceries", "Supermercado"), version = 1)),
                 listOf(
                     ShoppingItemDomain(
                         newId(),
-                        "Avocados",
-                        "3 ripe ones",
+                        demoText("Avocados", "Abacates"),
+                        demoText("3 ripe ones", "3 maduros"),
                         "Produce",
                         false,
                         listId,
@@ -113,8 +113,8 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     ),
                     ShoppingItemDomain(
                         newId(),
-                        "Cherry tomatoes",
-                        "1 punnet",
+                        demoText("Cherry tomatoes", "Tomate cereja"),
+                        demoText("1 punnet", "1 caixa"),
                         "Produce",
                         false,
                         listId,
@@ -122,8 +122,8 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     ),
                     ShoppingItemDomain(
                         newId(),
-                        "Sourdough bread",
-                        "1 loaf",
+                        demoText("Sourdough bread", "Pão de massa-mãe"),
+                        demoText("1 loaf", "1 pão"),
                         "Bakery",
                         false,
                         listId,
@@ -131,8 +131,8 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     ),
                     ShoppingItemDomain(
                         newId(),
-                        "Oat milk",
-                        "2 cartons",
+                        demoText("Oat milk", "Bebida de aveia"),
+                        demoText("2 cartons", "2 pacotes"),
                         "Dairy & eggs",
                         false,
                         listId,
@@ -140,8 +140,8 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     ),
                     ShoppingItemDomain(
                         newId(),
-                        "Free-range eggs",
-                        "6 eggs",
+                        demoText("Free-range eggs", "Ovos do campo"),
+                        demoText("6 eggs", "6 ovos"),
                         "Dairy & eggs",
                         false,
                         listId,
@@ -149,7 +149,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                     ),
                     ShoppingItemDomain(
                         newId(),
-                        "Coffee beans",
+                        demoText("Coffee beans", "Café em grão"),
                         "250 g",
                         "Pantry",
                         true,
@@ -168,7 +168,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
             listOf(
                 ExpenseDomain(
                     newId(),
-                    "The weekly shop",
+                    demoText("The weekly shop", "As compras da semana"),
                     8645,
                     USER,
                     "Groceries",
@@ -192,7 +192,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 ),
                 ExpenseDomain(
                     newId(),
-                    "Friday night dinner",
+                    demoText("Friday night dinner", "Jantar de sexta-feira"),
                     5400,
                     SAM,
                     "Food & drink",
@@ -202,7 +202,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 ),
                 ExpenseDomain(
                     newId(),
-                    "Guesthouse",
+                    demoText("Guesthouse", "Alojamento"),
                     18000,
                     USER,
                     "Other",
@@ -257,7 +257,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
             listOf(
                 TaskDomain(
                     id = newId(),
-                    title = "Water the plants",
+                    title = demoText("Water the plants", "Regar as plantas"),
                     dueAt = Clock.System.now() + 2.hours,
                     recurrence = TaskRecurrenceDomain.DAILY,
                     completed = false,
@@ -265,7 +265,7 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 ),
                 TaskDomain(
                     id = newId(),
-                    title = "Take the recycling out",
+                    title = demoText("Take the recycling out", "Levar a reciclagem"),
                     dueAt = Clock.System.now() + 7.hours,
                     recurrence = TaskRecurrenceDomain.WEEKLY,
                     completed = false,
@@ -276,14 +276,14 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 ),
                 TaskDomain(
                     id = newId(),
-                    title = "Book the boiler service",
+                    title = demoText("Book the boiler service", "Marcar a revisão do esquentador"),
                     dueAt = Clock.System.now() + 30.hours,
                     recurrence = TaskRecurrenceDomain.NONE,
                     completed = false,
                 ),
                 TaskDomain(
                     id = newId(),
-                    title = "Fix the kitchen shelf",
+                    title = demoText("Fix the kitchen shelf", "Arranjar a prateleira da cozinha"),
                     dueAt = null,
                     recurrence = TaskRecurrenceDomain.NONE,
                     completed = false,
@@ -296,14 +296,14 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 FeedSubscriptionDomain(
                     id = "weekend",
                     url = "https://www.theguardian.com/lifeandstyle/rss",
-                    publisher = "The weekend edit",
+                    publisher = demoText("The weekend edit", "Edição de fim de semana"),
                     lastFetchedAt = nowIso(),
                     status = FeedSubscriptionStatusDomain.READY,
                 ),
                 FeedSubscriptionDomain(
                     id = "table",
                     url = "https://feeds.bbci.co.uk/news/world/rss.xml",
-                    publisher = "Around the table",
+                    publisher = demoText("Around the table", "À volta da mesa"),
                     lastFetchedAt = nowIso(),
                     status = FeedSubscriptionStatusDomain.READY,
                 ),
@@ -315,10 +315,10 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
             listOf(
                 ArticleDomain(
                     newId(),
-                    "A slower Sunday starts at home",
-                    "Small rituals for a weekend that feels like your own.",
+                    demoText("A slower Sunday starts at home", "Um domingo mais calmo começa em casa"),
+                    demoText("Small rituals for a weekend that feels like your own.", "Pequenos rituais para um fim de semana que seja mesmo teu."),
                     "https://www.theguardian.com/lifeandstyle",
-                    "The weekend edit",
+                    demoText("The weekend edit", "Edição de fim de semana"),
                     Clock.System.now(),
                     false,
                     subscriptionId = "weekend",
@@ -326,10 +326,10 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 ),
                 ArticleDomain(
                     newId(),
-                    "Good food, less waste",
-                    "Making the most of what is already in your fridge.",
+                    demoText("Good food, less waste", "Boa comida, menos desperdício"),
+                    demoText("Making the most of what is already in your fridge.", "Tirar o melhor partido do que já tens no frigorífico."),
                     "https://www.bbcgoodfood.com/",
-                    "Around the table",
+                    demoText("Around the table", "À volta da mesa"),
                     Clock.System.now(),
                     false,
                     subscriptionId = "table",
@@ -337,10 +337,10 @@ class DemoHouseholdStore(val context: HouseholdContextDomain) {
                 ),
                 ArticleDomain(
                     newId(),
-                    "Rents steady across the city this autumn",
-                    "What the latest figures mean if your lease is up for renewal.",
+                    demoText("Rents steady across the city this autumn", "Rendas estáveis na cidade neste outono"),
+                    demoText("What the latest figures mean if your lease is up for renewal.", "O que os números mais recentes significam se o teu contrato está para renovar."),
                     "https://www.theguardian.com/money",
-                    "The weekend edit",
+                    demoText("The weekend edit", "Edição de fim de semana"),
                     Clock.System.now() - 3.hours,
                     false,
                     subscriptionId = "weekend",
