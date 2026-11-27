@@ -9,8 +9,8 @@ import com.eyther.lumbridge.core.domain.AppLanguage
 import com.eyther.lumbridge.core.domain.appLanguageOverride
 
 /**
- * Shows [content] in [language], the choice `AppLanguageSetting` holds. Android hands the app a
- * new configuration itself; elsewhere the running app is switched in place.
+ * Shows [content] in [language], the choice `AppLanguageSetting` holds. On Android AppCompat
+ * recreates the activity in the new language; elsewhere the running app is switched in place.
  */
 @Composable expect fun ProvideAppLanguage(language: AppLanguage, content: @Composable () -> Unit)
 

@@ -8,7 +8,7 @@ import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.core.data.local.PlatformStorage
 
 /** Debug-only native test host; release authentication and screens never select demo data. */
-// An AppCompatActivity handling locale changes, like MainActivity, so the language switch is real.
+// An AppCompatActivity like MainActivity, so the language switch goes through AppCompat for real.
 class UsabilityTestActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

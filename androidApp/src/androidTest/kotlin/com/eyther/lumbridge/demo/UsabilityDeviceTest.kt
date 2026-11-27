@@ -463,7 +463,7 @@ class UsabilityDeviceTest {
             compose.onNodeWithTag("open_my_account").performClick()
             awaitDestination(tag = "account_content")
             pickLanguage(label = "Português")
-            // The per-app language arrives as a configuration change: same screen, new language.
+            // AppCompat recreates the activity in the new language; the screen comes back.
             awaitText(text = "Preferências")
             compose.onNodeWithTag("account_content").assertIsDisplayed()
             capture(name = "language-portuguese")
@@ -477,18 +477,23 @@ class UsabilityDeviceTest {
 
     // The Appearance row can show the same word ("Sistema"), so pick inside the language menu.
     private fun pickLanguage(label: String) {
-        compose.onNodeWithTag("language_preference").performScrollTo().performClick()
         val choice = hasText(label) and hasAnyAncestor(hasTestTag("language_menu"))
-        // After a configuration change the menu's popup window can open a frame late.
+        // Right after a language change the activity is still being recreated and can drop a
+        // tap, so tap the row until its menu opens.
         compose.waitUntil(
             conditionDescription =
                 "\"$label\" in the language menu; menu nodes " +
                     "${compose.onAllNodesWithTag("language_menu", useUnmergedTree = true)
                         .fetchSemanticsNodes().size}, shows ${languageMenuTexts()}; " +
                     localeState(),
-            timeoutMillis = 5_000,
+            timeoutMillis = 10_000,
         ) {
-            compose.onAllNodes(choice, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+            val open =
+                compose.onAllNodes(choice, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+            if (!open) runCatching {
+                compose.onNodeWithTag("language_preference").performScrollTo().performClick()
+            }
+            open
         }
         compose.onNode(choice, useUnmergedTree = true).performClick()
     }

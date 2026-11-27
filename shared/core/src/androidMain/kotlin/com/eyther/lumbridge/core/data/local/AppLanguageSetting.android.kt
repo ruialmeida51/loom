@@ -8,8 +8,8 @@ import kotlinx.coroutines.withContext
 
 /**
  * AppCompat's per-app language: the system's own on Android 13+ (Settings > Apps > Loom >
- * Language shows the same choice), stored by AppCompat before that. Applying it hands the new
- * configuration to the running activity, which handles locale changes in place.
+ * Language shows the same choice), stored by AppCompat before that. Applying it recreates the
+ * activity in the new language; navigation and screen state come back from saved state.
  */
 actual object AppLanguageSetting {
     actual fun get(): AppLanguage =
