@@ -1,5 +1,6 @@
 package com.eyther.lumbridge.features.expenses.domain.model
 
+import com.eyther.lumbridge.core.domain.deviceLanguageTag
 import com.eyther.lumbridge.core.domain.errors.requireDomain
 import com.eyther.lumbridge.features.expenses.domain.errors.ExpenseError
 
@@ -32,11 +33,18 @@ data class MoneyDomain(val minorUnits: Long, val currency: String) {
                 "USD" -> "$"
                 else -> "$currency "
             }
-        return symbol + digits.dropLast(2) + "." + digits.takeLast(2)
+        val portuguese = deviceLanguageTag().startsWith("pt")
+        return if (portuguese) {
+            // Portuguese writes the amount first, with a decimal comma: 26,33 €.
+            digits.dropLast(2) + "," + digits.takeLast(2) + NO_BREAK_SPACE + symbol.trim()
+        } else {
+            symbol + digits.dropLast(2) + "." + digits.takeLast(2)
+        }
     }
 
     companion object {
         const val MAX_MINOR_UNITS = 100_000_000_000L
+        private const val NO_BREAK_SPACE = "\u00A0"
 
         fun parseShare(text: String, currency: String): MoneyDomain {
             if (Regex("0+(?:[.,]0{1,2})?").matches(text.trim())) {

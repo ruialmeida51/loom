@@ -1,0 +1,43 @@
+<resources>
+    <string name="account_title">A minha conta</string>
+    <string name="profile_title">Perfil</string>
+    <string name="nickname_description">O teu nome em todas as casas</string>
+    <string name="preferences_title">Preferências</string>
+    <string name="appearance_title">Aspeto</string>
+    <string name="notifications_title">Notificações</string>
+    <string name="notifications_description">Tarefas e despesas partilhadas</string>
+    <string name="analytics_title">Ajuda a melhorar o Loom</string>
+    <string name="analytics_description">Partilha estatísticas de utilização opcionais para ajudar a melhorar o Loom.</string>
+    <string name="sign_out">Terminar sessão</string>
+    <string name="retry">Tentar novamente</string>
+    <string name="invalid_nickname">Usa entre 1 e 80 caracteres no teu nome.</string>
+    <string name="ui_cancel">Cancelar</string>
+    <string name="ui_edit_nickname">Editar nome</string>
+    <string name="ui_nickname_help">É assim que apareces em todas as tuas casas.</string>
+    <string name="ui_nickname_title">Nome</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Escuro</string>
+    <string name="delete_account">Eliminar conta</string>
+    <string name="account_deletion_description">Opções para eliminar a conta e os dados</string>
+    <string name="sign_out_title">Terminar sessão no Loom?</string>
+    <string name="sign_out_message">Vais ter de iniciar sessão novamente para aceder às tuas casas.</string>
+    <string name="usage_data_title">Utilização e diagnóstico</string>
+    <string name="usage_data_description">Escolhe as estatísticas e os relatórios de falhas</string>
+    <string name="picture_description">A tua fotografia, visível nas tuas casas</string>
+    <string name="notifications_blocked_description">Desligadas nas definições do telemóvel. Liga-as para resolver.</string>
+    <string name="payment_details_title">Dados de pagamento</string>
+    <string name="payment_details_empty">Deixa que quem vive contigo te pague com MB Way, Revolut ou PayPal</string>
+    <plurals name="payment_details_count">
+        <item quantity="one">%1$d forma de te pagarem, partilhada com as tuas casas</item>
+        <item quantity="other">%1$d formas de te pagarem, partilhadas com as tuas casas</item>
+    </plurals>
+    <string name="payment_details_help">Só as pessoas das tuas casas os veem, e só enquanto partilharem uma casa. Podes deixar qualquer um em branco.</string>
+    <string name="payment_details_mbway">Número de telemóvel do MB Way</string>
+    <string name="payment_details_mbway_hint">Por exemplo 912 345 678</string>
+    <string name="payment_details_revolut">Nome de utilizador do Revolut</string>
+    <string name="payment_details_revolut_hint">O teu @utilizador ou link revolut.me</string>
+    <string name="payment_details_paypal">Nome de utilizador do PayPal.me</string>
+    <string name="payment_details_paypal_hint">Do teu link paypal.me</string>
+    <string name="invalid_payment_handle">Verifica estes dados: um número de telemóvel com o indicativo do país e nomes de utilizador sem espaços.</string>
+</resources>

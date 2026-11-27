@@ -2,7 +2,7 @@
   <string name="error_invalid_batch_size">Add between 1 and 50 items at once.</string>
   <string name="error_items_already_saved">Add new items to the list.</string>
   <string name="error_version_required">Refresh the item before editing it.</string>
-  <string name="error_invalid_item_name">Give the item a name, up to 120 characters.</string>
+  <string name="error_invalid_item_name">Give the item a name, up to 500 characters.</string>
   <string name="error_invalid_quantity">Keep the quantity under 40 characters.</string>
   <string name="error_invalid_list_or_category">Choose a list and category.</string>
   <string name="error_invalid_list_name">Give the list a name, up to 60 characters.</string>
