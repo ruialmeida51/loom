@@ -477,21 +477,34 @@ class UsabilityDeviceTest {
     // The Appearance row can show the same word ("Sistema"), so pick inside the language menu.
     private fun pickLanguage(label: String) {
         compose.onNodeWithTag("language_preference").performScrollTo().performClick()
-        compose
-            .onNode(
-                hasText(label) and hasAnyAncestor(hasTestTag("language_menu")),
-                useUnmergedTree = true,
-            )
-            .performClick()
+        val choice = hasText(label) and hasAnyAncestor(hasTestTag("language_menu"))
+        // After a configuration change the menu's popup window can open a frame late.
+        compose.waitUntil(
+            conditionDescription =
+                "\"$label\" in the language menu; menu shows ${languageMenuTexts()}; " +
+                    localeState(),
+            timeoutMillis = 5_000,
+        ) {
+            compose.onAllNodes(choice, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNode(choice, useUnmergedTree = true).performClick()
     }
+
+    private fun languageMenuTexts(): List<String> =
+        compose
+            .onAllNodes(hasAnyAncestor(hasTestTag("language_menu")), useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .flatMap { node ->
+                node.config.getOrNull(SemanticsProperties.Text).orEmpty().map { it.text }
+            }
+
+    private fun localeState(): String =
+        "app locales ${AppCompatDelegate.getApplicationLocales().toLanguageTags()}, default " +
+            "${Locale.getDefault().toLanguageTag()}, picked ${LanguagePreferences.language.value}"
 
     private fun awaitText(text: String) {
         compose.waitUntil(
-            conditionDescription =
-                "\"$text\" shown; app locales " +
-                    "${AppCompatDelegate.getApplicationLocales().toLanguageTags()}, default " +
-                    "${Locale.getDefault().toLanguageTag()}, picked " +
-                    "${LanguagePreferences.language.value}",
+            conditionDescription = "\"$text\" shown; ${localeState()}",
             timeoutMillis = 10_000,
         ) {
             compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
