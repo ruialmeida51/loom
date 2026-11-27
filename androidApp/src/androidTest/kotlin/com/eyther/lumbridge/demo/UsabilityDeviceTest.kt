@@ -459,6 +459,7 @@ class UsabilityDeviceTest {
     @Test
     fun languageSwitchesThroughAppCompatWithoutLeavingTheScreen() {
         try {
+            startingActivity = System.identityHashCode(compose.activity)
             compose.onNodeWithTag("open_my_account").performClick()
             awaitDestination(tag = "account_content")
             pickLanguage(label = "Português")
@@ -481,7 +482,9 @@ class UsabilityDeviceTest {
         // After a configuration change the menu's popup window can open a frame late.
         compose.waitUntil(
             conditionDescription =
-                "\"$label\" in the language menu; menu shows ${languageMenuTexts()}; " +
+                "\"$label\" in the language menu; menu nodes " +
+                    "${compose.onAllNodesWithTag("language_menu", useUnmergedTree = true)
+                        .fetchSemanticsNodes().size}, shows ${languageMenuTexts()}; " +
                     localeState(),
             timeoutMillis = 5_000,
         ) {
@@ -498,9 +501,13 @@ class UsabilityDeviceTest {
                 node.config.getOrNull(SemanticsProperties.Text).orEmpty().map { it.text }
             }
 
+    private var startingActivity = 0
+
     private fun localeState(): String =
         "app locales ${AppCompatDelegate.getApplicationLocales().toLanguageTags()}, default " +
-            "${Locale.getDefault().toLanguageTag()}, picked ${LanguagePreferences.language.value}"
+            "${Locale.getDefault().toLanguageTag()}, picked ${LanguagePreferences.language.value}" +
+            ", activity ${if (System.identityHashCode(compose.activity) == startingActivity)
+                "the same" else "recreated"}"
 
     private fun awaitText(text: String) {
         compose.waitUntil(
