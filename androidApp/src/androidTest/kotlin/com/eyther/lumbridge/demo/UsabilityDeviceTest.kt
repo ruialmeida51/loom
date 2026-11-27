@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
@@ -16,6 +17,7 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -49,6 +51,7 @@ import com.eyther.lumbridge.core.domain.AppLanguage
 import com.eyther.lumbridge.features.settings.data.local.LanguagePreferences
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.Locale
 import java.util.regex.Pattern
 import kotlin.math.abs
 import kotlinx.coroutines.runBlocking
@@ -458,22 +461,40 @@ class UsabilityDeviceTest {
         try {
             compose.onNodeWithTag("open_my_account").performClick()
             awaitDestination(tag = "account_content")
-            compose.onNodeWithTag("language_preference").performScrollTo().performClick()
-            compose.onNodeWithText("Português", useUnmergedTree = true).performClick()
+            pickLanguage(label = "Português")
             // The per-app language arrives as a configuration change: same screen, new language.
-            compose.waitUntil(timeoutMillis = 10_000) {
-                compose.onAllNodesWithText("Preferências").fetchSemanticsNodes().isNotEmpty()
-            }
+            awaitText(text = "Preferências")
             compose.onNodeWithTag("account_content").assertIsDisplayed()
             capture(name = "language-portuguese")
-            compose.onNodeWithTag("language_preference").performScrollTo().performClick()
-            compose.onNodeWithText("Sistema", useUnmergedTree = true).performClick()
-            compose.waitUntil(timeoutMillis = 10_000) {
-                compose.onAllNodesWithText("Preferences").fetchSemanticsNodes().isNotEmpty()
-            }
+            pickLanguage(label = "Sistema")
+            awaitText(text = "Preferences")
             compose.onNodeWithTag("account_content").assertIsDisplayed()
         } finally {
             runBlocking { LanguagePreferences.set(AppLanguage.SYSTEM) }
+        }
+    }
+
+    // The Appearance row can show the same word ("Sistema"), so pick inside the language menu.
+    private fun pickLanguage(label: String) {
+        compose.onNodeWithTag("language_preference").performScrollTo().performClick()
+        compose
+            .onNode(
+                hasText(label) and hasAnyAncestor(hasTestTag("language_menu")),
+                useUnmergedTree = true,
+            )
+            .performClick()
+    }
+
+    private fun awaitText(text: String) {
+        compose.waitUntil(
+            conditionDescription =
+                "\"$text\" shown; app locales " +
+                    "${AppCompatDelegate.getApplicationLocales().toLanguageTags()}, default " +
+                    "${Locale.getDefault().toLanguageTag()}, picked " +
+                    "${LanguagePreferences.language.value}",
+            timeoutMillis = 10_000,
+        ) {
+            compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
         }
     }
 
