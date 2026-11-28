@@ -182,7 +182,7 @@ private fun HistoryCard(
                     person?.let {
                         MemberAvatar(
                             memberId = it.id,
-                            initials = it.name.trim().take(1).uppercase(),
+                            name = it.name,
                             picturePath = it.avatarPath,
                             modifier = Modifier.size(18.dp),
                         )

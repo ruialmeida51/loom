@@ -66,7 +66,7 @@ fun TaskPeopleFields(
                     leadingIcon = {
                         MemberAvatar(
                             memberId = member.id,
-                            initials = member.name.trim().take(1).uppercase(),
+                            name = member.name,
                             picturePath = member.avatarPath,
                             modifier = Modifier.size(20.dp),
                         )

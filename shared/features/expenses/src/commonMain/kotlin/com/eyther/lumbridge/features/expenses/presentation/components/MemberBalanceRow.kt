@@ -35,7 +35,7 @@ internal fun MemberBalanceRow(member: MemberBalanceUi) {
     ) {
         MemberAvatar(
             memberId = member.member.id,
-            initials = member.member.name.trim().take(1).uppercase(),
+            name = member.member.name,
             picturePath = member.member.avatarPath,
         )
         Column(modifier = Modifier.weight(1f)) {

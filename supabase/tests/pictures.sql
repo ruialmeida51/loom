@@ -49,6 +49,9 @@ begin
  assert not loom_private.can_read_picture(first_avatar), 'The replaced avatar is no longer readable';
  assert (select avatar_path from public.household_members_with_names(home::uuid) where user_id = owner_id::uuid) = second_avatar,
   'Member lists carry avatars';
+ assert (select m->>'avatar_path' from jsonb_array_elements(
+   public.get_household_management(home::uuid)->'members') m where m->>'user_id' = owner_id) = second_avatar,
+  'Household details carries avatars too';
  begin
   perform public.set_household_picture(home::uuid, 'households/'||home||'/00000000-0000-4000-8000-000000000a09.jpg');
   raise exception 'A picture that was never uploaded was accepted';

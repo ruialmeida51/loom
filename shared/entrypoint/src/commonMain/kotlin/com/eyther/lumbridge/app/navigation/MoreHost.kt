@@ -20,14 +20,18 @@ import com.eyther.lumbridge.core.navigation.model.Navigator
 import com.eyther.lumbridge.core.navigation.model.rememberNavigationState
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
+import com.eyther.lumbridge.features.home.presentation.screen.MemberProfileScreen
+import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.MemberProfileScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.presentation.screen.HouseholdDetailsScreen
 import com.eyther.lumbridge.features.household.presentation.viewmodel.contracts.HouseholdDetailsScreenViewModelContract
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.household_details
+import com.eyther.lumbridge.shared.entrypoint.generated.resources.member_profile
 import kotlinx.serialization.modules.subclass
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 internal fun MoreHost(
@@ -43,6 +47,7 @@ internal fun MoreHost(
             subclass(MoreDestination.LegacyReminders::class)
             subclass(MoreDestination.Feed::class)
             subclass(MoreDestination.HouseholdDetails::class)
+            subclass(MoreDestination.MemberProfile::class)
         }
     val navigator = remember(state) { Navigator(state = state) }
     val destination = state.getActiveBackStack()?.lastOrNull()
@@ -54,6 +59,7 @@ internal fun MoreHost(
                 MoreDestination.LegacyReminders -> AnalyticsScreenDomain.TASKS
                 MoreDestination.Feed -> AnalyticsScreenDomain.FEED
                 MoreDestination.HouseholdDetails -> AnalyticsScreenDomain.HOUSEHOLD_DETAILS
+                is MoreDestination.MemberProfile -> AnalyticsScreenDomain.MEMBER_PROFILE
                 else -> null
             },
     )
@@ -85,10 +91,31 @@ internal fun MoreHost(
                     onBack = navigator::goBack,
                 ) {
                     HouseholdDetailsSheetHost(viewModel = viewModel, onExited = onHouseholdExited) {
-                        HouseholdDetailsScreen(viewModel = viewModel, context = context)
+                        HouseholdDetailsScreen(
+                            viewModel = viewModel,
+                            context = context,
+                            onMember = { memberId ->
+                                navigator.navigateTo(MoreDestination.MemberProfile(memberId))
+                            },
+                        )
                     }
                 }
                 BusyNavigationGuard(busy = detailsState.busy)
+            }
+            is MoreDestination.MemberProfile -> {
+                val viewModel: MemberProfileScreenViewModelContract =
+                    koinViewModel(key = key.memberId) {
+                        parametersOf(MemberProfileScreenViewModelContract.Params(key.memberId))
+                    }
+                val profileState by viewModel.state.platformCollectAsStateOnStart()
+                FlowScaffold(
+                    title =
+                        profileState.profile?.member?.name
+                            ?: stringResource(Res.string.member_profile),
+                    onBack = navigator::goBack,
+                ) {
+                    MemberProfileScreen(viewModel = viewModel, onTasks = onTasks)
+                }
             }
         }
     }

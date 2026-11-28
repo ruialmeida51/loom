@@ -115,7 +115,7 @@ private fun BalanceSummary(balance: HomeBalanceUi) {
                 ) {
                     MemberAvatar(
                         memberId = person.memberId,
-                        initials = (person.name ?: former).take(1).uppercase(),
+                        name = person.name,
                         picturePath = person.avatarPath,
                         modifier = Modifier.size(MemberAvatarSize),
                     )

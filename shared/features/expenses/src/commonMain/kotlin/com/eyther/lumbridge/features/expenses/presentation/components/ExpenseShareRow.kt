@@ -29,7 +29,7 @@ internal fun ExpenseShareRow(share: ExpenseShareUi) {
     ) {
         MemberAvatar(
             memberId = share.id,
-            initials = share.initials,
+            name = share.name,
             picturePath = share.avatarPath,
         )
         Column(

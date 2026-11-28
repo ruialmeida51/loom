@@ -18,4 +18,5 @@ enum class AnalyticsScreenDomain {
     EXPENSE_DETAILS,
     EXPENSE_SPLIT,
     EXPENSE_ACCOUNT_FORM,
+    MEMBER_PROFILE,
 }

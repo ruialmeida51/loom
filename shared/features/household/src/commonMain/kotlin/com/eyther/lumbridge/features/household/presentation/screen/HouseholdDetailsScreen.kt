@@ -71,6 +71,7 @@ import org.jetbrains.compose.resources.stringResource
 fun HouseholdDetailsScreen(
     viewModel: HouseholdDetailsScreenViewModelContract,
     context: HouseholdContextDomain,
+    onMember: (String) -> Unit,
 ) {
     val state by viewModel.state.platformCollectAsStateOnStart()
     val pickPicture =
@@ -105,6 +106,7 @@ fun HouseholdDetailsScreen(
             onCopied = viewModel::onCopiedInvitation,
             onShareUnavailable = viewModel::onShareUnavailable,
             onMemberAction = viewModel::onMemberAction,
+            onMember = onMember,
             onLeave = viewModel::onLeaveRequested,
             onDelete = viewModel::onDeleteRequested,
             onDismiss = viewModel::onDismissError,
@@ -135,6 +137,7 @@ private fun InnerHouseholdDetailsScreen(
     onCopied: () -> Unit,
     onShareUnavailable: () -> Unit,
     onMemberAction: (String, HouseholdMemberActionDomain) -> Unit,
+    onMember: (String) -> Unit,
     onLeave: () -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
@@ -174,7 +177,7 @@ private fun InnerHouseholdDetailsScreen(
                         key(member.id) {
                             if (index > 0)
                                 LoomDivider()
-                            HouseholdMemberRow(member = member) {
+                            HouseholdMemberRow(member = member, onClick = { onMember(member.id) }) {
                                 if (member.canManage)
                                     ActionMenu(
                                         modifier =

@@ -1,40 +1,40 @@
 package com.eyther.lumbridge.features.household.presentation.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import com.eyther.lumbridge.core.presentation.components.MemberAvatar
-import com.eyther.lumbridge.core.presentation.theme.LoomColors
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.household.generated.resources.Res
-import com.eyther.lumbridge.features.household.generated.resources.details_member
-import com.eyther.lumbridge.features.household.generated.resources.details_owner
 import com.eyther.lumbridge.features.household.generated.resources.details_you
 import com.eyther.lumbridge.features.household.presentation.model.HouseholdMemberUi
 import org.jetbrains.compose.resources.stringResource
 
+/** A member of the household; tapping the row opens their profile. */
 @Composable
 internal fun HouseholdMemberRow(
     member: HouseholdMemberUi,
+    onClick: () -> Unit,
     trailingContent: @Composable () -> Unit = {},
 ) {
     Row(
-        modifier = Modifier.padding(LoomSpacing.content),
+        modifier =
+            Modifier.clickable(role = Role.Button, onClick = onClick)
+                .padding(LoomSpacing.content)
+                .testTag("member_${member.id}"),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(LoomSpacing.medium),
     ) {
-        MemberAvatar(
-            memberId = member.id,
-            initials = member.initials,
-            picturePath = member.avatarPath,
-        )
+        MemberAvatar(memberId = member.id, name = member.name, picturePath = member.avatarPath)
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(LoomSpacing.extraSmall),
@@ -47,28 +47,7 @@ internal fun HouseholdMemberRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
         }
-        Surface(
-            shape = MaterialTheme.shapes.small,
-            color =
-                if (member.isOwner) LoomColors.positiveContainer
-                else MaterialTheme.colorScheme.surfaceContainerHigh,
-        ) {
-            Text(
-                text =
-                    stringResource(
-                        if (member.isOwner) Res.string.details_owner else Res.string.details_member,
-                    ),
-                style = MaterialTheme.typography.labelMedium,
-                color =
-                    if (member.isOwner) LoomColors.onPositiveContainer
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier =
-                    Modifier.padding(
-                        horizontal = LoomSpacing.small,
-                        vertical = LoomSpacing.extraSmall,
-                    ),
-            )
-        }
+        MemberRoleChip(isOwner = member.isOwner)
         trailingContent()
     }
 }

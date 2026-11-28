@@ -71,12 +71,6 @@ data class HouseholdDetailsState(
                 HouseholdMemberUi(
                     id = member.id,
                     name = member.name,
-                    initials =
-                        member.name
-                            .firstOrNull { it.isLetterOrDigit() }
-                            ?.uppercaseChar()
-                            ?.toString()
-                            .orEmpty(),
                     isOwner = member.isOwner,
                     isCurrentUser = member.id == userId,
                     canManage = management.canManageMember(actorId = userId, memberId = member.id),

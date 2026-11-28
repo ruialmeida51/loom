@@ -20,6 +20,7 @@
     <string name="portal_my_account">A minha conta</string>
     <string name="tab_money">Dinheiro</string>
     <string name="household_details">Detalhes da casa</string>
+    <string name="member_profile">Membro da casa</string>
     <string name="flow_add_expense">Adicionar despesa</string>
     <string name="flow_edit_expense">Editar despesa</string>
     <string name="flow_expense_details">Detalhes da despesa</string>

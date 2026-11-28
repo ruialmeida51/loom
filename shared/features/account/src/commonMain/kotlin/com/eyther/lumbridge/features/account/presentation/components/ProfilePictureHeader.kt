@@ -51,9 +51,9 @@ internal fun ProfilePictureHeader(
         ) {
             MemberAvatar(
                 memberId = userId,
-                initials = nickname.take(1).uppercase(),
+                name = nickname,
                 picturePath = avatarPath,
-                modifier = Modifier.size(HeaderAvatarSize),
+                size = HeaderAvatarSize,
             )
         }
         Text(nickname, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)

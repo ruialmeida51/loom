@@ -82,7 +82,7 @@ internal fun SplitBetweenSection(
                     leadingIcon = {
                         MemberAvatar(
                             memberId = member.id,
-                            initials = member.name.trim().take(1).uppercase(),
+                            name = member.name,
                             picturePath = member.avatarPath,
                             modifier = Modifier.size(20.dp).alpha(if (isIn) 1f else 0.4f),
                         )

@@ -59,6 +59,7 @@ import com.eyther.lumbridge.features.feed.domain.usecase.UpdateFeedSubscriptionU
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeBalanceStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetMemberProfileStreamUseCase
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdDataSource
 import com.eyther.lumbridge.features.household.domain.datasource.HouseholdManagementDataSource
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
@@ -693,5 +694,22 @@ class HouseholdUseCaseModule {
             context = context,
             getPaymentHandlesUseCase =
                 GetPaymentHandlesUseCase(paymentHandlesDataSource = paymentHandlesDataSource),
+        )
+
+    @Single
+    fun provideGetMemberProfileStreamUseCase(
+        getMembersStreamUseCase: GetMembersStreamUseCase,
+        getHomeBalanceStreamUseCase: GetHomeBalanceStreamUseCase,
+        getTasksStreamUseCase: GetTasksStreamUseCase,
+        paymentHandlesDataSource: PaymentHandlesDataSource,
+        context: HouseholdContextDomain,
+    ): GetMemberProfileStreamUseCase =
+        GetMemberProfileStreamUseCase(
+            getMembersStreamUseCase = getMembersStreamUseCase,
+            getHomeBalanceStreamUseCase = getHomeBalanceStreamUseCase,
+            getTasksStreamUseCase = getTasksStreamUseCase,
+            getPaymentHandlesUseCase =
+                GetPaymentHandlesUseCase(paymentHandlesDataSource = paymentHandlesDataSource),
+            context = context,
         )
 }

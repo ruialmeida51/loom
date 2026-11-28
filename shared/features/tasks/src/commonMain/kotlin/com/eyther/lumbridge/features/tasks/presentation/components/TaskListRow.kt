@@ -165,7 +165,7 @@ private fun TaskPeopleLine(row: TaskRowUi, userId: String) {
         if (assignee != null)
             MemberAvatar(
                 memberId = assignee.id,
-                initials = assignee.name.trim().take(1).uppercase(),
+                name = assignee.name,
                 picturePath = assignee.avatarPath,
                 modifier = Modifier.size(18.dp),
             )

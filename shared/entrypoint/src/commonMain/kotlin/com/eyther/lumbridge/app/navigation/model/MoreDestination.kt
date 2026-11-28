@@ -19,4 +19,7 @@ internal sealed interface MoreDestination : NavDestination {
     @Stable @Serializable data object Feed : MoreDestination
 
     @Stable @Serializable data object HouseholdDetails : MoreDestination
+
+    /** A housemate's profile, opened from household details. */
+    @Stable @Serializable data class MemberProfile(val memberId: String) : MoreDestination
 }
