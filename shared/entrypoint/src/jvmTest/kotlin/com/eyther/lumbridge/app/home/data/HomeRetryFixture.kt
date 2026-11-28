@@ -13,7 +13,6 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountBalancesS
 import com.eyther.lumbridge.features.feed.domain.datasource.FeedDataSource
 import com.eyther.lumbridge.features.feed.domain.model.ArticleDomain
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
-import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeBalanceStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCase
@@ -88,7 +87,6 @@ internal class HomeRetryFixture(
                         ),
                 ),
             getFeedStreamUseCase = GetFeedStreamUseCase(feedDataSource = feed),
-            markArticleReadUseCase = MarkArticleReadUseCase(feedDataSource = feed),
             getHomeBalanceStreamUseCase =
                 GetHomeBalanceStreamUseCase(
                     getAccountBalancesStreamUseCase =

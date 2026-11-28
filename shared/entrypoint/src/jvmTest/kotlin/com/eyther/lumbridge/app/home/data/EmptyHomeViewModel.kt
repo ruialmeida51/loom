@@ -26,7 +26,6 @@ internal class EmptyHomeViewModel : HomeScreenViewModelContract() {
 
     override fun onRetry() = Unit
 
-    override fun onArticleReadChanged(id: String, read: Boolean) = Unit
 
     override fun onTasksErrorDismissed() = Unit
 

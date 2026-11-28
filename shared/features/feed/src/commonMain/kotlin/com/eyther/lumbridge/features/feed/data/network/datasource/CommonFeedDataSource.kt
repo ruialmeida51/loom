@@ -8,7 +8,6 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.feed.data.network.mapper.toFeedError
 import com.eyther.lumbridge.features.feed.data.network.mapper.toPage
 import com.eyther.lumbridge.features.feed.data.network.model.request.FollowFeedRequest
-import com.eyther.lumbridge.features.feed.data.network.model.request.ReadArticleRequest
 import com.eyther.lumbridge.features.feed.data.network.model.request.RefreshFeedRequest
 import com.eyther.lumbridge.features.feed.data.network.model.response.ArticleResponse
 import com.eyther.lumbridge.features.feed.data.network.validation.parseFeedUrl
@@ -59,7 +58,6 @@ class CommonFeedDataSource(
                     eq("household_id", context.id)
                     if (query.subscriptionIds.isNotEmpty())
                         isIn("subscription_id", query.subscriptionIds.toList())
-                    if (query.unreadOnly) eq("is_read", false)
                     if (after != null)
                         or {
                             lt("published_at", after.publishedAt.toString())
@@ -107,24 +105,6 @@ class CommonFeedDataSource(
             } catch (error: Exception) {
                 throw FeedError.RefreshFailed(cause = error)
             }
-        }
-    }
-
-    override suspend fun markArticleRead(id: String, read: Boolean): AppResult<Unit> {
-        return safeApiCall(
-            mapError = Exception::toFeedError,
-        ) {
-            val request =
-                ReadArticleRequest(
-                    articleId = id,
-                    userId = context.userId,
-                    read = read,
-                )
-
-            access.write { client ->
-                client.from("article_reads").upsert(request)
-            }
-            Unit
         }
     }
 }

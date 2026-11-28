@@ -14,8 +14,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -51,8 +51,6 @@ import com.eyther.lumbridge.features.expenses.generated.resources.account_archiv
 import com.eyther.lumbridge.features.expenses.generated.resources.account_manage
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_everyone
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_retry
-import com.eyther.lumbridge.features.expenses.generated.resources.balance_share
-import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_description
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_who_pays
 import com.eyther.lumbridge.features.expenses.generated.resources.history_balances
 import com.eyther.lumbridge.features.expenses.generated.resources.history_empty
@@ -75,7 +73,6 @@ import com.eyther.lumbridge.features.expenses.presentation.model.RecurringSummar
 import com.eyther.lumbridge.features.expenses.presentation.model.SuggestedRepaymentUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -93,7 +90,24 @@ fun ExpensesScreen(
     val state by viewModel.state.platformCollectAsStateOnStart()
     val listState = rememberLazyListState()
     val share = rememberTextSharer()
-    val scope = rememberCoroutineScope()
+    LaunchedEffect(state.shareRequest) {
+        val request = state.shareRequest ?: return@LaunchedEffect
+        state.account?.let { account ->
+            share(
+                balanceShareText(
+                    account = account,
+                    names = state.memberNames,
+                    balances =
+                        state.memberBalances.map { it.member.id to it.balance.money.minorUnits },
+                    suggestions = state.suggestions,
+                    userId = state.userId,
+                    ownHandles = state.ownPaymentHandles,
+                    spending = request.spending,
+                ),
+            )
+        }
+        viewModel.onShareHandled()
+    }
     PullToRefreshContentContainer(
         isRefreshing = state.refreshing,
         onRefresh = viewModel::onRefresh,
@@ -124,27 +138,8 @@ fun ExpensesScreen(
             showPersonalSummary = state.showPersonalSummary,
             showMemberBalances = state.showMemberBalances,
             onMemberBalances = viewModel::onMemberBalancesVisibilityChanged,
-            onShareBalances = {
-                state.account?.let { account ->
-                    val names = state.memberNames
-                    val balances =
-                        state.memberBalances.map { it.member.id to it.balance.money.minorUnits }
-                    val suggestions = state.suggestions
-                    val handles = state.ownPaymentHandles
-                    scope.launch {
-                        share(
-                            balanceShareText(
-                                account = account,
-                                names = names,
-                                balances = balances,
-                                suggestions = suggestions,
-                                userId = state.userId,
-                                ownHandles = handles,
-                            ),
-                        )
-                    }
-                }
-            },
+            onShareBalances = viewModel::onShareBalances,
+            preparingShare = state.preparingShare,
             loading = state.loading,
             error = state.displayError,
             onAccounts = { viewModel.onAccountsVisibilityChanged(true) },
@@ -196,6 +191,7 @@ private fun InnerExpensesScreen(
     showMemberBalances: Boolean,
     onMemberBalances: (Boolean) -> Unit,
     onShareBalances: () -> Unit,
+    preparingShare: Boolean,
     loading: Boolean,
     error: TextResource?,
     onAccounts: () -> Unit,
@@ -242,6 +238,8 @@ private fun InnerExpensesScreen(
                                 onClick = onManage,
                             ),
                         ),
+                    onShare = onShareBalances,
+                    shareEnabled = account != null && !loading && !preparingShare,
                     modifier = Modifier.padding(bottom = LoomSpacing.small),
                 )
                 if (account?.archived == true)
@@ -339,14 +337,6 @@ private fun InnerExpensesScreen(
                             trailingGlyph = Glyph.CHEVRON_DOWN,
                             onClick = { onMemberBalances(!showMemberBalances) },
                             modifier = Modifier.testTag("member_balances_toggle"),
-                        )
-                        LoomDivider()
-                        NavigationRow(
-                            title = stringResource(Res.string.balance_share),
-                            description = stringResource(Res.string.balance_share_description),
-                            glyph = Glyph.SHARE,
-                            onClick = onShareBalances,
-                            modifier = Modifier.testTag("share_balances"),
                         )
                     }
                 }

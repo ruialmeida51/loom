@@ -25,6 +25,7 @@ import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateO
 import com.eyther.lumbridge.features.analytics.domain.model.AnalyticsScreenDomain
 import com.eyther.lumbridge.features.expenses.domain.model.SuggestedSettlementDomain
 import com.eyther.lumbridge.features.expenses.presentation.components.FinancialRecordActions
+import com.eyther.lumbridge.features.expenses.presentation.components.rememberShareExpense
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpenseAccountFormScreen
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpenseDetailsScreen
 import com.eyther.lumbridge.features.expenses.presentation.screen.ExpensesScreen
@@ -266,6 +267,7 @@ internal fun BalancesHost(
                             testTag = "expense_actions",
                             canEdit = detailsState.canEdit,
                             busy = detailsState.busy,
+                            onShare = rememberShareExpense(details = detailsState.details),
                             onEdit = {
                                 navigator.navigateTo(
                                     BalancesDestination.Form(

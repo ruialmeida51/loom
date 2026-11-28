@@ -36,31 +36,23 @@ import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.core.presentation.resources.calendarDateText
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.feed.generated.resources.Res
-import com.eyther.lumbridge.features.feed.generated.resources.article_options
-import com.eyther.lumbridge.features.feed.generated.resources.article_unread
-import com.eyther.lumbridge.features.feed.generated.resources.ui_mark_as_read
-import com.eyther.lumbridge.features.feed.generated.resources.ui_mark_unread
 import com.eyther.lumbridge.features.feed.presentation.model.ArticlePreviewUi
 import org.jetbrains.compose.resources.stringResource
 
-private val UnreadDotSize = 8.dp
 internal val ArticlePictureHeight = 108.dp
 private const val ArticlePictureRatio = 2.4f
 
 /**
- * One article as a single tap target: tapping anywhere opens it, and the ⋮ menu holds the other
- * actions. [compact] is the Home carousel variant, which reserves title lines and the picture so
+ * One article as a single tap target: tapping anywhere opens it. [compact] is the Home carousel variant, which reserves title lines and the picture so
  * cards align; in the list, only stories with a picture show one.
  */
 @Composable
 fun ArticleCard(
     article: ArticlePreviewUi,
     onOpen: () -> Unit,
-    onReadChanged: () -> Unit,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
-    val unread = stringResource(Res.string.article_unread)
     val hasPicture = compact || article.imageUrl != null
     LoomCard(
         onClick = onOpen,
@@ -94,12 +86,6 @@ fun ArticleCard(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f, fill = false),
                         )
-                        if (!article.read)
-                            Box(
-                                Modifier.size(UnreadDotSize)
-                                    .background(MaterialTheme.colorScheme.primary, CircleShape)
-                                    .semantics { contentDescription = unread },
-                            )
                     }
                     article.publishedOn?.let {
                         Text(
@@ -109,21 +95,6 @@ fun ArticleCard(
                         )
                     }
                 }
-                ActionMenu(
-                    contentDescription = stringResource(Res.string.article_options, article.title),
-                    modifier = Modifier.testTag("feed_article_actions_${article.id}"),
-                    items =
-                        listOf(
-                            ActionMenuItem(
-                                text =
-                                    TextResource.Resource(
-                                        if (article.read) Res.string.ui_mark_unread
-                                        else Res.string.ui_mark_as_read,
-                                    ),
-                                onClick = onReadChanged,
-                            ),
-                        ),
-                )
             }
             Column(
                 Modifier.padding(end = LoomSpacing.content),

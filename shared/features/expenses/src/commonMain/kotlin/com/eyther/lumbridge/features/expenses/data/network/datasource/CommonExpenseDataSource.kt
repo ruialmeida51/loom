@@ -10,11 +10,14 @@ import com.eyther.lumbridge.features.expenses.data.network.mapper.toExpenseError
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toRemoveRequest
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toRequest
 import com.eyther.lumbridge.features.expenses.data.network.mapper.toSaveRequest
+import com.eyther.lumbridge.features.expenses.data.network.mapper.toSpending
 import com.eyther.lumbridge.features.expenses.data.network.model.request.DeleteExpenseRequest
 import com.eyther.lumbridge.features.expenses.data.network.model.response.AccountBalanceResponse
+import com.eyther.lumbridge.features.expenses.data.network.model.response.AccountSpendingResponse
 import com.eyther.lumbridge.features.expenses.data.network.model.response.ExpenseResponse
 import com.eyther.lumbridge.features.expenses.data.network.model.response.SettlementResponse
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
+import com.eyther.lumbridge.features.expenses.domain.model.AccountSpendingDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.LedgerCursorDomain
 import com.eyther.lumbridge.features.expenses.domain.model.LedgerPageDomain
@@ -93,6 +96,23 @@ class CommonExpenseDataSource(
                     .toBalances()
             }
             .asApiResult(mapError = Exception::toExpenseError, retryTransientFailures = true)
+
+    override suspend fun getSpending(accountId: String): AppResult<AccountSpendingDomain> =
+        safeApiCall(mapError = Exception::toExpenseError) {
+            access.read {
+                access
+                    .requireClient()
+                    .from("account_spending")
+                    .select {
+                        filter {
+                            eq("household_id", context.id)
+                            eq("account_id", accountId.ifBlank { context.id })
+                        }
+                    }
+                    .decodeList<AccountSpendingResponse>()
+                    .toSpending()
+            }
+        }
 
     override fun streamLedgerPage(
         accountId: String,

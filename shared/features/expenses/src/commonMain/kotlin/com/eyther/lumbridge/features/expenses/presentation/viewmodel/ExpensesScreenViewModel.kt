@@ -15,6 +15,7 @@ import com.eyther.lumbridge.features.expenses.domain.model.SettlementDomain
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccountUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountLedgerStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountSpendingUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetRecurringExpensesStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.RemoveSettlementUseCase
@@ -24,6 +25,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.detail_deleted
 import com.eyther.lumbridge.features.expenses.generated.resources.payment_deleted
 import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesTextResource
+import com.eyther.lumbridge.features.expenses.presentation.model.BalanceShareRequestUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesScreenViewModelContract
 import com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts.ExpensesState
@@ -52,6 +54,7 @@ class ExpensesScreenViewModel(
     private val getMembersStreamUseCase: GetMembersStreamUseCase,
     private val getRecurringExpensesStreamUseCase: GetRecurringExpensesStreamUseCase,
     private val getPaymentHandlesUseCase: GetPaymentHandlesUseCase,
+    private val getAccountSpendingUseCase: GetAccountSpendingUseCase,
     private val context: HouseholdContextDomain,
 ) : ExpensesScreenViewModelContract() {
     private val refreshRequests = MutableStateFlow(0)
@@ -142,6 +145,32 @@ class ExpensesScreenViewModel(
 
     init {
         launch { loadOwnPaymentHandles() }
+    }
+
+    override fun onShareBalances() {
+        val account = state.value.account ?: return
+        if (state.value.preparingShare || state.value.shareRequest != null) return
+        // Everyday has no end, so only other accounts (trips and the like) get a summary.
+        if (account.isDefault) {
+            mutableState.update { oldState -> oldState.copy(shareRequest = BalanceShareRequestUi()) }
+            return
+        }
+        mutableState.update { oldState -> oldState.copy(preparingShare = true) }
+        launch {
+            // The summary is a bonus: without it the balances are still worth sending.
+            val spending =
+                (getAccountSpendingUseCase(accountId = account.id) as? AppResult.Success)?.value
+            mutableState.update { oldState ->
+                oldState.copy(
+                    preparingShare = false,
+                    shareRequest = BalanceShareRequestUi(spending = spending),
+                )
+            }
+        }
+    }
+
+    override fun onShareHandled() {
+        mutableState.update { oldState -> oldState.copy(shareRequest = null) }
     }
 
     private suspend fun loadOwnPaymentHandles() {

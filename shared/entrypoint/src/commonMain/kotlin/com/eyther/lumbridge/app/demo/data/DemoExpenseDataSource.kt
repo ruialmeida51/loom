@@ -6,6 +6,7 @@ import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.domain.wrapper.safeCall
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
 import com.eyther.lumbridge.features.expenses.domain.errors.SettlementError
+import com.eyther.lumbridge.features.expenses.domain.model.AccountSpendingDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.HouseholdLedgerDomain
 import com.eyther.lumbridge.features.expenses.domain.model.LedgerCursorDomain
@@ -42,6 +43,16 @@ class DemoExpenseDataSource(private val store: DemoHouseholdStore) : ExpenseData
                     settlements = accountSettlements(settlements = settlements, accountId = accountId),
                 )
             }
+        }
+
+    override suspend fun getSpending(accountId: String): AppResult<AccountSpendingDomain> =
+        safeCall {
+            val expenses = accountExpenses(expenses = store.expenses.value, accountId = accountId)
+            AccountSpendingDomain(
+                paidByPerson =
+                    expenses.groupBy { it.paidBy }.mapValues { (_, paid) -> paid.sumOf { it.amountMinor } },
+                expenseCount = expenses.size.toLong(),
+            )
         }
 
     override fun streamLedgerPage(

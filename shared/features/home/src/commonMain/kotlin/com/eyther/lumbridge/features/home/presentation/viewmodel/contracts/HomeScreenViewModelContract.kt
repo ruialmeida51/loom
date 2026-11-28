@@ -9,7 +9,6 @@ abstract class HomeScreenViewModelContract : LoomViewModel() {
 
     abstract fun onRetry()
 
-    abstract fun onArticleReadChanged(id: String, read: Boolean)
 
     abstract fun onTasksErrorDismissed()
 

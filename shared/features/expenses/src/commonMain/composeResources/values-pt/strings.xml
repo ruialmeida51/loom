@@ -288,8 +288,7 @@
     <string name="departure_balances">Saldos atuais por conta</string>
     <string name="form_category">Categoria</string>
     <string name="payment_record">Registar pagamento</string>
-    <string name="balance_share">Partilhar saldos</string>
-    <string name="balance_share_description">Envia quem deve a quem para o grupo da casa</string>
+    <string name="balance_share_action">Partilhar</string>
     <string name="balance_share_title">%1$s · Saldos</string>
     <string name="balance_share_settle_up">Para acertar contas</string>
     <string name="balance_share_everyone">Como está cada um</string>
@@ -299,4 +298,12 @@
     <string name="balance_share_settled">Contas acertadas ✅</string>
     <string name="balance_share_pay_me">Como me pagar</string>
     <string name="balance_share_footer">Partilhado a partir do Loom</string>
+    <string name="expense_share_paid_by">Pago por %1$s · %2$s</string>
+    <string name="expense_share_split">Divisão</string>
+    <string name="balance_share_summary_title">%1$s · Resumo</string>
+    <string name="balance_share_paid">Quem pagou</string>
+    <plurals name="balance_share_spent">
+        <item quantity="one">Gasto: %1$s em %2$d despesa</item>
+        <item quantity="other">Gasto: %1$s em %2$d despesas</item>
+    </plurals>
 </resources>

@@ -14,7 +14,6 @@ import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedPageUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
-import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedScreenViewModel
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedState
@@ -40,7 +39,7 @@ import kotlinx.coroutines.test.setMain
 @OptIn(ExperimentalCoroutinesApi::class)
 class FeedStateTest {
 
-    private fun article(id: String, read: Boolean): ArticleDomain =
+    private fun article(id: String): ArticleDomain =
         ArticleDomain(
             id = id,
             title = id,
@@ -49,21 +48,7 @@ class FeedStateTest {
             source = "Example",
             publishedAt = Instant.parse("2026-11-14T00:00:00Z"),
             subscriptionId = "expresso",
-            read = read,
         )
-
-    @Test
-    fun unreadProjectionChangesWithBothTheFilterAndReadState() {
-        val unread = article(id = "unread", read = false)
-        val read = article(id = "read", read = true)
-        val state = FeedState(items = listOf(unread, read), unreadOnly = true)
-
-        assertEquals(listOf(unread), state.visibleArticles)
-        assertEquals(2, state.copy(unreadOnly = false).visibleArticles.size)
-        assertTrue(
-            state.copy(items = listOf(unread.copy(read = true), read)).visibleArticles.isEmpty(),
-        )
-    }
 
     @Test
     fun aSuccessfulRefreshDoesNotEraseADialogOrActionFailure() = runTest {
@@ -91,9 +76,6 @@ class FeedStateTest {
                     followRequests++
                     return AppResult.Failure(FeedError.InvalidUrl())
                 }
-
-                override suspend fun markArticleRead(id: String, read: Boolean): AppResult<Unit> =
-                    AppResult.Failure(FeedError.RefreshFailed())
             }
         val viewModel =
             FeedScreenViewModel(
@@ -105,7 +87,6 @@ class FeedStateTest {
                         feedSubscriptionDataSource = FeedSubscriptionFixture(),
                     ),
                 followFeedUseCase = FollowFeedUseCase(feedDataSource = source),
-                markArticleReadUseCase = MarkArticleReadUseCase(feedDataSource = source),
                 refreshFeedsUseCase =
                     RefreshFeedsUseCase(feedSubscriptionDataSource = FeedSubscriptionFixture()),
             )
@@ -136,21 +117,18 @@ class FeedStateTest {
             runCurrent()
             val formError = assertNotNull(viewModel.state.value.formError)
 
-            articles.value = AppResult.Success(listOf(article(id = "fresh", read = false)))
+            articles.value = AppResult.Success(listOf(article(id = "fresh")))
             viewModel.onSourcesChanged()
             runCurrent()
             assertEquals("fresh", viewModel.state.value.items.single().id)
             assertEquals(formError, viewModel.state.value.formError)
             assertNull(viewModel.state.value.displayError)
 
-            viewModel.onMarkRead(id = "fresh", read = true)
-            runCurrent()
-            val actionError = assertNotNull(viewModel.state.value.displayError)
-            articles.value = AppResult.Success(listOf(article(id = "newer", read = false)))
+            articles.value = AppResult.Success(listOf(article(id = "newer")))
             viewModel.onSourcesChanged()
             runCurrent()
             assertEquals("newer", viewModel.state.value.items.single().id)
-            assertEquals(actionError, viewModel.state.value.displayError)
+            assertEquals(formError, viewModel.state.value.formError)
         } finally {
             viewModel.viewModelScope.cancel()
             Dispatchers.resetMain()

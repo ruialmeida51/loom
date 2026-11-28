@@ -26,11 +26,9 @@ abstract class FeedScreenViewModelContract : LoomViewModel() {
 
     abstract fun onFollowSheetVisibilityChanged(value: Boolean)
 
-    abstract fun onUnreadOnlyChanged(value: Boolean)
 
     abstract fun onDismissError()
 
     abstract fun onFollowFeed()
 
-    abstract fun onMarkRead(id: String, read: Boolean)
 }

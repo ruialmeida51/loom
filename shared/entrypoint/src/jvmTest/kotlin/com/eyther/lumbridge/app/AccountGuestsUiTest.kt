@@ -43,8 +43,10 @@ class AccountGuestsUiTest {
             startApp()
             onNodeWithTag("navigation_money").performClick()
             awaitLoadedDestination(tag = "expenses_content")
+            // Share sits first in the header's actions, as on Shopping, whichever view is open.
+            onNodeWithTag("share_balances").assertIsDisplayed()
             onNodeWithTag("balances_view_balances").performClick()
-            onNodeWithTag("share_balances").performScrollTo().assertIsDisplayed()
+            onNodeWithTag("share_balances").assertIsDisplayed()
             capture("share-balances-light")
             onNodeWithTag("navigation_shopping").performClick()
             awaitLoadedDestination(tag = "shopping_content")

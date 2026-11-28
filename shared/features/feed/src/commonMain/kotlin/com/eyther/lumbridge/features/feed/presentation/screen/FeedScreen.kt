@@ -27,8 +27,6 @@ import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateO
 import com.eyther.lumbridge.core.presentation.resources.TextResource
 import com.eyther.lumbridge.features.feed.domain.model.StarterFeedDomain
 import com.eyther.lumbridge.features.feed.generated.resources.Res
-import com.eyther.lumbridge.features.feed.generated.resources.feed_caught_up
-import com.eyther.lumbridge.features.feed.generated.resources.feed_caught_up_description
 import com.eyther.lumbridge.features.feed.generated.resources.feed_empty_description
 import com.eyther.lumbridge.features.feed.generated.resources.feed_manage
 import com.eyther.lumbridge.features.feed.generated.resources.feed_no_articles
@@ -64,15 +62,12 @@ fun FeedScreen(
             pagination = state.pagination,
             onLoadMore = viewModel::onLoadMore,
             onRetryLoadMore = viewModel::onRetryLoadMore,
-            unreadOnly = state.unreadOnly,
             loading = state.loading,
             hasLoaded = state.hasLoaded,
             error = state.displayError,
             onOpen = onOpen,
-            onUnreadOnly = viewModel::onUnreadOnlyChanged,
             onDismiss = viewModel::onDismissError,
             onRetry = viewModel::onRetry,
-            onMarkRead = viewModel::onMarkRead,
             onManageFeeds = onManageFeeds,
         )
     }
@@ -91,15 +86,12 @@ private fun InnerFeedScreen(
     pagination: PaginationUi,
     onLoadMore: () -> Unit,
     onRetryLoadMore: () -> Unit,
-    unreadOnly: Boolean,
     loading: Boolean,
     hasLoaded: Boolean,
     error: TextResource?,
     onOpen: (String) -> Unit,
-    onUnreadOnly: (Boolean) -> Unit,
     onDismiss: () -> Unit,
     onRetry: () -> Unit,
-    onMarkRead: (String, Boolean) -> Unit,
     onManageFeeds: () -> Unit,
 ) {
     PaginatedLazyColumn(
@@ -136,30 +128,22 @@ private fun InnerFeedScreen(
             FeedSourceFilters(
                 sources = sources,
                 selectedIds = selectedSourceIds,
-                unreadOnly = unreadOnly,
                 onSource = onSource,
                 onAll = onAllSources,
-                onUnreadOnly = onUnreadOnly,
             )
         }
         if (loading) item { LoadingRows() }
         if (hasLoaded && !loading && error == null && items.isEmpty())
             item {
                 EmptyNotice(
-                    stringResource(
-                        if (unreadOnly) Res.string.feed_caught_up else Res.string.feed_no_articles,
-                    ),
-                    stringResource(
-                        if (unreadOnly) Res.string.feed_caught_up_description
-                        else Res.string.feed_empty_description,
-                    ),
+                    stringResource(Res.string.feed_no_articles),
+                    stringResource(Res.string.feed_empty_description),
                 )
             }
         if (
             hasLoaded &&
                 !loading &&
                 items.isEmpty() &&
-                !unreadOnly &&
                 selectedSourceIds.isEmpty() &&
                 suggestions.isNotEmpty()
         )
@@ -175,11 +159,7 @@ private fun InnerFeedScreen(
             items(items, key = { it.id }) { article ->
                 ArticleCard(
                     article = article,
-                    onOpen = {
-                        onMarkRead(article.id, true)
-                        onOpen(article.url)
-                    },
-                    onReadChanged = { onMarkRead(article.id, !article.read) },
+                    onOpen = { onOpen(article.url) },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }

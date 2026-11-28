@@ -40,7 +40,6 @@ class DemoFeedDataSource(private val store: DemoHouseholdStore) : FeedDataSource
                 .filter { article ->
                     (query.subscriptionIds.isEmpty() ||
                         article.subscriptionId in query.subscriptionIds) &&
-                        (!query.unreadOnly || !article.read) &&
                         (after == null ||
                             article.publishedAt < after.publishedAt ||
                             article.publishedAt == after.publishedAt && article.id < after.id)
@@ -74,7 +73,6 @@ class DemoFeedDataSource(private val store: DemoHouseholdStore) : FeedDataSource
                 source = Url(address).host,
                 publishedAt = Clock.System.now(),
                 subscriptionId = subscriptionId,
-                read = false,
             )
         store.articles.update { articles ->
             articles + article
@@ -88,15 +86,6 @@ class DemoFeedDataSource(private val store: DemoHouseholdStore) : FeedDataSource
                     lastFetchedAt = nowIso(),
                     status = FeedSubscriptionStatusDomain.READY,
                 )
-        }
-        Unit
-    }
-
-    override suspend fun markArticleRead(id: String, read: Boolean) = safeCall {
-        store.articles.update { articles ->
-            articles.map { article ->
-                if (article.id == id) article.copy(read = read) else article
-            }
         }
         Unit
     }

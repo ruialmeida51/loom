@@ -53,7 +53,6 @@ class CommonFeedPageDataSourceTest {
             url = "https://example.test/$number",
             source = "BBC World",
             publishedAt = "2026-11-17T12:00:00Z",
-            read = false,
         )
 
     @Test
@@ -96,11 +95,11 @@ class CommonFeedPageDataSourceTest {
     }
 
     @Test
-    fun selectedSourcesUnreadAndBothCursorFieldsReachPostgrest() = runTest {
+    fun selectedSourcesAndBothCursorFieldsReachPostgrest() = runTest {
         val client =
             client(
                 MockEngine { request ->
-                    assertEquals("eq.false", request.url.parameters["is_read"])
+                    assertEquals(null, request.url.parameters["is_read"])
                     val sources = assertNotNull(request.url.parameters["subscription_id"])
                     assertTrue(sources.startsWith("in.("))
                     assertTrue(sources.contains(id(9011)) && sources.contains(id(9012)))
@@ -118,10 +117,7 @@ class CommonFeedPageDataSourceTest {
                 CommonFeedDataSource(access = SupabaseAccess(client), context = context)
                     .getPage(
                         query =
-                            FeedQueryDomain(
-                                subscriptionIds = setOf(id(9011), id(9012)),
-                                unreadOnly = true,
-                            ),
+                            FeedQueryDomain(subscriptionIds = setOf(id(9011), id(9012))),
                         after =
                             FeedCursorDomain(
                                 publishedAt = Instant.parse("2026-11-17T12:00:00Z"),

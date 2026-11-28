@@ -3,14 +3,9 @@
   <string name="ui_a_moment_for_you">A MOMENT FOR YOU</string>
   <string name="ui_the_reading_corner">The reading corner</string>
   <string name="ui_your_favourite_corners_of_the_internet_in_one_quiet">Your favourite corners of the internet, in one quiet place.</string>
-  <string name="ui_unread_only">Unread</string>
   <string name="ui_follow_a_feed">+ Follow a feed</string>
   <string name="ui_a_fresh_page">A fresh page.</string>
   <string name="ui_follow_an_rss_or_atom_feed_to_bring_your">Follow an RSS or Atom feed to bring your favourite stories here.</string>
-  <string name="ui_mark_unread">Mark unread</string>
-  <string name="article_options">Article options: %1$s</string>
-  <string name="article_unread">Unread</string>
-  <string name="ui_mark_as_read">Mark as read</string>
   <string name="ui_read_story">Read story</string>
   <string name="ui_follow_a_feed_a533eb8">Follow a feed</string>
   <string name="ui_paste_an_rss_or_atom_feed_url_articles_will">Paste an RSS or Atom feed URL. Articles will refresh automatically.</string>
@@ -42,7 +37,5 @@
   <string name="feed_removed">Feed removed</string>
   <string name="feed_no_articles">No stories yet</string>
   <string name="feed_empty_description">Add a source or check its update status in Manage feeds.</string>
-  <string name="feed_caught_up">You’re all caught up</string>
-  <string name="feed_caught_up_description">Turn off Unread only to see the stories you’ve already read.</string>
     <string name="feed_all_sources">All feeds</string>
 </resources>

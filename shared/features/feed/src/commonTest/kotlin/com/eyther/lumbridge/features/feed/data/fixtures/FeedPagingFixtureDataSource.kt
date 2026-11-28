@@ -22,7 +22,6 @@ internal class FeedPagingFixtureDataSource : FeedDataSource {
                 url = "https://example.test/story/$number",
                 source = source,
                 publishedAt = Instant.parse("2026-11-17T12:00:00Z"),
-                read = false,
                 subscriptionId = source,
             )
         }
@@ -61,7 +60,6 @@ internal class FeedPagingFixtureDataSource : FeedDataSource {
                 .filter {
                     (query.subscriptionIds.isEmpty() ||
                         it.subscriptionId in query.subscriptionIds) &&
-                        (!query.unreadOnly || !it.read) &&
                         (after == null ||
                             it.publishedAt < after.publishedAt ||
                             it.publishedAt == after.publishedAt && it.id < after.id)
@@ -87,8 +85,4 @@ internal class FeedPagingFixtureDataSource : FeedDataSource {
 
     override suspend fun followFeed(url: String): AppResult<Unit> = AppResult.Success(Unit)
 
-    override suspend fun markArticleRead(id: String, read: Boolean): AppResult<Unit> {
-        articles = articles.map { if (it.id == id) it.copy(read = read) else it }
-        return AppResult.Success(Unit)
-    }
 }

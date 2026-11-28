@@ -12,6 +12,5 @@ internal data class ArticleResponse(
     @SerialName("url") val url: String,
     @SerialName("source") val source: String,
     @SerialName("published_at") val publishedAt: String,
-    @SerialName("is_read") val read: Boolean,
     @SerialName("image_url") val imageUrl: String? = null,
 )

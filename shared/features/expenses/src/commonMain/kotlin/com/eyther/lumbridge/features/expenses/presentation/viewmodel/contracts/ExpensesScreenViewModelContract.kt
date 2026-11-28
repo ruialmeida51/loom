@@ -44,4 +44,9 @@ abstract class ExpensesScreenViewModelContract : LoomViewModel() {
     abstract fun onRefresh()
 
     abstract fun onDismissError()
+
+    /** Shares the selected account's balances, with a summary of what was spent for trips. */
+    abstract fun onShareBalances()
+
+    abstract fun onShareHandled()
 }

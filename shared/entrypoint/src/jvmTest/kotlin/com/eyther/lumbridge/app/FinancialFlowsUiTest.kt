@@ -97,6 +97,9 @@ class FinancialFlowsUiTest {
             onNodeWithTag("expenses_content").performScrollToNode(hasText("Electrician"))
             onNodeWithText("Electrician").performClick()
             awaitLoadedDestination(tag = "expense_details_content")
+            // Share comes before the ⋮ menu in the details toolbar.
+            onNodeWithTag("expense_actions_share").assertIsDisplayed()
+            capture("expense-details-share")
             onNodeWithTag("expense_actions").performClick()
             onNodeWithText("Edit").performClick()
             onNodeWithTag("expense_title").performTextReplacement("Electrician final")

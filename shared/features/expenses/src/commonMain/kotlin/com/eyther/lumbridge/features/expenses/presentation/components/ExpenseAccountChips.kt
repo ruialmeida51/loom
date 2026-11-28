@@ -18,6 +18,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.AddPill
 import com.eyther.lumbridge.core.presentation.components.PillChip
+import com.eyther.lumbridge.core.presentation.components.PillRowAction
 import com.eyther.lumbridge.core.presentation.components.PillRowHeader
 import com.eyther.lumbridge.core.presentation.components.bleedHorizontally
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
@@ -29,6 +30,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.Res
 import com.eyther.lumbridge.features.expenses.generated.resources.account_accounts
 import com.eyther.lumbridge.features.expenses.generated.resources.account_header
 import com.eyther.lumbridge.features.expenses.generated.resources.account_new_short
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_action
 import com.eyther.lumbridge.features.expenses.presentation.mapper.accountLabel
 import com.eyther.lumbridge.features.expenses.presentation.mapper.glyph
 import kotlinx.collections.immutable.ImmutableList
@@ -46,6 +48,8 @@ internal fun ExpenseAccountChips(
     onManage: () -> Unit,
     onCreate: () -> Unit,
     menu: List<ActionMenuItem>,
+    onShare: () -> Unit,
+    shareEnabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val manage = stringResource(Res.string.account_accounts)
@@ -53,6 +57,13 @@ internal fun ExpenseAccountChips(
     val shown = if (selected != null && accounts.none { it.id == selected.id }) accounts + selected else accounts
     Column(modifier = modifier) {
         PillRowHeader(title = stringResource(Res.string.account_header)) {
+            PillRowAction(
+                label = stringResource(Res.string.balance_share_action),
+                glyph = Glyph.SHARE,
+                onClick = onShare,
+                enabled = shareEnabled,
+                modifier = Modifier.testTag("share_balances"),
+            )
             ActionMenu(modifier = Modifier.testTag("balances_actions"), items = menu)
         }
         Row(

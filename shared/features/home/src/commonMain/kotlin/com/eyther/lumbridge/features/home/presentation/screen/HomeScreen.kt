@@ -113,13 +113,7 @@ fun HomeScreen(
             onAddExpense = onAddExpense,
             onAddTask = onAddTask,
             onFeed = onFeed,
-            onArticleReadChanged = { article ->
-                viewModel.onArticleReadChanged(id = article.id, read = !article.read)
-            },
-            onOpenStory = { article ->
-                viewModel.onArticleReadChanged(id = article.id, read = true)
-                onOpenStory(article.url)
-            },
+            onOpenStory = { article -> onOpenStory(article.url) },
         )
     }
 }
@@ -159,7 +153,6 @@ private fun InnerHomeScreen(
     onAddExpense: () -> Unit,
     onAddTask: () -> Unit,
     onFeed: () -> Unit,
-    onArticleReadChanged: (ArticlePreviewUi) -> Unit,
     onOpenStory: (ArticlePreviewUi) -> Unit,
 ) {
     LazyColumn(
@@ -223,7 +216,6 @@ private fun InnerHomeScreen(
                         FeedPreview(
                             articles = articles,
                             onOpen = onOpenStory,
-                            onReadChanged = onArticleReadChanged,
                         )
                     else if (hasFeed && feedError == null)
                         Column(Modifier.padding(horizontal = LoomSpacing.content)) {

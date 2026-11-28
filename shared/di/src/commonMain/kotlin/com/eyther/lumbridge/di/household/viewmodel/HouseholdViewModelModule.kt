@@ -9,6 +9,7 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseUseCas
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountLedgerStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountSpendingUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExchangeRateUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountsStreamUseCase
@@ -58,7 +59,6 @@ import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedPageUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
-import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedSubscriptionUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RemoveFeedSubscriptionUseCase
@@ -141,9 +141,11 @@ class HouseholdViewModelModule {
         getMembersStreamUseCase: GetMembersStreamUseCase,
         getRecurringExpensesStreamUseCase: GetRecurringExpensesStreamUseCase,
         paymentHandlesDataSource: PaymentHandlesDataSource,
+        getAccountSpendingUseCase: GetAccountSpendingUseCase,
         context: HouseholdContextDomain,
     ): ExpensesScreenViewModelContract =
         ExpensesScreenViewModel(
+            getAccountSpendingUseCase = getAccountSpendingUseCase,
             getPaymentHandlesUseCase =
                 GetPaymentHandlesUseCase(paymentHandlesDataSource = paymentHandlesDataSource),
             getRecurringExpensesStreamUseCase = getRecurringExpensesStreamUseCase,
@@ -184,7 +186,6 @@ class HouseholdViewModelModule {
         getStarterFeedsUseCase: GetStarterFeedsUseCase,
         refreshFeedsUseCase: RefreshFeedsUseCase,
         followFeedUseCase: FollowFeedUseCase,
-        markArticleReadUseCase: MarkArticleReadUseCase,
     ): FeedScreenViewModelContract =
         FeedScreenViewModel(
             timeZone = context.timeZone,
@@ -193,7 +194,6 @@ class HouseholdViewModelModule {
             getStarterFeedsUseCase = getStarterFeedsUseCase,
             refreshFeedsUseCase = refreshFeedsUseCase,
             followFeedUseCase = followFeedUseCase,
-            markArticleReadUseCase = markArticleReadUseCase,
         )
 
     @KoinViewModel(binds = [HomeScreenViewModelContract::class])
@@ -201,7 +201,6 @@ class HouseholdViewModelModule {
         getHomeTasksStreamUseCase: GetHomeTasksStreamUseCase,
         getHomeShoppingStreamUseCase: GetHomeShoppingStreamUseCase,
         getFeedStreamUseCase: GetFeedStreamUseCase,
-        markArticleReadUseCase: MarkArticleReadUseCase,
         getHomeBalanceStreamUseCase: GetHomeBalanceStreamUseCase,
         getMembersStreamUseCase: GetMembersStreamUseCase,
         context: HouseholdContextDomain,
@@ -210,7 +209,6 @@ class HouseholdViewModelModule {
             getHomeTasksStreamUseCase = getHomeTasksStreamUseCase,
             getHomeShoppingStreamUseCase = getHomeShoppingStreamUseCase,
             getFeedStreamUseCase = getFeedStreamUseCase,
-            markArticleReadUseCase = markArticleReadUseCase,
             getHomeBalanceStreamUseCase = getHomeBalanceStreamUseCase,
             getMembersStreamUseCase = getMembersStreamUseCase,
             context = context,

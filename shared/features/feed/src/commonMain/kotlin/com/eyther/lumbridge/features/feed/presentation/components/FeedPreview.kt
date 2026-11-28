@@ -18,12 +18,11 @@ internal val FeedPreviewWidth =
     264.dp // Reveal the next card on a narrow phone; large text grows vertically.
 internal const val FeedPreviewTitleLines = 3
 
-/** A manually scrolled carousel of [ArticleCard]s; the destination owns opening and read state. */
+/** A manually scrolled carousel of [ArticleCard]s; the destination owns opening them. */
 @Composable
 fun FeedPreview(
     articles: ImmutableList<ArticlePreviewUi>,
     onOpen: (ArticlePreviewUi) -> Unit,
-    onReadChanged: (ArticlePreviewUi) -> Unit,
 ) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = LoomSpacing.content, vertical = 2.dp),
@@ -34,7 +33,6 @@ fun FeedPreview(
             ArticleCard(
                 article = article,
                 onOpen = { onOpen(article) },
-                onReadChanged = { onReadChanged(article) },
                 compact = true,
                 modifier = Modifier.width(FeedPreviewWidth),
             )

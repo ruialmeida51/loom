@@ -8,7 +8,6 @@ import com.eyther.lumbridge.core.domain.todayIso
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.presentation.mapper.toExpensesTextResource
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
-import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.presentation.mapper.toFeedTextResource
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeBalanceStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
@@ -34,7 +33,6 @@ class HomeScreenViewModel(
     private val getHomeTasksStreamUseCase: GetHomeTasksStreamUseCase,
     private val getHomeShoppingStreamUseCase: GetHomeShoppingStreamUseCase,
     private val getFeedStreamUseCase: GetFeedStreamUseCase,
-    private val markArticleReadUseCase: MarkArticleReadUseCase,
     private val getHomeBalanceStreamUseCase: GetHomeBalanceStreamUseCase,
     private val getMembersStreamUseCase: GetMembersStreamUseCase,
     context: HouseholdContextDomain,
@@ -194,18 +192,6 @@ class HomeScreenViewModel(
             )
         }
         refreshRequests.update { oldState -> oldState + 1 }
-    }
-
-    override fun onArticleReadChanged(id: String, read: Boolean) {
-        launch {
-            when (val result = markArticleReadUseCase(id = id, read = read)) {
-                is AppResult.Success -> Unit
-                is AppResult.Failure ->
-                    mutableState.update { oldState ->
-                        oldState.copy(feedError = result.error.toFeedTextResource())
-                    }
-            }
-        }
     }
 
     override fun onTasksErrorDismissed() {
