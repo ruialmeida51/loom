@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.27] - 2026-11-28
+
 - News is a plain feed: newest stories first, without read markers, the Unread filter or the per-story menu.
 - Share an expense from its details, and a trip's balances now come with its summary: what was spent and who paid.
 - Share sits in the same place everywhere: first among a screen's header actions, or beside the menu on details screens, with proper spacing.
