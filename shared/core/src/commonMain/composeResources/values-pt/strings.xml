@@ -56,6 +56,7 @@
     <string name="icon_edit">Editar</string>
     <string name="icon_repeat">Repete</string>
     <string name="icon_language">Idioma</string>
+    <string name="icon_share">Partilhar</string>
     <string name="picture_choose">Escolher fotografia</string>
     <string name="picture_remove">Remover fotografia</string>
 </resources>

@@ -1,5 +1,7 @@
 package com.eyther.lumbridge.di.household.viewmodel
 
+import com.eyther.lumbridge.features.account.domain.datasource.PaymentHandlesDataSource
+import com.eyther.lumbridge.features.account.domain.usecase.GetPaymentHandlesUseCase
 import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEventUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.ControlRecurringExpenseUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteExpenseAccountUseCase
@@ -138,9 +140,12 @@ class HouseholdViewModelModule {
         deleteExpenseUseCase: DeleteExpenseUseCase,
         getMembersStreamUseCase: GetMembersStreamUseCase,
         getRecurringExpensesStreamUseCase: GetRecurringExpensesStreamUseCase,
+        paymentHandlesDataSource: PaymentHandlesDataSource,
         context: HouseholdContextDomain,
     ): ExpensesScreenViewModelContract =
         ExpensesScreenViewModel(
+            getPaymentHandlesUseCase =
+                GetPaymentHandlesUseCase(paymentHandlesDataSource = paymentHandlesDataSource),
             getRecurringExpensesStreamUseCase = getRecurringExpensesStreamUseCase,
             getAccountLedgerStreamUseCase = getAccountLedgerStreamUseCase,
             getExpenseAccountsStreamUseCase = getExpenseAccountsStreamUseCase,

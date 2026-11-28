@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -41,6 +42,7 @@ import com.eyther.lumbridge.core.presentation.components.snackbar.SuccessSnackba
 import com.eyther.lumbridge.core.presentation.extensions.platformCollectAsStateOnStart
 import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.core.presentation.share.rememberTextSharer
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingItemDomain
 import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
@@ -61,11 +63,13 @@ import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingDr
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingEntryRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingItemRow
 import com.eyther.lumbridge.features.shopping.presentation.components.ShoppingListChips
+import com.eyther.lumbridge.features.shopping.presentation.mapper.shoppingListShareText
 import com.eyther.lumbridge.features.shopping.presentation.model.ShoppingRowUi
 import com.eyther.lumbridge.features.shopping.presentation.viewmodel.contracts.ShoppingScreenViewModelContract
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 private val ChecklistRowSpacing = 0.dp // Rows join into one card; sections pad themselves.
@@ -74,6 +78,8 @@ private val CardInset = 8.dp
 @Composable
 fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
     val state by viewModel.state.platformCollectAsStateOnStart()
+    val share = rememberTextSharer()
+    val scope = rememberCoroutineScope()
     PullToRefreshContentContainer(
         isRefreshing = state.refreshing,
         onRefresh = viewModel::onRetry,
@@ -126,6 +132,17 @@ fun ShoppingScreen(viewModel: ShoppingScreenViewModelContract) {
             onCreateList = { viewModel.onOpenListForm(null) },
             onShowLists = { viewModel.onListsVisibilityChanged(true) },
             onShowFavorites = { viewModel.onFavoritesVisibilityChanged(true) },
+            onShare = {
+                state.selectedList?.let { list ->
+                    val items = state.uncheckedItems
+                    val nested = state.indentedItemIds
+                    scope.launch {
+                        share(
+                            shoppingListShareText(list = list, items = items, nestedIds = nested),
+                        )
+                    }
+                }
+            },
             onShowCompleted = viewModel::onCheckedItemsVisibilityChanged,
             onToggle = viewModel::onToggleItem,
             onStartEditing = viewModel::onStartEditing,
@@ -215,6 +232,7 @@ private fun InnerShoppingScreen(
     onCreateList: () -> Unit,
     onShowLists: () -> Unit,
     onShowFavorites: () -> Unit,
+    onShare: () -> Unit,
     onShowCompleted: (Boolean) -> Unit,
     onToggle: (ShoppingItemDomain) -> Unit,
     onStartEditing: (ShoppingItemDomain) -> Unit,
@@ -265,6 +283,7 @@ private fun InnerShoppingScreen(
                 onManage = onShowLists,
                 onCreate = onCreateList,
                 onFavorites = onShowFavorites,
+                onShare = onShare,
                 modifier = Modifier.fillMaxWidth().padding(bottom = LoomSpacing.content),
             )
         }

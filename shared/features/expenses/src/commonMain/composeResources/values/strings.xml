@@ -288,4 +288,15 @@
   <string name="departure_balances">Current balances by account</string>
     <string name="form_category">Category</string>
     <string name="payment_record">Record payment</string>
+    <string name="balance_share">Share balances</string>
+    <string name="balance_share_description">Send who owes whom to the household chat</string>
+    <string name="balance_share_title">%1$s · Balances</string>
+    <string name="balance_share_settle_up">To settle up</string>
+    <string name="balance_share_everyone">Where everyone stands</string>
+    <string name="balance_share_owed">%1$s is owed %2$s</string>
+    <string name="balance_share_owes">%1$s owes %2$s</string>
+    <string name="balance_share_even">%1$s is all square</string>
+    <string name="balance_share_settled">All settled up ✅</string>
+    <string name="balance_share_pay_me">How to pay me</string>
+    <string name="balance_share_footer">Shared from Loom</string>
 </resources>

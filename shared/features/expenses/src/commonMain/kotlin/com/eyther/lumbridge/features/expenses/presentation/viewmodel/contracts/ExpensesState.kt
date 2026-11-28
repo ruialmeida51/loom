@@ -1,8 +1,9 @@
 package com.eyther.lumbridge.features.expenses.presentation.viewmodel.contracts
 
-import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.components.pagination.PaginationUi
+import com.eyther.lumbridge.core.presentation.model.DestructiveConfirmationUi
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.account.domain.model.PaymentHandlesDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.HouseholdLedgerDomain
@@ -37,6 +38,8 @@ import kotlinx.collections.immutable.toImmutableSet
 
 data class ExpensesState(
     val userId: String = "",
+    /** How you like to be paid, added to shared balances when someone owes you. */
+    val ownPaymentHandles: PaymentHandlesDomain? = null,
     val account: ExpenseAccountDomain? = null,
     val accounts: List<ExpenseAccountDomain> = emptyList(),
     val expenses: List<ExpenseDomain> = emptyList(),

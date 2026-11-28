@@ -37,6 +37,7 @@ import com.eyther.lumbridge.features.shopping.domain.model.ShoppingListDomain
 import com.eyther.lumbridge.features.shopping.generated.resources.Res
 import com.eyther.lumbridge.features.shopping.generated.resources.favorites_title
 import com.eyther.lumbridge.features.shopping.generated.resources.lists_header
+import com.eyther.lumbridge.features.shopping.generated.resources.share_list
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_new_list
 import com.eyther.lumbridge.features.shopping.generated.resources.ui_shopping_lists
 import com.eyther.lumbridge.features.shopping.presentation.mapper.toGlyph
@@ -46,7 +47,8 @@ import org.jetbrains.compose.resources.stringResource
 private val ChipHeight = 40.dp
 
 /**
- * One pill per active list, scrolling edge to edge under a header that holds Favourites. Tapping
+ * One pill per active list, scrolling edge to edge under a header that holds Share (the list as
+ * text, to send anywhere) and Favourites. Tapping
  * another list switches to it; tapping the current one opens the lists manager (rename, icon,
  * archive), which its caret signals. "+ New list" ends the row.
  */
@@ -59,11 +61,19 @@ fun ShoppingListChips(
     onManage: () -> Unit,
     onCreate: () -> Unit,
     onFavorites: () -> Unit,
+    onShare: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val manage = stringResource(Res.string.ui_shopping_lists)
     Column(modifier = modifier) {
         PillRowHeader(title = stringResource(Res.string.lists_header)) {
+            PillRowAction(
+                label = stringResource(Res.string.share_list),
+                glyph = Glyph.SHARE,
+                onClick = onShare,
+                enabled = favoritesEnabled,
+                modifier = Modifier.testTag("shopping_share"),
+            )
             PillRowAction(
                 label = stringResource(Res.string.favorites_title),
                 glyph = Glyph.STAR,

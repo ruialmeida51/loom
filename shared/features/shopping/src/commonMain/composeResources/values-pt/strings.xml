@@ -112,4 +112,7 @@
     <string name="group_unnest">Tirar do grupo</string>
     <string name="group_invalid">Os grupos só têm um nível e ficam na mesma lista. Atualiza e tenta novamente.</string>
     <string name="completed_delete_confirm">Eliminar</string>
+    <string name="share_list">Partilhar</string>
+    <string name="share_empty">Não falta comprar nada ✨</string>
+    <string name="share_footer">Partilhado a partir do Loom</string>
 </resources>
