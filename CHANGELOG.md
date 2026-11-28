@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0.26] - 2026-11-28
+
 - Share a shopping list or an account's balances to WhatsApp, Messages or anywhere else, as neat text: the list as a checklist, and balances with who pays whom, where everyone stands and how to pay you.
 
 ## [4.0.25] - 2026-11-28
