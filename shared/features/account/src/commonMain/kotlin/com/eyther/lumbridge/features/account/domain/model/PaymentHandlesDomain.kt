@@ -58,6 +58,9 @@ data class PaymentHandlesDomain(
     fun paypalLink(amount: String, currency: String): String? =
         paypalUsername?.let { "https://paypal.me/$it/$amount$currency" }
 
+    /** Their PayPal.me page, where the person paying types the amount. */
+    fun paypalProfileLink(): String? = paypalUsername?.let { "https://paypal.me/$it" }
+
     fun revolutLink(): String? = revolutUsername?.let { "https://revolut.me/$it" }
 
     private companion object {

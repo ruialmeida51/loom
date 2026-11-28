@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.MemberAvatar
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
+import com.eyther.lumbridge.core.presentation.components.memberInitial
 import com.eyther.lumbridge.core.presentation.extensions.shimmer
 import com.eyther.lumbridge.features.household.presentation.components.HouseholdBadge
 import com.eyther.lumbridge.shared.entrypoint.generated.resources.Res
@@ -127,7 +128,7 @@ internal fun PortalToolbar(
                         .testTag("profile_avatar_loading"),
                 )
             else {
-                val initial = nickname.ifBlank { accountLabel }.take(1).uppercase()
+                val initial = memberInitial(nickname.ifBlank { accountLabel })
                 Box(
                     Modifier.testTag("profile_avatar_initial").semantics {
                         text = AnnotatedString(initial)
@@ -135,7 +136,7 @@ internal fun PortalToolbar(
                 ) {
                     MemberAvatar(
                         memberId = userId,
-                        initials = initial,
+                        name = nickname.ifBlank { accountLabel },
                         picturePath = avatarPath,
                         modifier = Modifier.size(AvatarSize),
                     )

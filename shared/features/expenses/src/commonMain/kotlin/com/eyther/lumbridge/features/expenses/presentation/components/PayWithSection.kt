@@ -24,6 +24,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.pay_copied
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_hint
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_mbway
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_mbway_copied
+import com.eyther.lumbridge.features.expenses.generated.resources.pay_mbway_number_copied
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_open
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_paypal
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_paypal_amount
@@ -42,20 +43,23 @@ private fun formatPhone(phone: String): String =
     else phone
 
 /**
- * Sends the money in another app, then the person comes back and saves to record it: PayPal opens
- * with the amount filled in, Revolut opens the profile, and MB Way, which has no link that fills
- * anything in, copies the number and opens the app.
+ * Sends the money in another app: PayPal opens with the amount filled in (or their page when there
+ * is no amount), Revolut opens the profile, and MB Way, which has no link that fills anything in,
+ * copies the number and opens the app. The payment form passes its own [hint] about coming back
+ * to record the payment; a profile passes null for [title] and puts its own section heading above.
  */
 @Composable
-internal fun PayWithSection(options: PayOptionsUi, modifier: Modifier = Modifier) {
+fun PayWithSection(
+    options: PayOptionsUi,
+    modifier: Modifier = Modifier,
+    title: String? = stringResource(Res.string.pay_title, options.recipientName),
+    hint: String? = stringResource(Res.string.pay_hint),
+) {
     val uriHandler = LocalUriHandler.current
     val clipboard = LocalClipboardManager.current
     var copied by remember { mutableStateOf<String?>(null) }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(LoomSpacing.small)) {
-        Text(
-            stringResource(Res.string.pay_title, options.recipientName),
-            style = MaterialTheme.typography.titleSmall,
-        )
+        title?.let { Text(it, style = MaterialTheme.typography.titleSmall) }
         GroupedSurface {
             val rows =
                 listOfNotNull(
@@ -64,7 +68,12 @@ internal fun PayWithSection(options: PayOptionsUi, modifier: Modifier = Modifier
                             NavigationRow(
                                 title = stringResource(Res.string.pay_paypal),
                                 description =
-                                    stringResource(Res.string.pay_paypal_amount, options.amountLabel),
+                                    if (options.amount != null)
+                                        stringResource(
+                                            Res.string.pay_paypal_amount,
+                                            options.amountLabel,
+                                        )
+                                    else link.removePrefix("https://"),
                                 glyph = Glyph.MONEY,
                                 onClick = { uriHandler.openUri(link) },
                                 modifier = Modifier.testTag("pay_paypal"),
@@ -75,7 +84,10 @@ internal fun PayWithSection(options: PayOptionsUi, modifier: Modifier = Modifier
                         @Composable {
                             NavigationRow(
                                 title = stringResource(Res.string.pay_revolut),
-                                description = stringResource(Res.string.pay_revolut_hint),
+                                description =
+                                    if (options.amount != null)
+                                        stringResource(Res.string.pay_revolut_hint)
+                                    else link.removePrefix("https://"),
                                 glyph = Glyph.MONEY,
                                 onClick = {
                                     options.amount?.let {
@@ -93,12 +105,15 @@ internal fun PayWithSection(options: PayOptionsUi, modifier: Modifier = Modifier
                             NavigationRow(
                                 title = stringResource(Res.string.pay_mbway),
                                 description =
-                                    if (copied == "mbway")
-                                        stringResource(
-                                            Res.string.pay_mbway_copied,
-                                            options.amountLabel,
-                                        )
-                                    else formatPhone(phone),
+                                    when {
+                                        copied != "mbway" -> formatPhone(phone)
+                                        options.amount != null ->
+                                            stringResource(
+                                                Res.string.pay_mbway_copied,
+                                                options.amountLabel,
+                                            )
+                                        else -> stringResource(Res.string.pay_mbway_number_copied)
+                                    },
                                 glyph = Glyph.MONEY,
                                 onClick = {
                                     // MB Way offers no link that fills in someone and an amount, so
@@ -127,10 +142,12 @@ internal fun PayWithSection(options: PayOptionsUi, modifier: Modifier = Modifier
                 row()
             }
         }
-        Text(
-            stringResource(Res.string.pay_hint),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        hint?.let {
+            Text(
+                it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }

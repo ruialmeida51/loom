@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Profile pictures show on household details too, and every avatar works out initials the same way.
+- Tap a housemate in household details to see their profile: a bigger picture, who owes whom, how to pay them (MB Way, Revolut, PayPal, with the amount filled in when you owe them) and their open tasks.
+
 ## [4.0.24] - 2026-11-27
 
 - Pick the app’s language in My account: Português or English, or follow your phone. It switches straight away.

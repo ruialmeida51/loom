@@ -20,6 +20,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            api(projects.shared.features.account)
             api(projects.shared.features.expenses)
             api(projects.shared.features.feed)
             api(projects.shared.core)

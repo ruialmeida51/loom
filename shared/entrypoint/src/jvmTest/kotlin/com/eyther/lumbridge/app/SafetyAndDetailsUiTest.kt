@@ -19,6 +19,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.unit.Density
 import com.eyther.lumbridge.app.demo.LoomDemoApp
+import com.eyther.lumbridge.app.demo.data.DemoHouseholdStore
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
 import com.eyther.lumbridge.app.testutil.capture
 import com.eyther.lumbridge.core.domain.AppLanguage
@@ -118,6 +119,37 @@ class SafetyAndDetailsUiTest {
                     onAllNodesWithTag("active_invitation_code").fetchSemanticsNodes().isEmpty()
             }
             onNodeWithTag("household_details_content").assertIsDisplayed()
+        }
+
+    @Test
+    fun tappingAHousemateOpensTheirProfileWithPaymentDetailsBalanceAndTasks() =
+        runSkikoComposeUiTest(size = Size(440f, 900f)) {
+            startApp()
+            onNodeWithTag("navigation_more").performClick()
+            onNodeWithText("Household details").performClick()
+            awaitLoadedDestination("household_details_content")
+            onNodeWithTag("member_${DemoHouseholdStore.ALEX}").performScrollTo().performClick()
+            awaitLoadedDestination("member_profile")
+            onNodeWithTag("member_profile_picture").assertIsDisplayed()
+            onNodeWithTag("member_balance").assertExists()
+            onNodeWithTag("member_profile")
+                .performScrollToNode(hasTestTag("member_payment"))
+            onNodeWithTag("pay_mbway").assertExists()
+            onNodeWithTag("pay_paypal").assertExists()
+            onNodeWithText("Tasks").assertExists()
+            capture("member-profile-light")
+        }
+
+    @Test
+    fun aHousematesProfileReadsInTheDarkTheme() =
+        runSkikoComposeUiTest(size = Size(440f, 900f)) {
+            startApp(theme = "DARK")
+            onNodeWithTag("navigation_more").performClick()
+            onNodeWithText("Household details").performClick()
+            awaitLoadedDestination("household_details_content")
+            onNodeWithTag("member_${DemoHouseholdStore.ALEX}").performScrollTo().performClick()
+            awaitLoadedDestination("member_profile")
+            capture("member-profile-dark")
         }
 
     @Test

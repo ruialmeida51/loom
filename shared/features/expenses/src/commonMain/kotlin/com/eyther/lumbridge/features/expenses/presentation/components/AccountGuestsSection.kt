@@ -123,7 +123,7 @@ private fun GuestRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        MemberAvatar(memberId = guest.id, initials = guest.name.trim().take(1).uppercase())
+        MemberAvatar(memberId = guest.id, name = guest.name)
         Text(
             guest.name,
             style = MaterialTheme.typography.bodyLarge,

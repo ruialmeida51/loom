@@ -38,12 +38,6 @@ internal fun ExpenseDomain.toDetailsUi(
                     ExpenseShareUi(
                         id = id,
                         name = name,
-                        initials =
-                            name
-                                ?.firstOrNull { it.isLetterOrDigit() }
-                                ?.uppercaseChar()
-                                ?.toString()
-                                .orEmpty(),
                         amount =
                             MoneyDomain(minorUnits = amount, currency = account.currency)
                                 .formatted(),

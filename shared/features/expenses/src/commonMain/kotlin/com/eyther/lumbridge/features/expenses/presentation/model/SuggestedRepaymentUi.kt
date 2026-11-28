@@ -16,6 +16,5 @@ data class SuggestedRepaymentUi(
     val counterpartyAvatarPath: String? = null,
 ) {
     val counterpartyId: String = if (isCurrentUserSender) settlement.to else settlement.from
-    val counterpartyInitials: String =
-        (if (isCurrentUserSender) toName else fromName).orEmpty().trim().take(1).uppercase()
+    val counterpartyName: String? = if (isCurrentUserSender) toName else fromName
 }

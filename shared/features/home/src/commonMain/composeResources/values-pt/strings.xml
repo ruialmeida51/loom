@@ -53,4 +53,17 @@
     <string name="home_former_member">Um antigo membro</string>
     <string name="home_balances">Detalhes</string>
     <string name="home_today">Hoje</string>
+    <string name="member_profile_you">Tu</string>
+    <string name="member_profile_balance">Saldo</string>
+    <string name="member_profile_settled">Contas acertadas</string>
+    <string name="member_profile_owes_you">%1$s deve-te</string>
+    <string name="member_profile_you_owe">Deves a %1$s</string>
+    <string name="member_profile_owes">%1$s deve a %2$s</string>
+    <string name="member_profile_payment">Dados de pagamento</string>
+    <string name="member_profile_pay">Deves %2$s a %1$s</string>
+    <string name="member_profile_no_payment">%1$s ainda não partilhou dados de pagamento.</string>
+    <string name="member_profile_tasks">Tarefas</string>
+    <string name="member_profile_no_tasks">Nada atribuído de momento.</string>
+    <string name="member_profile_left">%1$s já não faz parte desta casa.</string>
+    <string name="member_profile_gone">Esta pessoa já não faz parte desta casa.</string>
 </resources>

@@ -165,6 +165,7 @@
     <string name="pay_mbway">MB Way</string>
     <string name="pay_open">Abrir</string>
     <string name="pay_mbway_copied">Número copiado. No MB Way, escolhe Enviar dinheiro, cola o número e envia %1$s</string>
+    <string name="pay_mbway_number_copied">Número copiado</string>
     <string name="pay_copied">Copiado</string>
     <string name="pay_hint">Depois de enviares o dinheiro, volta e guarda para registar o pagamento.</string>
     <string name="recurring_new_bill">Nova despesa recorrente</string>

@@ -68,8 +68,11 @@ import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedS
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeBalanceStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeShoppingStreamUseCase
 import com.eyther.lumbridge.features.home.domain.usecase.GetHomeTasksStreamUseCase
+import com.eyther.lumbridge.features.home.domain.usecase.GetMemberProfileStreamUseCase
 import com.eyther.lumbridge.features.home.presentation.viewmodel.HomeScreenViewModel
+import com.eyther.lumbridge.features.home.presentation.viewmodel.MemberProfileScreenViewModel
 import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.HomeScreenViewModelContract
+import com.eyther.lumbridge.features.home.presentation.viewmodel.contracts.MemberProfileScreenViewModelContract
 import com.eyther.lumbridge.features.household.domain.model.HouseholdContextDomain
 import com.eyther.lumbridge.features.household.domain.usecase.ChangeHouseholdMemberUseCase
 import com.eyther.lumbridge.features.household.domain.usecase.DeleteHouseholdUseCase
@@ -272,6 +275,18 @@ class HouseholdViewModelModule {
         MemberAccountPositionsScreenViewModel(
             params = params,
             getMemberAccountPositionsUseCase = getMemberAccountPositionsUseCase,
+        )
+
+    @KoinViewModel(binds = [MemberProfileScreenViewModelContract::class])
+    fun provideMemberProfileScreenViewModel(
+        @InjectedParam params: MemberProfileScreenViewModelContract.Params,
+        getMemberProfileStreamUseCase: GetMemberProfileStreamUseCase,
+        context: HouseholdContextDomain,
+    ): MemberProfileScreenViewModelContract =
+        MemberProfileScreenViewModel(
+            params = params,
+            getMemberProfileStreamUseCase = getMemberProfileStreamUseCase,
+            context = context,
         )
 
     @KoinViewModel(binds = [ShoppingScreenViewModelContract::class])
