@@ -12,7 +12,6 @@ fun ArticleDomain.toPreviewUi(timeZone: String): ArticlePreviewUi =
         url = url,
         source = source,
         summary = summary,
-        read = read,
         imageUrl = imageUrl,
         publishedOn = publishedAt.toLocalDateTime(TimeZone.of(timeZone)).date,
     )

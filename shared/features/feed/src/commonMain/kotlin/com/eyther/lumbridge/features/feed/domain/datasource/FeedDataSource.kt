@@ -19,5 +19,4 @@ interface FeedDataSource {
      */
     suspend fun followFeed(url: String): AppResult<Unit>
 
-    suspend fun markArticleRead(id: String, read: Boolean): AppResult<Unit>
 }

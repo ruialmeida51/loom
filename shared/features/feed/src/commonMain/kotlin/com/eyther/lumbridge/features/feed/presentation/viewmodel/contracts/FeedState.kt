@@ -31,7 +31,6 @@ data class FeedState(
     val suggestions: ImmutableList<StarterFeedDomain> = persistentListOf(),
     val url: String = "",
     val showFollow: Boolean = false,
-    val unreadOnly: Boolean = false,
     val busy: Boolean = false,
     val loading: Boolean = true,
     val refreshing: Boolean = false,
@@ -44,12 +43,11 @@ data class FeedState(
     val displayError: TextResource? = error ?: loadError ?: sourcesError
 
     val query: FeedQueryDomain =
-        FeedQueryDomain(subscriptionIds = selectedSourceIds, unreadOnly = unreadOnly)
+        FeedQueryDomain(subscriptionIds = selectedSourceIds)
     val sourceFilters =
         sources.map { FeedSourceFilterUi(id = it.id, label = it.publisher) }.toImmutableList()
     val visibleArticles: List<ArticleDomain> = items.filter {
-        (!unreadOnly || !it.read) &&
-            (selectedSourceIds.isEmpty() || it.subscriptionId in selectedSourceIds)
+        selectedSourceIds.isEmpty() || it.subscriptionId in selectedSourceIds
     }
     val articleCards = visibleArticles.map { it.toPreviewUi(timeZone = timeZone) }.toImmutableList()
 

@@ -9,7 +9,6 @@ import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedPageUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
-import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedScreenViewModel
 import kotlin.time.Duration.Companion.minutes
@@ -51,7 +50,6 @@ internal class FeedReaderFixture {
                 getStarterFeedsUseCase =
                     GetStarterFeedsUseCase(feedCatalogDataSource = CommonFeedCatalogDataSource()),
                 followFeedUseCase = FollowFeedUseCase(feedDataSource = articles),
-                markArticleReadUseCase = MarkArticleReadUseCase(feedDataSource = articles),
                 refreshFeedsUseCase =
                     RefreshFeedsUseCase(feedSubscriptionDataSource = subscriptions),
                 timeZone = store.context.timeZone,

@@ -14,7 +14,6 @@ internal fun ArticleResponse.toDomain(): ArticleDomain =
         url = url,
         source = source,
         publishedAt = Instant.parse(publishedAt),
-        read = read,
         subscriptionId = subscriptionId,
         imageUrl = imageUrl?.takeIf { it.startsWith("https://") },
     )

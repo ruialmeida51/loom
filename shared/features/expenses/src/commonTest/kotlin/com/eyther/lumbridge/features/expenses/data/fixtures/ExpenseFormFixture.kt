@@ -9,6 +9,7 @@ import com.eyther.lumbridge.features.analytics.domain.usecase.TrackAnalyticsEven
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExchangeRateDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
+import com.eyther.lumbridge.features.expenses.domain.model.AccountSpendingDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
@@ -175,6 +176,9 @@ class ExpenseFormFixture {
             ): Flow<AppResult<List<SettlementDomain>>> = error("Not used")
 
             override fun streamBalances(accountId: String): Flow<AppResult<Map<String, Long>>> =
+                error("Not used")
+
+            override suspend fun getSpending(accountId: String): AppResult<AccountSpendingDomain> =
                 error("Not used")
 
             override fun streamLedgerPage(

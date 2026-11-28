@@ -13,7 +13,6 @@ import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedPageUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
-import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
 import com.eyther.lumbridge.features.feed.presentation.mapper.toFeedTextResource
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.contracts.FeedScreenViewModelContract
@@ -35,7 +34,6 @@ class FeedScreenViewModel(
     private val getFeedSubscriptionsStreamUseCase: GetFeedSubscriptionsStreamUseCase,
     private val getStarterFeedsUseCase: GetStarterFeedsUseCase,
     private val followFeedUseCase: FollowFeedUseCase,
-    private val markArticleReadUseCase: MarkArticleReadUseCase,
     private val refreshFeedsUseCase: RefreshFeedsUseCase,
     timeZone: String = "UTC",
 ) : FeedScreenViewModelContract() {
@@ -114,12 +112,6 @@ class FeedScreenViewModel(
     override fun onAllSourcesSelected() {
         if (state.value.selectedSourceIds.isEmpty()) return
         mutableState.update { oldState -> oldState.copy(selectedSourceIds = persistentSetOf()) }
-        requestFirstPage(clearItems = true)
-    }
-
-    override fun onUnreadOnlyChanged(value: Boolean) {
-        if (state.value.unreadOnly == value) return
-        mutableState.update { oldState -> oldState.copy(unreadOnly = value) }
         requestFirstPage(clearItems = true)
     }
 
@@ -314,24 +306,6 @@ class FeedScreenViewModel(
                                 formError = result.error.toFeedTextResource(),
                             )
                         }
-            }
-        }
-    }
-
-    override fun onMarkRead(id: String, read: Boolean) {
-        launch {
-            val result = markArticleReadUseCase(id = id, read = read)
-            mutableState.update { oldState ->
-                when (result) {
-                    is AppResult.Success ->
-                        oldState.copy(
-                            items =
-                                oldState.items.map { article ->
-                                    if (article.id == id) article.copy(read = read) else article
-                                },
-                        )
-                    is AppResult.Failure -> oldState.copy(error = result.error.toFeedTextResource())
-                }
             }
         }
     }

@@ -12,7 +12,6 @@ import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedPageUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetStarterFeedsUseCase
-import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
 import com.eyther.lumbridge.features.feed.presentation.viewmodel.FeedScreenViewModel
 import kotlin.test.Test
@@ -69,11 +68,9 @@ class FeedPaginationTest {
     }
 
     @Test
-    fun sourceUnionAndUnreadSelectionApplyBeforeTheFirstPage() = runTest {
+    fun sourceUnionSelectionAppliesBeforeTheFirstPage() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         val source = FeedPagingFixtureDataSource()
-        source.articles =
-            source.articles.map { if (it.id in setOf("45", "43")) it.copy(read = true) else it }
         val store = ViewModelStore()
         val viewModel = model(source).also { store.put("feed", it) }
         try {
@@ -84,13 +81,12 @@ class FeedPaginationTest {
             advanceTimeBy(300)
             runCurrent()
             viewModel.onSourceSelected("business")
-            viewModel.onUnreadOnlyChanged(true)
             runCurrent()
             assertEquals(20, viewModel.state.value.items.size)
             assertTrue(
-                viewModel.state.value.items.all { it.subscriptionId == "business" && !it.read },
+                viewModel.state.value.items.all { it.subscriptionId == "business" },
             )
-            assertEquals("41", viewModel.state.value.items.first().id)
+            assertEquals("45", viewModel.state.value.items.first().id)
             viewModel.onSourceSelected("world")
             runCurrent()
             assertEquals(setOf("business", "world"), source.requests.last().first.subscriptionIds)
@@ -98,7 +94,6 @@ class FeedPaginationTest {
             viewModel.onAllSourcesSelected()
             runCurrent()
             assertTrue(source.requests.last().first.subscriptionIds.isEmpty())
-            assertTrue(source.requests.last().first.unreadOnly)
         } finally {
             store.clear()
             Dispatchers.resetMain()
@@ -243,7 +238,6 @@ class FeedPaginationTest {
             getStarterFeedsUseCase =
                 GetStarterFeedsUseCase(feedCatalogDataSource = CommonFeedCatalogDataSource()),
             followFeedUseCase = FollowFeedUseCase(feedDataSource = source),
-            markArticleReadUseCase = MarkArticleReadUseCase(feedDataSource = source),
             refreshFeedsUseCase = RefreshFeedsUseCase(feedSubscriptionDataSource = subscriptions),
         )
     }

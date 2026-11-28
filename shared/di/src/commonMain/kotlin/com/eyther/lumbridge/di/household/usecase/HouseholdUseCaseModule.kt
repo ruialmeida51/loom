@@ -16,6 +16,7 @@ import com.eyther.lumbridge.features.expenses.domain.usecase.DeleteRecurringExpe
 import com.eyther.lumbridge.features.expenses.domain.usecase.DownloadReceiptPhotoUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountBalancesStreamUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountLedgerStreamUseCase
+import com.eyther.lumbridge.features.expenses.domain.usecase.GetAccountSpendingUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExchangeRateUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountFormUseCase
 import com.eyther.lumbridge.features.expenses.domain.usecase.GetExpenseAccountUseCase
@@ -51,7 +52,6 @@ import com.eyther.lumbridge.features.feed.domain.usecase.FollowFeedUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedPageUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedStreamUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.GetFeedSubscriptionsStreamUseCase
-import com.eyther.lumbridge.features.feed.domain.usecase.MarkArticleReadUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedSubscriptionUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RefreshFeedsUseCase
 import com.eyther.lumbridge.features.feed.domain.usecase.RemoveFeedSubscriptionUseCase
@@ -299,14 +299,6 @@ class HouseholdUseCaseModule {
         feedDataSource: FeedDataSource,
     ): GetFeedStreamUseCase =
         GetFeedStreamUseCase(
-            feedDataSource = feedDataSource,
-        )
-
-    @Single
-    fun provideMarkArticleReadUseCase(
-        feedDataSource: FeedDataSource,
-    ): MarkArticleReadUseCase =
-        MarkArticleReadUseCase(
             feedDataSource = feedDataSource,
         )
 
@@ -712,4 +704,9 @@ class HouseholdUseCaseModule {
                 GetPaymentHandlesUseCase(paymentHandlesDataSource = paymentHandlesDataSource),
             context = context,
         )
+
+    @Single
+    fun provideGetAccountSpendingUseCase(
+        expenseDataSource: ExpenseDataSource,
+    ): GetAccountSpendingUseCase = GetAccountSpendingUseCase(expenseDataSource = expenseDataSource)
 }

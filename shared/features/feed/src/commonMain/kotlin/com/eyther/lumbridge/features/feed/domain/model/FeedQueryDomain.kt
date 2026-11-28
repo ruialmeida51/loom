@@ -1,9 +1,8 @@
 package com.eyther.lumbridge.features.feed.domain.model
 
-/** Empty source selection means every source; unread applies before page boundaries. */
+/** Empty source selection means every source. */
 data class FeedQueryDomain(
     val subscriptionIds: Set<String> = emptySet(),
-    val unreadOnly: Boolean = false,
     val pageSize: Int = DEFAULT_PAGE_SIZE,
 ) {
     init {

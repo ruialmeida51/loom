@@ -14,7 +14,6 @@ import com.eyther.lumbridge.core.presentation.components.bleedHorizontally
 import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 import com.eyther.lumbridge.features.feed.generated.resources.Res
 import com.eyther.lumbridge.features.feed.generated.resources.feed_all_sources
-import com.eyther.lumbridge.features.feed.generated.resources.ui_unread_only
 import com.eyther.lumbridge.features.feed.presentation.model.FeedSourceFilterUi
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -24,10 +23,8 @@ import org.jetbrains.compose.resources.stringResource
 internal fun FeedSourceFilters(
     sources: ImmutableList<FeedSourceFilterUi>,
     selectedIds: ImmutableSet<String>,
-    unreadOnly: Boolean,
     onSource: (String) -> Unit,
     onAll: () -> Unit,
-    onUnreadOnly: (Boolean) -> Unit,
 ) {
     // The same pills as shopping lists and Money, scrolling to the screen edges.
     LazyRow(
@@ -43,15 +40,6 @@ internal fun FeedSourceFilters(
                 onClick = onAll,
                 role = Role.Checkbox,
                 modifier = Modifier.testTag("feed_all_sources"),
-            )
-        }
-        item(key = "unread") {
-            PillChip(
-                text = stringResource(Res.string.ui_unread_only),
-                selected = unreadOnly,
-                onClick = { onUnreadOnly(!unreadOnly) },
-                role = Role.Checkbox,
-                modifier = Modifier.testTag("feed_unread_filter"),
             )
         }
         items(items = sources, key = { it.id }) { source ->

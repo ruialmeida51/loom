@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.expenses.presentation.mapper
 
 import com.eyther.lumbridge.features.account.domain.model.PaymentHandlesDomain
+import com.eyther.lumbridge.features.expenses.domain.model.AccountSpendingDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.MoneyDomain
@@ -11,15 +12,19 @@ import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_footer
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_owed
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_owes
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_paid
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_pay_me
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_settle_up
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_settled
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_spent
+import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_summary_title
 import com.eyther.lumbridge.features.expenses.generated.resources.balance_share_title
 import com.eyther.lumbridge.features.expenses.generated.resources.former_member
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_mbway
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_paypal
 import com.eyther.lumbridge.features.expenses.generated.resources.pay_revolut
 import com.eyther.lumbridge.features.expenses.presentation.components.formatPhone
+import org.jetbrains.compose.resources.getPluralString
 import org.jetbrains.compose.resources.getString
 
 private const val Rule = "━━━━━━━━━━━━"
@@ -41,7 +46,8 @@ internal fun ExpenseAccountIconDomain.shareEmoji(): String =
  * Where [account] stands, as text for the household chat: who pays whom to settle up, where
  * everyone stands, and, when someone owes you, how to pay you. People are named, the sender
  * included, since "you" would mean whoever reads it. [balances] are minor units per person, in
- * the order the balances view lists them.
+ * the order the balances view lists them. A trip's [spending] adds what was spent and who paid,
+ * so the message reads as the trip's summary.
  */
 suspend fun balanceShareText(
     account: ExpenseAccountDomain,
@@ -50,16 +56,37 @@ suspend fun balanceShareText(
     suggestions: List<SuggestedSettlementDomain>,
     userId: String,
     ownHandles: PaymentHandlesDomain?,
+    spending: AccountSpendingDomain? = null,
 ): String {
     val former = getString(Res.string.former_member)
     fun name(id: String): String = names[id]?.ifBlank { null } ?: former
     fun money(minor: Long): String = MoneyDomain(minor, account.currency).formattedMagnitude()
     return buildString {
+        val summary = spending?.takeIf { !account.isDefault && it.totalMinor > 0 }
         appendLine(
             "${account.displayIcon.shareEmoji()} " +
-                getString(Res.string.balance_share_title, account.name),
+                getString(
+                    if (summary != null) Res.string.balance_share_summary_title
+                    else Res.string.balance_share_title,
+                    account.name,
+                ),
         )
         appendLine(Rule)
+        summary?.let {
+            appendLine(
+                getPluralString(
+                    Res.plurals.balance_share_spent,
+                    it.expenseCount.toInt(),
+                    money(it.totalMinor),
+                    it.expenseCount.toInt(),
+                ),
+            )
+            appendLine(getString(Res.string.balance_share_paid))
+            it.paidByPerson.entries
+                .sortedByDescending { (_, paid) -> paid }
+                .forEach { (id, paid) -> appendLine("• ${name(id)} ${money(paid)}") }
+            appendLine()
+        }
         if (suggestions.isEmpty()) appendLine(getString(Res.string.balance_share_settled))
         else {
             appendLine(getString(Res.string.balance_share_settle_up))

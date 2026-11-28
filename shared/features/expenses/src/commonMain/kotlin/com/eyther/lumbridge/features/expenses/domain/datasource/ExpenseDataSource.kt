@@ -1,6 +1,7 @@
 package com.eyther.lumbridge.features.expenses.domain.datasource
 
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
+import com.eyther.lumbridge.features.expenses.domain.model.AccountSpendingDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.LedgerCursorDomain
 import com.eyther.lumbridge.features.expenses.domain.model.LedgerPageDomain
@@ -16,6 +17,9 @@ interface ExpenseDataSource {
 
     /** Everyone's balance in the account, added up by the server over its whole history. */
     fun streamBalances(accountId: String = ""): Flow<AppResult<Map<String, Long>>>
+
+    /** What was spent in an account and who paid it. */
+    suspend fun getSpending(accountId: String): AppResult<AccountSpendingDomain>
 
     /** The account's newest [limit] expenses and repayments; reloads after this app's writes. */
     fun streamLedgerPage(accountId: String, limit: Int): Flow<AppResult<LedgerPageDomain>>

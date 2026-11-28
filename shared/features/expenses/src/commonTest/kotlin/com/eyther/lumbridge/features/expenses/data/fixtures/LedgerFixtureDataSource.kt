@@ -4,6 +4,7 @@ import com.eyther.lumbridge.core.domain.errors.AppError
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseAccountDataSource
 import com.eyther.lumbridge.features.expenses.domain.datasource.ExpenseDataSource
+import com.eyther.lumbridge.features.expenses.domain.model.AccountSpendingDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountIconDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
@@ -43,6 +44,9 @@ class LedgerFixtureDataSource : ExpenseDataSource {
 
     override fun streamBalances(accountId: String): Flow<AppResult<Map<String, Long>>> =
         writes.map { AppResult.Success(balances) }
+
+    override suspend fun getSpending(accountId: String): AppResult<AccountSpendingDomain> =
+        AppResult.Success(AccountSpendingDomain())
 
     override fun streamLedgerPage(
         accountId: String,

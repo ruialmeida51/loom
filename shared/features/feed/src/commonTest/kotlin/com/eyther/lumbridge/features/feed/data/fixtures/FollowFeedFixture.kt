@@ -24,6 +24,4 @@ internal class FollowFeedFixture(private val subscriptions: FeedSubscriptionFixt
         return AppResult.Failure(FeedError.RefreshFailed())
     }
 
-    override suspend fun markArticleRead(id: String, read: Boolean): AppResult<Unit> =
-        AppResult.Success(Unit)
 }

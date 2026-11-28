@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.eyther.lumbridge.core.presentation.components.icon.Glyph
 import com.eyther.lumbridge.core.presentation.components.icon.LoomIcon
 import com.eyther.lumbridge.core.presentation.theme.LoomColors
+import com.eyther.lumbridge.core.presentation.theme.LoomSpacing
 
 private val PillHeight = 40.dp
 private val PillGlyphSize = 18.dp
@@ -136,7 +137,8 @@ fun AddPill(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
 
 /**
  * The line above a pill row: what the pills are on the left and the row's own actions on the
- * right, so the pills can scroll edge to edge with nothing pinned beside them.
+ * right, so the pills can scroll edge to edge with nothing pinned beside them. Share, when a
+ * screen offers it, is the first action here, so it sits in the same place on every screen.
  */
 @Composable
 fun PillRowHeader(
@@ -154,7 +156,11 @@ fun PillRowHeader(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f),
         )
-        actions()
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(LoomSpacing.small),
+            verticalAlignment = Alignment.CenterVertically,
+            content = actions,
+        )
     }
 }
 

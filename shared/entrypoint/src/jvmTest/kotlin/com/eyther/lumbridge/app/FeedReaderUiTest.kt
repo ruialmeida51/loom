@@ -75,19 +75,8 @@ class FeedReaderUiTest {
                     setOf("weekend", "table"),
                     fixture.viewModel.state.value.selectedSourceIds,
                 )
-                onNodeWithTag("feed_article_actions_story-1").performClick()
-                onNodeWithText("Mark as read").performClick()
-                waitUntil(timeoutMillis = 5_000) {
-                    fixture.viewModel.state.value.items.first().read
-                }
-                onNodeWithTag("feed_source_filters")
-                    .performScrollToNode(hasTestTag("feed_unread_filter"))
-                onNodeWithTag("feed_unread_filter").performClick()
-                waitUntil(timeoutMillis = 5_000) { !fixture.viewModel.state.value.loading }
-                assertTrue(fixture.viewModel.state.value.items.all { !it.read })
-                assertEquals(20, fixture.viewModel.state.value.items.size)
-                assertEquals("story-2", fixture.viewModel.state.value.items.first().id)
-                onNodeWithTag("feed_unread_filter").assertIsSelected()
+                // A plain feed: stories carry no read state or per-story menu.
+                onNodeWithTag("feed_article_actions_story-1").assertDoesNotExist()
                 capture("feed-filtered-dark-narrow")
             } finally {
                 fixture.close()

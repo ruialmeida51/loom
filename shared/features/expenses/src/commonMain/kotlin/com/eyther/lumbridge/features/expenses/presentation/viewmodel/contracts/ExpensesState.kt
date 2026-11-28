@@ -22,6 +22,7 @@ import com.eyther.lumbridge.features.expenses.generated.resources.history_delete
 import com.eyther.lumbridge.features.expenses.generated.resources.payment_delete_message
 import com.eyther.lumbridge.features.expenses.generated.resources.payment_delete_title
 import com.eyther.lumbridge.features.expenses.generated.resources.ui_cancel
+import com.eyther.lumbridge.features.expenses.presentation.model.BalanceShareRequestUi
 import com.eyther.lumbridge.features.expenses.presentation.model.BalanceSummaryUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpenseHistoryItemUi
 import com.eyther.lumbridge.features.expenses.presentation.model.ExpensesViewUi
@@ -40,6 +41,9 @@ data class ExpensesState(
     val userId: String = "",
     /** How you like to be paid, added to shared balances when someone owes you. */
     val ownPaymentHandles: PaymentHandlesDomain? = null,
+    /** A share the screen should send now, and whether its trip summary is still loading. */
+    val shareRequest: BalanceShareRequestUi? = null,
+    val preparingShare: Boolean = false,
     val account: ExpenseAccountDomain? = null,
     val accounts: List<ExpenseAccountDomain> = emptyList(),
     val expenses: List<ExpenseDomain> = emptyList(),
