@@ -37,7 +37,7 @@ import org.jetbrains.compose.resources.stringResource
 private const val MbWayAppLink = "mbway://"
 
 /** "+351912345678" as "+351 912 345 678", the way it is read aloud and typed. */
-private fun formatPhone(phone: String): String =
+internal fun formatPhone(phone: String): String =
     if (phone.startsWith("+351") && phone.length == 13)
         "+351 ${phone.substring(4, 7)} ${phone.substring(7, 10)} ${phone.substring(10)}"
     else phone

@@ -31,4 +31,5 @@ enum class Glyph {
     EDIT,
     REPEAT,
     GLOBE,
+    SHARE,
 }

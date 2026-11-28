@@ -3,6 +3,7 @@ package com.eyther.lumbridge.app
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -13,6 +14,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import com.eyther.lumbridge.app.demo.LoomDemoApp
 import com.eyther.lumbridge.app.testutil.awaitLoadedDestination
+import com.eyther.lumbridge.app.testutil.capture
 import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
@@ -33,6 +35,21 @@ class AccountGuestsUiTest {
                 onAllNodesWithText("Marta").fetchSemanticsNodes().isNotEmpty()
             }
             onAllNodesWithText("Guest").fetchSemanticsNodes().isNotEmpty().let(::check)
+        }
+
+    @Test
+    fun balancesAndShoppingListsOfferToShareThemAsText() =
+        runSkikoComposeUiTest(size = Size(440f, 900f)) {
+            startApp()
+            onNodeWithTag("navigation_money").performClick()
+            awaitLoadedDestination(tag = "expenses_content")
+            onNodeWithTag("balances_view_balances").performClick()
+            onNodeWithTag("share_balances").performScrollTo().assertIsDisplayed()
+            capture("share-balances-light")
+            onNodeWithTag("navigation_shopping").performClick()
+            awaitLoadedDestination(tag = "shopping_content")
+            onNodeWithTag("shopping_share").assertIsDisplayed()
+            capture("share-shopping-light")
         }
 
     @Test

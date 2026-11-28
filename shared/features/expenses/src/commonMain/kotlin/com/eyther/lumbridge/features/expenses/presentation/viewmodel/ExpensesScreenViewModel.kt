@@ -7,6 +7,7 @@ import com.eyther.lumbridge.core.coroutines.stateflow.updateState
 import com.eyther.lumbridge.core.domain.wrapper.AppResult
 import com.eyther.lumbridge.core.presentation.components.snackbar.DEFAULT_ALERT_DURATION
 import com.eyther.lumbridge.core.presentation.resources.TextResource
+import com.eyther.lumbridge.features.account.domain.usecase.GetPaymentHandlesUseCase
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseAccountDomain
 import com.eyther.lumbridge.features.expenses.domain.model.ExpenseDomain
 import com.eyther.lumbridge.features.expenses.domain.model.LedgerPageDomain
@@ -50,6 +51,7 @@ class ExpensesScreenViewModel(
     private val deleteExpenseUseCase: DeleteExpenseUseCase,
     private val getMembersStreamUseCase: GetMembersStreamUseCase,
     private val getRecurringExpensesStreamUseCase: GetRecurringExpensesStreamUseCase,
+    private val getPaymentHandlesUseCase: GetPaymentHandlesUseCase,
     private val context: HouseholdContextDomain,
 ) : ExpensesScreenViewModelContract() {
     private val refreshRequests = MutableStateFlow(0)
@@ -137,6 +139,19 @@ class ExpensesScreenViewModel(
                     }
             }
     override val state = mutableState.asStateFlow()
+
+    init {
+        launch { loadOwnPaymentHandles() }
+    }
+
+    private suspend fun loadOwnPaymentHandles() {
+        // Optional: shared balances simply leave out how to pay you when this fails.
+        val result = getPaymentHandlesUseCase(userIds = listOf(context.userId))
+        if (result is AppResult.Success)
+            mutableState.update { oldState ->
+                oldState.copy(ownPaymentHandles = result.value.firstOrNull())
+            }
+    }
 
     override fun onViewChanged(view: ExpensesViewUi) {
         mutableState.update { oldState -> oldState.copy(selectedView = view) }

@@ -112,4 +112,7 @@
     <string name="group_unnest">Move out of group</string>
     <string name="group_invalid">Keep groups one level deep, in the same list. Refresh and try again.</string>
     <string name="completed_delete_confirm">Delete</string>
+    <string name="share_list">Share</string>
+    <string name="share_empty">Nothing left to buy ✨</string>
+    <string name="share_footer">Shared from Loom</string>
 </resources>

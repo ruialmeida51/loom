@@ -27,8 +27,8 @@ import com.eyther.lumbridge.core.generated.resources.icon_expand
 import com.eyther.lumbridge.core.generated.resources.icon_feed
 import com.eyther.lumbridge.core.generated.resources.icon_gift
 import com.eyther.lumbridge.core.generated.resources.icon_health
-import com.eyther.lumbridge.core.generated.resources.icon_language
 import com.eyther.lumbridge.core.generated.resources.icon_home
+import com.eyther.lumbridge.core.generated.resources.icon_language
 import com.eyther.lumbridge.core.generated.resources.icon_log_out
 import com.eyther.lumbridge.core.generated.resources.icon_money
 import com.eyther.lumbridge.core.generated.resources.icon_more
@@ -40,6 +40,7 @@ import com.eyther.lumbridge.core.generated.resources.icon_privacy
 import com.eyther.lumbridge.core.generated.resources.icon_produce
 import com.eyther.lumbridge.core.generated.resources.icon_repeat
 import com.eyther.lumbridge.core.generated.resources.icon_settings
+import com.eyther.lumbridge.core.generated.resources.icon_share
 import com.eyther.lumbridge.core.generated.resources.icon_shopping
 import com.eyther.lumbridge.core.generated.resources.icon_star
 import com.eyther.lumbridge.core.generated.resources.icon_tasks
@@ -85,6 +86,7 @@ fun LoomIcon(
                 Glyph.EDIT -> Res.string.icon_edit
                 Glyph.REPEAT -> Res.string.icon_repeat
                 Glyph.GLOBE -> Res.string.icon_language
+                Glyph.SHARE -> Res.string.icon_share
             },
         )
     Canvas(
@@ -405,6 +407,13 @@ fun LoomIcon(
                 drawCircle(tint, 8.5f * s, Offset(12 * s, 12 * s), style = Stroke(1.7f * s))
                 drawOval(tint, Offset(8 * s, 3.5f * s), Size(8 * s, 17 * s), style = Stroke(1.7f * s))
                 line(3.5f, 12f, 20.5f, 12f)
+            }
+            Glyph.SHARE -> {
+                drawCircle(tint, 2.6f * s, Offset(18 * s, 5.5f * s), style = Stroke(1.7f * s))
+                drawCircle(tint, 2.6f * s, Offset(6 * s, 12 * s), style = Stroke(1.7f * s))
+                drawCircle(tint, 2.6f * s, Offset(18 * s, 18.5f * s), style = Stroke(1.7f * s))
+                line(8.3f, 10.7f, 15.7f, 6.8f)
+                line(8.3f, 13.3f, 15.7f, 17.2f)
             }
             Glyph.HEART -> {
                 val heart =
